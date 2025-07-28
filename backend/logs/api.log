@@ -328,3 +328,37 @@ Invalid Telegram Login Widget data: Invalid hash
 Telegram Login Widget auth attempt: 123456789
 Invalid Telegram Login Widget data: Invalid hash
 Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.003, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36"}
+Telegram Login Widget auth attempt: 123456789
+Invalid Telegram Login Widget data: Invalid hash
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.01, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36"}
+Telegram Login Widget auth attempt: 123456789
+Invalid Telegram Login Widget data: Invalid hash
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.011, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "HEAD", "path": "/api/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "curl/8.6.0"}
+Ответ: {"type": "response", "method": "HEAD", "path": "/api/", "status_code": 200, "duration": 0.033, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 256}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/", "status_code": 200, "duration": 0.221, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 6254}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/favicon.ico", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/favicon.ico", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/favicon.ico” не существует", "exception_type": "Http404", "duration": 0.004, "user": "AnonymousUser", "ip": "84.54.71.189"}
+Ответ: {"type": "response", "method": "GET", "path": "/favicon.ico", "status_code": 404, "duration": 0.039, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 19451}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/", "status_code": 200, "duration": 0.009, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 6254}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api", "exception": "Просмотр списка файлов директории здесь не разрешен.", "exception_type": "Http404", "duration": 0.002, "user": "AnonymousUser", "ip": "84.54.71.189"}
+Ответ: {"type": "response", "method": "GET", "path": "/api", "status_code": 404, "duration": 0.017, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 19423}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "curl/8.6.0"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.009, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "curl/8.6.0"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.003, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "curl/8.6.0"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/", "status_code": 200, "duration": 0.007, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 256}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "curl/8.6.0"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/", "status_code": 200, "duration": 0.004, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 73}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/csrf/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "curl/8.6.0"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/csrf/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/csrf” не существует", "exception_type": "Http404", "duration": 0.009, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/csrf/", "status_code": 404, "duration": 0.042, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 26965}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api", "user": "AnonymousUser", "ip": "13.222.136.7", "user_agent": "got (https://github.com/sindresorhus/got)"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api", "exception": "Просмотр списка файлов директории здесь не разрешен.", "exception_type": "Http404", "duration": 0.006, "user": "AnonymousUser", "ip": "13.222.136.7"}
+Ответ: {"type": "response", "method": "GET", "path": "/api", "status_code": 404, "duration": 0.022, "user": "AnonymousUser", "ip": "13.222.136.7", "response_size": 19423}

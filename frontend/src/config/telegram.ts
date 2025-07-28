@@ -5,7 +5,7 @@ export const TELEGRAM_CONFIG = {
   BOT_NAME: 'BabayBurgerBot', // Измените на имя вашего бота
 
   // URL для авторизации через виджет
-  WIDGET_AUTH_URL: '/api/auth/telegram-widget/',
+  WIDGET_AUTH_URL: 'https://b05836c13049.ngrok-free.app/api/auth/telegram-widget/',
   
   // Настройки для Telegram Login Widget
   WIDGET_SETTINGS: {
