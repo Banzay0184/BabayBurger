@@ -418,3 +418,23 @@ Invalid Telegram Login Widget data: Invalid hash
 Telegram Login Widget auth attempt: 908758841
 Invalid Telegram Login Widget data: Invalid hash
 Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.002, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.474, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148", "post_data": {"id": ["908758841"], "first_name": ["Шахзод"], "last_name": ["Абидов"], "username": ["abidov_0184"], "language_code": ["ru"], "auth_date": ["1753735445"], "hash": ["telegram_webapp_hash"], "photo_url": [""], "allows_write_to_pm": ["false"]}}
+Telegram Login Widget auth attempt: 908758841
+Invalid Telegram Login Widget data: Invalid hash
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.004, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148", "post_data": {"id": ["908758841"], "first_name": ["Шахзод"], "last_name": ["Абидов"], "username": ["abidov_0184"], "language_code": ["ru"], "auth_date": ["1753735450"], "hash": ["telegram_webapp_hash"], "photo_url": [""], "allows_write_to_pm": ["false"]}}
+Telegram Login Widget auth attempt: 908758841
+Invalid Telegram Login Widget data: Invalid hash
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.002, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.312, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "post_data": {"id": ["908758841"], "first_name": ["Шахзод"], "last_name": ["Абидов"], "username": ["abidov_0184"], "language_code": ["ru"], "is_premium": ["false"], "auth_date": ["1753735465"], "hash": ["telegram_webapp_hash"], "allows_write_to_pm": ["false"]}}
+Telegram Login Widget auth attempt: 908758841
+Invalid Telegram Login Widget data: Invalid hash
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.001, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 64}
