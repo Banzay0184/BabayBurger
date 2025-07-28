@@ -5,13 +5,14 @@ import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { TelegramUserInfo } from '../components/ui/TelegramUserInfo';
 import { TelegramLoginWidget } from '../components/ui/TelegramLoginWidget';
+import { DebugInfo } from '../components/ui/DebugInfo';
 import { isTelegramWebApp, isInTelegramContext, getTelegramUser, createTestUrl, getTelegramTheme } from '../utils/telegram';
 import { telegramAuth, testApiConnection } from '../api/auth';
 import { TELEGRAM_CONFIG, getWidgetSettings } from '../config/telegram';
 import type { TelegramWidgetUser } from '../types/telegram';
 
 export const AuthPage: React.FC = () => {
-  const { state, login, forceLogin } = useAuth();
+  const { state, login, forceLogin, toggleDebugInfo } = useAuth();
 
   // Проверяем тестовый режим
   const isTestMode = new URLSearchParams(window.location.search).get('test_mode') === 'true';
@@ -286,6 +287,15 @@ export const AuthPage: React.FC = () => {
               {isTestMode && <p>• Тестовый режим: ✅ Активен</p>}
             </div>
           </div>
+          
+          {/* Компонент диагностики */}
+          <DebugInfo
+            logs={state.debugLogs}
+            isVisible={state.showDebugInfo}
+            onToggle={toggleDebugInfo}
+            onClear={() => {}} // clearDebugLogs removed
+            className="mt-4"
+          />
           
           {/* Детальная диагностика */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">

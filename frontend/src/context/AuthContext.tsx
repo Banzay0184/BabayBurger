@@ -23,6 +23,9 @@ interface AuthState {
     hasUserData: boolean;
     message: string;
   };
+  // Добавляем состояние для диагностики
+  debugLogs: string[];
+  showDebugInfo: boolean;
 }
 
 // Типы для действий
@@ -32,7 +35,10 @@ type AuthAction =
   | { type: 'AUTH_FAILURE'; payload: string }
   | { type: 'AUTH_LOGOUT' }
   | { type: 'CLEAR_ERROR' }
-  | { type: 'SET_TELEGRAM_CONTEXT'; payload: any };
+  | { type: 'SET_TELEGRAM_CONTEXT'; payload: any }
+  | { type: 'ADD_DEBUG_LOG'; payload: string }
+  | { type: 'CLEAR_DEBUG_LOGS' }
+  | { type: 'TOGGLE_DEBUG_INFO' };
 
 // Начальное состояние
 const initialState: AuthState = {
@@ -46,6 +52,8 @@ const initialState: AuthState = {
     hasUserData: false,
     message: 'Проверка контекста Telegram...'
   },
+  debugLogs: [],
+  showDebugInfo: false,
 };
 
 // Редьюсер для управления состоянием
@@ -91,6 +99,21 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         ...state,
         telegramContext: action.payload,
       };
+    case 'ADD_DEBUG_LOG':
+      return {
+        ...state,
+        debugLogs: [...state.debugLogs, action.payload],
+      };
+    case 'CLEAR_DEBUG_LOGS':
+      return {
+        ...state,
+        debugLogs: [],
+      };
+    case 'TOGGLE_DEBUG_INFO':
+      return {
+        ...state,
+        showDebugInfo: !state.showDebugInfo,
+      };
     default:
       return state;
   }
@@ -103,6 +126,10 @@ interface AuthContextType {
   forceLogin: () => Promise<void>; // Добавляем принудительную авторизацию
   logout: () => Promise<void>;
   clearError: () => void;
+  // Добавляем функции для диагностики
+  addDebugLog: (message: string) => void;
+  clearDebugLogs: () => void;
+  toggleDebugInfo: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -120,33 +147,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const checkTelegramContext = () => {
       const contextInfo = getTelegramContextInfo();
       dispatch({ type: 'SET_TELEGRAM_CONTEXT', payload: contextInfo });
-
       console.log('Telegram контекст:', contextInfo);
     };
 
     checkTelegramContext();
   }, []);
 
+  // Функции для диагностики
+  const addDebugLog = (message: string) => {
+    dispatch({ type: 'ADD_DEBUG_LOG', payload: message });
+  };
+
   // Функция авторизации через Telegram
   const login = async (): Promise<void> => {
     try {
       dispatch({ type: 'AUTH_START' });
+      addDebugLog('🚀 Начинаем авторизацию...');
 
       // Проверяем контекст Telegram
       if (!isInTelegramContext()) {
+        addDebugLog('❌ Не в контексте Telegram');
         throw new Error('Пожалуйста, откройте приложение через Telegram');
       }
 
+      addDebugLog('✅ В контексте Telegram');
+
       // Инициализируем Telegram Web App
       initTelegramWebApp();
+      addDebugLog('✅ Telegram Web App инициализирован');
 
       // Получаем данные пользователя из Telegram
       const telegramId = getTelegramId();
       const telegramUser = getTelegramUser();
 
       if (!telegramId || !telegramUser) {
+        addDebugLog('❌ Не удалось получить данные пользователя');
         throw new Error('Не удалось получить данные пользователя из Telegram. Пожалуйста, откройте приложение через Telegram');
       }
+
+      addDebugLog(`✅ Получены данные пользователя: ${telegramUser.first_name} (ID: ${telegramId})`);
 
       console.log('Попытка авторизации с данными:', {
         telegram_id: telegramId,
@@ -169,19 +208,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         allows_write_to_pm: false
       };
 
+      addDebugLog('📤 Отправляем данные на сервер...');
       console.log('Данные для авторизации:', widgetUserData);
 
       // Отправляем запрос на авторизацию через виджет
       const response = await telegramAuth(widgetUserData);
 
+      addDebugLog('✅ Получен ответ от сервера');
+
       // Сохраняем токен если он есть
       if (response.token) {
         localStorage.setItem('auth_token', response.token);
+        addDebugLog('✅ Токен сохранен');
       }
 
       dispatch({ type: 'AUTH_SUCCESS', payload: response.user });
+      addDebugLog('🎉 Авторизация успешна!');
     } catch (error: any) {
       const errorMessage = error.message || 'Ошибка авторизации';
+      addDebugLog(`❌ Ошибка авторизации: ${errorMessage}`);
       console.error('Ошибка авторизации:', error);
       dispatch({ type: 'AUTH_FAILURE', payload: errorMessage });
     }
@@ -267,6 +312,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     forceLogin,
     logout,
     clearError,
+    addDebugLog: (message: string) => dispatch({ type: 'ADD_DEBUG_LOG', payload: message }),
+    clearDebugLogs: () => dispatch({ type: 'CLEAR_DEBUG_LOGS' }),
+    toggleDebugInfo: () => dispatch({ type: 'TOGGLE_DEBUG_INFO' }),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
