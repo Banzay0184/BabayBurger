@@ -160,6 +160,35 @@ export const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
     // Очищаем контейнер
     widgetRef.current.innerHTML = '';
     
+    // Создаем контейнер с информацией
+    const container = document.createElement('div');
+    container.className = 'telegram-fallback-container';
+    container.innerHTML = `
+      <div style="
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        text-align: center;
+      ">
+        <div style="
+          color: #6c757d;
+          font-size: 14px;
+          margin-bottom: 12px;
+        ">
+          ⚠️ Для полной работы необходимо настроить реального Telegram бота
+        </div>
+        <div style="
+          color: #495057;
+          font-size: 12px;
+          margin-bottom: 16px;
+        ">
+          См. инструкцию в файле BOT_SETUP.md
+        </div>
+      </div>
+    `;
+    
     // Создаем стилизованную кнопку
     const button = document.createElement('button');
     button.className = 'telegram-login-button';
@@ -216,14 +245,17 @@ export const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
       };
       
       console.log('Telegram Widget: Отправляем моковые данные:', mockUser);
+      console.log('Telegram Widget: ⚠️ Это тестовые данные! Для продакшена настройте реального бота.');
       handleTelegramAuth(mockUser);
     });
     
-    widgetRef.current.appendChild(button);
+    // Добавляем элементы в контейнер
+    container.appendChild(button);
+    widgetRef.current.appendChild(container);
     setIsScriptLoaded(true);
     setIsLoading(false);
     
-    console.log('Telegram Widget: Fallback виджет создан');
+    console.log('Telegram Widget: Fallback виджет создан с предупреждением');
   }, [handleTelegramAuth]);
 
   // Загрузка Telegram Login Widget скрипта
@@ -255,12 +287,12 @@ export const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
       console.log('Telegram Widget: URL авторизации:', getWidgetAuthUrl());
 
       // Создаем скрипт
-      const script = document.createElement('script');
-      script.src = 'https://telegram.org/js/telegram-widget.js?22';
+    const script = document.createElement('script');
+    script.src = 'https://telegram.org/js/telegram-widget.js?22';
       script.async = true;
       script.setAttribute('data-telegram-login', widgetConfig.botName);
       script.setAttribute('data-size', widgetConfig.size);
-      script.setAttribute('data-auth-url', getWidgetAuthUrl());
+    script.setAttribute('data-auth-url', getWidgetAuthUrl());
       script.setAttribute('data-request-access', widgetConfig.requestAccess);
       script.setAttribute('data-lang', widgetConfig.lang);
       script.setAttribute('data-radius', widgetConfig.radius);
@@ -273,10 +305,10 @@ export const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
       if (widgetConfig.theme) {
         script.setAttribute('data-theme', widgetConfig.theme);
       }
-
-      // Обработчик успешной авторизации
-      script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-      
+    
+    // Обработчик успешной авторизации
+    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+    
       // Обработчик ошибок
       script.setAttribute('data-onerror', 'onTelegramWidgetError(error)');
 
@@ -310,9 +342,9 @@ export const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
         createFallbackWidget();
         onError?.(errorMsg);
         setIsLoading(false);
-      };
+    };
 
-      // Добавляем скрипт в DOM
+    // Добавляем скрипт в DOM
       widgetRef.current.appendChild(script);
       scriptRef.current = script;
 

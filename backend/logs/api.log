@@ -316,3 +316,15 @@ Start command processed successfully for chat 908758841
 Telegram Login Widget auth attempt: 123456789
 Invalid Telegram Login Widget data: Invalid hash
 Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.04, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Telegram Login Widget auth attempt: 123456789
+Invalid Telegram Login Widget data: Invalid hash
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.006, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Telegram Login Widget auth attempt: 123456789
+Invalid Telegram Login Widget data: Invalid hash
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.003, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36"}
+Telegram Login Widget auth attempt: 123456789
+Invalid Telegram Login Widget data: Invalid hash
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.003, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 64}
