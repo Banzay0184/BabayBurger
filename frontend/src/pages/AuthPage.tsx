@@ -6,7 +6,7 @@ import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { TelegramUserInfo } from '../components/ui/TelegramUserInfo';
 import { TelegramLoginWidget } from '../components/ui/TelegramLoginWidget';
 import { isTelegramWebApp, isInTelegramContext, getTelegramUser, createTestUrl, getTelegramTheme } from '../utils/telegram';
-import { authApi } from '../api/auth';
+import { telegramAuth } from '../api/auth';
 import { TELEGRAM_CONFIG, getWidgetSettings } from '../config/telegram';
 import type { TelegramWidgetUser } from '../types/telegram';
 
@@ -47,8 +47,8 @@ export const AuthPage: React.FC = () => {
     try {
       console.log('Telegram Widget auth data:', widgetData);
       
-      // Отправляем данные на бэкэнд
-      const response = await authApi.telegramWidgetAuth(widgetData);
+      // Используем новую функцию telegramAuth
+      const response = await telegramAuth(widgetData);
       
       if (response.success && response.user) {
         // Сохраняем токен если есть

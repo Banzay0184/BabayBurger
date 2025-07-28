@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { User } from '../api/types';
-import { authApi } from '../api/auth';
+import { authApi, telegramAuth } from '../api/auth';
 import {
   getTelegramId,
   getTelegramUser,
@@ -9,6 +9,7 @@ import {
   isInTelegramContext,
   getTelegramContextInfo
 } from '../utils/telegram';
+import type { TelegramWidgetUser } from '../types/telegram';
 
 // Типы для состояния авторизации
 interface AuthState {
@@ -154,15 +155,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         username: telegramUser.username
       });
 
-      // Отправляем запрос на авторизацию
-      const authData = {
-        telegram_id: telegramId,
+      // Создаем данные для авторизации через виджет
+      const widgetUserData: TelegramWidgetUser = {
+        id: telegramId,
         first_name: telegramUser.first_name,
         last_name: telegramUser.last_name,
         username: telegramUser.username,
+        language_code: telegramUser.language_code,
+        is_premium: telegramUser.is_premium,
+        auth_date: Math.floor(Date.now() / 1000),
+        hash: 'telegram_webapp_hash', // В Web App хеш не нужен
+        photo_url: '',
+        allows_write_to_pm: false
       };
 
-      const response = await authApi.telegramAuth(authData);
+      // Отправляем запрос на авторизацию через виджет
+      const response = await telegramAuth(widgetUserData);
 
       // Сохраняем токен если он есть
       if (response.token) {

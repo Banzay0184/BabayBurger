@@ -362,3 +362,37 @@ Invalid Telegram Login Widget data: Invalid hash
 Входящий запрос: {"type": "request", "method": "GET", "path": "/api", "user": "AnonymousUser", "ip": "13.222.136.7", "user_agent": "got (https://github.com/sindresorhus/got)"}
 Ошибка: {"type": "error", "method": "GET", "path": "/api", "exception": "Просмотр списка файлов директории здесь не разрешен.", "exception_type": "Http404", "duration": 0.006, "user": "AnonymousUser", "ip": "13.222.136.7"}
 Ответ: {"type": "response", "method": "GET", "path": "/api", "status_code": 404, "duration": 0.022, "user": "AnonymousUser", "ip": "13.222.136.7", "response_size": 19423}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36"}
+Telegram Login Widget auth attempt: 123456789
+Invalid Telegram Login Widget data: Invalid hash
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.014, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.499, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.012, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.002, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.004, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.005, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.003, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.003, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.005, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.002, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.005, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.005, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.002, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.003, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.006, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 3346}

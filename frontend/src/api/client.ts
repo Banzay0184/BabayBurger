@@ -8,7 +8,8 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Важно для работы с CSRF токенами
+  // Отключаем withCredentials для продакшена (ngrok)
+  withCredentials: API_CONFIG.ENV.isDevelopment,
 });
 
 // Функция для получения CSRF токена
@@ -26,16 +27,24 @@ const getCSRFToken = (): string | null => {
 
 apiClient.interceptors.request.use(
   (config: any) => {
-    // Добавляем CSRF токен к запросам
-    const csrfToken = getCSRFToken();
-    if (csrfToken) {
-      config.headers['X-CSRFToken'] = csrfToken;
+    // Добавляем CSRF токен только в разработке
+    if (API_CONFIG.ENV.isDevelopment) {
+      const csrfToken = getCSRFToken();
+      if (csrfToken) {
+        config.headers['X-CSRFToken'] = csrfToken;
+      }
     }
     
     // Добавляем токен авторизации
     const token = localStorage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    // Добавляем специальные заголовки для ngrok
+    if (!API_CONFIG.ENV.isDevelopment) {
+      config.headers['ngrok-skip-browser-warning'] = 'true';
+      config.headers['Access-Control-Allow-Origin'] = '*';
     }
     
     return config;
@@ -62,18 +71,35 @@ apiClient.interceptors.response.use(
     let message = 'Произошла ошибка';
 
     switch (status) {
-      case 400: message = 'Неверный запрос'; break;
-      case 401: message = 'Необходима авторизация'; localStorage.removeItem('auth_token'); break;
+      case 400: 
+        message = 'Неверный запрос'; 
+        console.error('400 Bad Request:', error.response.data);
+        break;
+      case 401: 
+        message = 'Необходима авторизация'; 
+        localStorage.removeItem('auth_token'); 
+        console.error('401 Unauthorized:', error.response.data);
+        break;
       case 403: 
         message = 'Доступ запрещен'; 
+        console.error('403 Forbidden:', error.response.data);
         // Если CSRF ошибка, попробуем обновить токен
         if (error.response.data?.detail?.includes('CSRF')) {
           console.warn('CSRF токен истек, попробуйте перезагрузить страницу');
+          message = 'Ошибка безопасности. Попробуйте перезагрузить страницу.';
         }
         break;
-      case 404: message = 'Ресурс не найден'; break;
-      case 500: message = 'Ошибка сервера'; break;
-      default: message = `Ошибка ${status}`;
+      case 404: 
+        message = 'Ресурс не найден'; 
+        console.error('404 Not Found:', error.response.data);
+        break;
+      case 500: 
+        message = 'Ошибка сервера'; 
+        console.error('500 Server Error:', error.response.data);
+        break;
+      default: 
+        message = `Ошибка ${status}`;
+        console.error(`${status} Error:`, error.response.data);
     }
 
     const apiError: ApiError = {
