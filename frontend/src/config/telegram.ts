@@ -2,7 +2,7 @@
 export const TELEGRAM_CONFIG = {
   // Имя бота для Telegram Login Widget (без @)
   // Замените на имя вашего бота, созданного через @BotFather
-  BOT_NAME: 'todobot', // Временно используем официальный бот для тестирования
+  BOT_NAME: 'BabayBurgerBot', // Вернем к оригинальному имени
 
   // URL для авторизации через виджет
   WIDGET_AUTH_URL: '/api/auth/telegram-widget/',
@@ -42,6 +42,15 @@ export const TELEGRAM_CONFIG = {
     
     // Версия минимально поддерживаемого Telegram
     MIN_VERSION: '6.0',
+  },
+
+  // Настройки для fallback виджета
+  FALLBACK: {
+    // Использовать fallback виджет в браузере
+    ENABLE_FALLBACK: true,
+    
+    // Таймаут для переключения на fallback (в миллисекундах)
+    FALLBACK_TIMEOUT: 3000, // 3 секунды
   }
 };
 

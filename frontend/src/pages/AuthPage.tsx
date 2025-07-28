@@ -344,32 +344,6 @@ export const AuthPage: React.FC = () => {
                 🧪 Создать тестовый URL
               </Button>
             )}
-            
-            {/* Кнопка для тестирования в браузере */}
-            {shouldShowWidget && (
-              <Button 
-                onClick={() => {
-                  // Создаем моковые данные для тестирования
-                  const mockUser = {
-                    id: 123456789,
-                    first_name: 'Тестовый',
-                    last_name: 'Пользователь',
-                    username: 'test_user',
-                    language_code: 'ru',
-                    is_premium: false,
-                    auth_date: Math.floor(Date.now() / 1000),
-                    hash: 'mock_hash_for_testing',
-                    photo_url: '',
-                    allows_write_to_pm: false
-                  };
-                  handleTelegramWidgetAuth(mockUser);
-                }}
-                className="w-full"
-                variant="secondary"
-              >
-                🧪 Тест с моковыми данными
-              </Button>
-            )}
           </div>
         </div>
       </div>
