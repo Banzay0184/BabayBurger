@@ -6,7 +6,7 @@ import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { TelegramUserInfo } from '../components/ui/TelegramUserInfo';
 import { TelegramLoginWidget } from '../components/ui/TelegramLoginWidget';
 import { isTelegramWebApp, isInTelegramContext, getTelegramUser, createTestUrl, getTelegramTheme } from '../utils/telegram';
-import { telegramAuth } from '../api/auth';
+import { telegramAuth, testApiConnection } from '../api/auth';
 import { TELEGRAM_CONFIG, getWidgetSettings } from '../config/telegram';
 import type { TelegramWidgetUser } from '../types/telegram';
 
@@ -69,6 +69,18 @@ export const AuthPage: React.FC = () => {
   const handleWidgetError = (error: string) => {
     console.error('Telegram Widget error:', error);
     // Можно показать уведомление пользователю
+  };
+
+  // Тестирование подключения к API
+  const handleTestApi = async () => {
+    try {
+      console.log('Тестируем подключение к API...');
+      const result = await testApiConnection();
+      alert(`API подключение успешно!\n\nОтвет: ${JSON.stringify(result, null, 2)}`);
+    } catch (error: any) {
+      console.error('Ошибка тестирования API:', error);
+      alert(`Ошибка подключения к API:\n\n${error.message || 'Неизвестная ошибка'}`);
+    }
   };
 
   // Создание тестового URL
@@ -344,6 +356,15 @@ export const AuthPage: React.FC = () => {
                 🧪 Создать тестовый URL
               </Button>
             )}
+
+            {/* Кнопка для тестирования API */}
+            <Button 
+              onClick={handleTestApi} 
+              className="w-full"
+              variant="secondary"
+            >
+              🧪 Тестировать API
+            </Button>
           </div>
         </div>
       </div>

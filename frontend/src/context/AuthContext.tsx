@@ -159,15 +159,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const widgetUserData: TelegramWidgetUser = {
         id: telegramId,
         first_name: telegramUser.first_name,
-        last_name: telegramUser.last_name,
-        username: telegramUser.username,
-        language_code: telegramUser.language_code,
-        is_premium: telegramUser.is_premium,
+        last_name: telegramUser.last_name || '',
+        username: telegramUser.username || '',
+        language_code: telegramUser.language_code || 'ru',
+        is_premium: telegramUser.is_premium || false,
         auth_date: Math.floor(Date.now() / 1000),
         hash: 'telegram_webapp_hash', // В Web App хеш не нужен
         photo_url: '',
         allows_write_to_pm: false
       };
+
+      console.log('Данные для авторизации:', widgetUserData);
 
       // Отправляем запрос на авторизацию через виджет
       const response = await telegramAuth(widgetUserData);

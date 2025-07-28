@@ -10,18 +10,53 @@ const telegramAuthClient = apiClient.create({
   withCredentials: false, // Отключаем CSRF для авторизации
 });
 
+// Функция для тестирования подключения к API
+export const testApiConnection = async () => {
+  try {
+    console.log('Тестируем подключение к API...');
+    const response = await apiClient.get('auth/test/');
+    console.log('API подключение успешно:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Ошибка подключения к API:', error);
+    throw error;
+  }
+};
+
 // Функция для авторизации через Telegram Widget
 export const telegramAuth = async (userData: TelegramWidgetUser) => {
   try {
     console.log('Отправляем данные авторизации:', userData);
     
-    // Преобразуем данные в FormData
+    // Преобразуем данные в правильный формат для Django
     const formData = new URLSearchParams();
-    Object.entries(userData).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
-      }
-    });
+    
+    // Основные поля пользователя
+    formData.append('id', String(userData.id));
+    formData.append('first_name', userData.first_name);
+    if (userData.last_name) {
+      formData.append('last_name', userData.last_name);
+    }
+    if (userData.username) {
+      formData.append('username', userData.username);
+    }
+    formData.append('language_code', userData.language_code || 'ru');
+    formData.append('is_premium', String(userData.is_premium || false));
+    
+    // Поля авторизации
+    formData.append('auth_date', String(userData.auth_date));
+    if (userData.hash) {
+      formData.append('hash', userData.hash);
+    }
+    if (userData.photo_url) {
+      formData.append('photo_url', userData.photo_url);
+    }
+    formData.append('allows_write_to_pm', String(userData.allows_write_to_pm || false));
+    
+    console.log('Формированные данные для отправки:');
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`);
+    }
     
     const response = await telegramAuthClient.post('auth/telegram-widget/', formData, {
       headers: {
@@ -34,9 +69,18 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
   } catch (error: any) {
     console.error('Ошибка авторизации Telegram:', error);
     
-    // Специальная обработка ошибок авторизации
+    // Детальная обработка ошибок
+    if (error.response?.status === 400) {
+      console.error('400 Bad Request - Детали ошибки:', error.response.data);
+      throw {
+        message: 'Неверные данные авторизации. Проверьте формат запроса.',
+        code: 'BAD_REQUEST',
+        details: error.response.data
+      };
+    }
+    
     if (error.response?.status === 403) {
-      console.error('Детали ошибки 403:', error.response.data);
+      console.error('403 Forbidden - Детали ошибки:', error.response.data);
       throw {
         message: 'Ошибка авторизации. Проверьте настройки бота.',
         code: 'AUTH_ERROR',
