@@ -2,7 +2,7 @@
 export const TELEGRAM_CONFIG = {
   // Имя бота для Telegram Login Widget (без @)
   // Замените на имя вашего бота, созданного через @BotFather
-  BOT_NAME: 'BabayBurgerBot', // Измените на имя вашего бота
+  BOT_NAME: 'todobot', // Временно используем официальный бот для тестирования
 
   // URL для авторизации через виджет
   WIDGET_AUTH_URL: '/api/auth/telegram-widget/',

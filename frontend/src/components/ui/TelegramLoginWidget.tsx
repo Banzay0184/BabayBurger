@@ -177,6 +177,7 @@ export const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
       };
 
       console.log('Telegram Widget: Загружаем виджет с конфигурацией:', widgetConfig);
+      console.log('Telegram Widget: URL авторизации:', getWidgetAuthUrl());
 
       // Создаем скрипт
       const script = document.createElement('script');
@@ -213,6 +214,17 @@ export const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
         console.log('Telegram Widget: Скрипт успешно загружен');
         setIsScriptLoaded(true);
         setIsLoading(false);
+        
+        // Проверяем, появился ли виджет через некоторое время
+        setTimeout(() => {
+          const widgetElement = document.querySelector('[data-telegram-login]');
+          console.log('Telegram Widget: Элемент виджета найден:', !!widgetElement);
+          if (!widgetElement) {
+            console.warn('Telegram Widget: Виджет не появился после загрузки скрипта');
+            setError('Виджет не загрузился. Попробуйте обновить страницу.');
+            onError?.('Виджет не загрузился');
+          }
+        }, 2000);
       };
 
       script.onerror = () => {
@@ -226,6 +238,8 @@ export const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
       // Добавляем скрипт в DOM
       widgetRef.current.appendChild(script);
       scriptRef.current = script;
+
+      console.log('Telegram Widget: Скрипт добавлен в DOM');
 
     } catch (error) {
       const errorMsg = 'Ошибка инициализации Telegram Login Widget';
@@ -319,6 +333,23 @@ export const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
         id="telegram-login-widget"
       />
       
+      {/* Fallback кнопка если виджет не загрузился */}
+      {!isLoading && !isScriptLoaded && !error && (
+        <div className="text-center">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-blue-800 mb-3">
+              Telegram Login Widget не загрузился. Попробуйте альтернативный способ:
+            </p>
+            <button
+              onClick={handleRetry}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Попробовать снова
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Информация о безопасности */}
       <div className="mt-4 text-center">
         <p className="text-xs text-gray-500">
@@ -338,6 +369,8 @@ export const TelegramLoginWidget: React.FC<TelegramLoginWidgetProps> = ({
           <p>• Ошибка: {error ? '❌' : '✅'}</p>
           <p>• Бот: {botName}</p>
           <p>• Размер: {size}</p>
+          <p>• URL авторизации: {getWidgetAuthUrl()}</p>
+          <p>• Контейнер виджета: {widgetRef.current ? '✅' : '❌'}</p>
         </div>
       )}
     </div>
