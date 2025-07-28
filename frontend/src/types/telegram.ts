@@ -10,6 +10,15 @@ export interface TelegramUser {
   photo_url?: string;
 }
 
+// Тип для данных пользователя от Telegram Login Widget
+export interface TelegramWidgetUser extends TelegramUser {
+  // Дополнительные поля от виджета
+  auth_date: number; // Время авторизации в секундах
+  hash: string; // Хеш для валидации на сервере
+  photo_url?: string; // URL аватара пользователя
+  allows_write_to_pm?: boolean; // Разрешение на отправку сообщений
+}
+
 export interface TelegramWebApp {
   ready(): void;
   expand(): void;

@@ -5,9 +5,10 @@ import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { TelegramUserInfo } from '../components/ui/TelegramUserInfo';
 import { TelegramLoginWidget } from '../components/ui/TelegramLoginWidget';
-import { isTelegramWebApp, isInTelegramContext, getTelegramUser, createTestUrl } from '../utils/telegram';
+import { isTelegramWebApp, isInTelegramContext, getTelegramUser, createTestUrl, getTelegramTheme } from '../utils/telegram';
 import { authApi } from '../api/auth';
-import { TELEGRAM_CONFIG } from '../config/telegram';
+import { TELEGRAM_CONFIG, getWidgetSettings } from '../config/telegram';
+import type { TelegramWidgetUser } from '../types/telegram';
 
 export const AuthPage: React.FC = () => {
   const { state, login, forceLogin } = useAuth();
@@ -17,6 +18,16 @@ export const AuthPage: React.FC = () => {
   
   // Проверяем, запущено ли приложение в браузере (не в Telegram)
   const isInBrowser = !isTelegramWebApp();
+  
+  // Проверяем, нужно ли показывать виджет в браузере
+  const shouldShowWidget = isInBrowser && !isTestMode;
+  
+  // Проверяем, нужно ли показывать кнопки Telegram Web App
+  const shouldShowTelegramButtons = isTelegramWebApp() && !isTestMode;
+
+  // Получаем тему Telegram для адаптации виджета
+  const telegramTheme = getTelegramTheme();
+  const widgetSettings = getWidgetSettings(telegramTheme);
 
   // Автоматическая авторизация при загрузке страницы
   useEffect(() => {
@@ -32,7 +43,7 @@ export const AuthPage: React.FC = () => {
   const telegramUser = getTelegramUser();
 
   // Обработчик авторизации через Telegram Login Widget
-  const handleTelegramWidgetAuth = async (widgetData: any) => {
+  const handleTelegramWidgetAuth = async (widgetData: TelegramWidgetUser) => {
     try {
       console.log('Telegram Widget auth data:', widgetData);
       
@@ -52,6 +63,12 @@ export const AuthPage: React.FC = () => {
       console.error('Telegram Widget auth error:', error);
       // Ошибка будет обработана в AuthContext
     }
+  };
+
+  // Обработчик ошибок виджета
+  const handleWidgetError = (error: string) => {
+    console.error('Telegram Widget error:', error);
+    // Можно показать уведомление пользователю
   };
 
   // Создание тестового URL
@@ -114,6 +131,7 @@ export const AuthPage: React.FC = () => {
               <p>• Telegram Web App: {isTelegramWebApp() ? '✅ Доступен' : '❌ Недоступен'}</p>
               <p>• Контекст Telegram: {isInTelegramContext() ? '✅ В контексте' : '❌ Вне контекста'}</p>
               <p>• Данные пользователя: {state.telegramContext.hasUserData ? '✅ Есть' : '❌ Отсутствуют'}</p>
+              <p>• Тема: {telegramTheme}</p>
               {isTestMode && <p>• Тестовый режим: ✅ Активен</p>}
             </div>
           </div>
@@ -202,7 +220,7 @@ export const AuthPage: React.FC = () => {
           </div>
           
           {/* Показываем кнопку авторизации для Telegram Web App */}
-          {isTelegramWebApp() && (
+          {shouldShowTelegramButtons && (
             <div className="space-y-2 mb-4">
               <Button 
                 onClick={login} 
@@ -227,12 +245,19 @@ export const AuthPage: React.FC = () => {
             </div>
           )}
           
-          {/* Если в браузере - показываем Telegram Login Widget */}
-          {isInBrowser && !isTestMode && (
+          {/* Если в браузере - показываем улучшенный Telegram Login Widget */}
+          {shouldShowWidget && (
             <TelegramLoginWidget
               botName={TELEGRAM_CONFIG.BOT_NAME}
               onAuth={handleTelegramWidgetAuth}
+              onError={handleWidgetError}
               className="mb-4"
+              size={widgetSettings.size}
+              requestAccess={widgetSettings.requestAccess}
+              lang={widgetSettings.lang}
+              radius={widgetSettings.radius}
+              cornerRadius={widgetSettings.cornerRadius}
+              theme={widgetSettings.theme}
             />
           )}
           
@@ -245,6 +270,7 @@ export const AuthPage: React.FC = () => {
               <p>• Telegram Web App: {isTelegramWebApp() ? '✅ Доступен' : '❌ Недоступен'}</p>
               <p>• Контекст Telegram: {isInTelegramContext() ? '✅ В контексте' : '❌ Вне контекста'}</p>
               <p>• Данные пользователя: {state.telegramContext.hasUserData ? '✅ Есть' : '❌ Отсутствуют'}</p>
+              <p>• Тема: {telegramTheme}</p>
               {isTestMode && <p>• Тестовый режим: ✅ Активен</p>}
             </div>
           </div>
@@ -258,8 +284,9 @@ export const AuthPage: React.FC = () => {
               <p>• В браузере: {isInBrowser ? '✅ Да' : '❌ Нет'}</p>
               <p>• В Telegram Web App: {isTelegramWebApp() ? '✅ Да' : '❌ Нет'}</p>
               <p>• Тестовый режим: {isTestMode ? '✅ Активен' : '❌ Неактивен'}</p>
-              <p>• Показывать виджет: {isInBrowser && !isTestMode ? '✅ Да' : '❌ Нет'}</p>
-              <p>• Показывать кнопку: {isTelegramWebApp() ? '✅ Да' : '❌ Нет'}</p>
+              <p>• Показывать виджет: {shouldShowWidget ? '✅ Да' : '❌ Нет'}</p>
+              <p>• Показывать кнопку: {shouldShowTelegramButtons ? '✅ Да' : '❌ Нет'}</p>
+              <p>• Настройки виджета: {JSON.stringify(widgetSettings)}</p>
             </div>
           </div>
           

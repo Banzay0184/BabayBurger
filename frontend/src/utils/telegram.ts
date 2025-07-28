@@ -183,26 +183,60 @@ export const getTelegramId = (): number | null => {
 // Проверка доступности Telegram Web App
 export const isTelegramWebApp = (): boolean => {
   const tg = getTelegramWebApp();
-  return tg !== null;
+  if (!tg) {
+    return false;
+  }
+  
+  // Дополнительные проверки для определения реального Telegram Web App
+  // В браузере эти свойства могут отсутствовать или быть пустыми
+  const hasValidContext = !!(
+    tg.initDataUnsafe?.user || 
+    tg.initData || 
+    tg.initDataUnsafe?.query_id ||
+    tg.initDataUnsafe?.auth_date
+  );
+  
+  // Проверяем, что это не просто пустой объект
+  const hasValidMethods = (
+    typeof tg.ready === 'function' &&
+    typeof tg.expand === 'function' &&
+    typeof tg.close === 'function'
+  );
+  
+  console.log('Telegram Web App проверка:', {
+    hasValidContext,
+    hasValidMethods,
+    initDataUnsafe: !!tg.initDataUnsafe,
+    initData: !!tg.initData,
+    user: !!tg.initDataUnsafe?.user
+  });
+  
+  return hasValidContext && hasValidMethods;
 };
 
 // Проверка, что приложение запущено в контексте Telegram
 export const isInTelegramContext = (): boolean => {
   const tg = getTelegramWebApp();
+  
+  // Если нет Telegram Web App, проверяем моковые данные
   if (!tg) {
-    // Если нет Telegram Web App, проверяем моковые данные
-    return getMockUserData() !== null;
+    const mockData = getMockUserData();
+    console.log('Нет Telegram Web App, проверяем моковые данные:', !!mockData);
+    return mockData !== null;
   }
   
-  // Проверяем наличие initDataUnsafe или initData
-  if (!tg.initDataUnsafe && !tg.initData) {
-    // Если нет данных в Telegram, проверяем моковые данные
-    return getMockUserData() !== null;
-  }
-  
-  // Проверяем наличие данных пользователя
+  // Проверяем наличие реальных данных пользователя
   const user = getTelegramUser();
-  return !!(user && user.id && user.first_name);
+  const hasRealUserData = !!(user && user.id && user.first_name);
+  
+  console.log('Проверка контекста Telegram:', {
+    hasUser: !!user,
+    hasRealUserData,
+    userId: user?.id,
+    userName: user?.first_name
+  });
+  
+  return hasRealUserData;
 };
 
 // Получение темы Telegram (светлая/темная)
@@ -266,9 +300,21 @@ export const isVersionSupported = (minVersion: string): boolean => {
 // Получение детальной информации о контексте запуска
 export const getTelegramContextInfo = () => {
   const tg = getTelegramWebApp();
+  const isWebApp = isTelegramWebApp();
+  const isInContext = isInTelegramContext();
+  const mockUser = getMockUserData();
   
-  if (!tg) {
-    const mockUser = getMockUserData();
+  console.log('Детальная диагностика контекста:', {
+    hasTelegramObject: !!tg,
+    isWebApp,
+    isInContext,
+    hasMockData: !!mockUser,
+    initDataUnsafe: !!tg?.initDataUnsafe,
+    initData: !!tg?.initData,
+    user: !!tg?.initDataUnsafe?.user
+  });
+  
+  if (!isWebApp) {
     if (mockUser) {
       return {
         isAvailable: false,
@@ -283,22 +329,30 @@ export const getTelegramContextInfo = () => {
       isAvailable: false,
       isInContext: false,
       hasUserData: false,
-      message: 'Telegram Web App недоступен'
+      message: 'Telegram Web App недоступен - запущено в браузере'
     };
   }
 
   const user = getTelegramUser();
   const hasUserData = !!(user && user.id && user.first_name);
   
-  return {
-    isAvailable: true,
-    isInContext: !!(tg.initDataUnsafe || tg.initData),
-    hasUserData,
-    user: user,
-    message: hasUserData 
-      ? 'Приложение запущено в Telegram с данными пользователя'
-      : 'Приложение запущено в Telegram, но данные пользователя отсутствуют'
-  };
+  if (hasUserData) {
+    return {
+      isAvailable: true,
+      isInContext: true,
+      hasUserData: true,
+      user: user,
+      message: 'Приложение запущено в Telegram с данными пользователя'
+    };
+  } else {
+    return {
+      isAvailable: true,
+      isInContext: false,
+      hasUserData: false,
+      user: null,
+      message: 'Приложение запущено в Telegram, но данные пользователя отсутствуют'
+    };
+  }
 };
 
 // Функция для создания тестового URL с моковыми данными
