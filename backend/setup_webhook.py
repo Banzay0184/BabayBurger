@@ -19,7 +19,7 @@ def setup_webhook():
         return False
     
     # URL для webhook (замените на ваш домен)
-    webhook_url = "https://c53683f80930.ngrok-free.app/api/webhook/"  # Замените на ваш домен
+    webhook_url = "https://b05836c13049.ngrok-free.app/api/webhook/"  # Замените на ваш домен
     
     print(f"🤖 Настройка webhook для бота с токеном: {bot_token[:10]}...")
     print(f"🌐 Webhook URL: {webhook_url}")

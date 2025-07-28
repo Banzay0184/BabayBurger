@@ -266,7 +266,7 @@ class WebhookView(APIView):
         """Обработка команды /start с кнопкой Web App"""
         try:
             # URL для Web App (замените на ваш домен)
-            web_app_url = "https://c53683f80930.ngrok-free.app"  # Для разработки
+            web_app_url = "https://babay-burger.vercel.app"  # Для разработки
             
             # Создаем кнопку Web App
             web_app_button = {
@@ -323,7 +323,7 @@ class WebhookView(APIView):
             # Создаем кнопку Web App
             web_app_button = {
                 "text": "🍔 Открыть меню",
-                "web_app": {"url": "https://c53683f80930.ngrok-free.app"}
+                "web_app": {"url": "https://babay-burger.vercel.app"}
             }
             
             keyboard = {

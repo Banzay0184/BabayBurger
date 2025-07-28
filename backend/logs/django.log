@@ -152,3 +152,17 @@ INFO 2025-07-29 00:00:05,387 basehttp 50949 123145731010560 "GET /static/rest_fr
 INFO 2025-07-29 00:00:06,620 basehttp 50949 123145579905024 "GET /static/rest_framework/img/grid.png HTTP/1.1" 200 1458
 INFO 2025-07-29 00:09:16,356 autoreload 50949 140704712654784 /Users/shakhzodabidov/Projects/StreetBurgerMiniApp/backend/api/views.py changed, reloading.
 INFO 2025-07-29 00:09:18,048 autoreload 58794 140704712654784 Watching for file changes with StatReloader
+INFO 2025-07-29 00:34:47,571 autoreload 82784 140704712654784 Watching for file changes with StatReloader
+INFO 2025-07-29 00:37:00,133 autoreload 82784 140704712654784 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-07-29 00:37:01,289 autoreload 85598 140704712654784 Watching for file changes with StatReloader
+INFO 2025-07-29 00:37:02,878 autoreload 85598 140704712654784 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-07-29 00:37:03,478 autoreload 85607 140704712654784 Watching for file changes with StatReloader
+INFO 2025-07-29 00:37:07,953 autoreload 85607 140704712654784 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-07-29 00:37:08,735 autoreload 85733 140704712654784 Watching for file changes with StatReloader
+INFO 2025-07-29 00:37:26,907 autoreload 85916 140704712654784 Watching for file changes with StatReloader
+INFO 2025-07-29 00:38:58,273 basehttp 85916 123145477943296 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-07-29 00:42:50,334 basehttp 85916 123145495269376 "OPTIONS /api/auth/logout/ HTTP/1.1" 200 0
+WARNING 2025-07-29 00:42:50,398 log 85916 123145477943296 Forbidden (CSRF cookie not set.): /api/auth/logout/
+WARNING 2025-07-29 00:42:50,399 basehttp 85916 123145477943296 "POST /api/auth/logout/ HTTP/1.1" 403 3346
+WARNING 2025-07-29 00:43:17,998 log 85916 123145477943296 Forbidden (CSRF cookie not set.): /api/auth/logout/
+WARNING 2025-07-29 00:43:17,999 basehttp 85916 123145477943296 "POST /api/auth/logout/ HTTP/1.1" 403 3346

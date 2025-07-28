@@ -25,18 +25,19 @@ MINI_APP_URL = os.environ.get('MINI_APP_URL', '')  # URL вашего Mini App
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'c53683f80930.ngrok-free.app',  # Ваш ngrok домен
+    'b05836c13049.ngrok-free.app',    # Ваш ngrok домен
     '.ngrok-free.app',  # Все ngrok домены
     '.ngrok.io',  # Старые ngrok домены
 ]
 
 # CSRF настройки для фронтенда и ngrok
 CSRF_TRUSTED_ORIGINS = [
+    'https://babay-burger.vercel.app',
     'http://localhost:5173',  # Vite dev server
     'http://localhost:3000',  # React dev server
     'http://127.0.0.1:5173',
     'http://127.0.0.1:3000',
-    'https://c53683f80930.ngrok-free.app',
+    'https://b05836c13049.ngrok-free.app',
     'https://*.ngrok-free.app',
     'https://*.ngrok.io',
 ]

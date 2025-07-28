@@ -291,3 +291,22 @@ Network error sending notification to chat_id=123456789: 400 Client Error: Bad R
 Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
 Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
 Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Unexpected error sending notification to chat_id=123456789: Could not find a suitable TLS CA certificate bundle, invalid path: /Users/shakhzodabidov/Projects/StreetBurgerMiniApp/backend/venv/lib/python3.13/site-packages/certifi/cacert.pem
+Bulk notifications queued: 2 success, 0 errors
+Unexpected error sending notification to chat_id=123456789: Could not find a suitable TLS CA certificate bundle, invalid path: /Users/shakhzodabidov/Projects/StreetBurgerMiniApp/backend/venv/lib/python3.13/site-packages/certifi/cacert.pem
+Unexpected error sending notification to chat_id=123456789: Could not find a suitable TLS CA certificate bundle, invalid path: /Users/shakhzodabidov/Projects/StreetBurgerMiniApp/backend/venv/lib/python3.13/site-packages/certifi/cacert.pem
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Unexpected error sending notification to chat_id=123456789: Could not find a suitable TLS CA certificate bundle, invalid path: /Users/shakhzodabidov/Projects/StreetBurgerMiniApp/backend/venv/lib/python3.13/site-packages/certifi/cacert.pem
+Bulk notifications queued: 2 success, 0 errors
+Unexpected error sending notification to chat_id=123456789: Could not find a suitable TLS CA certificate bundle, invalid path: /Users/shakhzodabidov/Projects/StreetBurgerMiniApp/backend/venv/lib/python3.13/site-packages/certifi/cacert.pem
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Unexpected error sending notification to chat_id=123456789: Could not find a suitable TLS CA certificate bundle, invalid path: /Users/shakhzodabidov/Projects/StreetBurgerMiniApp/backend/venv/lib/python3.13/site-packages/certifi/cacert.pem
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.333, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/logout/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/logout/", "status_code": 403, "duration": 0.06, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 3346}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/logout/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/logout/", "status_code": 403, "duration": 0.006, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 3346}
