@@ -1,0 +1,184 @@
+{
+  "project": "StreetBurger Mini App",
+  "test_date": "2025-07-26T03:39:28.516832",
+  "base_url": "http://localhost:8000",
+  "total_tests": 29,
+  "passed_tests": 19,
+  "failed_tests": 10,
+  "results": [
+    {
+      "test": "Авторизация Telegram",
+      "status": false,
+      "message": "Ошибка 400",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Получение меню",
+      "status": true,
+      "message": "Категорий: 4, Блюд: 7",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Хиты продаж",
+      "status": true,
+      "message": "Найдено хитов: 1",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Новинки",
+      "status": true,
+      "message": "Найдено новинок: 1",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Получение категорий",
+      "status": true,
+      "message": "Категорий: 4",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Категория 'бургер'",
+      "status": true,
+      "message": "",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Категория 'пицца'",
+      "status": true,
+      "message": "",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Категория 'напиток'",
+      "status": false,
+      "message": "",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Категория 'дополнение'",
+      "status": false,
+      "message": "",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Получение дополнений",
+      "status": true,
+      "message": "Дополнений: 2",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Дополнение 'соус'",
+      "status": true,
+      "message": "",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Дополнение 'напиток'",
+      "status": false,
+      "message": "",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Дополнение 'картошка'",
+      "status": false,
+      "message": "",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Дополнение 'сыр'",
+      "status": true,
+      "message": "",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Получение акций",
+      "status": true,
+      "message": "Всего акций: 3, Активных: 3",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Тип акции 'PERCENT'",
+      "status": true,
+      "message": "",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Тип акции 'FIXED_AMOUNT'",
+      "status": false,
+      "message": "",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Тип акции 'FREE_DELIVERY'",
+      "status": true,
+      "message": "",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Тип акции 'FREE_ITEM'",
+      "status": true,
+      "message": "",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Геокодирование адреса",
+      "status": false,
+      "message": "Ошибка 400",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Получение зон доставки",
+      "status": true,
+      "message": "Зон доставки: 1",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Зоны доставки в Бухаре",
+      "status": true,
+      "message": "Найдено зон: 1",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Активные зоны доставки",
+      "status": true,
+      "message": "Активных зон: 1",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Создание адреса",
+      "status": false,
+      "message": "Ошибка 400",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Получение адресов",
+      "status": false,
+      "message": "Ошибка 400",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Получение заказов",
+      "status": false,
+      "message": "Ошибка 400",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Обработка webhook",
+      "status": true,
+      "message": "Webhook обработан успешно",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Скорость получения меню",
+      "status": true,
+      "message": "Время: 0.00с",
+      "timestamp": "03:39:28"
+    },
+    {
+      "test": "Скорость получения категорий",
+      "status": true,
+      "message": "Время: 0.00с",
+      "timestamp": "03:39:28"
+    }
+  ]
+}

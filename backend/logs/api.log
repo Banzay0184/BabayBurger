@@ -1,0 +1,293 @@
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Webhook received: chat_id=908758841, text='/orders'
+User updated via webhook: telegram_id=908758841, username=abidov_0184
+Notification queued for chat_id=908758841, task_id=b3b21a11-8ff4-4d52-a7f6-7146f5c6ea8b
+Orders history sent to chat_id=908758841, orders_count=10
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.102, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Notification sent successfully to chat_id=908758841
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Webhook received: chat_id=908758841, text='/status'
+User updated via webhook: telegram_id=908758841, username=abidov_0184
+Notification queued for chat_id=908758841, task_id=f377be83-38ee-48bd-b302-d1e12bd02f89
+Order status sent to chat_id=908758841, order_id=105
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.012, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Notification sent successfully to chat_id=908758841
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Webhook received: chat_id=908758841, text='/help'
+User updated via webhook: telegram_id=908758841, username=abidov_0184
+Notification queued for chat_id=908758841, task_id=9acefcba-f516-4bd6-b8b2-e95e4f32a23c
+Help message sent to chat_id=908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.005, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Notification sent successfully to chat_id=908758841
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Bulk notifications queued: 2 success, 0 errors
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/api/category/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/api/category/", "status_code": 302, "duration": 0.366, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 0}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/login/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"next": ["/admin/api/category/"]}}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/login/", "status_code": 200, "duration": 0.109, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 4256}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/admin/login/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"next": ["/admin/api/category/"]}, "post_data": {"csrfmiddlewaretoken": ["lmqfpGHh2K52uyQYaHCdFdkmdxnkuyxF4TSx8DADnchQwHbWzELaTTwEEK7m3ViC"], "username": ["admin"], "password": ["admin"], "next": ["/admin/api/category/"]}}
+Ответ: {"type": "response", "method": "POST", "path": "/admin/login/", "status_code": 302, "duration": 0.667, "user": " ()", "ip": "127.0.0.1", "response_size": 0}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/api/category/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/api/category/", "status_code": 200, "duration": 0.077, "user": " ()", "ip": "127.0.0.1", "response_size": 14059}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.032, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/operatoranalytics/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/operatoranalytics/", "status_code": 200, "duration": 0.043, "user": " ()", "ip": "127.0.0.1", "response_size": 14682}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.033, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/orderstatushistory/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/orderstatushistory/", "status_code": 200, "duration": 0.049, "user": " ()", "ip": "127.0.0.1", "response_size": 15190}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.035, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/orderassignment/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/orderassignment/", "status_code": 200, "duration": 0.055, "user": " ()", "ip": "127.0.0.1", "response_size": 16062}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.03, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/operatorsession/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/operatorsession/", "status_code": 200, "duration": 0.039, "user": " ()", "ip": "127.0.0.1", "response_size": 15369}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.028, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/operatornotification/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/operatornotification/", "status_code": 200, "duration": 0.038, "user": " ()", "ip": "127.0.0.1", "response_size": 15928}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.021, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/operatorsession/add/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/admin/app_operator/operatorsession/add/", "exception": "unsupported operand type(s) for -: 'datetime.datetime' and 'NoneType'", "exception_type": "TypeError", "duration": 0.067, "user": " ()", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/operatorsession/add/", "status_code": 500, "duration": 0.32, "user": " ()", "ip": "127.0.0.1", "response_size": 618886}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/operatornotification/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/operatornotification/", "status_code": 200, "duration": 0.035, "user": " ()", "ip": "127.0.0.1", "response_size": 15928}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/operatoranalytics/add/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/operatoranalytics/add/", "status_code": 200, "duration": 0.058, "user": " ()", "ip": "127.0.0.1", "response_size": 19943}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.025, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/orderstatushistory/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/orderstatushistory/", "status_code": 200, "duration": 0.049, "user": " ()", "ip": "127.0.0.1", "response_size": 15190}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.026, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/orderstatushistory/add/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/orderstatushistory/add/", "status_code": 200, "duration": 0.075, "user": " ()", "ip": "127.0.0.1", "response_size": 19840}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.052, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/orderassignment/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/orderassignment/", "status_code": 200, "duration": 0.044, "user": " ()", "ip": "127.0.0.1", "response_size": 16062}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.017, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/", "status_code": 200, "duration": 0.156, "user": " ()", "ip": "127.0.0.1", "response_size": 13537}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/operatoranalytics/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/operatoranalytics/", "status_code": 200, "duration": 0.038, "user": " ()", "ip": "127.0.0.1", "response_size": 14682}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.008, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/orderassignment/add/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/orderassignment/add/", "status_code": 200, "duration": 0.044, "user": " ()", "ip": "127.0.0.1", "response_size": 20636}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.012, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/operator/add/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/operator/add/", "status_code": 200, "duration": 0.061, "user": " ()", "ip": "127.0.0.1", "response_size": 21439}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.015, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/operatorsession/add/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/admin/app_operator/operatorsession/add/", "exception": "unsupported operand type(s) for -: 'datetime.datetime' and 'NoneType'", "exception_type": "TypeError", "duration": 0.037, "user": " ()", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/operatorsession/add/", "status_code": 500, "duration": 0.162, "user": " ()", "ip": "127.0.0.1", "response_size": 618828}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/operator/add/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/operator/add/", "status_code": 200, "duration": 0.118, "user": " ()", "ip": "127.0.0.1", "response_size": 21439}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/operatornotification/add/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/operatornotification/add/", "status_code": 200, "duration": 0.139, "user": " ()", "ip": "127.0.0.1", "response_size": 20739}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.019, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/auth/group/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/auth/group/", "status_code": 200, "duration": 0.132, "user": " ()", "ip": "127.0.0.1", "response_size": 13150}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.007, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/app_operator/operatorsession/add/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/app_operator/operatorsession/add/", "status_code": 200, "duration": 0.102, "user": " ()", "ip": "127.0.0.1", "response_size": 19555}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " ()", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.02, "user": " ()", "ip": "127.0.0.1", "response_size": 16066}
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Bulk notifications queued: 2 success, 0 errors
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Categories cache cleared successfully
+Categories cache cleared after Category change: id=1
+Menu cache cleared successfully
+Menu cache cleared after MenuItem change: id=1
+Categories cache cleared successfully
+Categories cache cleared after Category change: id=2
+Menu cache cleared successfully
+Menu cache cleared after MenuItem change: id=2
+Categories cache cleared successfully
+Categories cache cleared after Category change: id=3
+Menu cache cleared successfully
+Menu cache cleared after MenuItem change: id=3
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/api/category/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/api/category/", "status_code": 302, "duration": 0.071, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 0}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/login/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"next": ["/admin/api/category/"]}}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/login/", "status_code": 200, "duration": 0.043, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 4256}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/admin/login/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"next": ["/admin/api/category/"]}, "post_data": {"csrfmiddlewaretoken": ["048ZNT3Z9C1e22EBSRg6ynYCtI0G21JMGmB1vAPsMCptdg5shgZO7trzzlsb1ZYL"], "username": ["admin"], "password": ["admin"], "next": ["/admin/api/category/"]}}
+Ответ: {"type": "response", "method": "POST", "path": "/admin/login/", "status_code": 200, "duration": 0.299, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 4523}
+Categories cache cleared successfully
+Categories cache cleared after Category change: id=1
+Menu cache cleared successfully
+Menu cache cleared after MenuItem change: id=1
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.012, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 2611}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.003, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 2611}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 403, "duration": 0.004, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 2611}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36"}
+Ошибка: {"type": "error", "method": "POST", "path": "/api/auth/telegram/", "exception": "“/Users/shakhzodabidov/Projects/StreetBurgerMiniApp/backend/api/auth/telegram” не существует", "exception_type": "Http404", "duration": 0.001, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 404, "duration": 0.028, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 26801}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36"}
+Ошибка: {"type": "error", "method": "POST", "path": "/api/auth", "exception": "“/Users/shakhzodabidov/Projects/StreetBurgerMiniApp/backend/api/auth” не существует", "exception_type": "Http404", "duration": 0.011, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth", "status_code": 404, "duration": 0.021, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 26762}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36"}
+Auth attempt without initData
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/", "status_code": 400, "duration": 0.003, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 32}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36"}
+Auth attempt without initData
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/", "status_code": 400, "duration": 0.001, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 32}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36"}
+Ошибка: {"type": "error", "method": "POST", "path": "/api/auth/telegram/", "exception": "“/Users/shakhzodabidov/Projects/StreetBurgerMiniApp/backend/api/auth/telegram” не существует", "exception_type": "Http404", "duration": 0.002, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram/", "status_code": 404, "duration": 0.038, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27003}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/logout/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "POST", "path": "/api/auth/logout/", "exception": "“/Users/shakhzodabidov/Projects/StreetBurgerMiniApp/backend/api/auth/logout” не существует", "exception_type": "Http404", "duration": 0.004, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/logout/", "status_code": 404, "duration": 0.02, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 26995}
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Bulk notifications queued: 2 success, 0 errors
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "python-requests/2.31.0"}
+Webhook received: chat_id=123456789, text='/start'
+New user created via webhook: telegram_id=123456789, username=test_user
+Notification queued for chat_id=123456789, task_id=aa39360e-2b13-49fe-956d-2d645863c7bd
+Welcome message sent to chat_id=123456789
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.117, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 15}
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Webhook received: chat_id=908758841, text='/start'
+New user created via webhook: telegram_id=908758841, username=abidov_0184
+Notification queued for chat_id=908758841, task_id=a951b7da-0773-4ef3-9621-2c9e3115415a
+Welcome message sent to chat_id=908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.032, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Notification sent successfully to chat_id=908758841
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Webhook received: chat_id=908758841, text='/menu'
+User updated via webhook: telegram_id=908758841, username=abidov_0184
+Notification queued for chat_id=908758841, task_id=fc90c199-85de-4872-8409-11e92ca1d164
+Menu link sent to chat_id=908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.007, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Notification sent successfully to chat_id=908758841
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Webhook received: chat_id=908758841, text='/start'
+User updated via webhook: telegram_id=908758841, username=abidov_0184
+Notification queued for chat_id=908758841, task_id=37b56f06-bab6-48aa-b688-d552a2de795f
+Welcome message sent to chat_id=908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.014, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Notification sent successfully to chat_id=908758841
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Webhook received: chat_id=908758841, text='/menu'
+User updated via webhook: telegram_id=908758841, username=abidov_0184
+Notification queued for chat_id=908758841, task_id=9f9ce16f-c139-406f-8fed-4427aed5a234
+Menu link sent to chat_id=908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.008, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Notification sent successfully to chat_id=908758841
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Webhook received: chat_id=908758841, text='/start'
+User updated via webhook: telegram_id=908758841, username=abidov_0184
+Notification queued for chat_id=908758841, task_id=5bf4b2f4-31ae-4487-901a-23355d613ad1
+Welcome message sent to chat_id=908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.058, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Notification sent successfully to chat_id=908758841
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Failed to send start message: {"ok":false,"error_code":400,"description":"Bad Request: inline keyboard button Web App URL 'http://localhost:5173' is invalid: Only HTTPS links are allowed"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 500, "duration": 0.306, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 34}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Failed to send start message: {"ok":false,"error_code":400,"description":"Bad Request: inline keyboard button Web App URL 'http://localhost:5173' is invalid: Only HTTPS links are allowed"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 500, "duration": 0.311, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 34}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Failed to send start message: {"ok":false,"error_code":400,"description":"Bad Request: inline keyboard button Web App URL 'http://localhost:5173' is invalid: Only HTTPS links are allowed"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 500, "duration": 0.308, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 34}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Failed to send start message: {"ok":false,"error_code":400,"description":"Bad Request: inline keyboard button Web App URL 'http://localhost:5173' is invalid: Only HTTPS links are allowed"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 500, "duration": 0.322, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 34}
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Failed to send start message: {"ok":false,"error_code":400,"description":"Bad Request: inline keyboard button Web App URL 'http://localhost:5173' is invalid: Only HTTPS links are allowed"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 500, "duration": 0.322, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 34}
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Bulk notifications queued: 2 success, 0 errors
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Failed to send start message: {"ok":false,"error_code":400,"description":"Bad Request: inline keyboard button Web App URL 'http://localhost:5173' is invalid: Only HTTPS links are allowed"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 500, "duration": 0.287, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 34}
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.347, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.335, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Входящий запрос: {"type": "request", "method": "GET", "path": "/", "user": "AnonymousUser", "ip": "84.54.71.189", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Ответ: {"type": "response", "method": "GET", "path": "/", "status_code": 200, "duration": 0.049, "user": "AnonymousUser", "ip": "84.54.71.189", "response_size": 6254}
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Bulk notifications queued: 2 success, 0 errors
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage
+Network error sending notification to chat_id=123456789: 400 Client Error: Bad Request for url: https://api.telegram.org/bot7984656380:AAHhKcB2RIqs8p8LS2NL4Ku7C2EDwEv6K00/sendMessage

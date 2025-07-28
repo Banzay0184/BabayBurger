@@ -1,0 +1,25 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer base {
+  body {
+    font-family: 'telegram', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #000000);
+  }
+}
+
+@layer components {
+  .telegram-button {
+    @apply bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-colors;
+  }
+  
+  .telegram-button:hover {
+    @apply bg-blue-600;
+  }
+  
+  .telegram-card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700;
+  }
+}

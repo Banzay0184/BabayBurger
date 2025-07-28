@@ -1,0 +1,238 @@
+{
+  "project": "StreetBurger Mini App (Исправленная версия)",
+  "test_date": "2025-07-26T06:11:06.674224",
+  "base_url": "http://localhost:8000",
+  "total_tests": 38,
+  "passed_tests": 35,
+  "failed_tests": 3,
+  "results": [
+    {
+      "test": "Endpoint авторизации",
+      "status": true,
+      "message": "Статус: auth_endpoint_available",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Получение меню",
+      "status": true,
+      "message": "Категорий: 5, Блюд: 13",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Хиты продаж",
+      "status": true,
+      "message": "Найдено хитов: 1",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Новинки",
+      "status": true,
+      "message": "Найдено новинок: 1",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Получение категорий",
+      "status": true,
+      "message": "Категорий: 5",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Категория 'бургер'",
+      "status": true,
+      "message": "",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Категория 'пицца'",
+      "status": true,
+      "message": "",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Категория 'напиток'",
+      "status": false,
+      "message": "",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Категория 'дополнение'",
+      "status": false,
+      "message": "",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Получение дополнений",
+      "status": true,
+      "message": "Дополнений: 8",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Дополнение 'соус'",
+      "status": true,
+      "message": "",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Дополнение 'напиток'",
+      "status": false,
+      "message": "",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Дополнение 'картошка'",
+      "status": true,
+      "message": "",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Дополнение 'сыр'",
+      "status": true,
+      "message": "",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Получение акций",
+      "status": true,
+      "message": "Всего акций: 6, Активных: 6",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Тип акции 'PERCENT'",
+      "status": true,
+      "message": "",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Тип акции 'FIXED_AMOUNT'",
+      "status": true,
+      "message": "",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Тип акции 'FREE_DELIVERY'",
+      "status": true,
+      "message": "",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Тип акции 'FREE_ITEM'",
+      "status": true,
+      "message": "",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Получение зон доставки",
+      "status": true,
+      "message": "Зон доставки: 1",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Зоны доставки в Бухаре",
+      "status": true,
+      "message": "Найдено зон: 1",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Активные зоны доставки",
+      "status": true,
+      "message": "Активных зон: 1",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint геокодирования",
+      "status": true,
+      "message": "Доступен",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint заказов",
+      "status": true,
+      "message": "Требует авторизацию (ожидаемо)",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint адресов",
+      "status": true,
+      "message": "Требует авторизацию (ожидаемо)",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint webhook",
+      "status": true,
+      "message": "Доступен",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Скорость получения меню",
+      "status": true,
+      "message": "Время: 0.01с",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Скорость получения категорий",
+      "status": true,
+      "message": "Время: 0.00с",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint auth",
+      "status": true,
+      "message": "Статус: 200",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint menu",
+      "status": true,
+      "message": "Статус: 200",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint categories",
+      "status": true,
+      "message": "Статус: 200",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint add-ons",
+      "status": true,
+      "message": "Статус: 200",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint promotions",
+      "status": true,
+      "message": "Статус: 200",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint delivery-zones",
+      "status": true,
+      "message": "Статус: 200",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint orders",
+      "status": true,
+      "message": "Статус: 400",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint addresses",
+      "status": true,
+      "message": "Статус: 400",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Endpoint webhook",
+      "status": true,
+      "message": "Статус: 405",
+      "timestamp": "06:11:06"
+    },
+    {
+      "test": "Общая доступность API",
+      "status": true,
+      "message": "Доступно: 9/9",
+      "timestamp": "06:11:06"
+    }
+  ]
+}

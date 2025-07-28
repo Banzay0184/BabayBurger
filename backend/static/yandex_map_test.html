@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Тест Яндекс.Карт + Геосаджест</title>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=3033f881-c5ec-434f-96aa-e13da893f61f"></script>
+    <style>
+        #map { width: 100%; height: 400px; margin-top: 16px; }
+        #address-input { width: 400px; padding: 8px; font-size: 16px; }
+        #save-btn { padding: 8px 16px; font-size: 16px; }
+        #result { margin-top: 16px; }
+    </style>
+</head>
+<body>
+    <h2>Тест Яндекс.Карт: автодополнение и карта</h2>
+    <input id="address-input" type="text" placeholder="Введите адрес..." autocomplete="off" />
+    <button id="save-btn">Сохранить адрес</button>
+    <div id="map"></div>
+    <div id="result"></div>
+    <script>
+        let map, placemark, selectedCoords = null, selectedAddress = '';
+
+        ymaps.ready(function() {
+            map = new ymaps.Map("map", {
+                center: [41.311151, 69.279737], // Ташкент
+                zoom: 12
+            });
+
+            // Геосаджест (автодополнение)
+            const suggestView = new ymaps.SuggestView('address-input', {
+                provider: {
+                    suggest: function(request, options) {
+                        return ymaps.suggest(request, {
+                            results: 5,
+                            boundedBy: map.getBounds(),
+                            strictBounds: false
+                        });
+                    }
+                }
+            });
+
+            // При выборе адреса из подсказки
+            document.getElementById('address-input').addEventListener('change', function(e) {
+                const value = e.target.value;
+                ymaps.geocode(value).then(function(res) {
+                    const firstGeoObject = res.geoObjects.get(0);
+                    if (!firstGeoObject) return;
+                    const coords = firstGeoObject.geometry.getCoordinates();
+                    selectedCoords = coords;
+                    selectedAddress = firstGeoObject.getAddressLine();
+                    if (placemark) map.geoObjects.remove(placemark);
+                    placemark = new ymaps.Placemark(coords, { balloonContent: selectedAddress }, { preset: 'islands#redDotIcon' });
+                    map.geoObjects.add(placemark);
+                    map.setCenter(coords, 16);
+                });
+            });
+
+            // Клик по карте — ставим маркер и делаем обратное геокодирование
+            map.events.add('click', function (e) {
+                const coords = e.get('coords');
+                selectedCoords = coords;
+                if (placemark) map.geoObjects.remove(placemark);
+                placemark = new ymaps.Placemark(coords, {}, { preset: 'islands#redDotIcon' });
+                map.geoObjects.add(placemark);
+                ymaps.geocode(coords).then(function(res) {
+                    const firstGeoObject = res.geoObjects.get(0);
+                    if (firstGeoObject) {
+                        selectedAddress = firstGeoObject.getAddressLine();
+                        document.getElementById('address-input').value = selectedAddress;
+                        placemark.properties.set('balloonContent', selectedAddress);
+                    }
+                });
+            });
+        });
+
+        // Сохранить адрес (отправить на backend)
+        document.getElementById('save-btn').onclick = function() {
+            if (!selectedCoords || !selectedAddress) {
+                document.getElementById('result').innerHTML = '<span style="color:red">Выберите адрес на карте или через автодополнение!</span>';
+                return;
+            }
+            const [lat, lon] = selectedCoords;
+            fetch('/api/geocode/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lat, lon })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('result').innerHTML =
+                    `<b>Адрес:</b> ${selectedAddress}<br>` +
+                    `<b>lat:</b> ${lat}, <b>lon:</b> ${lon}<br>` +
+                    `<b>Backend ответ:</b> ${data.address || data.error}`;
+            })
+            .catch(e => {
+                document.getElementById('result').innerHTML = '<span style="color:red">Ошибка запроса к backend</span>';
+            });
+        };
+    </script>
+</body>
+</html> 
