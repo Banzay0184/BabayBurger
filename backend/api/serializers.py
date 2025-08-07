@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import User, MenuItem, AddOn, SizeOption, Promotion, Order, OrderItem, Category, Address, DeliveryZone
+from app_operator.models import Operator
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

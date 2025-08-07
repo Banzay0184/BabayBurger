@@ -157,6 +157,9 @@ class OperatorModelTest(TestCase):
 
     def test_operator_analytics(self):
         """Тест аналитики оператора"""
+        # Удаляем существующую аналитику, если она есть
+        OperatorAnalytics.objects.filter(operator=self.operator).delete()
+        
         analytics = OperatorAnalytics.objects.create(
             operator=self.operator,
             date=timezone.now().date(),
@@ -165,8 +168,7 @@ class OperatorModelTest(TestCase):
             cancelled_orders=1,
             total_delivery_time=240,
             avg_delivery_time=30,
-            total_earnings=150000,
-            rating=4.5
+            total_earnings=150000
         )
         
         self.assertEqual(analytics.operator, self.operator)
@@ -378,6 +380,9 @@ class OperatorAPITest(APITestCase):
 
     def test_analytics(self):
         """Тест аналитики"""
+        # Удаляем существующую аналитику, если она есть
+        OperatorAnalytics.objects.filter(operator=self.operator).delete()
+        
         # Создаем аналитику
         analytics = OperatorAnalytics.objects.create(
             operator=self.operator,
@@ -387,8 +392,7 @@ class OperatorAPITest(APITestCase):
             cancelled_orders=1,
             total_delivery_time=240,
             avg_delivery_time=30,
-            total_earnings=150000,
-            rating=4.5
+            total_earnings=150000
         )
         
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')

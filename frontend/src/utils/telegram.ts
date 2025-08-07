@@ -1,380 +1,112 @@
-import type { TelegramWebApp, TelegramUser } from '../types/telegram';
+// Утилиты для работы с Telegram Web App
 
-// Получение экземпляра Telegram Web App
-export const getTelegramWebApp = (): TelegramWebApp | null => {
-  if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-    return window.Telegram.WebApp;
-  }
-  return null;
-};
-
-// Парсинг initData для получения данных пользователя
-const parseInitData = (initData: string): TelegramUser | null => {
-  try {
-    const urlParams = new URLSearchParams(initData);
-    const userStr = urlParams.get('user');
-    
-    if (userStr) {
-      const user = JSON.parse(decodeURIComponent(userStr));
-      console.log('Пользователь из initData:', user);
-      return user;
-    }
-  } catch (error) {
-    console.warn('Ошибка парсинга initData:', error);
-  }
-  
-  return null;
-};
-
-// Моковые данные для тестирования в браузере
-const getMockUserData = (): TelegramUser | null => {
-  // Проверяем, есть ли параметр для тестирования в URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const testMode = urlParams.get('test_mode');
-  const mockUser = urlParams.get('mock_user');
-  
-  if (testMode === 'true') {
-    let mockUserData: TelegramUser;
-    
-    if (mockUser) {
-      try {
-        mockUserData = JSON.parse(decodeURIComponent(mockUser));
-      } catch (error) {
-        console.warn('Ошибка парсинга mock_user, используем стандартные данные');
-        mockUserData = {
-          id: 123456789,
-          first_name: 'Тестовый',
-          last_name: 'Пользователь',
-          username: 'test_user',
-          language_code: 'ru',
-          is_premium: false
-        };
-      }
-    } else {
-      mockUserData = {
-        id: 123456789,
-        first_name: 'Тестовый',
-        last_name: 'Пользователь',
-        username: 'test_user',
-        language_code: 'ru',
-        is_premium: false
-      };
-    }
-    
-    console.log('Используем моковые данные для тестирования:', mockUserData);
-    return mockUserData;
-  }
-  
-  return null;
-};
-
-// Инициализация Telegram Web App
-export const initTelegramWebApp = (): TelegramWebApp | null => {
-  const tg = getTelegramWebApp();
-  if (tg) {
-    // Готовим приложение к отображению
-    tg.ready();
-    
-    // Расширяем на весь экран
-    tg.expand();
-    
-    // Проверяем версию перед установкой цветов
-    const version = tg.isVersionAtLeast('6.0') ? '6.0+' : '5.0+';
-    console.log('Telegram Web App версия:', version);
-    
-    // Устанавливаем цвет заголовка только если поддерживается
-    try {
-      if (tg.isVersionAtLeast('6.0')) {
-        tg.setHeaderColor('#0088cc');
-      }
-    } catch (error) {
-      console.warn('setHeaderColor не поддерживается в этой версии');
-    }
-    
-    // Устанавливаем цвет фона только если поддерживается
-    try {
-      if (tg.isVersionAtLeast('6.0')) {
-        tg.setBackgroundColor('#ffffff');
-      }
-    } catch (error) {
-      console.warn('setBackgroundColor не поддерживается в этой версии');
-    }
-    
-    console.log('Telegram Web App initialized');
-    return tg;
-  }
-  
-  console.warn('Telegram Web App not available');
-  return null;
-};
-
-// Получение данных пользователя из Telegram с детальной проверкой
-export const getTelegramUser = (): TelegramUser | null => {
-  const tg = getTelegramWebApp();
-  
-  if (!tg) {
-    console.warn('Telegram Web App не доступен');
-    // Пробуем получить моковые данные для тестирования
-    return getMockUserData();
-  }
-
-  // Отладочная информация
-  console.log('=== ДЕТАЛЬНАЯ ДИАГНОСТИКА ===');
-  console.log('initDataUnsafe:', tg.initDataUnsafe);
-  console.log('initData:', tg.initData);
-  console.log('initDataUnsafe.user:', tg.initDataUnsafe?.user);
-  console.log('initDataUnsafe keys:', tg.initDataUnsafe ? Object.keys(tg.initDataUnsafe) : 'null');
-
-  // Сначала пробуем получить из initDataUnsafe
-  if (tg.initDataUnsafe) {
-    const user = tg.initDataUnsafe.user;
-    console.log('Пользователь из initDataUnsafe:', user);
-
-    if (user && user.id && user.first_name) {
-      console.log('✅ Данные пользователя получены из initDataUnsafe:', {
-        id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        username: user.username
-      });
-      return user;
-    } else {
-      console.log('❌ Данные пользователя в initDataUnsafe неполные:', user);
-    }
-  } else {
-    console.log('❌ initDataUnsafe пустой');
-  }
-
-  // Если в initDataUnsafe нет данных, пробуем парсить initData
-  if (tg.initData) {
-    console.log('Пробуем парсить initData...');
-    const user = parseInitData(tg.initData);
-    if (user && user.id && user.first_name) {
-      console.log('✅ Данные пользователя получены из initData:', {
-        id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        username: user.username
-      });
-      return user;
-    } else {
-      console.log('❌ Данные пользователя в initData неполные:', user);
-    }
-  } else {
-    console.log('❌ initData пустой');
-  }
-
-  console.warn('❌ Данные пользователя не найдены ни в initDataUnsafe, ни в initData');
-  
-  // Если нет данных в Telegram, пробуем моковые данные
-  return getMockUserData();
-};
-
-// Получение telegram_id пользователя с проверкой
-export const getTelegramId = (): number | null => {
-  const user = getTelegramUser();
-  if (!user || !user.id) {
-    console.warn('Не удалось получить telegram_id');
-    return null;
-  }
-  return user.id;
-};
-
-// Проверка доступности Telegram Web App
+// Проверяем, запущено ли приложение в Telegram Web App
 export const isTelegramWebApp = (): boolean => {
-  const tg = getTelegramWebApp();
-  if (!tg) {
+  if (typeof window === 'undefined') return false;
+  
+  // Проверяем наличие Telegram объекта
+  if (!('Telegram' in window) || !('WebApp' in (window as any).Telegram)) {
     return false;
   }
   
-  // Дополнительные проверки для определения реального Telegram Web App
-  // В браузере эти свойства могут отсутствовать или быть пустыми
-  const hasValidContext = !!(
-    tg.initDataUnsafe?.user || 
-    tg.initData || 
-    tg.initDataUnsafe?.query_id ||
-    tg.initDataUnsafe?.auth_date
-  );
+  const webApp = (window as any).Telegram.WebApp;
   
-  // Проверяем, что это не просто пустой объект
-  const hasValidMethods = (
-    typeof tg.ready === 'function' &&
-    typeof tg.expand === 'function' &&
-    typeof tg.close === 'function'
-  );
+  // Проверяем, что WebApp действительно инициализирован
+  if (!webApp || typeof webApp.ready !== 'function') {
+    return false;
+  }
   
-  console.log('Telegram Web App проверка:', {
-    hasValidContext,
-    hasValidMethods,
-    initDataUnsafe: !!tg.initDataUnsafe,
-    initData: !!tg.initData,
-    user: !!tg.initDataUnsafe?.user
-  });
+  // Проверяем, что мы в реальном Telegram контексте
+  // В браузере initData будет пустым или отсутствовать
+  const hasInitData = webApp.initData && webApp.initData.length > 0;
+  const hasUserData = webApp.initDataUnsafe?.user;
   
-  return hasValidContext && hasValidMethods;
+  return hasInitData || hasUserData;
 };
 
-// Проверка, что приложение запущено в контексте Telegram
+// Проверяем, есть ли данные пользователя в контексте Telegram
 export const isInTelegramContext = (): boolean => {
-  const tg = getTelegramWebApp();
+  if (!isTelegramWebApp()) return false;
   
-  // Если нет Telegram Web App, проверяем моковые данные
-  if (!tg) {
-    const mockData = getMockUserData();
-    console.log('Нет Telegram Web App, проверяем моковые данные:', !!mockData);
-    return mockData !== null;
-  }
+  const webApp = (window as any).Telegram.WebApp;
   
-  // Проверяем наличие реальных данных пользователя
-  const user = getTelegramUser();
-  const hasRealUserData = !!(user && user.id && user.first_name);
+  // Проверяем наличие данных пользователя
+  const user = webApp.initDataUnsafe?.user;
   
-  console.log('Проверка контекста Telegram:', {
+  // Дополнительная проверка - в браузере initData обычно пустой
+  const hasInitData = webApp.initData && webApp.initData.length > 0;
+  
+  console.log('Telegram контекст проверка:', {
+    user: !!user,
+    hasInitData: hasInitData,
+    initDataLength: webApp.initData?.length || 0,
+    platform: webApp.platform,
+    isExpanded: webApp.isExpanded
+  });
+  
+  return !!(user || hasInitData);
+};
+
+// Получаем ID пользователя из Telegram
+export const getTelegramId = (): number | null => {
+  if (!isTelegramWebApp()) return null;
+  
+  const webApp = (window as any).Telegram.WebApp;
+  const user = webApp.initDataUnsafe?.user;
+  
+  return user?.id || null;
+};
+
+// Получаем данные пользователя из Telegram
+export const getTelegramUser = () => {
+  if (!isTelegramWebApp()) return null;
+  
+  const webApp = (window as any).Telegram.WebApp;
+  const user = webApp.initDataUnsafe?.user;
+  
+  console.log('Получение данных пользователя:', {
+    user: user,
     hasUser: !!user,
-    hasRealUserData,
-    userId: user?.id,
-    userName: user?.first_name
+    initData: webApp.initData?.substring(0, 50) + '...'
   });
   
-  return hasRealUserData;
+  return user || null;
 };
 
-// Получение темы Telegram (светлая/темная)
-export const getTelegramTheme = (): 'light' | 'dark' => {
-  const tg = getTelegramWebApp();
-  return tg?.colorScheme || 'light';
-};
-
-// Показ алерта через Telegram
-export const showTelegramAlert = (message: string, callback?: () => void): void => {
-  const tg = getTelegramWebApp();
-  if (tg) {
-    tg.showAlert(message, callback);
-  } else {
-    // Fallback для браузера
-    alert(message);
-    if (callback) callback();
-  }
-};
-
-// Показ подтверждения через Telegram
-export const showTelegramConfirm = (message: string, callback?: (confirmed: boolean) => void): void => {
-  const tg = getTelegramWebApp();
-  if (tg) {
-    tg.showConfirm(message, callback);
-  } else {
-    // Fallback для браузера
-    const confirmed = confirm(message);
-    if (callback) callback(confirmed);
-  }
-};
-
-// Закрытие Web App
-export const closeTelegramWebApp = (): void => {
-  const tg = getTelegramWebApp();
-  if (tg) {
-    tg.close();
-  }
-};
-
-// Отправка данных в Telegram
-export const sendTelegramData = (data: string): void => {
-  const tg = getTelegramWebApp();
-  if (tg) {
-    tg.sendData(data);
-  }
-};
-
-// Получение параметров запуска
-export const getStartParam = (): string | null => {
-  const tg = getTelegramWebApp();
-  return tg?.initDataUnsafe?.start_param || null;
-};
-
-// Проверка версии Telegram Web App
-export const isVersionSupported = (minVersion: string): boolean => {
-  const tg = getTelegramWebApp();
-  return tg ? tg.isVersionAtLeast(minVersion) : false;
-};
-
-// Получение детальной информации о контексте запуска
-export const getTelegramContextInfo = () => {
-  const tg = getTelegramWebApp();
-  const isWebApp = isTelegramWebApp();
-  const isInContext = isInTelegramContext();
-  const mockUser = getMockUserData();
-  
-  console.log('Детальная диагностика контекста:', {
-    hasTelegramObject: !!tg,
-    isWebApp,
-    isInContext,
-    hasMockData: !!mockUser,
-    initDataUnsafe: !!tg?.initDataUnsafe,
-    initData: !!tg?.initData,
-    user: !!tg?.initDataUnsafe?.user
-  });
-  
-  if (!isWebApp) {
-    if (mockUser) {
-      return {
-        isAvailable: false,
-        isInContext: true,
-        hasUserData: true,
-        user: mockUser,
-        message: 'Тестовый режим - используются моковые данные'
-      };
-    }
-    
-    return {
-      isAvailable: false,
-      isInContext: false,
-      hasUserData: false,
-      message: 'Telegram Web App недоступен - запущено в браузере'
-    };
-  }
-
-  const user = getTelegramUser();
-  const hasUserData = !!(user && user.id && user.first_name);
-  
-  if (hasUserData) {
-    return {
-      isAvailable: true,
-      isInContext: true,
-      hasUserData: true,
-      user: user,
-      message: 'Приложение запущено в Telegram с данными пользователя'
-    };
-  } else {
-    return {
-      isAvailable: true,
-      isInContext: false,
-      hasUserData: false,
-      user: null,
-      message: 'Приложение запущено в Telegram, но данные пользователя отсутствуют'
-    };
-  }
-};
-
-// Функция для создания тестового URL с моковыми данными
-export const createTestUrl = (userData?: Partial<TelegramUser>): string => {
-  const baseUrl = window.location.origin + window.location.pathname;
-  const params = new URLSearchParams();
-  
-  params.set('test_mode', 'true');
-  
-  if (userData) {
-    const mockUser: TelegramUser = {
-      id: 123456789,
-      first_name: 'Тестовый',
-      last_name: 'Пользователь',
-      username: 'test_user',
-      language_code: 'ru',
-      is_premium: false,
-      ...userData
-    };
-    
-    params.set('mock_user', encodeURIComponent(JSON.stringify(mockUser)));
+// Инициализируем Telegram Web App
+export const initTelegramWebApp = (): void => {
+  if (!isTelegramWebApp()) {
+    console.log('Telegram Web App недоступен для инициализации');
+    return;
   }
   
-  return `${baseUrl}?${params.toString()}`;
+  const webApp = (window as any).Telegram.WebApp;
+  
+  try {
+    webApp.ready();
+    webApp.expand();
+    console.log('Telegram Web App инициализирован');
+  } catch (error) {
+    console.error('Ошибка инициализации Telegram Web App:', error);
+  }
+};
+
+// Получаем параметры запуска
+export const getStartParam = (): string => {
+  if (!isTelegramWebApp()) return '';
+  
+  const webApp = (window as any).Telegram.WebApp;
+  return webApp.initDataUnsafe?.start_param || '';
+};
+
+// Создаем URL для перехода в Telegram бот
+export const createTelegramBotUrl = (command: string = '/start'): string => {
+  const botUsername = 'todobotuz_bot'; // Замените на реальный username бота
+  return `https://t.me/${botUsername}?start=${command}`;
+};
+
+// Перенаправляем в Telegram бот
+export const redirectToTelegramBot = (command: string = '/start'): void => {
+  const url = createTelegramBotUrl(command);
+  window.open(url, '_blank');
 }; 

@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import viewsets, filters
 from .models import User, MenuItem, Order, OrderItem, Category, Address, DeliveryZone, AddOn, SizeOption, Promotion
+from app_operator.models import Operator
 from .serializers import (
     OrderSerializer, MenuItemSerializer, CategorySerializer, AddressSerializer, 
     AddressCreateSerializer, DeliveryZoneSerializer, AddressDeliveryZoneSerializer, AddOnSerializer, SizeOptionSerializer, PromotionSerializer
@@ -590,7 +591,7 @@ class UserAddressView(APIView):
             Address.objects.create(user=user, address=address, phone_number=phone_number)
             logger.info(f"Address created for user: telegram_id={user.telegram_id}")
             return Response(status=status.HTTP_201_CREATED)
-        except User.DoesNotExist:
+        except Operator.DoesNotExist:
             logger.warning(f"User not found: telegram_id={request.data.get('telegram_id')}")
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -767,7 +768,7 @@ class OrderView(APIView):
                 )
                 if address_created:
                     logger.info(f"Created new address for user: {user.telegram_id}")
-            except User.DoesNotExist:
+            except Operator.DoesNotExist:
                 logger.warning(f"User not found for order: telegram_id={telegram_id}")
                 return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
             except Exception as address_error:
@@ -1249,8 +1250,8 @@ class AddressDeliveryZoneDetailView(APIView):
             
             # Получаем пользователя
             try:
-                user = User.objects.get(telegram_id=telegram_id)
-            except User.DoesNotExist:
+                user = Operator.objects.get(telegram_id=telegram_id)
+            except Operator.DoesNotExist:
                 return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
             
             # Получаем адрес

@@ -15,15 +15,15 @@ class OperatorAdmin(UserAdmin):
     """
     list_display = [
         'username', 'first_name', 'last_name', 'phone', 
-        'is_active_operator', 'rating', 'completed_orders_count',
-        'avg_delivery_time', 'assigned_zones_count'
+        'is_active_operator', 'completed_orders_count',
+        'assigned_zones_count'
     ]
     list_filter = [
         'is_active_operator', 'is_staff', 'is_superuser',
         'assigned_zones', 'created_at'
     ]
     search_fields = ['username', 'first_name', 'last_name', 'phone', 'email']
-    ordering = ['-rating', '-completed_orders_count']
+    ordering = ['-completed_orders_count']
     
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
@@ -31,7 +31,7 @@ class OperatorAdmin(UserAdmin):
             'fields': ('first_name', 'last_name', 'email', 'phone', 'telegram_id')
         }),
         ('Статус оператора', {
-            'fields': ('is_active_operator', 'rating', 'completed_orders_count', 'avg_delivery_time')
+            'fields': ('is_active_operator', 'completed_orders_count')
         }),
         ('Зоны доставки', {
             'fields': ('assigned_zones',)
@@ -62,7 +62,7 @@ class OperatorSessionAdmin(admin.ModelAdmin):
     """
     list_display = [
         'operator', 'start_time', 'end_time', 'status', 
-        'orders_handled', 'total_delivery_time', 'avg_delivery_time_formatted',
+        'orders_handled', 'avg_delivery_time_formatted',
         'duration_formatted'
     ]
     list_filter = ['status', 'start_time', 'operator']
@@ -75,7 +75,7 @@ class OperatorSessionAdmin(admin.ModelAdmin):
             'fields': ('operator', 'status', 'start_time', 'end_time')
         }),
         ('Статистика', {
-            'fields': ('orders_handled', 'total_delivery_time')
+            'fields': ('orders_handled', 'avg_delivery_time_formatted')
         }),
         ('Заметки', {
             'fields': ('notes',)
@@ -242,7 +242,7 @@ class OperatorAnalyticsAdmin(admin.ModelAdmin):
     """
     list_display = [
         'operator', 'date', 'total_orders', 'completed_orders', 
-        'cancelled_orders', 'completion_rate', 'avg_delivery_time',
+        'cancelled_orders', 'completion_rate',
         'total_earnings'
     ]
     list_filter = ['date', 'operator']
@@ -251,7 +251,7 @@ class OperatorAnalyticsAdmin(admin.ModelAdmin):
     ]
     readonly_fields = [
         'total_orders', 'completed_orders', 'cancelled_orders',
-        'total_delivery_time', 'avg_delivery_time', 'total_earnings'
+        'total_earnings'
     ]
     ordering = ['-date', 'operator']
     
@@ -261,9 +261,6 @@ class OperatorAnalyticsAdmin(admin.ModelAdmin):
         }),
         ('Статистика заказов', {
             'fields': ('total_orders', 'completed_orders', 'cancelled_orders')
-        }),
-        ('Время доставки', {
-            'fields': ('total_delivery_time', 'avg_delivery_time')
         }),
         ('Финансы', {
             'fields': ('total_earnings',)

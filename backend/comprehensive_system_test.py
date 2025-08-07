@@ -149,7 +149,7 @@ class ComprehensiveSystemTest:
                 first_name="Оператор",
                 last_name="Тестовый",
                 email=f"operator{unique_id}@test.com",
-                phone=f"9012345{unique_id:03d}",
+                phone=f"9012245{unique_id:03d}",
                 is_active_operator=True
             )
             operator.assigned_zones.add(zone)

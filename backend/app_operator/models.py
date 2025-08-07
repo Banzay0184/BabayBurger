@@ -14,6 +14,10 @@ def validate_uzbek_phone_number(value):
     """
     Валидатор для узбекских номеров телефонов
     """
+    # Если значение пустое, пропускаем валидацию (для суперпользователей)
+    if not value:
+        return
+    
     cleaned = re.sub(r'[\s\-\(\)]', '', str(value))
     
     if not cleaned.isdigit() and not cleaned.startswith('+998'):
@@ -57,6 +61,8 @@ class Operator(AbstractUser):
     phone = models.CharField(
         max_length=20,
         unique=True,
+        blank=True,
+        null=True,
         verbose_name="Номер телефона",
         validators=[validate_uzbek_phone_number],
         help_text="Формат: +998 90 123 45 67 или 901234567"
@@ -84,25 +90,10 @@ class Operator(AbstractUser):
         verbose_name="Telegram ID"
     )
     
-    # Рейтинг оператора
-    rating = models.DecimalField(
-        max_digits=3,
-        decimal_places=2,
-        default=5.00,
-        validators=[MinValueValidator(0), MaxValueValidator(5)],
-        verbose_name="Рейтинг"
-    )
-    
     # Количество выполненных заказов
     completed_orders_count = models.PositiveIntegerField(
         default=0,
         verbose_name="Количество выполненных заказов"
-    )
-    
-    # Среднее время доставки в минутах
-    avg_delivery_time = models.PositiveIntegerField(
-        default=0,
-        verbose_name="Среднее время доставки (минуты)"
     )
     
     # Метаданные
@@ -112,17 +103,18 @@ class Operator(AbstractUser):
     class Meta:
         verbose_name = "Оператор"
         verbose_name_plural = "Операторы"
-        ordering = ['-rating', '-completed_orders_count']
+        ordering = ['-completed_orders_count']
         indexes = [
             models.Index(fields=['is_active_operator']),
-            models.Index(fields=['rating']),
             models.Index(fields=['completed_orders_count']),
             models.Index(fields=['telegram_id']),
             models.Index(fields=['phone']),
         ]
 
     def __str__(self):
-        return f"{self.get_full_name()} ({self.phone})"
+        if self.phone:
+            return f"{self.get_full_name()} ({self.phone})"
+        return f"{self.get_full_name()} (без телефона)"
 
     @property
     def formatted_phone(self):
@@ -200,11 +192,6 @@ class OperatorSession(models.Model):
     orders_handled = models.PositiveIntegerField(
         default=0,
         verbose_name="Количество обработанных заказов"
-    )
-    
-    total_delivery_time = models.PositiveIntegerField(
-        default=0,
-        verbose_name="Общее время доставки (минуты)"
     )
     
     notes = models.TextField(

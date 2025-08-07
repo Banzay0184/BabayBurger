@@ -37,7 +37,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',  # React dev server
     'http://127.0.0.1:5173',
     'http://127.0.0.1:3000',
-    'https://b05836c13049.ngrok-free.app',
+    os.getenv('WEBHOOK_URL'),
     'https://*.ngrok-free.app',
     'https://*.ngrok.io',
 ]

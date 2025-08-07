@@ -189,56 +189,11 @@ def create_initial_analytics(sender, instance, created, **kwargs):
                     'cancelled_orders': 0,
                     'total_delivery_time': 0,
                     'avg_delivery_time': 0,
-                    'total_earnings': 0,
-                    'rating': 5.00
+                    'total_earnings': 0
                 }
             )
             logger.info(f"Начальная аналитика создана для оператора {instance.username}")
         except Exception as e:
             logger.error(f"Ошибка при создании начальной аналитики: {e}")
 
-# Сигнал для обновления рейтинга оператора
-@receiver(post_save, sender=OperatorAnalytics)
-def update_operator_rating(sender, instance, **kwargs):
-    """
-    Обновляет рейтинг оператора на основе аналитики
-    """
-    try:
-        operator = instance.operator
-        
-        # Простая логика расчета рейтинга
-        # Можно усложнить в зависимости от требований
-        completion_rate = 0
-        if instance.total_orders > 0:
-            completion_rate = instance.completed_orders / instance.total_orders
-        
-        # Базовый рейтинг 5.0, корректируем на основе показателей
-        base_rating = 5.0
-        
-        # Корректировка на основе процента выполнения
-        if completion_rate >= 0.9:
-            rating_bonus = 0.5
-        elif completion_rate >= 0.8:
-            rating_bonus = 0.3
-        elif completion_rate >= 0.7:
-            rating_bonus = 0.1
-        else:
-            rating_bonus = -0.2
-        
-        # Корректировка на основе времени доставки
-        if instance.avg_delivery_time <= 30:
-            time_bonus = 0.3
-        elif instance.avg_delivery_time <= 45:
-            time_bonus = 0.1
-        else:
-            time_bonus = -0.2
-        
-        new_rating = max(0, min(5, base_rating + rating_bonus + time_bonus))
-        
-        # Обновляем рейтинг оператора
-        operator.rating = round(new_rating, 2)
-        operator.save()
-        
-        logger.info(f"Рейтинг оператора {operator.username} обновлен до {new_rating}")
-    except Exception as e:
-        logger.error(f"Ошибка при обновлении рейтинга оператора: {e}") 
+ 

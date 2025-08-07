@@ -1,15 +1,14 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { User } from '../api/types';
-import { authApi, telegramAuth } from '../api/auth';
-import {
-  getTelegramId,
-  getTelegramUser,
-  initTelegramWebApp,
-  isInTelegramContext,
-  getTelegramContextInfo
+import { authApi } from '../api/auth';
+import { 
+  isTelegramWebApp, 
+  isInTelegramContext, 
+  getTelegramId, 
+  getTelegramUser, 
+  initTelegramWebApp 
 } from '../utils/telegram';
-import type { TelegramWidgetUser } from '../types/telegram';
 
 // Типы для состояния авторизации
 interface AuthState {
@@ -17,15 +16,8 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  telegramContext: {
-    isAvailable: boolean;
-    isInContext: boolean;
-    hasUserData: boolean;
-    message: string;
-  };
-  // Добавляем состояние для диагностики
-  debugLogs: string[];
-  showDebugInfo: boolean;
+  isTelegramContext: boolean;
+  isDesktopMode: boolean;
 }
 
 // Типы для действий
@@ -35,10 +27,7 @@ type AuthAction =
   | { type: 'AUTH_FAILURE'; payload: string }
   | { type: 'AUTH_LOGOUT' }
   | { type: 'CLEAR_ERROR' }
-  | { type: 'SET_TELEGRAM_CONTEXT'; payload: any }
-  | { type: 'ADD_DEBUG_LOG'; payload: string }
-  | { type: 'CLEAR_DEBUG_LOGS' }
-  | { type: 'TOGGLE_DEBUG_INFO' };
+  | { type: 'SET_CONTEXT'; payload: { isTelegramContext: boolean; isDesktopMode: boolean } };
 
 // Начальное состояние
 const initialState: AuthState = {
@@ -46,14 +35,8 @@ const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: true,
   error: null,
-  telegramContext: {
-    isAvailable: false,
-    isInContext: false,
-    hasUserData: false,
-    message: 'Проверка контекста Telegram...'
-  },
-  debugLogs: [],
-  showDebugInfo: false,
+  isTelegramContext: false,
+  isDesktopMode: false,
 };
 
 // Редьюсер для управления состоянием
@@ -94,25 +77,10 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         ...state,
         error: null,
       };
-    case 'SET_TELEGRAM_CONTEXT':
+    case 'SET_CONTEXT':
       return {
         ...state,
-        telegramContext: action.payload,
-      };
-    case 'ADD_DEBUG_LOG':
-      return {
-        ...state,
-        debugLogs: [...state.debugLogs, action.payload],
-      };
-    case 'CLEAR_DEBUG_LOGS':
-      return {
-        ...state,
-        debugLogs: [],
-      };
-    case 'TOGGLE_DEBUG_INFO':
-      return {
-        ...state,
-        showDebugInfo: !state.showDebugInfo,
+        ...action.payload,
       };
     default:
       return state;
@@ -123,13 +91,9 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 interface AuthContextType {
   state: AuthState;
   login: () => Promise<void>;
-  forceLogin: () => Promise<void>; // Добавляем принудительную авторизацию
+  loginWithTelegram: () => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
-  // Добавляем функции для диагностики
-  addDebugLog: (message: string) => void;
-  clearDebugLogs: () => void;
-  toggleDebugInfo: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -142,130 +106,74 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Проверка контекста Telegram при загрузке
-  useEffect(() => {
-    const checkTelegramContext = () => {
-      const contextInfo = getTelegramContextInfo();
-      dispatch({ type: 'SET_TELEGRAM_CONTEXT', payload: contextInfo });
-      console.log('Telegram контекст:', contextInfo);
-    };
-
-    checkTelegramContext();
-  }, []);
-
-  // Функции для диагностики
-  const addDebugLog = (message: string) => {
-    dispatch({ type: 'ADD_DEBUG_LOG', payload: message });
-  };
-
   // Функция авторизации через Telegram
-  const login = async (): Promise<void> => {
+  const loginWithTelegram = async (): Promise<void> => {
     try {
       dispatch({ type: 'AUTH_START' });
-      addDebugLog('🚀 Начинаем авторизацию...');
-
+      
       // Проверяем контекст Telegram
       if (!isInTelegramContext()) {
-        addDebugLog('❌ Не в контексте Telegram');
         throw new Error('Пожалуйста, откройте приложение через Telegram');
       }
 
-      addDebugLog('✅ В контексте Telegram');
-
       // Инициализируем Telegram Web App
       initTelegramWebApp();
-      addDebugLog('✅ Telegram Web App инициализирован');
 
       // Получаем данные пользователя из Telegram
       const telegramId = getTelegramId();
       const telegramUser = getTelegramUser();
 
       if (!telegramId || !telegramUser) {
-        addDebugLog('❌ Не удалось получить данные пользователя');
-        throw new Error('Не удалось получить данные пользователя из Telegram. Пожалуйста, откройте приложение через Telegram');
+        throw new Error('Не удалось получить данные пользователя из Telegram');
       }
 
-      addDebugLog(`✅ Получены данные пользователя: ${telegramUser.first_name} (ID: ${telegramId})`);
-
-      console.log('Попытка авторизации с данными:', {
+      console.log('Авторизация через Telegram:', {
         telegram_id: telegramId,
         first_name: telegramUser.first_name,
         last_name: telegramUser.last_name,
         username: telegramUser.username
       });
 
-      // Создаем данные для авторизации через виджет
-      const widgetUserData: TelegramWidgetUser = {
-        id: telegramId,
+      // Отправляем запрос на авторизацию
+      const response = await authApi.telegramAuth({
+        telegram_id: telegramId,
         first_name: telegramUser.first_name,
         last_name: telegramUser.last_name || '',
-        username: telegramUser.username || '',
-        language_code: telegramUser.language_code || 'ru',
-        is_premium: telegramUser.is_premium || false,
-        auth_date: Math.floor(Date.now() / 1000),
-        hash: 'telegram_webapp_hash', // В Web App хеш не нужен
-        photo_url: '',
-        allows_write_to_pm: false
-      };
-
-      addDebugLog('📤 Отправляем данные на сервер...');
-      console.log('Данные для авторизации:', widgetUserData);
-
-      // Отправляем запрос на авторизацию через виджет
-      const response = await telegramAuth(widgetUserData);
-
-      addDebugLog('✅ Получен ответ от сервера');
+        username: telegramUser.username || ''
+      });
 
       // Сохраняем токен если он есть
       if (response.token) {
         localStorage.setItem('auth_token', response.token);
-        addDebugLog('✅ Токен сохранен');
       }
 
       dispatch({ type: 'AUTH_SUCCESS', payload: response.user });
-      addDebugLog('🎉 Авторизация успешна!');
     } catch (error: any) {
-      const errorMessage = error.message || 'Ошибка авторизации';
-      addDebugLog(`❌ Ошибка авторизации: ${errorMessage}`);
-      console.error('Ошибка авторизации:', error);
+      const errorMessage = error.message || 'Ошибка авторизации через Telegram';
       dispatch({ type: 'AUTH_FAILURE', payload: errorMessage });
     }
   };
 
-  // Принудительная авторизация без проверки данных пользователя
-  const forceLogin = async (): Promise<void> => {
+  // Функция ручной авторизации (для десктопа)
+  const login = async (): Promise<void> => {
     try {
       dispatch({ type: 'AUTH_START' });
-      initTelegramWebApp();
-
-      // Пробуем получить данные пользователя любым способом
-      const telegramId = getTelegramId();
-      const telegramUser = getTelegramUser();
-
-      if (telegramId && telegramUser) {
-        // Если есть данные пользователя, используем обычную авторизацию
-        console.log('Принудительная авторизация с данными:', { telegram_id: telegramId, first_name: telegramUser.first_name });
-        const response = await authApi.telegramAuth({ telegram_id: telegramId, first_name: telegramUser.first_name, last_name: telegramUser.last_name, username: telegramUser.username });
-        if (response.token) { localStorage.setItem('auth_token', response.token); }
-        dispatch({ type: 'AUTH_SUCCESS', payload: response.user });
-      } else {
-        // Если данных нет, создаем тестового пользователя
-        console.log('Принудительная авторизация без данных пользователя');
-        const testUser: User = {
-          id: 1,
-          telegram_id: 123456789,
-          first_name: 'Тестовый',
-          last_name: 'Пользователь',
-          username: 'test_user',
-          phone_number: undefined,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        dispatch({ type: 'AUTH_SUCCESS', payload: testUser });
-      }
+      
+      // Создаем тестового пользователя для демонстрации
+      const testUser: User = {
+        id: 1,
+        telegram_id: 123456789,
+        first_name: 'Тестовый',
+        last_name: 'Пользователь',
+        username: 'test_user',
+        phone_number: undefined,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      
+      dispatch({ type: 'AUTH_SUCCESS', payload: testUser });
     } catch (error: any) {
-      const errorMessage = error.message || 'Ошибка принудительной авторизации';
-      console.error('Ошибка принудительной авторизации:', error);
+      const errorMessage = error.message || 'Ошибка авторизации';
       dispatch({ type: 'AUTH_FAILURE', payload: errorMessage });
     }
   };
@@ -273,10 +181,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Функция выхода
   const logout = async (): Promise<void> => {
     try {
-      dispatch({ type: 'AUTH_LOGOUT' });
       await authApi.logout();
     } catch (error: any) {
       console.error('Ошибка при выходе:', error);
+    } finally {
       dispatch({ type: 'AUTH_LOGOUT' });
     }
   };
@@ -286,35 +194,65 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: 'CLEAR_ERROR' });
   };
 
-  // Проверяем авторизацию при загрузке
+  // Проверяем контекст и авторизацию при загрузке
   useEffect(() => {
-    const checkAuth = async (): Promise<void> => {
+    const initializeApp = async (): Promise<void> => {
       try {
-        const isValid = await authApi.validateToken();
-        if (isValid) {
-          const user = await authApi.getCurrentUser();
-          dispatch({ type: 'AUTH_SUCCESS', payload: user });
-        } else {
+        // Определяем контекст
+        const isTelegram = isTelegramWebApp();
+        const isInContext = isInTelegramContext();
+        const isDesktop = !isTelegram;
+        
+        console.log('🔍 Анализ контекста приложения:', {
+          isTelegram,
+          isInContext,
+          isDesktop,
+          userAgent: navigator.userAgent,
+          url: window.location.href
+        });
+        
+        dispatch({ 
+          type: 'SET_CONTEXT', 
+          payload: { 
+            isTelegramContext: isInContext, 
+            isDesktopMode: isDesktop 
+          } 
+        });
+
+        // Если в Telegram контексте - пробуем автоматическую авторизацию
+        if (isInContext) {
+          console.log('✅ Автоматическая авторизация в Telegram контексте');
+          await loginWithTelegram();
+        } else if (isTelegram && !isInContext) {
+          // Telegram Web App доступен, но нет данных пользователя
+          console.log('⚠️ Telegram Web App доступен, но нет данных пользователя');
           dispatch({ type: 'AUTH_LOGOUT' });
+        } else {
+          // Десктопная версия - проверяем существующую авторизацию
+          console.log('🖥️ Десктопная версия - проверка существующей авторизации');
+          const isValid = await authApi.validateToken();
+          if (isValid) {
+            const user = await authApi.getCurrentUser();
+            dispatch({ type: 'AUTH_SUCCESS', payload: user });
+          } else {
+            dispatch({ type: 'AUTH_LOGOUT' });
+          }
         }
       } catch (error) {
-        console.error('Ошибка проверки авторизации:', error);
+        console.error('❌ Ошибка инициализации приложения:', error);
         dispatch({ type: 'AUTH_LOGOUT' });
       }
     };
 
-    checkAuth();
+    initializeApp();
   }, []);
 
   const value: AuthContextType = {
     state,
     login,
-    forceLogin,
+    loginWithTelegram,
     logout,
     clearError,
-    addDebugLog: (message: string) => dispatch({ type: 'ADD_DEBUG_LOG', payload: message }),
-    clearDebugLogs: () => dispatch({ type: 'CLEAR_DEBUG_LOGS' }),
-    toggleDebugInfo: () => dispatch({ type: 'TOGGLE_DEBUG_INFO' }),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

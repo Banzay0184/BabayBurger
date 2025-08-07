@@ -111,13 +111,12 @@ class OperatorProfileSerializer(serializers.ModelSerializer):
         model = Operator
         fields = [
             'id', 'username', 'first_name', 'last_name', 'email',
-            'phone', 'is_active_operator', 'assigned_zones', 'rating',
-            'completed_orders_count', 'avg_delivery_time', 'telegram_id',
+            'phone', 'is_active_operator', 'assigned_zones',
+            'completed_orders_count', 'telegram_id',
             'current_session', 'today_stats', 'created_at'
         ]
         read_only_fields = [
-            'id', 'rating', 'completed_orders_count', 
-            'avg_delivery_time', 'created_at'
+            'id', 'completed_orders_count', 'created_at'
         ]
 
     def get_assigned_zones(self, obj):
@@ -406,7 +405,7 @@ class OperatorAnalyticsSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'date', 'date_formatted', 'total_orders', 'completed_orders',
             'cancelled_orders', 'total_delivery_time', 'avg_delivery_time',
-            'total_earnings', 'rating', 'completion_rate'
+            'total_earnings', 'completion_rate'
         ]
 
     def get_date_formatted(self, obj):
