@@ -4,7 +4,7 @@ from .views import (
     AddressView, AddressDetailView, OrderCreateView, GeocodeView, GeocodeResultView,
     DeliveryZoneView, AddressDeliveryZoneCheckView, AddressDeliveryZoneDetailView,
     MenuItemViewSet, AddOnViewSet, SizeOptionViewSet, PromotionViewSet, OrderViewSet,
-    TelegramLoginWidgetView
+    TelegramLoginWidgetView, TestUserCreationView
 )
 from rest_framework.routers import DefaultRouter
 
@@ -20,6 +20,7 @@ urlpatterns = [
     # Аутентификация
     path('auth/', AuthView.as_view(), name='auth'),
     path('auth/telegram-widget/', TelegramLoginWidgetView.as_view(), name='telegram-login-widget'),
+    path('auth/test-user/', TestUserCreationView.as_view(), name='test-user-creation'),
     # Адреса (новая модель)
     path('addresses/', AddressView.as_view(), name='addresses'),
     path('addresses/<int:address_id>/', AddressDetailView.as_view(), name='address-detail'),

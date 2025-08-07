@@ -266,6 +266,34 @@ class WebhookView(APIView):
     def handle_start_command(self, chat_id, user):
         """Обработка команды /start с кнопкой Web App"""
         try:
+            # Создаем или получаем пользователя в базе данных
+            user_id = user.get('id')
+            first_name = user.get('first_name', '')
+            last_name = user.get('last_name', '')
+            username = user.get('username', '')
+            
+            logger.info(f"Creating/updating user: {user_id} - {first_name} {last_name} (@{username})")
+            
+            # Создаем или обновляем пользователя
+            user_obj, created = User.objects.get_or_create(
+                telegram_id=user_id,
+                defaults={
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'username': username,
+                }
+            )
+            
+            if not created:
+                # Обновляем существующего пользователя
+                user_obj.first_name = first_name
+                user_obj.last_name = last_name
+                user_obj.username = username
+                user_obj.save()
+                logger.info(f"Updated existing user: {user_obj}")
+            else:
+                logger.info(f"Created new user: {user_obj}")
+            
             # URL для Web App (замените на ваш домен)
             web_app_url = "https://babay-burger.vercel.app"  # Для разработки
             
@@ -282,7 +310,7 @@ class WebhookView(APIView):
             
             # Текст приветствия
             welcome_text = (
-                "�� Добро пожаловать в Babay Burger!\n\n"
+                "🍔 Добро пожаловать в Babay Burger!\n\n"
                 "Доставка вкусных бургеров в Бухаре и Кагане.\n\n"
                 "Нажмите кнопку ниже, чтобы открыть приложение и сделать заказ:"
             )
@@ -1353,3 +1381,71 @@ class OrderViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         order = serializer.save()
         order.apply_promotion()
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TestUserCreationView(APIView):
+    """
+    Эндпоинт для тестирования создания пользователя
+    """
+    
+    def post(self, request):
+        try:
+            # Тестовые данные пользователя
+            test_user_data = {
+                'id': 908758841,
+                'first_name': 'Шахзод',
+                'last_name': 'Абидов',
+                'username': 'abidov_0184',
+                'language_code': 'ru',
+                'is_premium': False,
+                'auth_date': int(time.time()),
+                'hash': 'test_hash',
+                'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg',
+                'allows_write_to_pm': True
+            }
+            
+            logger.info(f"Test user creation with data: {test_user_data}")
+            
+            # Создаем или получаем пользователя
+            user, created = User.objects.get_or_create(
+                telegram_id=test_user_data['id'],
+                defaults={
+                    'first_name': test_user_data['first_name'],
+                    'last_name': test_user_data['last_name'],
+                    'username': test_user_data['username'],
+                }
+            )
+            
+            # Обновляем данные если пользователь уже существует
+            if not created:
+                user.first_name = test_user_data['first_name']
+                user.last_name = test_user_data['last_name']
+                user.username = test_user_data['username']
+                user.save()
+            
+            logger.info(f"Test user {'created' if created else 'updated'}: {user.telegram_id}")
+            
+            # Возвращаем данные пользователя
+            response_data = {
+                'success': True,
+                'user': {
+                    'id': user.id,
+                    'telegram_id': user.telegram_id,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'username': user.username,
+                    'phone_number': user.phone_number,
+                    'created_at': user.created_at.isoformat(),
+                    'updated_at': user.updated_at.isoformat(),
+                },
+                'message': 'Тестовый пользователь создан/обновлен'
+            }
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error in test user creation: {str(e)}")
+            return Response(
+                {'error': 'Ошибка сервера при создании тестового пользователя'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

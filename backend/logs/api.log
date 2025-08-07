@@ -1392,3 +1392,54 @@ Invalid Telegram Login Widget data: Missing required field: id
 Telegram Login Widget auth attempt: unknown
 Invalid Telegram Login Widget data: Missing required field: id
 Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.001, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.82.236", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"}
+Telegram Login Widget auth attempt: unknown
+Invalid Telegram Login Widget data: Missing required field: id
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.003, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.82.236", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "post_data": {"telegram_id": ["undefined"], "first_name": ["Шахзод"], "last_name": ["Абидов"], "username": ["abidov_0184"], "language_code": ["ru"], "is_premium": ["false"], "auth_date": ["1754572812"], "hash": ["telegram_webapp_hash"], "photo_url": ["https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg"], "allows_write_to_pm": ["true"]}}
+Telegram Login Widget auth attempt: unknown
+Invalid Telegram Login Widget data: Missing required field: id
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.002, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.42, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.82.236", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"}
+Telegram Login Widget auth attempt: unknown
+Invalid Telegram Login Widget data: Missing required field: id
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.002, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.82.236", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "post_data": {"telegram_id": ["undefined"], "first_name": ["Шахзод"], "last_name": ["Абидов"], "username": ["abidov_0184"], "language_code": ["ru"], "is_premium": ["false"], "auth_date": ["1754572820"], "hash": ["telegram_webapp_hash"], "photo_url": ["https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg"], "allows_write_to_pm": ["true"]}}
+Telegram Login Widget auth attempt: unknown
+Invalid Telegram Login Widget data: Missing required field: id
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.001, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.397, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.82.236", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"}
+Telegram Login Widget auth attempt: unknown
+Invalid Telegram Login Widget data: Missing required field: id
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.001, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.82.236", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "post_data": {"telegram_id": ["undefined"], "first_name": ["Шахзод"], "last_name": ["Абидов"], "username": ["abidov_0184"], "language_code": ["ru"], "is_premium": ["false"], "auth_date": ["1754572852"], "hash": ["telegram_webapp_hash"], "photo_url": ["https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg"], "allows_write_to_pm": ["true"]}}
+Telegram Login Widget auth attempt: unknown
+Invalid Telegram Login Widget data: Missing required field: id
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.001, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.82.236", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"}
+Telegram Login Widget auth attempt: unknown
+Invalid Telegram Login Widget data: Missing required field: id
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.003, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.82.236", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "post_data": {"telegram_id": ["undefined"], "first_name": ["Шахзод"], "last_name": ["Абидов"], "username": ["abidov_0184"], "language_code": ["ru"], "is_premium": ["false"], "auth_date": ["1754572914"], "hash": ["telegram_webapp_hash"], "photo_url": ["https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg"], "allows_write_to_pm": ["true"]}}
+Telegram Login Widget auth attempt: unknown
+Invalid Telegram Login Widget data: Missing required field: id
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.001, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 64}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/api/user/", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/api/user/", "status_code": 200, "duration": 0.151, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 16568}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.016, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/favicon.ico", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/favicon.ico", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/favicon.ico” не существует", "exception_type": "Http404", "duration": 0.022, "user": " (без телефона)", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/favicon.ico", "status_code": 404, "duration": 0.044, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 19438}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/api/user/1/change/", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/api/user/1/change/", "status_code": 200, "duration": 0.028, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 16013}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.023, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 16066}
