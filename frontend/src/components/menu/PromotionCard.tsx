@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '../ui/Button';
-import type { Promotion } from '../types/menu';
+import type { Promotion } from '../../types/menu';
 
 interface PromotionCardProps {
   promotion: Promotion;

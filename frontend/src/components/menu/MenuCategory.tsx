@@ -1,6 +1,6 @@
 import React from 'react';
 import { MenuItem } from './MenuItem';
-import type { MenuCategory as MenuCategoryType, MenuItem as MenuItemType } from '../types/menu';
+import type { MenuCategory as MenuCategoryType, MenuItem as MenuItemType } from '../../types/menu';
 
 interface MenuCategoryProps {
   category: MenuCategoryType;
@@ -33,7 +33,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({ category, onItemSele
 
       {/* Сетка блюд с современным дизайном */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {category.items.map((item, index) => (
+        {category.items.map((item: MenuItemType, index: number) => (
           <div key={item.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
             <MenuItem 
               item={item} 

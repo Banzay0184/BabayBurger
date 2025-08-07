@@ -4,7 +4,7 @@ import { Button } from '../components/ui/Button';
 import { MenuPage } from './MenuPage';
 
 export const MainPage: React.FC = () => {
-  const { state, logout } = useAuth();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
     logout();

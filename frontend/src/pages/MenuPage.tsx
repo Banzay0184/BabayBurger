@@ -15,7 +15,6 @@ export const MenuPage: React.FC = () => {
     setFilters, 
     resetFilters, 
     getFilteredItems, 
-    getCategoriesWithItems, 
     getAvailableCategories,
     getActivePromotions,
     getHits,
@@ -71,7 +70,6 @@ export const MenuPage: React.FC = () => {
     );
   }
 
-  const categories = getCategoriesWithItems();
   const availableCategories = getAvailableCategories();
   const filteredItems = getFilteredItems();
   const activePromotions = getActivePromotions();

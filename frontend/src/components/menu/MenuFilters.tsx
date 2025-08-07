@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '../ui/Button';
-import type { MenuFilters as MenuFiltersType } from '../types/menu';
+import type { MenuFilters as MenuFiltersType } from '../../types/menu';
 
 interface MenuFiltersProps {
   filters: MenuFiltersType;
@@ -33,14 +33,6 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
         ? [value, filters.priceRange[1]]
         : [filters.priceRange[0], value]
     });
-  };
-
-  const handleAllergenToggle = (allergen: string) => {
-    const newAllergens = filters.allergens.includes(allergen)
-      ? filters.allergens.filter(a => a !== allergen)
-      : [...filters.allergens, allergen];
-    
-    onFiltersChange({ allergens: newAllergens });
   };
 
   const handleShowHitsToggle = () => {
@@ -103,7 +95,7 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
             className="tg-input"
           >
             <option value="">Все категории</option>
-            {categories.map((category) => (
+            {categories.map((category: { id: number; name: string }) => (
               <option key={category.id} value={category.name}>
                 {category.name}
               </option>

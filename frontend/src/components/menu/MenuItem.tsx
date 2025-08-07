@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
-import type { MenuItem as MenuItemType, SizeOption, AddOn } from '../types/menu';
+import type { MenuItem as MenuItemType, SizeOption, AddOn } from '../../types/menu';
 
 interface MenuItemProps {
   item: MenuItemType;
   onSelect?: (item: MenuItemType, size?: SizeOption, addOns?: AddOn[]) => void;
-  showDetails?: boolean;
 }
 
-export const MenuItem: React.FC<MenuItemProps> = ({ item, onSelect, showDetails = false }) => {
+export const MenuItem: React.FC<MenuItemProps> = ({ item, onSelect }) => {
   const [selectedSize, setSelectedSize] = useState<SizeOption | undefined>();
   const [selectedAddOns, setSelectedAddOns] = useState<AddOn[]>([]);
-  const [showOptions, setShowOptions] = useState(false);
 
   const handleClick = () => {
     if (onSelect) {
@@ -39,8 +37,8 @@ export const MenuItem: React.FC<MenuItemProps> = ({ item, onSelect, showDetails 
     return total;
   };
 
-  const availableSizes = item.size_options.filter(size => size.is_active);
-  const availableAddOns = item.add_on_options.filter(addOn => addOn.is_active);
+  const availableSizes = item.size_options.filter((size: SizeOption) => size.is_active);
+  const availableAddOns = item.add_on_options.filter((addOn: AddOn) => addOn.is_active);
 
   return (
     <div className="menu-item-card p-6 mb-6 animate-fade-in">

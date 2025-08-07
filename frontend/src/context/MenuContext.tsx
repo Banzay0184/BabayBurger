@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer } from 'react';
+import type { ReactNode } from 'react';
 import type { MenuItem, MenuCategory, MenuFilters, Promotion } from '../types/menu';
 
 interface MenuState {

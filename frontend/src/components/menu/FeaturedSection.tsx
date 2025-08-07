@@ -1,6 +1,6 @@
 import React from 'react';
 import { MenuItem } from './MenuItem';
-import type { MenuItem as MenuItemType, SizeOption, AddOn } from '../types/menu';
+import type { MenuItem as MenuItemType, SizeOption, AddOn } from '../../types/menu';
 
 interface FeaturedSectionProps {
   title: string;
