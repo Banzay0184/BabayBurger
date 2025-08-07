@@ -1815,3 +1815,37 @@ Validating Telegram Login Widget data: {'telegram_id': 'undefined', 'first_name'
 User ID is invalid: undefined
 Invalid Telegram Login Widget data: User ID is invalid or undefined
 Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.002, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 97}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Creating/updating user: 908758841 - Шахзод Абидов (@abidov_0184)
+Updated existing user: Шахзод Абидов (@abidov_0184)
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.364, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.82.236", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Received auth data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754574975, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True}
+Telegram Login Widget auth attempt: unknown
+Validating Telegram Login Widget data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754574975, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True}
+Missing user ID (id or telegram_id)
+Invalid Telegram Login Widget data: Missing user ID (id or telegram_id)
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.001, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 101}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.82.236", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148", "post_data": {"telegram_id": ["undefined"], "first_name": ["Шахзод"], "last_name": ["Абидов"], "username": ["abidov_0184"], "language_code": ["ru"], "is_premium": ["false"], "auth_date": ["1754574975"], "hash": ["telegram_webapp_hash"], "photo_url": ["https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg"], "allows_write_to_pm": ["true"]}}
+Received auth data: <QueryDict: {'telegram_id': ['undefined'], 'first_name': ['Шахзод'], 'last_name': ['Абидов'], 'username': ['abidov_0184'], 'language_code': ['ru'], 'is_premium': ['false'], 'auth_date': ['1754574975'], 'hash': ['telegram_webapp_hash'], 'photo_url': ['https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg'], 'allows_write_to_pm': ['true']}>
+Telegram Login Widget auth attempt: undefined
+Validating Telegram Login Widget data: {'telegram_id': 'undefined', 'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': 'false', 'auth_date': '1754574975', 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': 'true'}
+User ID is invalid: undefined
+Invalid Telegram Login Widget data: User ID is invalid or undefined
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.002, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 97}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.82.236", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Received auth data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754574994, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True}
+Telegram Login Widget auth attempt: unknown
+Validating Telegram Login Widget data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754574994, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True}
+Missing user ID (id or telegram_id)
+Invalid Telegram Login Widget data: Missing user ID (id or telegram_id)
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.001, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 101}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "84.54.82.236", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148", "post_data": {"telegram_id": ["undefined"], "first_name": ["Шахзод"], "last_name": ["Абидов"], "username": ["abidov_0184"], "language_code": ["ru"], "is_premium": ["false"], "auth_date": ["1754574994"], "hash": ["telegram_webapp_hash"], "photo_url": ["https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg"], "allows_write_to_pm": ["true"]}}
+Received auth data: <QueryDict: {'telegram_id': ['undefined'], 'first_name': ['Шахзод'], 'last_name': ['Абидов'], 'username': ['abidov_0184'], 'language_code': ['ru'], 'is_premium': ['false'], 'auth_date': ['1754574994'], 'hash': ['telegram_webapp_hash'], 'photo_url': ['https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg'], 'allows_write_to_pm': ['true']}>
+Telegram Login Widget auth attempt: undefined
+Validating Telegram Login Widget data: {'telegram_id': 'undefined', 'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': 'false', 'auth_date': '1754574994', 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': 'true'}
+User ID is invalid: undefined
+Invalid Telegram Login Widget data: User ID is invalid or undefined
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 400, "duration": 0.001, "user": "AnonymousUser", "ip": "84.54.82.236", "response_size": 97}

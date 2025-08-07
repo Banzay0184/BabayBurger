@@ -794,3 +794,11 @@ WARNING 2025-08-07 18:51:53,407 basehttp 78299 123145379819520 "POST /api/auth/t
 WARNING 2025-08-07 18:51:53,641 basehttp 78299 123145379819520 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 97
 INFO 2025-08-07 18:52:54,428 autoreload 78299 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
 INFO 2025-08-07 18:52:55,635 autoreload 81051 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:55:21,161 autoreload 83090 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:55:30,746 basehttp 83090 123145473196032 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-07 18:56:12,585 basehttp 83090 123145489985536 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:56:15,898 basehttp 83090 123145507848192 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-07 18:56:16,414 basehttp 83090 123145524637696 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 101
+WARNING 2025-08-07 18:56:16,640 basehttp 83090 123145524637696 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 97
+WARNING 2025-08-07 18:56:34,350 basehttp 83090 123145524637696 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 101
+WARNING 2025-08-07 18:56:34,581 basehttp 83090 123145524637696 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 97
