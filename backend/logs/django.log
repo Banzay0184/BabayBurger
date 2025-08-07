@@ -661,3 +661,136 @@ INFO 2025-08-07 18:24:32,668 autoreload 57232 140704590802880 /Users/shakhzodabi
 INFO 2025-08-07 18:24:33,529 autoreload 57520 140704590802880 Watching for file changes with StatReloader
 INFO 2025-08-07 18:25:11,731 autoreload 57520 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/urls.py changed, reloading.
 INFO 2025-08-07 18:25:12,862 autoreload 58085 140704590802880 Watching for file changes with StatReloader
+ERROR 2025-08-07 18:25:38,760 basehttp 58085 123145470865408 "POST /api/webhook/ HTTP/1.1" 500 33
+ERROR 2025-08-07 18:25:38,876 basehttp 58085 123145470865408 "POST /api/webhook/ HTTP/1.1" 500 33
+ERROR 2025-08-07 18:25:41,032 basehttp 58085 123145470865408 "POST /api/webhook/ HTTP/1.1" 500 33
+ERROR 2025-08-07 18:25:45,169 basehttp 58085 123145470865408 "POST /api/webhook/ HTTP/1.1" 500 33
+INFO 2025-08-07 18:25:45,212 basehttp 58085 123145487654912 "GET /admin/api/user/ HTTP/1.1" 200 16568
+INFO 2025-08-07 18:25:45,285 basehttp 58085 123145487654912 "GET /admin/jsi18n/ HTTP/1.1" 200 16066
+INFO 2025-08-07 18:25:52,661 basehttp 58085 123145538023424 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+ERROR 2025-08-07 18:25:53,286 basehttp 58085 123145470865408 "POST /api/webhook/ HTTP/1.1" 500 33
+INFO 2025-08-07 18:25:54,080 basehttp 58085 123145487654912 "GET /admin/api/address/ HTTP/1.1" 200 15013
+INFO 2025-08-07 18:25:54,132 basehttp 58085 123145487654912 "GET /admin/jsi18n/ HTTP/1.1" 200 16066
+INFO 2025-08-07 18:25:56,411 basehttp 58085 123145487654912 "GET /admin/api/user/ HTTP/1.1" 200 16568
+INFO 2025-08-07 18:25:56,472 basehttp 58085 123145487654912 "GET /admin/jsi18n/ HTTP/1.1" 200 16066
+ERROR 2025-08-07 18:26:09,414 basehttp 58085 123145470865408 "POST /api/webhook/ HTTP/1.1" 500 33
+INFO 2025-08-07 18:26:13,344 autoreload 58970 140704590802880 Watching for file changes with StatReloader
+ERROR 2025-08-07 18:26:41,560 basehttp 58970 123145358462976 "POST /api/webhook/ HTTP/1.1" 500 33
+INFO 2025-08-07 18:27:26,144 basehttp 58970 123145375252480 "GET /admin/api/address/ HTTP/1.1" 200 15013
+INFO 2025-08-07 18:27:26,198 basehttp 58970 123145375252480 "GET /admin/jsi18n/ HTTP/1.1" 200 16066
+INFO 2025-08-07 18:27:27,557 basehttp 58970 123145375252480 "GET /admin/api/user/ HTTP/1.1" 200 16568
+INFO 2025-08-07 18:27:27,607 basehttp 58970 123145375252480 "GET /admin/jsi18n/ HTTP/1.1" 200 16066
+INFO 2025-08-07 18:27:38,447 basehttp 58970 123145408831488 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-07 18:27:38,664 basehttp 58970 123145408831488 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+WARNING 2025-08-07 18:27:38,879 basehttp 58970 123145408831488 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+ERROR 2025-08-07 18:27:43,719 basehttp 58970 123145425620992 "POST /api/webhook/ HTTP/1.1" 500 33
+INFO 2025-08-07 18:28:02,975 autoreload 60413 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:28:43,290 autoreload 60413 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:28:44,441 autoreload 60980 140704590802880 Watching for file changes with StatReloader
+ERROR 2025-08-07 18:29:41,889 basehttp 60980 123145466241024 "POST /api/webhook/ HTTP/1.1" 500 33
+INFO 2025-08-07 18:30:23,501 autoreload 60980 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/models.py changed, reloading.
+INFO 2025-08-07 18:30:25,068 autoreload 62383 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:30:27,588 autoreload 62383 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/models.py changed, reloading.
+INFO 2025-08-07 18:30:28,302 autoreload 62408 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:31:53,389 autoreload 63684 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:31:55,993 autoreload 63684 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:31:56,760 autoreload 63696 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:32:07,395 autoreload 63696 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:32:08,140 autoreload 63840 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:32:40,711 basehttp 63840 123145399148544 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:32:41,282 basehttp 63840 123145399148544 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:32:41,795 basehttp 63840 123145399148544 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:32:42,308 basehttp 63840 123145399148544 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:32:42,868 basehttp 63840 123145399148544 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:32:43,414 basehttp 63840 123145399148544 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:32:43,916 basehttp 63840 123145399148544 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:32:44,468 basehttp 63840 123145399148544 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:32:44,962 basehttp 63840 123145399148544 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:32:45,500 basehttp 63840 123145399148544 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:32:50,462 basehttp 63840 123145417547776 "GET /admin/api/user/ HTTP/1.1" 200 17015
+INFO 2025-08-07 18:32:50,507 basehttp 63840 123145417547776 "GET /admin/jsi18n/ HTTP/1.1" 200 16066
+INFO 2025-08-07 18:32:56,660 autoreload 63840 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/migrations/0004_user_last_name.py changed, reloading.
+INFO 2025-08-07 18:32:57,885 autoreload 64556 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:32:59,809 basehttp 64556 123145439019008 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-07 18:33:00,018 basehttp 64556 123145439019008 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+WARNING 2025-08-07 18:33:00,230 basehttp 64556 123145439019008 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+WARNING 2025-08-07 18:33:26,969 basehttp 64556 123145439019008 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+WARNING 2025-08-07 18:33:27,204 basehttp 64556 123145439019008 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+INFO 2025-08-07 18:33:56,813 autoreload 64556 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/models.py changed, reloading.
+INFO 2025-08-07 18:33:57,890 autoreload 65397 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:39:33,393 autoreload 69995 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:39:41,511 basehttp 69995 123145441312768 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-07 18:39:41,748 basehttp 69995 123145441312768 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+WARNING 2025-08-07 18:39:41,991 basehttp 69995 123145441312768 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+INFO 2025-08-07 18:39:49,596 basehttp 69995 123145458102272 "GET /admin/api/user/2/change/ HTTP/1.1" 200 16072
+INFO 2025-08-07 18:39:49,773 basehttp 69995 123145458102272 "GET /admin/jsi18n/ HTTP/1.1" 200 16066
+WARNING 2025-08-07 18:40:09,781 basehttp 69995 123145441312768 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+WARNING 2025-08-07 18:40:10,006 basehttp 69995 123145441312768 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+INFO 2025-08-07 18:41:12,543 autoreload 71396 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:41:17,930 basehttp 71396 123145445294080 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-07 18:41:18,155 basehttp 71396 123145445294080 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+WARNING 2025-08-07 18:41:18,376 basehttp 71396 123145445294080 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+INFO 2025-08-07 18:41:31,522 basehttp 71396 123145462083584 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:41:40,092 basehttp 71396 123145479409664 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-07 18:41:40,319 basehttp 71396 123145479409664 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+WARNING 2025-08-07 18:41:40,549 basehttp 71396 123145479409664 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+INFO 2025-08-07 18:42:03,821 basehttp 71396 123145496199168 "GET /admin/api/user/ HTTP/1.1" 302 0
+INFO 2025-08-07 18:42:03,934 basehttp 71396 123145496199168 "GET /admin/login/?next=/admin/api/user/ HTTP/1.1" 200 4248
+INFO 2025-08-07 18:42:07,275 basehttp 71396 123145496199168 "POST /admin/login/?next=/admin/api/user/ HTTP/1.1" 302 0
+INFO 2025-08-07 18:42:07,316 basehttp 71396 123145496199168 "GET /admin/api/user/ HTTP/1.1" 200 16573
+INFO 2025-08-07 18:42:07,465 basehttp 71396 123145496199168 "GET /admin/jsi18n/ HTTP/1.1" 200 16066
+INFO 2025-08-07 18:43:00,039 basehttp 71396 123145496199168 "POST /admin/api/user/ HTTP/1.1" 200 12966
+INFO 2025-08-07 18:43:00,115 basehttp 71396 123145496199168 "GET /static/admin/js/cancel.js HTTP/1.1" 200 884
+INFO 2025-08-07 18:43:02,212 basehttp 71396 123145496199168 "POST /admin/api/user/ HTTP/1.1" 302 0
+INFO 2025-08-07 18:43:02,228 basehttp 71396 123145496199168 "GET /admin/api/user/ HTTP/1.1" 200 14174
+INFO 2025-08-07 18:43:02,280 basehttp 71396 123145496199168 "GET /admin/jsi18n/ HTTP/1.1" 200 16066
+INFO 2025-08-07 18:43:27,104 basehttp 71396 123145496199168 "GET /admin/api/user/ HTTP/1.1" 200 14031
+INFO 2025-08-07 18:43:27,163 basehttp 71396 123145496199168 "GET /admin/jsi18n/ HTTP/1.1" 200 16066
+INFO 2025-08-07 18:44:13,263 basehttp 71396 123145462083584 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:44:13,916 basehttp 71396 123145462083584 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-07 18:44:19,884 basehttp 71396 123145496199168 "GET /admin/api/user/ HTTP/1.1" 200 16573
+INFO 2025-08-07 18:44:19,931 basehttp 71396 123145496199168 "GET /admin/jsi18n/ HTTP/1.1" 200 16066
+INFO 2025-08-07 18:44:28,031 basehttp 71396 123145479409664 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-07 18:44:28,513 basehttp 71396 123145512988672 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+WARNING 2025-08-07 18:44:28,740 basehttp 71396 123145512988672 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+INFO 2025-08-07 18:44:36,620 basehttp 71396 123145529778176 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-07 18:44:36,832 basehttp 71396 123145529778176 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+WARNING 2025-08-07 18:44:37,119 basehttp 71396 123145529778176 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 64
+INFO 2025-08-07 18:45:45,400 autoreload 71396 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:45:46,910 autoreload 75175 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:45:59,628 autoreload 75175 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:46:00,440 autoreload 75331 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:46:09,005 autoreload 75331 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:46:09,768 autoreload 75472 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:46:57,200 autoreload 75472 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:46:58,588 autoreload 76174 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:47:21,574 autoreload 76174 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:47:22,433 autoreload 76473 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:47:30,103 autoreload 76611 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:47:41,698 basehttp 76611 123145582456832 "POST /api/webhook/ HTTP/1.1" 200 15
+WARNING 2025-08-07 18:47:44,673 basehttp 76611 123145600319488 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 101
+ERROR 2025-08-07 18:47:44,898 basehttp 76611 123145600319488 "POST /api/auth/telegram-widget/ HTTP/1.1" 500 69
+INFO 2025-08-07 18:48:10,560 autoreload 76611 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:48:11,589 autoreload 77183 140704590802880 Watching for file changes with StatReloader
+WARNING 2025-08-07 18:48:24,149 basehttp 77183 123145601658880 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 101
+WARNING 2025-08-07 18:48:24,565 basehttp 77183 123145601658880 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 97
+INFO 2025-08-07 18:48:25,420 autoreload 77183 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:48:26,412 autoreload 77341 140704590802880 Watching for file changes with StatReloader
+WARNING 2025-08-07 18:48:27,657 basehttp 77341 123145440735232 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 101
+WARNING 2025-08-07 18:48:27,888 basehttp 77341 123145440735232 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 97
+INFO 2025-08-07 18:48:41,121 autoreload 77341 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:48:42,015 autoreload 77603 140704590802880 Watching for file changes with StatReloader
+WARNING 2025-08-07 18:48:44,806 basehttp 77603 123145362604032 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 101
+WARNING 2025-08-07 18:48:45,091 basehttp 77603 123145362604032 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 97
+INFO 2025-08-07 18:49:04,294 basehttp 77603 123145379393536 "POST /api/webhook/ HTTP/1.1" 200 15
+WARNING 2025-08-07 18:49:06,040 basehttp 77603 123145362604032 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 101
+WARNING 2025-08-07 18:49:06,290 basehttp 77603 123145362604032 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 97
+INFO 2025-08-07 18:49:30,752 autoreload 77603 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:49:31,626 autoreload 78299 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 18:51:12,023 basehttp 78299 123145379819520 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-07 18:51:12,236 basehttp 78299 123145379819520 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 101
+WARNING 2025-08-07 18:51:12,451 basehttp 78299 123145379819520 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 97
+WARNING 2025-08-07 18:51:53,407 basehttp 78299 123145379819520 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 101
+WARNING 2025-08-07 18:51:53,641 basehttp 78299 123145379819520 "POST /api/auth/telegram-widget/ HTTP/1.1" 400 97
+INFO 2025-08-07 18:52:54,428 autoreload 78299 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-07 18:52:55,635 autoreload 81051 140704590802880 Watching for file changes with StatReloader

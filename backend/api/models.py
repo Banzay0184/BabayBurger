@@ -212,6 +212,7 @@ class User(models.Model):
     telegram_id = models.BigIntegerField(unique=True)
     username = models.CharField(max_length=255, blank=True, null=True)
     first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -221,7 +222,12 @@ class User(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.first_name} (@{self.username})"
+        full_name = f"{self.first_name}"
+        if self.last_name:
+            full_name += f" {self.last_name}"
+        if self.username:
+            full_name += f" (@{self.username})"
+        return full_name
     
 class Address(models.Model):
     """Модель для хранения адресов доставки с координатами"""

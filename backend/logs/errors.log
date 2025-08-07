@@ -318,3 +318,13 @@ TypeError: unsupported operand type(s) for -: 'datetime.datetime' and 'NoneType'
 [2025-07-28 23:54:17,843] ERROR log log_response 241 - Internal Server Error: /api/webhook/
 [2025-08-07 15:50:08,767] ERROR log log_response 241 - Internal Server Error: /api/webhook/
 [2025-08-07 18:07:21,325] ERROR log log_response 241 - Internal Server Error: /api/webhook/
+[2025-08-07 18:25:38,759] ERROR log log_response 241 - Internal Server Error: /api/webhook/
+[2025-08-07 18:25:38,876] ERROR log log_response 241 - Internal Server Error: /api/webhook/
+[2025-08-07 18:25:41,030] ERROR log log_response 241 - Internal Server Error: /api/webhook/
+[2025-08-07 18:25:45,169] ERROR log log_response 241 - Internal Server Error: /api/webhook/
+[2025-08-07 18:25:53,286] ERROR log log_response 241 - Internal Server Error: /api/webhook/
+[2025-08-07 18:26:09,413] ERROR log log_response 241 - Internal Server Error: /api/webhook/
+[2025-08-07 18:26:41,560] ERROR log log_response 241 - Internal Server Error: /api/webhook/
+[2025-08-07 18:27:43,719] ERROR log log_response 241 - Internal Server Error: /api/webhook/
+[2025-08-07 18:29:41,888] ERROR log log_response 241 - Internal Server Error: /api/webhook/
+[2025-08-07 18:47:44,898] ERROR log log_response 241 - Internal Server Error: /api/auth/telegram-widget/
