@@ -52,24 +52,34 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
   };
 
   return (
-    <div className="bg-light-gray border border-border-gray rounded-2xl p-6 mb-8">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <h3 className="text-xl font-semibold text-text-primary">
-          Фильтры
-        </h3>
+    <div className="tg-card-modern p-8 mb-10 animate-fade-in">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+            <span className="text-white text-sm">🔍</span>
+          </div>
+          <h3 className="text-xl font-bold text-gray-900">
+            Фильтры
+          </h3>
+        </div>
         <Button 
           onClick={onReset}
           variant="secondary"
           size="sm"
+          className="!px-4 !py-2"
         >
-          Сбросить
+          <span className="flex items-center">
+            <span className="mr-2">🔄</span>
+            Сбросить
+          </span>
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Поиск */}
         <div>
-          <label className="block text-sm font-medium text-text-primary mb-3">
+          <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center">
+            <span className="mr-2">🔎</span>
             Поиск
           </label>
           <input
@@ -77,19 +87,20 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
             value={filters.search}
             onChange={handleSearchChange}
             placeholder="Название блюда..."
-            className="w-full px-4 py-3 bg-bg-card border border-border-gray rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-text-primary placeholder-text-light"
+            className="tg-input"
           />
         </div>
 
         {/* Категория */}
         <div>
-          <label className="block text-sm font-medium text-text-primary mb-3">
+          <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center">
+            <span className="mr-2">📂</span>
             Категория
           </label>
           <select
             value={filters.category || ''}
             onChange={handleCategoryChange}
-            className="w-full px-4 py-3 bg-bg-card border border-border-gray rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-text-primary"
+            className="tg-input"
           >
             <option value="">Все категории</option>
             {categories.map((category) => (
@@ -102,7 +113,8 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
 
         {/* Диапазон цен */}
         <div>
-          <label className="block text-sm font-medium text-text-primary mb-3">
+          <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center">
+            <span className="mr-2">💰</span>
             Цена
           </label>
           <div className="flex space-x-3">
@@ -112,7 +124,7 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
               value={filters.priceRange[0]}
               onChange={handlePriceRangeChange}
               placeholder="От"
-              className="flex-1 px-4 py-3 bg-bg-card border border-border-gray rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-text-primary placeholder-text-light"
+              className="flex-1 tg-input"
             />
             <input
               type="number"
@@ -120,24 +132,25 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
               value={filters.priceRange[1]}
               onChange={handlePriceRangeChange}
               placeholder="До"
-              className="flex-1 px-4 py-3 bg-bg-card border border-border-gray rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-text-primary placeholder-text-light"
+              className="flex-1 tg-input"
             />
           </div>
         </div>
 
         {/* Специальные фильтры */}
         <div>
-          <label className="block text-sm font-medium text-text-primary mb-3">
+          <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center">
+            <span className="mr-2">⭐</span>
             Специальные
           </label>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={handleShowHitsToggle}
               className={`
-                px-3 py-2 text-sm rounded-xl border transition-all duration-200
+                px-4 py-2 text-sm rounded-xl border-2 transition-all duration-300 font-medium
                 ${filters.showHits
-                  ? 'bg-warning/20 text-warning border-warning/30'
-                  : 'bg-bg-card text-text-secondary border-border-gray hover:bg-light-gray hover:text-text-primary'
+                  ? 'bg-gradient-to-r from-warning-500 to-warning-600 text-white border-warning-500 shadow-glow'
+                  : 'bg-white/80 backdrop-blur-sm text-gray-700 border-gray-200 hover:bg-white hover:border-warning-300 hover:shadow-button'
                 }
               `}
             >
@@ -146,10 +159,10 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
             <button
               onClick={handleShowNewToggle}
               className={`
-                px-3 py-2 text-sm rounded-xl border transition-all duration-200
+                px-4 py-2 text-sm rounded-xl border-2 transition-all duration-300 font-medium
                 ${filters.showNew
-                  ? 'bg-success/20 text-success border-success/30'
-                  : 'bg-bg-card text-text-secondary border-border-gray hover:bg-light-gray hover:text-text-primary'
+                  ? 'bg-gradient-to-r from-success-500 to-success-600 text-white border-success-500 shadow-glow'
+                  : 'bg-white/80 backdrop-blur-sm text-gray-700 border-gray-200 hover:bg-white hover:border-success-300 hover:shadow-button'
                 }
               `}
             >

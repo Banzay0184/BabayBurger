@@ -2336,3 +2336,239 @@ Test user updated: 908758841
 Ответ: {"type": "response", "method": "GET", "path": "/admin/api/sizeoption/", "status_code": 200, "duration": 0.045, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 13565}
 Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
 Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.014, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.004, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.116, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.004, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.027, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "198.163.193.183", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Received auth data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588138, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True}
+📊 Normalized data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm']
+🔍 ID fields after normalization: id=None, telegram_id=None
+ID пользователя не найден в данных, пытаемся получить из других источников
+✅ Добавлен тестовый ID: 908758841
+🔍 Validating Telegram Login Widget data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588138, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+📊 Data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm', 'id']
+🔍 ID fields: id=908758841, telegram_id=None
+✅ User ID validated: 908758841
+Data check string: allows_write_to_pm=True
+auth_date=1754588138
+first_name=Шахзод
+id=908758841
+is_premium=False
+language_code=ru
+last_name=Абидов
+photo_url=https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg
+username=abidov_0184
+Calculated hash: 436f1b076ac5119763da669ee0b7a1c0d2b85f8e1f336180262cc6b7fb9a2c69
+Received hash: telegram_webapp_hash
+Hash mismatch. Expected: 436f1b076ac5119763da669ee0b7a1c0d2b85f8e1f336180262cc6b7fb9a2c69, Got: telegram_webapp_hash
+Validation successful. Result data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588138, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+✅ Данные пользователя извлечены: telegram_id=908758841, first_name=Шахзод
+User updated: 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 200, "duration": 0.034, "user": "AnonymousUser", "ip": "198.163.193.183", "response_size": 234}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Creating/updating user: 908758841 - Шахзод Абидов (@abidov_0184)
+Updated existing user: Шахзод Абидов (@abidov_0184)
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.453, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "198.163.193.183", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Received auth data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588150, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True}
+📊 Normalized data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm']
+🔍 ID fields after normalization: id=None, telegram_id=None
+ID пользователя не найден в данных, пытаемся получить из других источников
+✅ Добавлен тестовый ID: 908758841
+🔍 Validating Telegram Login Widget data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588150, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+📊 Data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm', 'id']
+🔍 ID fields: id=908758841, telegram_id=None
+✅ User ID validated: 908758841
+Data check string: allows_write_to_pm=True
+auth_date=1754588150
+first_name=Шахзод
+id=908758841
+is_premium=False
+language_code=ru
+last_name=Абидов
+photo_url=https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg
+username=abidov_0184
+Calculated hash: 7658f0ea7bc456e6f7eb86da1133d9322c99c98aff98c3dd89342b09ec49c661
+Received hash: telegram_webapp_hash
+Hash mismatch. Expected: 7658f0ea7bc456e6f7eb86da1133d9322c99c98aff98c3dd89342b09ec49c661, Got: telegram_webapp_hash
+Validation successful. Result data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588150, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+✅ Данные пользователя извлечены: telegram_id=908758841, first_name=Шахзод
+User updated: 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 200, "duration": 0.005, "user": "AnonymousUser", "ip": "198.163.193.183", "response_size": 234}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "198.163.193.183", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Received auth data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588168, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True}
+📊 Normalized data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm']
+🔍 ID fields after normalization: id=None, telegram_id=None
+ID пользователя не найден в данных, пытаемся получить из других источников
+✅ Добавлен тестовый ID: 908758841
+🔍 Validating Telegram Login Widget data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588168, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+📊 Data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm', 'id']
+🔍 ID fields: id=908758841, telegram_id=None
+✅ User ID validated: 908758841
+Data check string: allows_write_to_pm=True
+auth_date=1754588168
+first_name=Шахзод
+id=908758841
+is_premium=False
+language_code=ru
+last_name=Абидов
+photo_url=https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg
+username=abidov_0184
+Calculated hash: 4bea93a539c97cd0833cb102233ff5fdd4415e93fef24ad1719ce258aec339d5
+Received hash: telegram_webapp_hash
+Hash mismatch. Expected: 4bea93a539c97cd0833cb102233ff5fdd4415e93fef24ad1719ce258aec339d5, Got: telegram_webapp_hash
+Validation successful. Result data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588168, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+✅ Данные пользователя извлечены: telegram_id=908758841, first_name=Шахзод
+User updated: 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 200, "duration": 0.007, "user": "AnonymousUser", "ip": "198.163.193.183", "response_size": 234}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "198.163.193.183", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Received auth data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588174, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True}
+📊 Normalized data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm']
+🔍 ID fields after normalization: id=None, telegram_id=None
+ID пользователя не найден в данных, пытаемся получить из других источников
+✅ Добавлен тестовый ID: 908758841
+🔍 Validating Telegram Login Widget data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588174, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+📊 Data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm', 'id']
+🔍 ID fields: id=908758841, telegram_id=None
+✅ User ID validated: 908758841
+Data check string: allows_write_to_pm=True
+auth_date=1754588174
+first_name=Шахзод
+id=908758841
+is_premium=False
+language_code=ru
+last_name=Абидов
+photo_url=https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg
+username=abidov_0184
+Calculated hash: d7e9bfb30298736edff77d958b4f10a665df4dc026d906c44cf38bd1b5ed6468
+Received hash: telegram_webapp_hash
+Hash mismatch. Expected: d7e9bfb30298736edff77d958b4f10a665df4dc026d906c44cf38bd1b5ed6468, Got: telegram_webapp_hash
+Validation successful. Result data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588174, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+✅ Данные пользователя извлечены: telegram_id=908758841, first_name=Шахзод
+User updated: 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 200, "duration": 0.007, "user": "AnonymousUser", "ip": "198.163.193.183", "response_size": 234}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "198.163.193.183", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Received auth data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588179, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True}
+📊 Normalized data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm']
+🔍 ID fields after normalization: id=None, telegram_id=None
+ID пользователя не найден в данных, пытаемся получить из других источников
+✅ Добавлен тестовый ID: 908758841
+🔍 Validating Telegram Login Widget data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588179, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+📊 Data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm', 'id']
+🔍 ID fields: id=908758841, telegram_id=None
+✅ User ID validated: 908758841
+Data check string: allows_write_to_pm=True
+auth_date=1754588179
+first_name=Шахзод
+id=908758841
+is_premium=False
+language_code=ru
+last_name=Абидов
+photo_url=https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg
+username=abidov_0184
+Calculated hash: 167cf5717f2e41c61a24d0e7c4866653e9e306e587768a543543250cbca98d7b
+Received hash: telegram_webapp_hash
+Hash mismatch. Expected: 167cf5717f2e41c61a24d0e7c4866653e9e306e587768a543543250cbca98d7b, Got: telegram_webapp_hash
+Validation successful. Result data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588179, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+✅ Данные пользователя извлечены: telegram_id=908758841, first_name=Шахзод
+User updated: 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 200, "duration": 0.006, "user": "AnonymousUser", "ip": "198.163.193.183", "response_size": 234}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "198.163.193.183", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Received auth data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588226, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True}
+📊 Normalized data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm']
+🔍 ID fields after normalization: id=None, telegram_id=None
+ID пользователя не найден в данных, пытаемся получить из других источников
+✅ Добавлен тестовый ID: 908758841
+🔍 Validating Telegram Login Widget data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588226, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+📊 Data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm', 'id']
+🔍 ID fields: id=908758841, telegram_id=None
+✅ User ID validated: 908758841
+Data check string: allows_write_to_pm=True
+auth_date=1754588226
+first_name=Шахзод
+id=908758841
+is_premium=False
+language_code=ru
+last_name=Абидов
+photo_url=https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg
+username=abidov_0184
+Calculated hash: 3840c711a6ce8ad54dac0697f385a3a4fed3908ca361d044530329faab24bf18
+Received hash: telegram_webapp_hash
+Hash mismatch. Expected: 3840c711a6ce8ad54dac0697f385a3a4fed3908ca361d044530329faab24bf18, Got: telegram_webapp_hash
+Validation successful. Result data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588226, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+✅ Данные пользователя извлечены: telegram_id=908758841, first_name=Шахзод
+User updated: 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 200, "duration": 0.042, "user": "AnonymousUser", "ip": "198.163.193.183", "response_size": 234}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/auth/telegram-widget/", "user": "AnonymousUser", "ip": "198.163.193.183", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Received auth data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588247, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True}
+📊 Normalized data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm']
+🔍 ID fields after normalization: id=None, telegram_id=None
+ID пользователя не найден в данных, пытаемся получить из других источников
+✅ Добавлен тестовый ID: 908758841
+🔍 Validating Telegram Login Widget data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588247, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+📊 Data keys: ['first_name', 'last_name', 'username', 'language_code', 'is_premium', 'auth_date', 'hash', 'photo_url', 'allows_write_to_pm', 'id']
+🔍 ID fields: id=908758841, telegram_id=None
+✅ User ID validated: 908758841
+Data check string: allows_write_to_pm=True
+auth_date=1754588247
+first_name=Шахзод
+id=908758841
+is_premium=False
+language_code=ru
+last_name=Абидов
+photo_url=https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg
+username=abidov_0184
+Calculated hash: 2ff53fc2658be4e4debabeaf0b3663a517d569815bbbc2ded55f0e9a1a9d32f7
+Received hash: telegram_webapp_hash
+Hash mismatch. Expected: 2ff53fc2658be4e4debabeaf0b3663a517d569815bbbc2ded55f0e9a1a9d32f7, Got: telegram_webapp_hash
+Validation successful. Result data: {'first_name': 'Шахзод', 'last_name': 'Абидов', 'username': 'abidov_0184', 'language_code': 'ru', 'is_premium': False, 'auth_date': 1754588247, 'hash': 'telegram_webapp_hash', 'photo_url': 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg', 'allows_write_to_pm': True, 'id': 908758841}
+✅ Данные пользователя извлечены: telegram_id=908758841, first_name=Шахзод
+User updated: 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/auth/telegram-widget/", "status_code": 200, "duration": 0.019, "user": "AnonymousUser", "ip": "198.163.193.183", "response_size": 234}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.005, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.048, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.002, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.021, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.007, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.038, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.003, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.02, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.005, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.02, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.005, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.035, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.028, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.056, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.109, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.137, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.008, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.026, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.827, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.873, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.006, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.03, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.039, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.056, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.05, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.067, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/auth/validate/", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ошибка: {"type": "error", "method": "GET", "path": "/api/auth/validate/", "exception": "“/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/auth/validate” не существует", "exception_type": "Http404", "duration": 0.003, "user": "AnonymousUser", "ip": "127.0.0.1"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/auth/validate/", "status_code": 404, "duration": 0.036, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 27194}

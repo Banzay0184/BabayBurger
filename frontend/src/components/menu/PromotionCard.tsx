@@ -38,6 +38,21 @@ export const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, onApply
     }
   };
 
+  const getGradient = () => {
+    switch (promotion.discount_type) {
+      case 'PERCENT':
+        return 'from-accent-500 to-accent-600';
+      case 'FIXED_AMOUNT':
+        return 'from-success-500 to-success-600';
+      case 'FREE_DELIVERY':
+        return 'from-primary-500 to-primary-600';
+      case 'FREE_ITEM':
+        return 'from-warning-500 to-warning-600';
+      default:
+        return 'from-primary-500 to-primary-600';
+    }
+  };
+
   const isExpired = () => {
     const now = new Date();
     const validTo = new Date(promotion.valid_to);
@@ -54,58 +69,79 @@ export const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, onApply
 
   return (
     <div className={`
-      bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-6
-      transition-all duration-300 hover:shadow-glow hover:border-primary/40
+      tg-card-modern p-6 relative overflow-hidden
+      transition-all duration-300 hover:scale-105
       ${!isActive() ? 'opacity-60' : ''}
     `}>
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <span className="text-3xl">{getIcon()}</span>
-          <div>
-            <h3 className="text-lg font-bold text-text-primary">
-              {promotion.name}
-            </h3>
-            <p className="text-sm text-text-secondary">
-              {getDiscountText()}
-            </p>
+      {/* Градиентный фон */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${getGradient()} opacity-5`}></div>
+      
+      {/* Декоративные элементы */}
+      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
+      <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-br from-white/10 to-transparent rounded-full translate-y-8 -translate-x-8"></div>
+      
+      <div className="relative z-10">
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex items-center space-x-4">
+            <div className={`w-12 h-12 bg-gradient-to-br ${getGradient()} rounded-xl flex items-center justify-center shadow-glow`}>
+              <span className="text-xl text-white">{getIcon()}</span>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 mb-1">
+                {promotion.name}
+              </h3>
+              <p className="text-sm text-gray-600 font-medium">
+                {getDiscountText()}
+              </p>
+            </div>
           </div>
-        </div>
-        
-        {!isActive() && (
-          <span className="px-2 py-1 bg-error/20 text-error text-xs rounded-full">
-            {isExpired() ? 'Истекла' : isUsageLimitReached() ? 'Лимит' : 'Неактивна'}
-          </span>
-        )}
-      </div>
-
-      <p className="text-text-secondary text-sm mb-4">
-        {promotion.description}
-      </p>
-
-      {promotion.min_order_amount && (
-        <div className="mb-4 p-3 bg-light-gray rounded-lg">
-          <p className="text-xs text-text-secondary">
-            Минимальная сумма заказа: <span className="font-semibold text-text-primary">{promotion.min_order_amount} ₽</span>
-          </p>
-        </div>
-      )}
-
-      <div className="flex items-center justify-between">
-        <div className="text-xs text-text-light">
-          {promotion.max_uses && (
-            <span>Использовано: {promotion.usage_count}/{promotion.max_uses}</span>
+          
+          {!isActive() && (
+            <span className="px-3 py-1 bg-error-100 text-error-700 text-xs font-semibold rounded-full border border-error-200">
+              {isExpired() ? 'Истекла' : isUsageLimitReached() ? 'Лимит' : 'Неактивна'}
+            </span>
           )}
         </div>
-        
-        {isActive() && onApply && (
-          <Button
-            onClick={() => onApply(promotion)}
-            size="sm"
-            variant="primary"
-          >
-            Применить
-          </Button>
+
+        <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+          {promotion.description}
+        </p>
+
+        {promotion.min_order_amount && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-500">💰</span>
+              <p className="text-sm text-gray-700">
+                Минимальная сумма заказа: <span className="font-bold text-gray-900">{promotion.min_order_amount} ₽</span>
+              </p>
+            </div>
+          </div>
         )}
+
+        <div className="flex items-center justify-between">
+          <div className="text-xs text-gray-500">
+            {promotion.max_uses && (
+              <span className="flex items-center">
+                <span className="mr-1">📊</span>
+                Использовано: {promotion.usage_count}/{promotion.max_uses}
+              </span>
+            )}
+          </div>
+          
+          {isActive() && onApply && (
+            <Button
+              onClick={() => onApply(promotion)}
+              size="sm"
+              variant="accent"
+              className="!px-6 !py-2"
+            >
+              <span className="flex items-center">
+                <span className="mr-2">✨</span>
+                Применить
+              </span>
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -3,12 +3,13 @@ import React from 'react';
 interface ButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   disabled?: boolean;
   loading?: boolean;
   className?: string;
   type?: 'button' | 'submit' | 'reset';
+  fullWidth?: boolean;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -19,14 +20,18 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   loading = false,
   className = '',
-  type = 'button'
+  type = 'button',
+  fullWidth = false
 }) => {
-  const baseClasses = 'font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-card';
+  const baseClasses = 'font-semibold rounded-modern-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100';
   
   const variantClasses = {
-    primary: 'bg-primary text-secondary hover:bg-gray-200 focus:ring-primary shadow-button hover:shadow-glow',
-    secondary: 'bg-bg-card text-text-primary hover:bg-light-gray focus:ring-accent border border-border-gray hover:border-primary',
-    danger: 'bg-error text-white hover:bg-red-600 focus:ring-error'
+    primary: 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 focus:ring-primary-500/50 shadow-button hover:shadow-button-hover',
+    secondary: 'bg-white text-gray-900 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 focus:ring-primary-500/50 shadow-button hover:shadow-button-hover',
+    accent: 'bg-gradient-to-r from-accent-500 to-accent-600 text-white hover:from-accent-600 hover:to-accent-700 focus:ring-accent-500/50 shadow-button hover:shadow-button-hover',
+    success: 'bg-gradient-to-r from-success-500 to-success-600 text-white hover:from-success-600 hover:to-success-700 focus:ring-success-500/50 shadow-button hover:shadow-button-hover',
+    warning: 'bg-gradient-to-r from-warning-500 to-warning-600 text-white hover:from-warning-600 hover:to-warning-700 focus:ring-warning-500/50 shadow-button hover:shadow-button-hover',
+    danger: 'bg-gradient-to-r from-error-500 to-error-600 text-white hover:from-error-600 hover:to-error-700 focus:ring-error-500/50 shadow-button hover:shadow-button-hover'
   };
   
   const sizeClasses = {
@@ -35,13 +40,13 @@ export const Button: React.FC<ButtonProps> = ({
     lg: 'px-8 py-4 text-lg'
   };
   
-  const disabledClasses = disabled || loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105';
+  const widthClasses = fullWidth ? 'w-full' : '';
   
   const classes = [
     baseClasses,
     variantClasses[variant],
     sizeClasses[size],
-    disabledClasses,
+    widthClasses,
     className
   ].join(' ');
 
@@ -55,7 +60,7 @@ export const Button: React.FC<ButtonProps> = ({
       {loading ? (
         <div className="flex items-center justify-center">
           <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-          Загрузка...
+          <span>Загрузка...</span>
         </div>
       ) : (
         children
