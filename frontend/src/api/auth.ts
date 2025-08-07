@@ -1,5 +1,6 @@
 import apiClient from './client';
 import type { User } from './types';
+import { API_CONFIG } from '../config/api';
 
 // Тип для данных пользователя Telegram
 interface TelegramWidgetUser {
@@ -42,9 +43,9 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
     console.log('=== ДИАГНОСТИКА АВТОРИЗАЦИИ ===');
     console.log('Исходные данные пользователя:', userData);
     
-    // Пробуем сначала JSON формат
-    const jsonData = {
-      id: userData.id,
+    // Создаем данные для отправки на сервер
+    const authData = {
+      telegram_id: userData.id,
       first_name: userData.first_name,
       last_name: userData.last_name || '',
       username: userData.username || '',
@@ -56,15 +57,12 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
       allows_write_to_pm: userData.allows_write_to_pm || false
     };
     
-    console.log('JSON данные для отправки:', jsonData);
+    console.log('📤 Данные для отправки:', authData);
+    console.log('🌐 URL запроса:', 'auth/telegram-widget/');
+    console.log('🔗 Полный URL:', `${API_CONFIG.BASE_URL}auth/telegram-widget/`);
     
-    console.log('URL запроса:', 'auth/telegram-widget/');
-    console.log('Заголовки запроса (JSON):', {
-      'Content-Type': 'application/json',
-    });
-    
-    // Пробуем JSON запрос
-    const response = await telegramAuthClient.post('auth/telegram-widget/', jsonData, {
+    // Отправляем JSON запрос
+    const response = await telegramAuthClient.post('auth/telegram-widget/', authData, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -73,7 +71,7 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
     console.log('✅ Ответ авторизации:', response.data);
     return response.data;
   } catch (error: any) {
-    console.error('❌ Ошибка авторизации Telegram (JSON):', error);
+    console.error('❌ Ошибка авторизации Telegram:', error);
     
     // Если JSON не работает, пробуем FormData
     if (error.response?.status === 400) {
@@ -83,7 +81,7 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
         const formData = new URLSearchParams();
         
         // Основные поля пользователя
-        formData.append('id', String(userData.id));
+        formData.append('telegram_id', String(userData.id));
         formData.append('first_name', userData.first_name);
         if (userData.last_name) {
           formData.append('last_name', userData.last_name);
@@ -104,7 +102,7 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
         }
         formData.append('allows_write_to_pm', String(userData.allows_write_to_pm || false));
         
-        console.log('FormData для отправки:');
+        console.log('📤 FormData для отправки:');
         for (const [key, value] of formData.entries()) {
           console.log(`${key}: ${value}`);
         }

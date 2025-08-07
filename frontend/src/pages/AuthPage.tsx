@@ -86,6 +86,27 @@ export const AuthPage: React.FC = () => {
             }
           </Button>
 
+          {/* Кнопка для тестирования API */}
+          <Button 
+            onClick={async () => {
+              try {
+                console.log('🧪 Тестируем API подключение...');
+                const response = await fetch(`${import.meta.env.DEV ? 'http://localhost:8000' : 'https://ec5b3f679bd2.ngrok-free.app'}/api/auth/test/`);
+                const data = await response.json();
+                console.log('✅ API тест успешен:', data);
+                alert('API подключение работает!');
+              } catch (error) {
+                console.error('❌ API тест не удался:', error);
+                alert('Ошибка API подключения. Проверьте консоль.');
+              }
+            }}
+            className="w-full"
+            variant="secondary"
+            size="md"
+          >
+            🧪 Тестировать API
+          </Button>
+
           {/* Кнопка для перехода в Telegram бот (только в десктопной версии) */}
           {isDesktop && (
             <TelegramBotButton />

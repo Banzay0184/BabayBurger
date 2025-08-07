@@ -8,7 +8,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  // Отключаем withCredentials для продакшена (ngrok)
+  // Отключаем withCredentials для продакшена
   withCredentials: API_CONFIG.ENV.isDevelopment,
 });
 
@@ -27,6 +27,14 @@ const getCSRFToken = (): string | null => {
 
 apiClient.interceptors.request.use(
   (config: any) => {
+    console.log('🌐 API запрос:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      baseURL: config.baseURL,
+      fullURL: `${config.baseURL}${config.url}`,
+      headers: config.headers
+    });
+    
     // Добавляем CSRF токен только в разработке
     if (API_CONFIG.ENV.isDevelopment) {
       const csrfToken = getCSRFToken();
@@ -41,7 +49,7 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Добавляем специальные заголовки для ngrok
+    // Добавляем специальные заголовки для продакшена
     if (!API_CONFIG.ENV.isDevelopment) {
       config.headers['ngrok-skip-browser-warning'] = 'true';
       config.headers['Access-Control-Allow-Origin'] = '*';
@@ -50,20 +58,38 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error: any) => {
+    console.error('❌ Ошибка запроса:', error);
     return Promise.reject(error);
   }
 );
 
 apiClient.interceptors.response.use(
   (response: any) => {
+    console.log('✅ API ответ:', {
+      status: response.status,
+      url: response.config.url,
+      data: response.data
+    });
     return response;
   },
   (error: any) => {
+    console.error('❌ API ошибка:', {
+      message: error.message,
+      status: error.response?.status,
+      url: error.config?.url,
+      data: error.response?.data
+    });
+
     if (!error.response) {
-      console.error('Network error:', error.message);
+      console.error('🌐 Network error:', error.message);
       return Promise.reject({
         message: 'Ошибка сети. Проверьте подключение к интернету.',
-        code: 'NETWORK_ERROR'
+        code: 'NETWORK_ERROR',
+        details: {
+          originalError: error.message,
+          url: error.config?.url,
+          baseURL: API_CONFIG.BASE_URL
+        }
       });
     }
 

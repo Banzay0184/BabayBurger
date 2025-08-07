@@ -600,3 +600,6 @@ WARNING 2025-08-07 17:53:20,105 basehttp 13139 123145446879232 "POST /api/auth/l
 WARNING 2025-08-07 17:53:45,479 basehttp 13139 123145446879232 "GET /api/auth/validate/ HTTP/1.1" 404 27001
 WARNING 2025-08-07 17:53:45,505 basehttp 13139 123145430089728 "GET /api/auth/validate/ HTTP/1.1" 404 27001
 INFO 2025-08-07 17:57:01,135 autoreload 34663 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 17:59:33,713 autoreload 34663 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-07 17:59:35,241 autoreload 36782 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-07 17:59:39,558 autoreload 36913 140704590802880 Watching for file changes with StatReloader

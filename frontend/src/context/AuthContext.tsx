@@ -127,29 +127,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error('Не удалось получить данные пользователя из Telegram');
       }
 
-      console.log('Авторизация через Telegram:', {
+      console.log('🔐 Авторизация через Telegram:', {
         telegram_id: telegramId,
         first_name: telegramUser.first_name,
         last_name: telegramUser.last_name,
-        username: telegramUser.username
+        username: telegramUser.username,
+        language_code: telegramUser.language_code,
+        is_premium: telegramUser.is_premium
       });
 
-      // Отправляем запрос на авторизацию
-      const response = await authApi.telegramAuth({
+      // Создаем данные для авторизации
+      const authData = {
         telegram_id: telegramId,
         first_name: telegramUser.first_name,
         last_name: telegramUser.last_name || '',
-        username: telegramUser.username || ''
-      });
+        username: telegramUser.username || '',
+        language_code: telegramUser.language_code || 'ru',
+        is_premium: telegramUser.is_premium || false,
+        auth_date: Math.floor(Date.now() / 1000),
+        hash: 'telegram_webapp_hash', // В Web App хеш не нужен
+        photo_url: telegramUser.photo_url || '',
+        allows_write_to_pm: telegramUser.allows_write_to_pm || false
+      };
+
+      console.log('📤 Отправляем данные на сервер:', authData);
+
+      // Отправляем запрос на авторизацию
+      const response = await authApi.telegramAuth(authData);
+
+      console.log('✅ Получен ответ от сервера:', response);
 
       // Сохраняем токен если он есть
       if (response.token) {
         localStorage.setItem('auth_token', response.token);
+        console.log('✅ Токен сохранен');
       }
 
       dispatch({ type: 'AUTH_SUCCESS', payload: response.user });
+      console.log('🎉 Авторизация успешна!');
     } catch (error: any) {
       const errorMessage = error.message || 'Ошибка авторизации через Telegram';
+      console.error('❌ Ошибка авторизации:', error);
       dispatch({ type: 'AUTH_FAILURE', payload: errorMessage });
     }
   };
