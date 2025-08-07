@@ -54,7 +54,120 @@ export const getTelegramId = (): number | null => {
   const webApp = (window as any).Telegram.WebApp;
   const user = webApp.initDataUnsafe?.user;
   
-  return user?.id || null;
+  console.log('🔍 Получение Telegram ID:', {
+    hasWebApp: !!webApp,
+    hasInitDataUnsafe: !!webApp.initDataUnsafe,
+    hasUser: !!user,
+    userId: user?.id,
+    userData: user,
+    initData: webApp.initData?.substring(0, 200) + '...',
+    initDataUnsafe: webApp.initDataUnsafe
+  });
+  
+  // Если ID есть в WebApp
+  if (user?.id) {
+    console.log('✅ ID получен из WebApp:', user.id);
+    return user.id;
+  }
+  
+  // Попробуем получить из initData
+  if (webApp.initData) {
+    try {
+      const initDataParams = new URLSearchParams(webApp.initData);
+      const userParam = initDataParams.get('user');
+      
+      if (userParam) {
+        const userData = JSON.parse(decodeURIComponent(userParam));
+        console.log('✅ ID получен из initData:', userData.id);
+        return userData.id;
+      }
+    } catch (error) {
+      console.log('❌ Ошибка парсинга initData для ID:', error);
+    }
+  }
+  
+  // Попробуем получить из URL hash
+  try {
+    const url = window.location.href;
+    if (url.includes('tgWebAppData=')) {
+      const urlParams = new URLSearchParams(window.location.hash.substring(1));
+      const tgWebAppData = urlParams.get('tgWebAppData');
+      
+      if (tgWebAppData) {
+        console.log('🔍 Найдены данные в URL для ID:', tgWebAppData);
+        
+        // Парсим данные из URL
+        const decodedData = decodeURIComponent(tgWebAppData);
+        const dataParams = new URLSearchParams(decodedData);
+        const userParam = dataParams.get('user');
+        
+        if (userParam) {
+          const userData = JSON.parse(userParam);
+          console.log('✅ ID пользователя из tgWebAppData:', userData.id);
+          return userData.id;
+        }
+      }
+    }
+  } catch (error) {
+    console.log('❌ Ошибка парсинга URL для ID:', error);
+  }
+  
+  // Альтернативный способ - получение из URL параметров
+  try {
+    const url = window.location.href;
+    
+    // Вариант 1: tgWebAppData в hash
+    if (url.includes('tgWebAppData=')) {
+      const urlParams = new URLSearchParams(window.location.hash.substring(1));
+      const tgWebAppData = urlParams.get('tgWebAppData');
+      
+      if (tgWebAppData) {
+        console.log('🔍 Найдены данные в URL для ID:', tgWebAppData);
+        
+        // Парсим данные из URL
+        const decodedData = decodeURIComponent(tgWebAppData);
+        const dataParams = new URLSearchParams(decodedData);
+        const userParam = dataParams.get('user');
+        
+        if (userParam) {
+          const userData = JSON.parse(userParam);
+          console.log('✅ ID пользователя из tgWebAppData:', userData.id);
+          return userData.id;
+        }
+      }
+    }
+    
+    // Вариант 2: user параметр в URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const userParam = urlParams.get('user');
+    
+    if (userParam) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(userParam));
+        console.log('✅ ID пользователя из user параметра:', userData.id);
+        return userData.id;
+      } catch (e) {
+        console.log('❌ Не удалось распарсить user параметр для ID');
+      }
+    }
+    
+    // Вариант 3: Парсим из полного URL
+    const userMatch = url.match(/user%3D([^%&]+)/);
+    if (userMatch) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(userMatch[1]));
+        console.log('✅ ID пользователя из URL regex:', userData.id);
+        return userData.id;
+      } catch (e) {
+        console.log('❌ Не удалось распарсить ID из URL regex');
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ Ошибка парсинга ID из URL:', error);
+  }
+  
+  return null;
 };
 
 // Получаем данные пользователя из Telegram
@@ -64,13 +177,95 @@ export const getTelegramUser = () => {
   const webApp = (window as any).Telegram.WebApp;
   const user = webApp.initDataUnsafe?.user;
   
-  console.log('Получение данных пользователя:', {
-    user: user,
+  console.log('🔍 Получение данных пользователя:', {
+    hasWebApp: !!webApp,
+    hasInitDataUnsafe: !!webApp.initDataUnsafe,
     hasUser: !!user,
-    initData: webApp.initData?.substring(0, 50) + '...'
+    user: user,
+    initDataLength: webApp.initData?.length || 0,
+    initDataPreview: webApp.initData?.substring(0, 200) + '...'
   });
   
-  return user || null;
+  // Если данные пользователя есть в WebApp
+  if (user) {
+    console.log('✅ Данные пользователя получены из WebApp:', user);
+    return user;
+  }
+  
+  // Попробуем получить из initData
+  if (webApp.initData) {
+    try {
+      const initDataParams = new URLSearchParams(webApp.initData);
+      const userParam = initDataParams.get('user');
+      
+      if (userParam) {
+        const userData = JSON.parse(decodeURIComponent(userParam));
+        console.log('✅ Данные пользователя получены из initData:', userData);
+        return userData;
+      }
+    } catch (error) {
+      console.log('❌ Ошибка парсинга initData для данных пользователя:', error);
+    }
+  }
+  
+  // Альтернативный способ - получение из URL параметров
+  try {
+    // Проверяем разные варианты URL параметров
+    const url = window.location.href;
+    console.log('🔗 Анализ URL:', url);
+    
+    // Вариант 1: tgWebAppData в hash
+    if (url.includes('tgWebAppData=')) {
+      const urlParams = new URLSearchParams(window.location.hash.substring(1));
+      const tgWebAppData = urlParams.get('tgWebAppData');
+      
+      if (tgWebAppData) {
+        console.log('🔍 Найдены данные в tgWebAppData:', tgWebAppData);
+        
+        // Парсим данные из URL
+        const decodedData = decodeURIComponent(tgWebAppData);
+        const dataParams = new URLSearchParams(decodedData);
+        const userParam = dataParams.get('user');
+        
+        if (userParam) {
+          const userData = JSON.parse(userParam);
+          console.log('✅ Данные пользователя из tgWebAppData:', userData);
+          return userData;
+        }
+      }
+    }
+    
+    // Вариант 2: user параметр в URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const userParam = urlParams.get('user');
+    
+    if (userParam) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(userParam));
+        console.log('✅ Данные пользователя из user параметра:', userData);
+        return userData;
+      } catch (e) {
+        console.log('❌ Не удалось распарсить user параметр:', userParam);
+      }
+    }
+    
+    // Вариант 3: Парсим из полного URL
+    const userMatch = url.match(/user%3D([^%&]+)/);
+    if (userMatch) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(userMatch[1]));
+        console.log('✅ Данные пользователя из URL regex:', userData);
+        return userData;
+      } catch (e) {
+        console.log('❌ Не удалось распарсить данные из URL regex');
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ Ошибка парсинга данных из URL:', error);
+  }
+  
+  return null;
 };
 
 // Инициализируем Telegram Web App

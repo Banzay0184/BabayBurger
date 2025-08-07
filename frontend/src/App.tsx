@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { MenuProvider } from './context/MenuContext';
 import { AuthPage } from './pages/AuthPage';
 import { MainPage } from './pages/MainPage';
 import { initTelegramWebApp } from './utils/telegram';
@@ -18,8 +19,12 @@ const AppContent: React.FC = () => {
     return <AuthPage />;
   }
 
-  // Если авторизован - показываем главную страницу
-  return <MainPage />;
+  // Если авторизован - показываем главную страницу с меню
+  return (
+    <MenuProvider>
+      <MainPage />
+    </MenuProvider>
+  );
 };
 
 // Главный компонент приложения

@@ -45,7 +45,8 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
     
     // Создаем данные для отправки на сервер
     const authData = {
-      telegram_id: userData.id,
+      telegram_id: userData.id, // Используем telegram_id для совместимости с бэкендом
+      id: userData.id, // Также добавляем id для поддержки
       first_name: userData.first_name,
       last_name: userData.last_name || '',
       username: userData.username || '',
@@ -81,7 +82,8 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
         const formData = new URLSearchParams();
         
         // Основные поля пользователя
-        formData.append('telegram_id', String(userData.id));
+        formData.append('telegram_id', String(userData.id)); // Используем telegram_id для совместимости
+        formData.append('id', String(userData.id)); // Также добавляем id для поддержки
         formData.append('first_name', userData.first_name);
         if (userData.last_name) {
           formData.append('last_name', userData.last_name);
