@@ -47,7 +47,7 @@ export const MenuPage: React.FC = () => {
           <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-6"></div>
           <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-accent-500 rounded-full animate-spin mx-auto" style={{ animationDelay: '-0.5s' }}></div>
         </div>
-        <p className="text-gray-600 text-lg font-medium">Загрузка меню...</p>
+        <p className="text-gray-300 text-lg font-medium">Загрузка меню...</p>
         <p className="text-gray-500 text-sm mt-2">Подготавливаем вкусные блюда для вас</p>
       </div>
     );
@@ -56,10 +56,10 @@ export const MenuPage: React.FC = () => {
   if (state.error) {
     return (
       <div className="text-center py-16 animate-fade-in">
-        <div className="w-20 h-20 bg-gradient-to-br from-error-100 to-error-200 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="w-20 h-20 bg-gradient-to-br from-error-900/30 to-error-800/30 rounded-full flex items-center justify-center mx-auto mb-6 border border-error-700/50">
           <span className="text-3xl">⚠️</span>
         </div>
-        <p className="text-error-600 text-lg font-semibold mb-4">{state.error}</p>
+        <p className="text-error-300 text-lg font-semibold mb-4">{state.error}</p>
         <Button onClick={() => fetchMenu()} variant="primary">
           <span className="flex items-center">
             <span className="mr-2">🔄</span>
@@ -78,27 +78,27 @@ export const MenuPage: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Современный заголовок */}
+      {/* Современный заголовок с темной темой */}
       <div className="text-center mb-10 animate-slide-up">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl mb-4 shadow-glow">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl mb-4 shadow-dark-glow animate-dark-pulse">
           <span className="text-3xl">🍔</span>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-3">
+        <h1 className="text-3xl font-bold text-gray-100 mb-3 neon-text">
           Меню Babay Burger
         </h1>
-        <p className="text-gray-600 text-lg max-w-md mx-auto">
+        <p className="text-gray-400 text-lg max-w-md mx-auto">
           Выберите любимые блюда из нашего разнообразного меню
         </p>
       </div>
 
-      {/* Акции с современным дизайном */}
+      {/* Акции с современным дизайном для темной темы */}
       {activePromotions.length > 0 && (
         <div className="mb-10 animate-fade-in">
           <div className="flex items-center mb-6">
-            <div className="w-8 h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center mr-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center mr-3 shadow-dark-glow">
               <span className="text-white text-sm">🎉</span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-100 neon-text">
               Акции и скидки
             </h2>
           </div>
@@ -115,7 +115,7 @@ export const MenuPage: React.FC = () => {
         </div>
       )}
 
-      {/* Хиты с современным дизайном */}
+      {/* Хиты с современным дизайном для темной темы */}
       <div className="animate-slide-up">
         <FeaturedSection
           title="🔥 Хиты продаж"
@@ -125,7 +125,7 @@ export const MenuPage: React.FC = () => {
         />
       </div>
 
-      {/* Новинки с современным дизайном */}
+      {/* Новинки с современным дизайном для темной темы */}
       <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
         <FeaturedSection
           title="✨ Новинки"
@@ -135,7 +135,7 @@ export const MenuPage: React.FC = () => {
         />
       </div>
 
-      {/* Фильтры с современным дизайном */}
+      {/* Фильтры с современным дизайном для темной темы */}
       <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
         <MenuFilters
           filters={state.filters}
@@ -145,14 +145,14 @@ export const MenuPage: React.FC = () => {
         />
       </div>
 
-      {/* Результаты поиска с современным дизайном */}
+      {/* Результаты поиска с современным дизайном для темной темы */}
       {state.filters.search && (
         <div className="mb-10 animate-fade-in">
           <div className="flex items-center mb-6">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center mr-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center mr-3 shadow-dark-glow">
               <span className="text-white text-sm">🔍</span>
             </div>
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-gray-100 neon-text">
               Результаты поиска: "{state.filters.search}"
             </h2>
           </div>
@@ -160,19 +160,19 @@ export const MenuPage: React.FC = () => {
             {filteredItems.map((item, index) => (
               <div key={item.id} className="tg-card-modern p-6 animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-semibold text-gray-900 text-lg">{item.name}</h3>
-                  <span className="font-bold text-primary-600 text-lg">{item.price} ₽</span>
+                  <h3 className="font-semibold text-gray-100 text-lg">{item.name}</h3>
+                  <span className="font-bold text-primary-400 text-lg">{item.price} ₽</span>
                 </div>
-                <p className="text-gray-600 text-sm">{item.description}</p>
+                <p className="text-gray-400 text-sm">{item.description}</p>
               </div>
             ))}
           </div>
           {filteredItems.length === 0 && (
             <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-600/50">
                 <span className="text-2xl">🔍</span>
               </div>
-              <p className="text-gray-600 text-lg font-medium">
+              <p className="text-gray-300 text-lg font-medium">
                 По вашему запросу ничего не найдено
               </p>
               <p className="text-gray-500 text-sm mt-2">
@@ -183,7 +183,7 @@ export const MenuPage: React.FC = () => {
         </div>
       )}
 
-      {/* Категории меню с современным дизайном */}
+      {/* Категории меню с современным дизайном для темной темы */}
       {!state.filters.search && (
         <div className="animate-fade-in">
           {availableCategories.length > 0 ? (
@@ -197,10 +197,10 @@ export const MenuPage: React.FC = () => {
             ))
           ) : (
             <div className="text-center py-16">
-              <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-600/50">
                 <span className="text-3xl">🍽️</span>
               </div>
-              <p className="text-gray-600 text-lg font-medium mb-2">
+              <p className="text-gray-300 text-lg font-medium mb-2">
                 В данный момент меню недоступно
               </p>
               <p className="text-gray-500 text-sm">

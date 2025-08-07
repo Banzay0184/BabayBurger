@@ -47,10 +47,10 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
     <div className="tg-card-modern p-8 mb-10 animate-fade-in">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-dark-glow">
             <span className="text-white text-sm">🔍</span>
           </div>
-          <h3 className="text-xl font-bold text-gray-900">
+          <h3 className="text-xl font-bold text-gray-100 neon-text">
             Фильтры
           </h3>
         </div>
@@ -70,7 +70,7 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Поиск */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center">
+          <label className="block text-sm font-semibold text-gray-100 mb-3 flex items-center">
             <span className="mr-2">🔎</span>
             Поиск
           </label>
@@ -85,7 +85,7 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
 
         {/* Категория */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center">
+          <label className="block text-sm font-semibold text-gray-100 mb-3 flex items-center">
             <span className="mr-2">📂</span>
             Категория
           </label>
@@ -105,7 +105,7 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
 
         {/* Диапазон цен */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center">
+          <label className="block text-sm font-semibold text-gray-100 mb-3 flex items-center">
             <span className="mr-2">💰</span>
             Цена
           </label>
@@ -131,7 +131,7 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
 
         {/* Специальные фильтры */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center">
+          <label className="block text-sm font-semibold text-gray-100 mb-3 flex items-center">
             <span className="mr-2">⭐</span>
             Специальные
           </label>
@@ -141,8 +141,8 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
               className={`
                 px-4 py-2 text-sm rounded-xl border-2 transition-all duration-300 font-medium
                 ${filters.showHits
-                  ? 'bg-gradient-to-r from-warning-500 to-warning-600 text-white border-warning-500 shadow-glow'
-                  : 'bg-white/80 backdrop-blur-sm text-gray-700 border-gray-200 hover:bg-white hover:border-warning-300 hover:shadow-button'
+                  ? 'bg-gradient-to-r from-warning-500 to-warning-600 text-white border-warning-500 shadow-dark-glow'
+                  : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-warning-500/50 hover:shadow-dark-card'
                 }
               `}
             >
@@ -153,8 +153,8 @@ export const MenuFilters: React.FC<MenuFiltersProps> = ({
               className={`
                 px-4 py-2 text-sm rounded-xl border-2 transition-all duration-300 font-medium
                 ${filters.showNew
-                  ? 'bg-gradient-to-r from-success-500 to-success-600 text-white border-success-500 shadow-glow'
-                  : 'bg-white/80 backdrop-blur-sm text-gray-700 border-gray-200 hover:bg-white hover:border-success-300 hover:shadow-button'
+                  ? 'bg-gradient-to-r from-success-500 to-success-600 text-white border-success-500 shadow-dark-glow'
+                  : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-success-500/50 hover:shadow-dark-card'
                 }
               `}
             >

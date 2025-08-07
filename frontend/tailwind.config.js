@@ -80,6 +80,20 @@ export default {
           800: '#991b1b',
           900: '#7f1d1d',
         },
+        // Темная цветовая схема
+        'dark': {
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+          400: '#94a3b8',
+          500: '#64748b',
+          600: '#475569',
+          700: '#334155',
+          800: '#1e293b',
+          900: '#0f172a',
+          950: '#020617',
+        },
         // Telegram специфичные цвета
         'tg': {
           'primary': '#2481cc',
@@ -100,6 +114,8 @@ export default {
           'success': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
           'warning': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
           'error': 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+          'dark': 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+          'dark-card': 'linear-gradient(135deg, #334155 0%, #1e293b 100%)',
         }
       },
       fontFamily: {
@@ -117,6 +133,13 @@ export default {
         'glow-error': '0 0 20px rgba(239, 68, 68, 0.3)',
         'tg': '0 1px 3px rgba(0, 0, 0, 0.12)',
         'tg-hover': '0 4px 12px rgba(0, 0, 0, 0.15)',
+        // Темные тени
+        'dark-card': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
+        'dark-card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3)',
+        'dark-glow': '0 0 20px rgba(59, 130, 246, 0.4)',
+        'dark-glow-success': '0 0 20px rgba(34, 197, 94, 0.4)',
+        'dark-glow-warning': '0 0 20px rgba(245, 158, 11, 0.4)',
+        'dark-glow-error': '0 0 20px rgba(239, 68, 68, 0.4)',
       },
       borderRadius: {
         'tg': '12px',
@@ -155,6 +178,8 @@ export default {
         'bounce-in': 'bounceIn 0.6s ease-out',
         'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
         'float': 'float 3s ease-in-out infinite',
+        'dark-pulse': 'darkPulse 3s ease-in-out infinite',
+        'neon-glow': 'neonGlow 2s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -186,6 +211,26 @@ export default {
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-10px)' },
+        },
+        darkPulse: {
+          '0%, 100%': { 
+            boxShadow: '0 0 20px rgba(59, 130, 246, 0.4)',
+            transform: 'scale(1)'
+          },
+          '50%': { 
+            boxShadow: '0 0 30px rgba(59, 130, 246, 0.7)',
+            transform: 'scale(1.05)'
+          },
+        },
+        neonGlow: {
+          '0%, 100%': { 
+            textShadow: '0 0 5px rgba(59, 130, 246, 0.8), 0 0 10px rgba(59, 130, 246, 0.6), 0 0 15px rgba(59, 130, 246, 0.4)',
+            color: '#3b82f6'
+          },
+          '50%': { 
+            textShadow: '0 0 10px rgba(59, 130, 246, 1), 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.6)',
+            color: '#60a5fa'
+          },
         },
       },
       backdropBlur: {

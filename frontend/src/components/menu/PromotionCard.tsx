@@ -73,46 +73,46 @@ export const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, onApply
       transition-all duration-300 hover:scale-105
       ${!isActive() ? 'opacity-60' : ''}
     `}>
-      {/* Градиентный фон */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${getGradient()} opacity-5`}></div>
+      {/* Градиентный фон для темной темы */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${getGradient()} opacity-10`}></div>
       
-      {/* Декоративные элементы */}
-      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
-      <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-br from-white/10 to-transparent rounded-full translate-y-8 -translate-x-8"></div>
+      {/* Декоративные элементы для темной темы */}
+      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-gray-600/20 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
+      <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-br from-gray-600/20 to-transparent rounded-full translate-y-8 -translate-x-8"></div>
       
       <div className="relative z-10">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center space-x-4">
-            <div className={`w-12 h-12 bg-gradient-to-br ${getGradient()} rounded-xl flex items-center justify-center shadow-glow`}>
+            <div className={`w-12 h-12 bg-gradient-to-br ${getGradient()} rounded-xl flex items-center justify-center shadow-dark-glow`}>
               <span className="text-xl text-white">{getIcon()}</span>
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-1">
+              <h3 className="text-xl font-bold text-gray-100 mb-1 neon-text">
                 {promotion.name}
               </h3>
-              <p className="text-sm text-gray-600 font-medium">
+              <p className="text-sm text-gray-400 font-medium">
                 {getDiscountText()}
               </p>
             </div>
           </div>
           
           {!isActive() && (
-            <span className="px-3 py-1 bg-error-100 text-error-700 text-xs font-semibold rounded-full border border-error-200">
+            <span className="px-3 py-1 bg-error-900/30 text-error-300 text-xs font-semibold rounded-full border border-error-700/50">
               {isExpired() ? 'Истекла' : isUsageLimitReached() ? 'Лимит' : 'Неактивна'}
             </span>
           )}
         </div>
 
-        <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+        <p className="text-gray-400 text-sm mb-6 leading-relaxed">
           {promotion.description}
         </p>
 
         {promotion.min_order_amount && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+          <div className="mb-6 p-4 bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl border border-gray-600/50">
             <div className="flex items-center space-x-2">
-              <span className="text-gray-500">💰</span>
-              <p className="text-sm text-gray-700">
-                Минимальная сумма заказа: <span className="font-bold text-gray-900">{promotion.min_order_amount} ₽</span>
+              <span className="text-gray-400">💰</span>
+              <p className="text-sm text-gray-300">
+                Минимальная сумма заказа: <span className="font-bold text-gray-100">{promotion.min_order_amount} ₽</span>
               </p>
             </div>
           </div>

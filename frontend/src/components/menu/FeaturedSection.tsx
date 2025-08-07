@@ -22,10 +22,10 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
   return (
     <div className="mb-12">
       <div className="flex items-center mb-8">
-        <div className="w-10 h-10 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center mr-4 shadow-glow">
+        <div className="w-10 h-10 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center mr-4 shadow-dark-glow">
           <span className="text-white text-lg">{icon}</span>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-gray-100 neon-text">
           {title}
         </h2>
       </div>
