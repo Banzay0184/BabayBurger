@@ -44,7 +44,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 # CORS настройки для API
 CORS_ALLOW_ALL_ORIGINS = True  # Для разработки
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = False  # Отключаем для ngrok
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:3000',

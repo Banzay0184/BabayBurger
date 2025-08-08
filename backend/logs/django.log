@@ -18614,3 +18614,28 @@ INFO 2025-08-08 16:51:44,225 basehttp 31610 123145539002368 "OPTIONS /api/promot
 INFO 2025-08-08 16:51:48,808 basehttp 31610 123145572581376 "OPTIONS /api/promotions/ HTTP/1.1" 200 0
 INFO 2025-08-08 16:51:48,809 basehttp 31610 123145555791872 "OPTIONS /api/menu/ HTTP/1.1" 200 0
 INFO 2025-08-08 16:51:48,809 basehttp 31610 123145539002368 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:53:38,148 basehttp 31610 123145505423360 "OPTIONS /api/menu/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:53:38,232 basehttp 31610 123145539002368 "OPTIONS /api/promotions/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:53:38,232 basehttp 31610 123145522212864 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:53:53,647 basehttp 31610 123145555791872 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:54:01,442 basehttp 31610 123145555791872 "OPTIONS /api/promotions/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:54:01,444 basehttp 31610 123145572581376 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:54:01,445 basehttp 31610 123145589370880 "OPTIONS /api/menu/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:54:11,275 basehttp 31610 123145572581376 "OPTIONS /api/menu/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:54:11,275 basehttp 31610 123145555791872 "OPTIONS /api/promotions/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:54:11,276 basehttp 31610 123145589370880 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:54:25,240 autoreload 31610 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 16:54:26,555 autoreload 34059 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 16:54:43,579 autoreload 34059 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 16:54:44,649 autoreload 34248 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 16:54:56,530 autoreload 34248 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-08 16:54:57,639 autoreload 34511 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 16:55:13,483 autoreload 34511 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/urls.py changed, reloading.
+INFO 2025-08-08 16:55:14,095 autoreload 34694 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 16:55:24,706 autoreload 34694 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/urls.py changed, reloading.
+INFO 2025-08-08 16:55:25,312 autoreload 34864 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 16:56:12,247 basehttp 34864 123145552433152 "GET /api/test-cors/ HTTP/1.1" 200 343
+INFO 2025-08-08 16:56:39,037 autoreload 34864 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 16:56:40,680 autoreload 35999 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 16:56:42,222 autoreload 35999 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 16:56:42,932 autoreload 36021 140704590802880 Watching for file changes with StatReloader

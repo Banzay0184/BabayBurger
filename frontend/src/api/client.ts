@@ -8,8 +8,8 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  // Отключаем withCredentials для продакшена
-  withCredentials: false, // Всегда отключаем для ngrok
+  // Отключаем withCredentials для всех окружений
+  withCredentials: false,
 });
 
 // Функция для получения CSRF токена
@@ -49,11 +49,8 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Добавляем специальные заголовки для ngrok
-    if (!API_CONFIG.ENV.isDevelopment) {
-      config.headers['ngrok-skip-browser-warning'] = 'true';
-      config.headers['X-Requested-With'] = 'XMLHttpRequest';
-    }
+    // Убираем все кастомные заголовки для ngrok
+    // Добавляем только базовые заголовки
     
     return config;
   },
