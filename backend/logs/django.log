@@ -18684,3 +18684,14 @@ INFO 2025-08-08 17:03:25,439 basehttp 40627 123145415778304 "POST /api/auth/tele
 INFO 2025-08-08 17:03:29,061 basehttp 40627 123145432567808 "POST /api/webhook/ HTTP/1.1" 200 15
 INFO 2025-08-08 17:03:32,864 basehttp 40627 123145450430464 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
 INFO 2025-08-08 17:03:33,089 basehttp 40627 123145450430464 "POST /api/auth/telegram-widget/ HTTP/1.1" 200 234
+INFO 2025-08-08 17:05:37,139 basehttp 40627 123145382199296 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:05:37,367 basehttp 40627 123145382199296 "POST /api/auth/telegram-widget/ HTTP/1.1" 200 234
+INFO 2025-08-08 17:05:44,693 basehttp 40627 123145398988800 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:05:45,706 basehttp 40627 123145415778304 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:06:28,756 basehttp 40627 123145432567808 "GET /api/test-cors/ HTTP/1.1" 200 343
+INFO 2025-08-08 17:06:31,705 basehttp 40627 123145449893888 "GET /api/test-cors/ HTTP/1.1" 200 343
+INFO 2025-08-08 17:07:13,832 autoreload 40627 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/urls.py changed, reloading.
+INFO 2025-08-08 17:07:15,080 autoreload 44973 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 17:07:29,922 basehttp 44973 123145474715648 "GET /django-api/test-cors/ HTTP/1.1" 200 343
+INFO 2025-08-08 17:07:39,072 autoreload 44973 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/urls.py changed, reloading.
+INFO 2025-08-08 17:07:40,013 autoreload 45405 140704590802880 Watching for file changes with StatReloader
