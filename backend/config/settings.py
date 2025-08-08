@@ -44,7 +44,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 # CORS настройки для API
 CORS_ALLOW_ALL_ORIGINS = False  # Отключаем автоматический CORS для нашего middleware
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = False  # Изменяем на False для совместимости
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
@@ -206,9 +206,9 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'api.middleware.CORSMiddleware',  # Наш кастомный CORS middleware ПЕРЕД corsheaders
     'corsheaders.middleware.CorsMiddleware',  # Стандартный CORS middleware
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',

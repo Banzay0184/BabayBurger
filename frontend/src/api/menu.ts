@@ -15,7 +15,7 @@ export const menuApi = {
   // Получить все меню
   async getMenu(): Promise<ApiResponse<ApiMenuResponse>> {
     try {
-      const response = await apiClient.get('/menu/');
+      const response = await apiClient.get('menu/');
       return { data: response.data, success: true };
     } catch (error: any) {
       return { error, success: false };
@@ -25,7 +25,7 @@ export const menuApi = {
   // Получить категории
   async getCategories(): Promise<ApiResponse<ApiCategory[]>> {
     try {
-      const response = await apiClient.get('/categories/');
+      const response = await apiClient.get('categories/');
       return { data: response.data, success: true };
     } catch (error: any) {
       return { error, success: false };
@@ -35,7 +35,7 @@ export const menuApi = {
   // Получить товары категории
   async getCategoryItems(categoryId: number): Promise<ApiResponse<ApiMenuItem[]>> {
     try {
-      const response = await apiClient.get(`/categories/${categoryId}/items/`);
+      const response = await apiClient.get(`categories/${categoryId}/items/`);
       return { data: response.data, success: true };
     } catch (error: any) {
       return { error, success: false };
@@ -45,7 +45,7 @@ export const menuApi = {
   // Получить детали товара
   async getMenuItem(itemId: number): Promise<ApiResponse<ApiMenuItem>> {
     try {
-      const response = await apiClient.get(`/menu/items/${itemId}/`);
+      const response = await apiClient.get(`menu/items/${itemId}/`);
       return { data: response.data, success: true };
     } catch (error: any) {
       return { error, success: false };
@@ -55,7 +55,7 @@ export const menuApi = {
   // Получить хиты
   async getHits(): Promise<ApiResponse<ApiMenuItem[]>> {
     try {
-      const response = await apiClient.get('/menu/hits/');
+      const response = await apiClient.get('menu/hits/');
       return { data: response.data, success: true };
     } catch (error: any) {
       return { error, success: false };
@@ -65,7 +65,7 @@ export const menuApi = {
   // Получить новинки
   async getNewItems(): Promise<ApiResponse<ApiMenuItem[]>> {
     try {
-      const response = await apiClient.get('/menu/new/');
+      const response = await apiClient.get('menu/new/');
       return { data: response.data, success: true };
     } catch (error: any) {
       return { error, success: false };
@@ -75,7 +75,7 @@ export const menuApi = {
   // Получить рекомендуемые
   async getFeatured(): Promise<ApiResponse<ApiMenuItem[]>> {
     try {
-      const response = await apiClient.get('/menu/featured/');
+      const response = await apiClient.get('menu/featured/');
       return { data: response.data, success: true };
     } catch (error: any) {
       return { error, success: false };
@@ -116,7 +116,7 @@ export const menuApi = {
         apiParams.is_featured = params.is_featured;
       }
 
-      const response = await apiClient.get('/menu/search/', { params: apiParams });
+      const response = await apiClient.get('menu/search/', { params: apiParams });
       return { data: response.data, success: true };
     } catch (error: any) {
       return { error, success: false };
@@ -126,7 +126,7 @@ export const menuApi = {
   // Получить диапазон цен
   async getPriceRange(): Promise<ApiResponse<ApiPriceRange>> {
     try {
-      const response = await apiClient.get('/menu/price-range/');
+      const response = await apiClient.get('menu/price-range/');
       return { data: response.data, success: true };
     } catch (error: any) {
       return { error, success: false };
@@ -136,7 +136,7 @@ export const menuApi = {
   // Получить акции
   async getPromotions(): Promise<ApiResponse<ApiPromotion[]>> {
     try {
-      const response = await apiClient.get('/promotions/');
+      const response = await apiClient.get('promotions/');
       return { data: response.data, success: true };
     } catch (error: any) {
       return { error, success: false };
@@ -146,7 +146,7 @@ export const menuApi = {
   // Получить статистику
   async getStatistics(): Promise<ApiResponse<ApiStatistics>> {
     try {
-      const response = await apiClient.get('/statistics/');
+      const response = await apiClient.get('statistics/');
       return { data: response.data, success: true };
     } catch (error: any) {
       return { error, success: false };

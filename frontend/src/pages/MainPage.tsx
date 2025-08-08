@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { MenuPage } from './MenuPage';
+import TestApi from '../components/TestApi';
 
 export const MainPage: React.FC = () => {
   const { logout } = useAuth();
@@ -69,6 +70,11 @@ export const MainPage: React.FC = () => {
               <span className="text-xs font-medium text-gray-300">Адрес</span>
             </button>
           </div>
+        </div>
+
+        {/* Тестовый компонент API */}
+        <div className="mb-6">
+          <TestApi />
         </div>
 
         {/* Основной контент */}

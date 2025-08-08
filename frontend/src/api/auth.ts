@@ -43,6 +43,11 @@ export const diagnoseApiConnection = async () => {
     const testResponse = await testApiConnection();
     console.log('✅ Базовое подключение работает:', testResponse);
     
+    // Тестируем menu endpoint
+    console.log('🍔 Тестируем menu endpoint...');
+    const menuResponse = await apiClient.get('menu/');
+    console.log('✅ Menu endpoint работает:', menuResponse.data);
+    
     // Тестируем CORS
     const corsTest = await fetch(`${API_CONFIG.BASE_URL}test/`, {
       method: 'OPTIONS',
@@ -59,7 +64,8 @@ export const diagnoseApiConnection = async () => {
       details: {
         baseUrl: API_CONFIG.BASE_URL,
         cors: corsTest.status === 200,
-        testResponse
+        testResponse,
+        menuResponse: menuResponse.data
       }
     };
   } catch (error: any) {

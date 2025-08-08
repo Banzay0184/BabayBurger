@@ -8,8 +8,8 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  // Отключаем withCredentials для продакшена
-  withCredentials: API_CONFIG.ENV.isDevelopment,
+  // Отключаем withCredentials для всех окружений
+  withCredentials: false,
 });
 
 // Функция для получения CSRF токена
@@ -32,8 +32,14 @@ apiClient.interceptors.request.use(
       url: config.url,
       baseURL: config.baseURL,
       fullURL: `${config.baseURL}${config.url}`,
-      headers: config.headers
+      headers: config.headers,
+      withCredentials: config.withCredentials
     });
+    
+    // Добавляем ngrok заголовок только для продакшена
+    if (!API_CONFIG.ENV.isDevelopment) {
+      config.headers['ngrok-skip-browser-warning'] = 'true';
+    }
     
     // Добавляем CSRF токен только в разработке
     if (API_CONFIG.ENV.isDevelopment) {
@@ -49,11 +55,7 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Добавляем специальные заголовки для продакшена
-    if (!API_CONFIG.ENV.isDevelopment) {
-      config.headers['ngrok-skip-browser-warning'] = 'true';
-      config.headers['Access-Control-Allow-Origin'] = '*';
-    }
+    console.log('🔧 Финальные заголовки запроса:', config.headers);
     
     return config;
   },
@@ -82,13 +84,28 @@ apiClient.interceptors.response.use(
 
     if (!error.response) {
       console.error('🌐 Network error:', error.message);
+      
+      // Проверяем, не является ли это CORS ошибкой
+      if (error.message?.includes('Network Error') || error.message?.includes('CORS')) {
+        console.error('🚫 CORS/Network ошибка - попробуйте обновить страницу или проверить настройки');
+        
+        // Предлагаем решение для разработки
+        if (API_CONFIG.ENV.isDevelopment) {
+          console.warn('💡 Для разработки попробуйте:');
+          console.warn('1. Обновить страницу (Ctrl+F5)');
+          console.warn('2. Проверить, что Django сервер запущен');
+          console.warn('3. Проверить ngrok туннель');
+        }
+      }
+      
       return Promise.reject({
         message: 'Ошибка сети. Проверьте подключение к интернету.',
         code: 'NETWORK_ERROR',
         details: {
           originalError: error.message,
           url: error.config?.url,
-          baseURL: API_CONFIG.BASE_URL
+          baseURL: API_CONFIG.BASE_URL,
+          suggestion: 'Проверьте, что сервер запущен и доступен'
         }
       });
     }

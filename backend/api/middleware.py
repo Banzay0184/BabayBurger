@@ -19,7 +19,7 @@ class CORSMiddleware(MiddlewareMixin):
             response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
             response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, ngrok-skip-browser-warning, accept, accept-encoding, dnt, origin, user-agent, x-csrftoken'
             response['Access-Control-Max-Age'] = '86400'
-            response['Access-Control-Allow-Credentials'] = 'true'
+            response['Access-Control-Allow-Credentials'] = 'false'  # Изменяем на false
             return response
         return None
     
@@ -29,7 +29,7 @@ class CORSMiddleware(MiddlewareMixin):
         response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, ngrok-skip-browser-warning, accept, accept-encoding, dnt, origin, user-agent, x-csrftoken'
         response['Access-Control-Expose-Headers'] = 'Content-Type, Content-Length'
-        response['Access-Control-Allow-Credentials'] = 'true'
+        response['Access-Control-Allow-Credentials'] = 'false'  # Изменяем на false
         return response
 
 class RequestLoggingMiddleware(MiddlewareMixin):

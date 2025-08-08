@@ -3,13 +3,13 @@ export const API_CONFIG = {
   // URL API в зависимости от окружения
   BASE_URL: import.meta.env.VITE_API_URL || 
     (import.meta.env.DEV 
-      ? 'https://ec5b3f679bd2.ngrok-free.app/api/' 
+      ? '/api/'  // Используем локальный прокси в разработке
       : 'https://ec5b3f679bd2.ngrok-free.app/api/'),
   
   // URL для авторизации Telegram Widget
   TELEGRAM_WIDGET_URL: import.meta.env.VITE_TELEGRAM_AUTH_URL || 
     (import.meta.env.DEV 
-      ? 'https://ec5b3f679bd2.ngrok-free.app/api/auth/telegram-widget/'
+      ? '/api/auth/telegram-widget/'  // Используем локальный прокси
       : 'https://ec5b3f679bd2.ngrok-free.app/api/auth/telegram-widget/'),
   
   // Таймаут запросов
