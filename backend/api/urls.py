@@ -4,7 +4,9 @@ from .views import (
     AddressView, AddressDetailView, OrderCreateView, GeocodeView, GeocodeResultView,
     DeliveryZoneView, AddressDeliveryZoneCheckView, AddressDeliveryZoneDetailView,
     MenuItemViewSet, AddOnViewSet, SizeOptionViewSet, PromotionViewSet, OrderViewSet,
-    TelegramLoginWidgetView, TestUserCreationView
+    TelegramLoginWidgetView, TestUserCreationView, HitsView, NewItemsView, PromotionsView,
+    MenuItemDetailView, CategoryItemsView, SearchView, FeaturedView, PriceRangeView,
+    StatisticsView, CartView
 )
 from rest_framework.routers import DefaultRouter
 
@@ -28,7 +30,20 @@ urlpatterns = [
     path('user-address/', UserAddressView.as_view(), name='user-address'),
     # Меню и категории
     path('categories/', CategoryView.as_view(), name='categories'),
+    path('categories/<int:category_id>/items/', CategoryItemsView.as_view(), name='category-items'),
     path('menu/', MenuView.as_view(), name='menu'),
+    path('menu/items/<int:item_id>/', MenuItemDetailView.as_view(), name='menu-item-detail'),
+    # Хиты, новинки, акции
+    path('menu/hits/', HitsView.as_view(), name='hits'),
+    path('menu/new/', NewItemsView.as_view(), name='new-items'),
+    path('menu/featured/', FeaturedView.as_view(), name='featured'),
+    path('menu/search/', SearchView.as_view(), name='search'),
+    path('menu/price-range/', PriceRangeView.as_view(), name='price-range'),
+    path('promotions/', PromotionsView.as_view(), name='promotions'),
+    # Корзина
+    path('cart/', CartView.as_view(), name='cart'),
+    # Статистика
+    path('statistics/', StatisticsView.as_view(), name='statistics'),
     # Заказы
     path('orders/', OrderView.as_view(), name='orders'),
     path('orders/<int:order_id>/', OrderView.as_view(), name='order-detail'),

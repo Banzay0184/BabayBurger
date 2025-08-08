@@ -5,6 +5,7 @@ import logging
 import os
 import time
 from urllib.parse import parse_qs, urlencode
+from decimal import Decimal
 
 import requests
 from django.conf import settings
@@ -25,6 +26,7 @@ from .serializers import (
 from .bot import send_notification
 from .tasks import send_order_status_notification, geocode_yandex
 from celery.result import AsyncResult
+from django.db import models
 
 logger = logging.getLogger(__name__)
 
@@ -632,24 +634,39 @@ class MenuView(APIView):
             # Если нет в кэше, получаем из БД
             logger.info("Menu data not found in cache, fetching from database")
             
-            # Получаем категории
+            # Получаем категории с количеством товаров
             categories = Category.objects.all()
-            categories_serializer = CategorySerializer(categories, many=True)
+            categories_data = []
             
-            # Получаем блюда
-            items = MenuItem.objects.select_related('category').all()
-            items_serializer = MenuItemSerializer(items, many=True)
+            for category in categories:
+                items = MenuItem.objects.filter(category=category, is_active=True).order_by('priority', '-created_at')
+                items_serializer = MenuItemSerializer(items, many=True)
+                
+                categories_data.append({
+                    'id': category.id,
+                    'name': category.name,
+                    'description': category.description,
+                    'image': category.image.url if category.image else None,
+                    'items': items_serializer.data,
+                    'item_count': len(items)
+                })
+            
+            # Получаем все активные товары
+            all_items = MenuItem.objects.filter(is_active=True).select_related('category').order_by('priority', '-created_at')
+            all_items_serializer = MenuItemSerializer(all_items, many=True)
             
             # Формируем структурированный ответ
             data = {
-                'categories': categories_serializer.data,
-                'items': items_serializer.data
+                'categories': categories_data,
+                'all_items': all_items_serializer.data,
+                'total_items': len(all_items),
+                'total_categories': len(categories)
             }
             
             # Сохраняем в кэш на 5 минут
             try:
                 cache.set(cache_key, data, 300)
-                logger.info(f"Menu data cached successfully, {len(data['categories'])} categories, {len(data['items'])} items")
+                logger.info(f"Menu data cached successfully, {len(categories)} categories, {len(all_items)} items")
             except Exception as cache_error:
                 logger.warning(f"Failed to cache menu data: {str(cache_error)}")
             
@@ -677,17 +694,23 @@ class CategoryView(APIView):
             # Если нет в кэше, получаем из БД
             logger.info("Categories data not found in cache, fetching from database")
             categories = Category.objects.all()
-            serializer = CategorySerializer(categories, many=True)
-            data = serializer.data
+            
+            # Добавляем количество товаров в каждую категорию
+            categories_data = []
+            for category in categories:
+                item_count = MenuItem.objects.filter(category=category, is_active=True).count()
+                category_data = CategorySerializer(category).data
+                category_data['item_count'] = item_count
+                categories_data.append(category_data)
             
             # Сохраняем в кэш на 10 минут
             try:
-                cache.set(cache_key, data, 600)
-                logger.info(f"Categories data cached successfully, {len(data)} categories")
+                cache.set(cache_key, categories_data, 600)
+                logger.info(f"Categories data cached successfully, {len(categories_data)} categories")
             except Exception as cache_error:
                 logger.warning(f"Failed to cache categories data: {str(cache_error)}")
             
-            return Response(data)
+            return Response(categories_data)
         except Exception as e:
             logger.error(f"Category view error: {str(e)}", exc_info=True)
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -1138,7 +1161,7 @@ class AddressDetailView(APIView):
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class OrderCreateView(APIView):
-    """API для создания заказов с новой моделью Address"""
+    """API для создания заказа с улучшенной логикой"""
     
     def post(self, request):
         """Создает новый заказ"""
@@ -1178,25 +1201,50 @@ class OrderCreateView(APIView):
                     'delivery_zones_info': address.get_delivery_zones_info()
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            # Создаем заказ
-            order_data = {
-                'user': user,
-                'address': address,
-                'total_price': request.data.get('total_price', 0)
-            }
+            # Получаем товары из запроса или корзины
+            items_data = request.data.get('items', [])
+            if not items_data:
+                # Пробуем получить из корзины
+                cart_data = request.session.get('cart', {})
+                if not cart_data:
+                    return Response({'error': 'No items provided'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Преобразуем корзину в формат для заказа
+                items_data = []
+                for item_id, quantity in cart_data.items():
+                    try:
+                        item = MenuItem.objects.get(id=item_id, is_active=True)
+                        items_data.append({
+                            'menu_item_id': item.id,
+                            'quantity': quantity,
+                            'price': str(item.price)
+                        })
+                    except MenuItem.DoesNotExist:
+                        logger.warning(f"Item {item_id} not found, skipping")
+                        continue
             
-            order = Order.objects.create(**order_data)
+            if not items_data:
+                return Response({'error': 'No valid items found'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Создаем заказ
+            order = Order.objects.create(
+                user=user,
+                address=address,
+                total_price=0,
+                notes=request.data.get('notes', '')
+            )
+            
+            total_price = 0
             
             # Добавляем товары в заказ
-            items = request.data.get('items', [])
-            for item_data in items:
+            for item_data in items_data:
                 menu_item_id = item_data.get('menu_item_id')
                 quantity = item_data.get('quantity', 1)
                 size_option_id = item_data.get('size_option_id')
                 add_ons = item_data.get('add_ons', [])
                 
                 try:
-                    menu_item = MenuItem.objects.get(id=menu_item_id)
+                    menu_item = MenuItem.objects.get(id=menu_item_id, is_active=True)
                     order_item = OrderItem.objects.create(
                         order=order,
                         menu_item=menu_item,
@@ -1216,20 +1264,32 @@ class OrderCreateView(APIView):
                     if add_ons:
                         for addon_id in add_ons:
                             try:
-                                addon = AddOn.objects.get(id=addon_id)
+                                addon = AddOn.objects.get(id=addon_id, is_active=True)
                                 order_item.add_ons.add(addon)
                             except AddOn.DoesNotExist:
                                 logger.warning(f"Addon not found: addon_id={addon_id}")
                                 continue
                     
+                    # Рассчитываем стоимость товара
+                    item_total = order_item.calculate_total()
+                    total_price += item_total
+                    
                 except MenuItem.DoesNotExist:
                     logger.warning(f"Menu item not found: menu_item_id={menu_item_id}")
                     continue
             
+            # Обновляем общую стоимость заказа
+            order.total_price = total_price
+            order.save()
+            
             # Применяем акции к заказу
             order.apply_promotion()
             
-            logger.info(f"Order created: order_id={order.id}, user_telegram_id={telegram_id}")
+            # Очищаем корзину после создания заказа
+            request.session['cart'] = {}
+            request.session.modified = True
+            
+            logger.info(f"Order created: order_id={order.id}, user_telegram_id={telegram_id}, total={total_price}")
             
             # Возвращаем созданный заказ
             serializer = OrderSerializer(order)
@@ -1464,6 +1524,321 @@ class OrderViewSet(viewsets.ModelViewSet):
         order = serializer.save()
         order.apply_promotion()
 
+class HitsView(APIView):
+    """API для получения хитов продаж"""
+    
+    def get(self, request):
+        try:
+            # Получаем товары-хиты
+            hits = MenuItem.objects.filter(is_hit=True).select_related('category').order_by('priority', '-created_at')
+            
+            # Сериализуем с дополнениями и размерами
+            serializer = MenuItemSerializer(hits, many=True)
+            
+            logger.info(f"Retrieved {len(hits)} hit items")
+            return Response({
+                'hits': serializer.data,
+                'count': len(hits)
+            })
+            
+        except Exception as e:
+            logger.error(f"Error getting hits: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class NewItemsView(APIView):
+    """API для получения новинок"""
+    
+    def get(self, request):
+        try:
+            # Получаем новинки
+            new_items = MenuItem.objects.filter(is_new=True, is_active=True).select_related('category').order_by('priority', '-created_at')
+            
+            # Сериализуем с дополнениями и размерами
+            serializer = MenuItemSerializer(new_items, many=True)
+            
+            logger.info(f"Retrieved {len(new_items)} new items")
+            return Response({
+                'new_items': serializer.data,
+                'count': len(new_items)
+            })
+            
+        except Exception as e:
+            logger.error(f"Error getting new items: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class PromotionsView(APIView):
+    """API для получения активных акций"""
+    
+    def get(self, request):
+        try:
+            from django.utils import timezone
+            now = timezone.now()
+            
+            # Получаем активные акции
+            promotions = Promotion.objects.filter(
+                is_active=True,
+                valid_from__lte=now,
+                valid_to__gte=now
+            ).order_by('-valid_from')
+            
+            serializer = PromotionSerializer(promotions, many=True)
+            
+            logger.info(f"Retrieved {len(promotions)} active promotions")
+            return Response({
+                'promotions': serializer.data,
+                'count': len(promotions)
+            })
+            
+        except Exception as e:
+            logger.error(f"Error getting promotions: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class MenuItemDetailView(APIView):
+    """API для получения детальной информации о товаре"""
+    
+    def get(self, request, item_id):
+        try:
+            # Получаем товар с категорией, дополнениями и размерами
+            try:
+                item = MenuItem.objects.select_related('category').prefetch_related(
+                    'add_on_options', 'size_options'
+                ).get(id=item_id, is_active=True)
+            except MenuItem.DoesNotExist:
+                return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            serializer = MenuItemSerializer(item)
+            
+            logger.info(f"Retrieved menu item: {item.name}")
+            return Response(serializer.data)
+            
+        except Exception as e:
+            logger.error(f"Error getting menu item detail: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CategoryItemsView(APIView):
+    """API для получения товаров по категории"""
+    
+    def get(self, request, category_id):
+        try:
+            # Проверяем существование категории
+            try:
+                category = Category.objects.get(id=category_id)
+            except Category.DoesNotExist:
+                return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Получаем товары категории
+            items = MenuItem.objects.filter(
+                category=category, 
+                is_active=True
+            ).select_related('category').order_by('priority', '-created_at')
+            
+            # Сериализуем товары
+            items_serializer = MenuItemSerializer(items, many=True)
+            category_serializer = CategorySerializer(category)
+            
+            logger.info(f"Retrieved {len(items)} items for category: {category.name}")
+            return Response({
+                'category': category_serializer.data,
+                'items': items_serializer.data,
+                'count': len(items)
+            })
+            
+        except Exception as e:
+            logger.error(f"Error getting category items: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class SearchView(APIView):
+    """API для поиска товаров"""
+    
+    def get(self, request):
+        try:
+            query = request.query_params.get('q', '').strip()
+            
+            if not query:
+                return Response({'error': 'Search query is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Базовый запрос
+            items = MenuItem.objects.filter(is_active=True)
+            
+            # Поиск по названию и описанию
+            items = items.filter(
+                models.Q(name__icontains=query) | 
+                models.Q(description__icontains=query)
+            )
+            
+            # Дополнительные фильтры
+            category = request.query_params.get('category')
+            if category:
+                try:
+                    category_id = int(category)
+                    items = items.filter(category_id=category_id)
+                except (ValueError, TypeError):
+                    pass
+            
+            min_price = request.query_params.get('min_price')
+            if min_price:
+                try:
+                    min_price = Decimal(min_price)
+                    items = items.filter(price__gte=min_price)
+                except (ValueError, TypeError):
+                    pass
+            
+            max_price = request.query_params.get('max_price')
+            if max_price:
+                try:
+                    max_price = Decimal(max_price)
+                    items = items.filter(price__lte=max_price)
+                except (ValueError, TypeError):
+                    pass
+            
+            is_hit = request.query_params.get('is_hit')
+            if is_hit is not None:
+                items = items.filter(is_hit=is_hit.lower() == 'true')
+            
+            is_new = request.query_params.get('is_new')
+            if is_new is not None:
+                items = items.filter(is_new=is_new.lower() == 'true')
+            
+            is_featured = request.query_params.get('is_featured')
+            if is_featured is not None:
+                featured_value = is_featured.lower() == 'true'
+                items = items.filter(models.Q(is_hit=featured_value) | models.Q(is_new=featured_value))
+            
+            # Сортировка
+            items = items.select_related('category').order_by('priority', '-created_at')
+            
+            serializer = MenuItemSerializer(items, many=True)
+            
+            logger.info(f"Search for '{query}' returned {len(items)} items")
+            return Response({
+                'query': query,
+                'items': serializer.data,
+                'count': len(items)
+            })
+            
+        except Exception as e:
+            logger.error(f"Error searching items: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class FeaturedView(APIView):
+    """API для получения избранных товаров (хиты + новинки)"""
+    
+    def get(self, request):
+        try:
+            # Получаем хиты и новинки
+            featured_items = MenuItem.objects.filter(
+                models.Q(is_hit=True) | models.Q(is_new=True),
+                is_active=True
+            ).select_related('category').order_by('priority', '-created_at')
+            
+            serializer = MenuItemSerializer(featured_items, many=True)
+            
+            logger.info(f"Retrieved {len(featured_items)} featured items")
+            return Response({
+                'featured_items': serializer.data,
+                'count': len(featured_items)
+            })
+            
+        except Exception as e:
+            logger.error(f"Error getting featured items: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class PriceRangeView(APIView):
+    """API для получения товаров по диапазону цен"""
+    
+    def get(self, request):
+        try:
+            min_price = request.query_params.get('min_price')
+            max_price = request.query_params.get('max_price')
+            
+            items = MenuItem.objects.filter(is_active=True)
+            
+            if min_price:
+                try:
+                    min_price = Decimal(min_price)
+                    items = items.filter(price__gte=min_price)
+                except (ValueError, TypeError):
+                    return Response({'error': 'Invalid min_price'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if max_price:
+                try:
+                    max_price = Decimal(max_price)
+                    items = items.filter(price__lte=max_price)
+                except (ValueError, TypeError):
+                    return Response({'error': 'Invalid max_price'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            items = items.select_related('category').order_by('price', '-created_at')
+            serializer = MenuItemSerializer(items, many=True)
+            
+            logger.info(f"Retrieved {len(items)} items in price range")
+            return Response({
+                'items': serializer.data,
+                'count': len(items),
+                'min_price': min_price,
+                'max_price': max_price
+            })
+            
+        except Exception as e:
+            logger.error(f"Error getting items by price range: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class StatisticsView(APIView):
+    """API для получения статистики"""
+    
+    def get(self, request):
+        try:
+            # Подсчитываем статистику
+            total_categories = Category.objects.count()
+            total_items = MenuItem.objects.filter(is_active=True).count()
+            total_hits = MenuItem.objects.filter(is_hit=True, is_active=True).count()
+            total_new_items = MenuItem.objects.filter(is_new=True, is_active=True).count()
+            total_promotions = Promotion.objects.filter(is_active=True).count()
+            total_delivery_zones = DeliveryZone.objects.filter(is_active=True).count()
+            total_users = User.objects.count()
+            
+            # Получаем категории с количеством товаров
+            categories_with_counts = []
+            for category in Category.objects.all():
+                item_count = MenuItem.objects.filter(category=category, is_active=True).count()
+                categories_with_counts.append({
+                    'id': category.id,
+                    'name': category.name,
+                    'description': category.description,
+                    'item_count': item_count
+                })
+            
+            # Получаем ценовые диапазоны
+            prices = MenuItem.objects.filter(is_active=True).values_list('price', flat=True)
+            if prices:
+                min_price = min(prices)
+                max_price = max(prices)
+                avg_price = sum(prices) / len(prices)
+            else:
+                min_price = max_price = avg_price = 0
+            
+            logger.info("Retrieved statistics")
+            return Response({
+                'statistics': {
+                    'categories': total_categories,
+                    'items': total_items,
+                    'hits': total_hits,
+                    'new_items': total_new_items,
+                    'promotions': total_promotions,
+                    'delivery_zones': total_delivery_zones,
+                    'users': total_users,
+                    'price_range': {
+                        'min': float(min_price) if min_price else 0,
+                        'max': float(max_price) if max_price else 0,
+                        'average': float(avg_price) if avg_price else 0
+                    }
+                },
+                'categories_with_counts': categories_with_counts
+            })
+            
+        except Exception as e:
+            logger.error(f"Error getting statistics: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @method_decorator(csrf_exempt, name='dispatch')
 class TestUserCreationView(APIView):
     """
@@ -1529,3 +1904,145 @@ class TestUserCreationView(APIView):
                 {'error': 'Ошибка сервера при создании тестового пользователя'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+class CartView(APIView):
+    """API для работы с корзиной (временное хранение в сессии)"""
+    
+    def get(self, request):
+        """Получить содержимое корзины"""
+        try:
+            cart_data = request.session.get('cart', {})
+            items_data = []
+            total_price = 0
+            
+            for item_id, quantity in cart_data.items():
+                try:
+                    item = MenuItem.objects.get(id=item_id, is_active=True)
+                    item_total = item.price * quantity
+                    total_price += item_total
+                    
+                    items_data.append({
+                        'id': item.id,
+                        'name': item.name,
+                        'description': item.description,
+                        'price': str(item.price),
+                        'quantity': quantity,
+                        'total': str(item_total),
+                        'category': {
+                            'id': item.category.id,
+                            'name': item.category.name
+                        }
+                    })
+                except MenuItem.DoesNotExist:
+                    # Удаляем несуществующий товар из корзины
+                    if item_id in cart_data:
+                        del cart_data[item_id]
+                        request.session['cart'] = cart_data
+                        request.session.modified = True
+            
+            return Response({
+                'items': items_data,
+                'total_price': str(total_price),
+                'item_count': len(items_data)
+            })
+            
+        except Exception as e:
+            logger.error(f"Error getting cart: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def post(self, request):
+        """Добавить товар в корзину"""
+        try:
+            item_id = request.data.get('item_id')
+            quantity = request.data.get('quantity', 1)
+            
+            if not item_id:
+                return Response({'error': 'item_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                item = MenuItem.objects.get(id=item_id, is_active=True)
+            except MenuItem.DoesNotExist:
+                return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Получаем текущую корзину
+            cart_data = request.session.get('cart', {})
+            
+            # Добавляем или обновляем количество
+            if str(item_id) in cart_data:
+                cart_data[str(item_id)] += quantity
+            else:
+                cart_data[str(item_id)] = quantity
+            
+            # Сохраняем корзину
+            request.session['cart'] = cart_data
+            request.session.modified = True
+            
+            logger.info(f"Added item {item.name} to cart, quantity: {quantity}")
+            return Response({
+                'message': f'Added {item.name} to cart',
+                'cart_count': len(cart_data)
+            })
+            
+        except Exception as e:
+            logger.error(f"Error adding to cart: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def put(self, request):
+        """Обновить количество товара в корзине"""
+        try:
+            item_id = request.data.get('item_id')
+            quantity = request.data.get('quantity')
+            
+            if not item_id or quantity is None:
+                return Response({'error': 'item_id and quantity are required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if quantity <= 0:
+                # Удаляем товар из корзины
+                cart_data = request.session.get('cart', {})
+                if str(item_id) in cart_data:
+                    del cart_data[str(item_id)]
+                    request.session['cart'] = cart_data
+                    request.session.modified = True
+                
+                return Response({'message': 'Item removed from cart'})
+            
+            # Обновляем количество
+            cart_data = request.session.get('cart', {})
+            cart_data[str(item_id)] = quantity
+            request.session['cart'] = cart_data
+            request.session.modified = True
+            
+            logger.info(f"Updated item {item_id} quantity to {quantity}")
+            return Response({'message': 'Cart updated'})
+            
+        except Exception as e:
+            logger.error(f"Error updating cart: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def delete(self, request):
+        """Очистить корзину или удалить товар"""
+        try:
+            item_id = request.data.get('item_id')
+            
+            cart_data = request.session.get('cart', {})
+            
+            if item_id:
+                # Удаляем конкретный товар
+                if str(item_id) in cart_data:
+                    del cart_data[str(item_id)]
+                    request.session['cart'] = cart_data
+                    request.session.modified = True
+                    logger.info(f"Removed item {item_id} from cart")
+                    return Response({'message': 'Item removed from cart'})
+                else:
+                    return Response({'error': 'Item not in cart'}, status=status.HTTP_404_NOT_FOUND)
+            else:
+                # Очищаем всю корзину
+                request.session['cart'] = {}
+                request.session.modified = True
+                logger.info("Cart cleared")
+                return Response({'message': 'Cart cleared'})
+            
+        except Exception as e:
+            logger.error(f"Error clearing cart: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

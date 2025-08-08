@@ -625,6 +625,7 @@ class MenuItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_hit = models.BooleanField(default=False, verbose_name="Хит продаж")
     is_new = models.BooleanField(default=False, verbose_name="Новинка")
+    is_active = models.BooleanField(default=True, verbose_name="Активно")
     
     # Порядок отображения для сортировки
     priority = models.PositiveIntegerField(
@@ -644,9 +645,11 @@ class MenuItem(models.Model):
             models.Index(fields=['category', 'created_at']),
             models.Index(fields=['is_hit']),
             models.Index(fields=['is_new']),
+            models.Index(fields=['is_active']),
             models.Index(fields=['priority']),
             models.Index(fields=['is_hit', 'priority', 'created_at']),
             models.Index(fields=['is_new', 'priority', 'created_at']),
+            models.Index(fields=['is_active', 'priority', 'created_at']),
         ]
         ordering = ['priority', '-created_at']
 

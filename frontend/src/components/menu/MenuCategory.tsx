@@ -9,6 +9,7 @@ interface MenuCategoryProps {
 
 export const MenuCategory: React.FC<MenuCategoryProps> = ({ category, onItemSelect }) => {
   if (!category.items || category.items.length === 0) {
+    console.log('❌ MenuCategory: no items for category', category.name);
     return null;
   }
 

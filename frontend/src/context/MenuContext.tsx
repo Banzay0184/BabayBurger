@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
 import type { MenuItem, MenuCategory, MenuFilters, Promotion } from '../types/menu';
+import { menuApi } from '../api/menu';
 
 interface MenuState {
   categories: MenuCategory[];
@@ -15,6 +16,7 @@ type MenuAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_MENU_DATA'; payload: { categories: MenuCategory[]; items: MenuItem[]; promotions: Promotion[] } }
+  | { type: 'SET_PROMOTIONS'; payload: Promotion[] }
   | { type: 'SET_FILTERS'; payload: Partial<MenuFilters> }
   | { type: 'RESET_FILTERS' };
 
@@ -47,6 +49,8 @@ function menuReducer(state: MenuState, action: MenuAction): MenuState {
         items: action.payload.items,
         promotions: action.payload.promotions
       };
+    case 'SET_PROMOTIONS':
+      return { ...state, promotions: action.payload };
     case 'SET_FILTERS':
       return { ...state, filters: { ...state.filters, ...action.payload } };
     case 'RESET_FILTERS':
@@ -75,8 +79,10 @@ const MenuContext = createContext<MenuContextType | undefined>(undefined);
 export const useMenu = () => {
   const context = useContext(MenuContext);
   if (!context) {
+    console.error('❌ useMenu: context not found');
     throw new Error('useMenu must be used within a MenuProvider');
   }
+  console.log('✅ useMenu: context found');
   return context;
 };
 
@@ -88,21 +94,61 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(menuReducer, initialState);
 
   const fetchMenu = async () => {
+    console.log('🚀 Loading menu data...');
     dispatch({ type: 'SET_LOADING', payload: true });
     dispatch({ type: 'SET_ERROR', payload: null });
     
     try {
-      const mockData = await getMockMenuData();
+      // Получаем все данные меню
+      const [menuResponse, categoriesResponse, promotionsResponse] = await Promise.all([
+        menuApi.getMenu(),
+        menuApi.getCategories(),
+        menuApi.getPromotions()
+      ]);
+
+      if (!menuResponse.success || !categoriesResponse.success || !promotionsResponse.success) {
+        throw new Error('Ошибка загрузки данных меню');
+      }
+
+      // Преобразуем данные в нужный формат с проверками
+      const categories = categoriesResponse.data || [];
+      const items = menuResponse.data?.all_items || menuResponse.data?.items || []; // Бэкенд возвращает all_items
+      const promotions = promotionsResponse.data || [];
+
+      console.log('📊 Menu loaded:', {
+        categories: categories.length,
+        items: items.length,
+        promotions: promotions.length
+      });
+
+      // Создаем категории с товарами
+      let categoriesWithItems: MenuCategory[];
+      
+      // Проверяем, есть ли уже товары в категориях
+      if (categories.length > 0 && (categories[0] as any).items) {
+        // Бэкенд уже вернул категории с товарами
+        categoriesWithItems = categories as MenuCategory[];
+      } else {
+        // Нужно создать категории с товарами
+        categoriesWithItems = categories.map(category => ({
+          ...category,
+          items: items.filter((item: any) => item.category === category.id)
+        }));
+      }
+
       dispatch({ 
         type: 'SET_MENU_DATA', 
         payload: { 
-          categories: mockData.categories, 
-          items: mockData.items,
-          promotions: mockData.promotions
+          categories: categoriesWithItems, 
+          items: items,
+          promotions: Array.isArray(promotions) ? promotions : []
         } 
       });
-    } catch (err) {
-      dispatch({ type: 'SET_ERROR', payload: 'Ошибка загрузки меню' });
+      
+      console.log('✅ Menu data loaded successfully');
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Ошибка загрузки меню';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
       console.error('Error fetching menu:', err);
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
@@ -111,17 +157,24 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
 
   const fetchPromotions = async () => {
     try {
-      const mockPromotions = await getMockPromotions();
+      const response = await menuApi.getPromotions();
+      
+      if (!response.success) {
+        throw new Error('Ошибка загрузки акций');
+      }
+
+      const promotions = Array.isArray(response.data) ? response.data : [];
+
+      // Обновляем только промоции, не трогая остальное состояние
       dispatch({ 
-        type: 'SET_MENU_DATA', 
-        payload: { 
-          categories: state.categories, 
-          items: state.items,
-          promotions: mockPromotions
-        } 
+        type: 'SET_PROMOTIONS', 
+        payload: promotions
       });
-    } catch (err) {
+      
+      console.log('✅ Promotions loaded:', promotions.length);
+    } catch (err: any) {
       console.error('Error fetching promotions:', err);
+      // Не устанавливаем ошибку для акций, так как это не критично
     }
   };
 
@@ -134,7 +187,7 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   };
 
   const getFilteredItems = (): MenuItem[] => {
-    let filtered = state.items;
+    let filtered = state.items || [];
 
     if (state.filters.search) {
       const searchLower = state.filters.search.toLowerCase();
@@ -168,21 +221,23 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   };
 
   const getCategoriesWithItems = (): MenuCategory[] => {
-    return state.categories.map(category => ({
+    return (state.categories || []).map(category => ({
       ...category,
-      items: state.items.filter(item => item.category === category.id)
+      items: (state.items || []).filter(item => item.category === category.id)
     }));
   };
 
   const getAvailableCategories = (): MenuCategory[] => {
-    return state.categories.filter(category => 
-      state.items.some(item => item.category === category.id)
+    return (state.categories || []).filter(category => 
+      (state.items || []).some(item => item.category === category.id)
     );
   };
 
   const getActivePromotions = (): Promotion[] => {
     const now = new Date();
-    return state.promotions.filter(promotion => 
+    const promotions = state.promotions || [];
+    
+    return promotions.filter(promotion => 
       promotion.is_active && 
       new Date(promotion.valid_from) <= now && 
       new Date(promotion.valid_to) >= now &&
@@ -191,11 +246,11 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   };
 
   const getHits = (): MenuItem[] => {
-    return state.items.filter(item => item.is_hit).sort((a, b) => a.priority - b.priority);
+    return (state.items || []).filter(item => item.is_hit).sort((a, b) => a.priority - b.priority);
   };
 
   const getNewItems = (): MenuItem[] => {
-    return state.items.filter(item => item.is_new).sort((a, b) => a.priority - b.priority);
+    return (state.items || []).filter(item => item.is_new).sort((a, b) => a.priority - b.priority);
   };
 
   const value: MenuContextType = {
@@ -217,166 +272,4 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
       {children}
     </MenuContext.Provider>
   );
-};
-
-// Mock данные для разработки
-async function getMockMenuData() {
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  return {
-    categories: [
-      {
-        id: 1,
-        name: 'Бургеры',
-        description: 'Классические и авторские бургеры',
-        items: []
-      },
-      {
-        id: 2,
-        name: 'Напитки',
-        description: 'Холодные и горячие напитки',
-        items: []
-      },
-      {
-        id: 3,
-        name: 'Гарниры',
-        description: 'Картошка фри, начос и другие гарниры',
-        items: []
-      },
-      {
-        id: 4,
-        name: 'Десерты',
-        description: 'Сладкие угощения',
-        items: []
-      }
-    ],
-    items: [
-      {
-        id: 1,
-        name: 'Классический бургер',
-        description: 'Сочная котлета с овощами и соусом',
-        price: 450,
-        category: 1,
-        created_at: '2024-01-01T00:00:00Z',
-        is_hit: true,
-        is_new: false,
-        priority: 1,
-        size_options: [
-          { id: 1, name: 'Маленький', price_modifier: 0, description: '25 см', menu_item: 1, is_active: true },
-          { id: 2, name: 'Большой', price_modifier: 200, description: '30 см', menu_item: 1, is_active: true }
-        ],
-        add_on_options: [
-          { id: 1, name: 'Сыр', price: 50, category: 1, is_active: true },
-          { id: 2, name: 'Бекон', price: 100, category: 1, is_active: true }
-        ]
-      },
-      {
-        id: 2,
-        name: 'Чизбургер',
-        description: 'Бургер с плавленым сыром',
-        price: 500,
-        category: 1,
-        created_at: '2024-01-01T00:00:00Z',
-        is_hit: true,
-        is_new: false,
-        priority: 2,
-        size_options: [],
-        add_on_options: []
-      },
-      {
-        id: 3,
-        name: 'Биг Бургер',
-        description: 'Двойная котлета с беконом',
-        price: 650,
-        category: 1,
-        created_at: '2024-01-01T00:00:00Z',
-        is_hit: false,
-        is_new: true,
-        priority: 1,
-        size_options: [],
-        add_on_options: []
-      },
-      {
-        id: 4,
-        name: 'Кола',
-        description: 'Газированный напиток',
-        price: 150,
-        category: 2,
-        created_at: '2024-01-01T00:00:00Z',
-        is_hit: false,
-        is_new: false,
-        priority: 0,
-        size_options: [],
-        add_on_options: []
-      },
-      {
-        id: 5,
-        name: 'Картошка фри',
-        description: 'Хрустящая картошка с солью',
-        price: 200,
-        category: 3,
-        created_at: '2024-01-01T00:00:00Z',
-        is_hit: true,
-        is_new: false,
-        priority: 1,
-        size_options: [],
-        add_on_options: []
-      },
-      {
-        id: 6,
-        name: 'Чизкейк',
-        description: 'Классический чизкейк',
-        price: 300,
-        category: 4,
-        created_at: '2024-01-01T00:00:00Z',
-        is_hit: false,
-        is_new: true,
-        priority: 1,
-        size_options: [],
-        add_on_options: []
-      }
-    ],
-    promotions: []
-  };
-}
-
-async function getMockPromotions() {
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  return [
-    {
-      id: 1,
-      name: 'Скидка 20% на все',
-      description: 'Скидка 20% на все блюда при заказе от 1000 ₽',
-      discount_type: 'PERCENT' as const,
-      discount_value: 20,
-      min_order_amount: 1000,
-      max_discount: 500,
-      usage_count: 0,
-      max_uses: 100,
-      valid_from: '2024-01-01T00:00:00Z',
-      valid_to: '2024-12-31T23:59:59Z',
-      is_active: true,
-      applicable_items: [],
-      free_item: undefined,
-      free_addon: undefined
-    },
-    {
-      id: 2,
-      name: 'Бесплатная доставка',
-      description: 'Бесплатная доставка при заказе от 1500 ₽',
-      discount_type: 'FREE_DELIVERY' as const,
-      discount_value: 0,
-      min_order_amount: 1500,
-      max_discount: undefined,
-      usage_count: 0,
-      max_uses: 50,
-      valid_from: '2024-01-01T00:00:00Z',
-      valid_to: '2024-12-31T23:59:59Z',
-      is_active: true,
-      applicable_items: [],
-      free_item: undefined,
-      free_addon: undefined
-    }
-  ];
-} 
+}; 

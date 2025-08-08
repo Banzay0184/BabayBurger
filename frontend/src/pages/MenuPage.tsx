@@ -8,6 +8,8 @@ import { Button } from '../components/ui/Button';
 import type { MenuItem, Promotion } from '../types/menu';
 
 export const MenuPage: React.FC = () => {
+  console.log('🎬 MenuPage component rendered');
+  
   const { 
     state, 
     fetchMenu, 
@@ -22,9 +24,20 @@ export const MenuPage: React.FC = () => {
   } = useMenu();
 
   useEffect(() => {
-    fetchMenu();
-    fetchPromotions();
-  }, []);
+    console.log('🔄 MenuPage useEffect: loading menu data...');
+    console.log('📋 Functions available:', { 
+      fetchMenu: typeof fetchMenu, 
+      fetchPromotions: typeof fetchPromotions 
+    });
+    
+    // Сначала загружаем меню, потом промоции
+    const loadData = async () => {
+      await fetchMenu();
+      await fetchPromotions();
+    };
+    
+    loadData();
+  }, []); // Убираем зависимости чтобы избежать бесконечного цикла
 
   const handleItemSelect = (item: MenuItem, size?: any, addOns?: any[]) => {
     // TODO: Добавить в корзину
@@ -40,7 +53,34 @@ export const MenuPage: React.FC = () => {
     console.log('Applied promotion:', promotion);
   };
 
+  const availableCategories = getAvailableCategories() || [];
+  const filteredItems = getFilteredItems() || [];
+  const activePromotions = getActivePromotions() || [];
+  const hits = getHits() || [];
+  const newItems = getNewItems() || [];
+
+  // Статистика для отображения
+  const totalItems = state.items.length;
+  const totalCategories = availableCategories.length;
+  const totalPromotions = activePromotions.length;
+
+  // Отладочная информация
+  console.log('📱 MenuPage state:', {
+    isLoading: state.isLoading,
+    error: state.error,
+    totalItems,
+    totalCategories,
+    totalPromotions,
+    availableCategories: availableCategories.length,
+    filteredItems: filteredItems.length,
+    hits: hits.length,
+    newItems: newItems.length,
+    stateItems: state.items.length,
+    stateCategories: state.categories.length
+  });
+
   if (state.isLoading) {
+    console.log('⏳ MenuPage: showing loading state');
     return (
       <div className="text-center py-16 animate-fade-in">
         <div className="relative">
@@ -70,12 +110,6 @@ export const MenuPage: React.FC = () => {
     );
   }
 
-  const availableCategories = getAvailableCategories();
-  const filteredItems = getFilteredItems();
-  const activePromotions = getActivePromotions();
-  const hits = getHits();
-  const newItems = getNewItems();
-
   return (
     <div className="space-y-8">
       {/* Современный заголовок с темной темой */}
@@ -86,9 +120,27 @@ export const MenuPage: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-100 mb-3 neon-text">
           Меню Babay Burger
         </h1>
-        <p className="text-gray-400 text-lg max-w-md mx-auto">
+        <p className="text-gray-400 text-lg max-w-md mx-auto mb-6">
           Выберите любимые блюда из нашего разнообразного меню
         </p>
+        
+        {/* Статистика меню */}
+        <div className="flex justify-center gap-6 text-sm">
+          <div className="flex items-center gap-2 text-gray-400">
+            <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
+            {totalItems} блюд
+          </div>
+          <div className="flex items-center gap-2 text-gray-400">
+            <span className="w-2 h-2 bg-accent-500 rounded-full"></span>
+            {totalCategories} категорий
+          </div>
+          {totalPromotions > 0 && (
+            <div className="flex items-center gap-2 text-gray-400">
+              <span className="w-2 h-2 bg-success-500 rounded-full"></span>
+              {totalPromotions} акций
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Акции с современным дизайном для темной темы */}
@@ -116,24 +168,28 @@ export const MenuPage: React.FC = () => {
       )}
 
       {/* Хиты с современным дизайном для темной темы */}
-      <div className="animate-slide-up">
-        <FeaturedSection
-          title="🔥 Хиты продаж"
-          items={hits}
-          icon="🔥"
-          onItemSelect={handleItemSelect}
-        />
-      </div>
+      {hits.length > 0 && (
+        <div className="animate-slide-up">
+          <FeaturedSection
+            title="🔥 Хиты продаж"
+            items={hits}
+            icon="🔥"
+            onItemSelect={handleItemSelect}
+          />
+        </div>
+      )}
 
       {/* Новинки с современным дизайном для темной темы */}
-      <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
-        <FeaturedSection
-          title="✨ Новинки"
-          items={newItems}
-          icon="✨"
-          onItemSelect={handleItemSelect}
-        />
-      </div>
+      {newItems.length > 0 && (
+        <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <FeaturedSection
+            title="✨ Новинки"
+            items={newItems}
+            icon="✨"
+            onItemSelect={handleItemSelect}
+          />
+        </div>
+      )}
 
       {/* Фильтры с современным дизайном для темной темы */}
       <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
@@ -155,6 +211,9 @@ export const MenuPage: React.FC = () => {
             <h2 className="text-xl font-bold text-gray-100 neon-text">
               Результаты поиска: "{state.filters.search}"
             </h2>
+            <span className="ml-3 text-gray-400 text-sm">
+              Найдено: {filteredItems.length}
+            </span>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {filteredItems.map((item, index) => (
@@ -164,6 +223,18 @@ export const MenuPage: React.FC = () => {
                   <span className="font-bold text-primary-400 text-lg">{item.price} ₽</span>
                 </div>
                 <p className="text-gray-400 text-sm">{item.description}</p>
+                <div className="flex gap-2 mt-3">
+                  {item.is_hit && (
+                    <span className="px-2 py-1 bg-warning-900/50 text-warning-300 text-xs rounded">
+                      🔥 Хит
+                    </span>
+                  )}
+                  {item.is_new && (
+                    <span className="px-2 py-1 bg-success-900/50 text-success-300 text-xs rounded">
+                      ✨ Новинка
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -187,14 +258,24 @@ export const MenuPage: React.FC = () => {
       {!state.filters.search && (
         <div className="animate-fade-in">
           {availableCategories.length > 0 ? (
-            availableCategories.map((category, index) => (
-              <div key={category.id} style={{ animationDelay: `${index * 0.1}s` }}>
-                <MenuCategory
-                  category={category}
-                  onItemSelect={handleItemSelect}
-                />
+            <>
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-100 neon-text mb-2">
+                  Категории меню
+                </h2>
+                <p className="text-gray-400">
+                  Выберите категорию для просмотра блюд
+                </p>
               </div>
-            ))
+              {availableCategories.map((category, index) => (
+                <div key={category.id} style={{ animationDelay: `${index * 0.1}s` }}>
+                  <MenuCategory
+                    category={category}
+                    onItemSelect={handleItemSelect}
+                  />
+                </div>
+              ))}
+            </>
           ) : (
             <div className="text-center py-16">
               <div className="w-20 h-20 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-600/50">
@@ -203,9 +284,15 @@ export const MenuPage: React.FC = () => {
               <p className="text-gray-300 text-lg font-medium mb-2">
                 В данный момент меню недоступно
               </p>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-500 text-sm mb-6">
                 Попробуйте позже или свяжитесь с нами
               </p>
+              <Button onClick={() => fetchMenu()} variant="primary">
+                <span className="flex items-center">
+                  <span className="mr-2">🔄</span>
+                  Обновить меню
+                </span>
+              </Button>
             </div>
           )}
         </div>
