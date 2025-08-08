@@ -24,7 +24,6 @@ const telegramAuthClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true', // Для обхода предупреждений ngrok
-    'Access-Control-Allow-Origin': '*', // Для CORS
   },
   withCredentials: false, // Отключаем CSRF для авторизации
 });
@@ -81,7 +80,6 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
       headers: {
         'Content-Type': 'application/json',
         'ngrok-skip-browser-warning': 'true',
-        'Access-Control-Allow-Origin': '*',
       },
     });
     
@@ -143,7 +141,6 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'ngrok-skip-browser-warning': 'true',
-            'Access-Control-Allow-Origin': '*',
           },
         });
         

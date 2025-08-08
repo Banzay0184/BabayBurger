@@ -52,8 +52,6 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',
     'https://babay-burger.vercel.app',  # Vercel домен
     'https://*.vercel.app',  # Все Vercel домены
-    'https://*.ngrok-free.app',  # Ngrok домены
-    'https://*.ngrok.io',  # Старые ngrok домены
 ]
 
 # Дополнительные CORS настройки
@@ -67,10 +65,6 @@ CORS_ALLOWED_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
-    'ngrok-skip-browser-warning',  # Для ngrok
-    'access-control-allow-origin',  # Для CORS
-    'access-control-allow-methods',  # Для CORS
-    'access-control-allow-headers',  # Для CORS
 ]
 
 CORS_ALLOWED_METHODS = [
@@ -80,15 +74,6 @@ CORS_ALLOWED_METHODS = [
     'PATCH',
     'POST',
     'PUT',
-]
-
-# Дополнительные настройки для CORS
-CORS_EXPOSE_HEADERS = [
-    'content-type',
-    'content-length',
-    'access-control-allow-origin',
-    'access-control-allow-methods',
-    'access-control-allow-headers',
 ]
 
 # Настройки для webhook

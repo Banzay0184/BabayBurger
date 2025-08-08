@@ -19088,3 +19088,22 @@ INFO 2025-08-08 17:56:18,231 autoreload 86153 140704590802880 /Users/shakhzodabi
 INFO 2025-08-08 17:56:19,021 autoreload 86297 140704590802880 Watching for file changes with StatReloader
 INFO 2025-08-08 17:56:21,593 autoreload 86297 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
 INFO 2025-08-08 17:56:22,422 autoreload 86307 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 17:57:02,154 basehttp 86307 123145347072000 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-08 17:57:11,903 basehttp 86307 123145364398080 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:57:11,917 basehttp 86307 123145381187584 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:57:12,705 basehttp 86307 123145364398080 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+WARNING 2025-08-08 17:57:12,842 basehttp 86307 123145364398080 "GET /api/auth/validate/ HTTP/1.1" 404 29047
+INFO 2025-08-08 17:57:14,008 basehttp 86307 123145381187584 "GET /api/promotions/ HTTP/1.1" 200 1723
+INFO 2025-08-08 17:57:14,019 basehttp 86307 123145364398080 "GET /api/categories/ HTTP/1.1" 200 545
+INFO 2025-08-08 17:57:14,159 basehttp 86307 123145397977088 "GET /api/menu/ HTTP/1.1" 200 15056
+INFO 2025-08-08 17:57:14,188 basehttp 86307 123145397977088 "GET /api/promotions/ HTTP/1.1" 200 1723
+INFO 2025-08-08 17:57:24,348 basehttp 86307 123145414766592 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:57:46,851 basehttp 86307 123145414766592 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:57:52,838 basehttp 86307 123145414766592 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-08 17:58:44,778 basehttp 86307 123145347072000 "GET /api/auth/validate/ HTTP/1.1" 404 29060
+INFO 2025-08-08 17:58:52,779 autoreload 86307 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 17:58:54,016 autoreload 88478 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 17:58:55,630 autoreload 88478 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 17:58:56,360 autoreload 88493 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 17:59:11,318 autoreload 88493 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 17:59:12,715 autoreload 88686 140704590802880 Watching for file changes with StatReloader
