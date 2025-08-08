@@ -17,8 +17,9 @@ class CORSMiddleware(MiddlewareMixin):
             response = HttpResponse()
             response['Access-Control-Allow-Origin'] = '*'
             response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-            response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, ngrok-skip-browser-warning'
+            response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, ngrok-skip-browser-warning, accept, accept-encoding, dnt, origin, user-agent, x-csrftoken'
             response['Access-Control-Max-Age'] = '86400'
+            response['Access-Control-Allow-Credentials'] = 'true'
             return response
         return None
     
@@ -26,8 +27,9 @@ class CORSMiddleware(MiddlewareMixin):
         # Добавляем CORS заголовки для всех ответов
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, ngrok-skip-browser-warning'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, ngrok-skip-browser-warning, accept, accept-encoding, dnt, origin, user-agent, x-csrftoken'
         response['Access-Control-Expose-Headers'] = 'Content-Type, Content-Length'
+        response['Access-Control-Allow-Credentials'] = 'true'
         return response
 
 class RequestLoggingMiddleware(MiddlewareMixin):

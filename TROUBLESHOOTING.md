@@ -4,6 +4,7 @@
 
 ### Симптомы:
 - `Request header field Access-Control-Allow-Origin is not allowed`
+- `Request header field ngrok-skip-browser-warning is not allowed by Access-Control-Allow-Headers`
 - `XMLHttpRequest cannot load due to access control checks`
 - `Network Error` при попытке авторизации
 
@@ -44,17 +45,31 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOWED_HEADERS = [
     'ngrok-skip-browser-warning',
+    'access-control-allow-origin',
+    'access-control-allow-methods',
+    'access-control-allow-headers',
     # ... другие заголовки
 ]
 ```
 
-#### 5. Запустите диагностику:
+#### 5. Проверьте middleware:
+Убедитесь, что в `MIDDLEWARE` есть:
+```python
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'api.middleware.CORSMiddleware',  # Наш кастомный CORS middleware
+    # ... другие middleware
+]
+```
+
+#### 6. Запустите диагностику:
 ```bash
 cd backend
 python check_and_start_services.py
+python test_cors.py
 ```
 
-#### 6. Тестирование API:
+#### 7. Тестирование API:
 Откройте в браузере: `https://YOUR_NGROK_URL.ngrok-free.app/api/test/`
 
 Должен вернуться JSON ответ.
@@ -80,6 +95,7 @@ tail -f logs/errors.log
 2. **Django не запущен**: Запустите сервер на порту 8000
 3. **CORS не настроен**: Проверьте настройки в settings.py
 4. **Проблемы с SSL**: Убедитесь, что используете HTTPS URL
+5. **Заголовок ngrok-skip-browser-warning не разрешен**: Добавьте в CORS_ALLOWED_HEADERS
 
 ### Команды для быстрого исправления:
 
@@ -97,10 +113,14 @@ python manage.py runserver 0.0.0.0:8000
 
 # 4. Проверьте API
 curl https://YOUR_NGROK_URL.ngrok-free.app/api/test/
+
+# 5. Запустите тест CORS
+python test_cors.py
 ```
 
 ### Контакты для поддержки:
 Если проблема не решается, проверьте:
 1. Логи Django в `backend/logs/`
 2. Консоль браузера (F12)
-3. Network вкладку в DevTools 
+3. Network вкладку в DevTools
+4. Результат выполнения `python test_cors.py` 

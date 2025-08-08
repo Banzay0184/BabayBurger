@@ -19193,3 +19193,46 @@ WARNING 2025-08-08 18:12:23,730 basehttp 99531 123145564516352 "GET /api/auth/va
 WARNING 2025-08-08 18:12:25,486 basehttp 99531 123145564516352 "GET /api/auth/validate/ HTTP/1.1" 404 29240
 WARNING 2025-08-08 18:12:38,431 basehttp 99531 123145564516352 "GET /api/auth/validate/ HTTP/1.1" 404 29240
 WARNING 2025-08-08 18:12:40,430 basehttp 99531 123145564516352 "GET /api/auth/validate/ HTTP/1.1" 404 29240
+INFO 2025-08-08 18:13:19,092 basehttp 99531 123145581305856 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-08 18:13:25,592 basehttp 99531 123145598631936 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:13:25,599 basehttp 99531 123145615421440 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:13:33,733 basehttp 99531 123145598631936 "OPTIONS /api/test/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:13:51,022 basehttp 99531 123145615421440 "OPTIONS /api/test/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:14:22,980 autoreload 99531 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 18:14:24,958 autoreload 1929 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:16:14,461 autoreload 1929 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/middleware.py changed, reloading.
+INFO 2025-08-08 18:16:16,406 autoreload 3514 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:17:01,127 basehttp 3514 123145386254336 "GET /api/test/ HTTP/1.1" 200 188
+INFO 2025-08-08 18:17:26,532 basehttp 3514 123145386254336 "GET /api/test/ HTTP/1.1" 200 188
+INFO 2025-08-08 18:17:54,658 basehttp 3514 123145403043840 "OPTIONS /api/test/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:17:55,097 basehttp 3514 123145419833344 "GET /api/test/ HTTP/1.1" 200 188
+INFO 2025-08-08 18:17:55,589 basehttp 3514 123145436622848 "POST /api/test/ HTTP/1.1" 200 132
+INFO 2025-08-08 18:18:17,969 autoreload 3514 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/middleware.py changed, reloading.
+INFO 2025-08-08 18:18:19,330 autoreload 5283 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:18:40,254 autoreload 5575 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:19:03,047 basehttp 5575 123145394892800 "OPTIONS /api/test/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:19:03,512 basehttp 5575 123145411682304 "GET /api/test/ HTTP/1.1" 200 187
+INFO 2025-08-08 18:19:03,970 basehttp 5575 123145428471808 "POST /api/test/ HTTP/1.1" 200 131
+INFO 2025-08-08 18:19:07,871 basehttp 5575 123145445261312 "OPTIONS /api/test/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:19:08,321 basehttp 5575 123145462050816 "GET /api/test/ HTTP/1.1" 200 187
+INFO 2025-08-08 18:19:08,774 basehttp 5575 123145478840320 "POST /api/test/ HTTP/1.1" 200 130
+INFO 2025-08-08 18:19:26,464 autoreload 6182 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:19:28,542 basehttp 6182 123145338662912 "GET /api/test/ HTTP/1.1" 200 187
+INFO 2025-08-08 18:19:34,599 autoreload 6320 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:19:46,923 basehttp 6182 123145338662912 "OPTIONS /api/test/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:19:47,491 basehttp 6182 123145355452416 "GET /api/test/ HTTP/1.1" 200 187
+INFO 2025-08-08 18:19:47,994 basehttp 6182 123145372241920 "POST /api/test/ HTTP/1.1" 200 131
+INFO 2025-08-08 18:19:53,563 autoreload 6182 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/middleware.py changed, reloading.
+INFO 2025-08-08 18:20:51,873 autoreload 7351 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:20:59,312 basehttp 7351 123145527816192 "OPTIONS /api/test/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:20:59,747 basehttp 7351 123145527816192 "GET /api/test/ HTTP/1.1" 200 188
+INFO 2025-08-08 18:21:00,184 basehttp 7351 123145544605696 "POST /api/test/ HTTP/1.1" 200 132
+INFO 2025-08-08 18:21:21,395 autoreload 7351 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/middleware.py changed, reloading.
+INFO 2025-08-08 18:21:22,551 autoreload 7769 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:21:29,947 basehttp 7769 123145574191104 "OPTIONS /api/test/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:21:30,231 autoreload 7769 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 18:21:31,312 autoreload 7918 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:21:37,073 autoreload 8053 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:21:43,514 basehttp 8053 123145486872576 "OPTIONS /api/test/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:21:43,958 basehttp 8053 123145486872576 "GET /api/test/ HTTP/1.1" 200 187
+INFO 2025-08-08 18:21:44,421 basehttp 8053 123145503662080 "POST /api/test/ HTTP/1.1" 200 131
