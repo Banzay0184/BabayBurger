@@ -48,6 +48,7 @@ export const diagnoseApiConnection = async () => {
       method: 'OPTIONS',
       headers: {
         'ngrok-skip-browser-warning': 'true',
+        'Content-Type': 'application/json',
       },
     });
     console.log('✅ CORS тест:', corsTest.status, corsTest.headers);
@@ -81,7 +82,11 @@ export const testApiConnection = async () => {
     console.log('🔍 Тестируем подключение к API...');
     console.log('🌐 URL:', `${API_CONFIG.BASE_URL}test/`);
     
-    const response = await telegramAuthClient.get('test/');
+    const response = await telegramAuthClient.get('test/', {
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+      },
+    });
     console.log('✅ API подключение успешно:', response.data);
     return response.data;
   } catch (error: any) {

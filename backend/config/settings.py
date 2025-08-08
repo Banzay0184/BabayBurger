@@ -69,6 +69,9 @@ CORS_ALLOWED_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
     'ngrok-skip-browser-warning',  # Для ngrok
+    'access-control-allow-origin',
+    'access-control-allow-methods',
+    'access-control-allow-headers',
 ]
 
 CORS_ALLOWED_METHODS = [
@@ -84,6 +87,9 @@ CORS_ALLOWED_METHODS = [
 CORS_EXPOSE_HEADERS = [
     'content-type',
     'content-length',
+    'access-control-allow-origin',
+    'access-control-allow-methods',
+    'access-control-allow-headers',
 ]
 
 # Настройки для webhook
@@ -199,6 +205,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Добавляем CORS middleware
+    'api.middleware.CORSMiddleware',  # Добавляем наш CORS middleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
