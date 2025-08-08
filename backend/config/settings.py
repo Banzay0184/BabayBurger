@@ -44,42 +44,13 @@ CSRF_TRUSTED_ORIGINS = [
 
 # CORS настройки для API
 CORS_ALLOW_ALL_ORIGINS = True  # Для разработки
-CORS_ALLOW_CREDENTIALS = False  # Отключаем для ngrok
-
-# Дополнительные CORS настройки для ngrok
-CORS_ALLOWED_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
-    'ngrok-skip-browser-warning',
-    'access-control-allow-origin',
-    'access-control-allow-headers',
-    'access-control-allow-methods',
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:3000',
 ]
-
-CORS_EXPOSE_HEADERS = [
-    'content-type',
-    'x-csrftoken',
-]
-
-# Дополнительные настройки для ngrok
-CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
-]
-
-# Настройки для preflight запросов
-CORS_PREFLIGHT_MAX_AGE = 86400  # 24 часа
 
 # Настройки для webhook
 CSRF_COOKIE_SECURE = False  # Для разработки
@@ -196,7 +167,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # Добавляем CORS middleware
-    'api.middleware.CorsMiddleware',  # Добавляем наш CORS middleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

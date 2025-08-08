@@ -4,7 +4,7 @@ from .views import (
     AddressView, AddressDetailView, OrderCreateView, GeocodeView, GeocodeResultView,
     DeliveryZoneView, AddressDeliveryZoneCheckView, AddressDeliveryZoneDetailView,
     MenuItemViewSet, AddOnViewSet, SizeOptionViewSet, PromotionViewSet, OrderViewSet,
-    TelegramLoginWidgetView, TestUserCreationView, TestCorsView, HitsView, NewItemsView, PromotionsView,
+    TelegramLoginWidgetView, TestUserCreationView, HitsView, NewItemsView, PromotionsView,
     MenuItemDetailView, CategoryItemsView, SearchView, FeaturedView, PriceRangeView,
     StatisticsView, CartView
 )
@@ -19,8 +19,6 @@ router.register(r'orders', OrderViewSet)
 
 urlpatterns = [
     path('webhook/', WebhookView.as_view(), name='webhook'),
-    # Тестовый endpoint для CORS
-    path('test-cors/', TestCorsView.as_view(), name='test-cors'),
     # Аутентификация
     path('auth/', AuthView.as_view(), name='auth'),
     path('auth/telegram-widget/', TelegramLoginWidgetView.as_view(), name='telegram-login-widget'),

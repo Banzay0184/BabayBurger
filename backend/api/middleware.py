@@ -2,7 +2,6 @@ import logging
 import time
 import json
 from django.utils.deprecation import MiddlewareMixin
-from django.http import HttpResponse
 
 logger = logging.getLogger('api')
 
@@ -84,28 +83,4 @@ class RequestLoggingMiddleware(MiddlewareMixin):
             ip = x_forwarded_for.split(',')[0]
         else:
             ip = request.META.get('REMOTE_ADDR')
-        return ip
-
-
-class CorsMiddleware(MiddlewareMixin):
-    """
-    Middleware для обработки CORS заголовков
-    """
-    
-    def process_request(self, request):
-        # Обрабатываем preflight запросы
-        if request.method == 'OPTIONS':
-            response = HttpResponse()
-            response['Access-Control-Allow-Origin'] = '*'
-            response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-            response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, ngrok-skip-browser-warning'
-            response['Access-Control-Max-Age'] = '86400'
-            return response
-        return None
-    
-    def process_response(self, request, response):
-        # Добавляем CORS заголовки ко всем ответам
-        response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, ngrok-skip-browser-warning'
-        return response 
+        return ip 

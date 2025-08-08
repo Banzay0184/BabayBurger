@@ -1840,18 +1840,6 @@ class StatisticsView(APIView):
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @method_decorator(csrf_exempt, name='dispatch')
-class TestCorsView(APIView):
-    """
-    Тестовый endpoint для проверки CORS
-    """
-    def get(self, request):
-        return Response({
-            'message': 'CORS test successful',
-            'timestamp': time.time(),
-            'headers': dict(request.headers)
-        })
-
-@method_decorator(csrf_exempt, name='dispatch')
 class TestUserCreationView(APIView):
     """
     Эндпоинт для тестирования создания пользователя
