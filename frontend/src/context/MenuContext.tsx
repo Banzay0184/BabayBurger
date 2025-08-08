@@ -95,11 +95,6 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
 
   const fetchMenu = async () => {
     console.log('🚀 Loading menu data...');
-    console.log('🔧 Environment:', {
-      isDev: import.meta.env.DEV,
-      isProd: import.meta.env.PROD,
-      mode: import.meta.env.MODE
-    });
     dispatch({ type: 'SET_LOADING', payload: true });
     dispatch({ type: 'SET_ERROR', payload: null });
     
@@ -120,42 +115,24 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
       const items = menuResponse.data?.all_items || menuResponse.data?.items || []; // Бэкенд возвращает all_items
       const promotions = promotionsResponse.data || [];
 
-      // Проверяем, что данные являются массивами или объектами, которые можно обработать
-      if (!categories || !items || !promotions) {
-        console.error('❌ Получены некорректные данные:', {
-          categories: typeof categories,
-          items: typeof items,
-          promotions: typeof promotions,
-          categoriesData: categories,
-          itemsData: items,
-          promotionsData: promotions
-        });
-        throw new Error('Сервер вернул некорректные данные');
-      }
-
-      // Убеждаемся, что данные являются массивами
-      const categoriesArray = Array.isArray(categories) ? categories : [];
-      const itemsArray = Array.isArray(items) ? items : [];
-      const promotionsArray = Array.isArray(promotions) ? promotions : [];
-
       console.log('📊 Menu loaded:', {
-        categories: categoriesArray.length,
-        items: itemsArray.length,
-        promotions: promotionsArray.length
+        categories: categories.length,
+        items: items.length,
+        promotions: promotions.length
       });
 
       // Создаем категории с товарами
       let categoriesWithItems: MenuCategory[];
       
       // Проверяем, есть ли уже товары в категориях
-      if (categoriesArray.length > 0 && (categoriesArray[0] as any).items) {
+      if (categories.length > 0 && (categories[0] as any).items) {
         // Бэкенд уже вернул категории с товарами
-        categoriesWithItems = categoriesArray as MenuCategory[];
+        categoriesWithItems = categories as MenuCategory[];
       } else {
         // Нужно создать категории с товарами
-        categoriesWithItems = categoriesArray.map(category => ({
+        categoriesWithItems = categories.map(category => ({
           ...category,
-          items: itemsArray.filter((item: any) => item.category === category.id)
+          items: items.filter((item: any) => item.category === category.id)
         }));
       }
 
@@ -163,16 +140,16 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
         type: 'SET_MENU_DATA', 
         payload: { 
           categories: categoriesWithItems, 
-          items: itemsArray,
-          promotions: promotionsArray
+          items: items,
+          promotions: Array.isArray(promotions) ? promotions : []
         } 
       });
       
       console.log('✅ Menu data loaded successfully');
     } catch (err: any) {
-      console.error('❌ Error fetching menu:', err);
-      const errorMessage = err?.message || err?.details?.message || 'Ошибка загрузки меню';
+      const errorMessage = err?.message || 'Ошибка загрузки меню';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      console.error('Error fetching menu:', err);
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
@@ -186,15 +163,12 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
         throw new Error('Ошибка загрузки акций');
       }
 
-      const promotions = response.data || [];
-
-      // Убеждаемся, что промоции являются массивом
-      const promotionsArray = Array.isArray(promotions) ? promotions : [];
+      const promotions = Array.isArray(response.data) ? response.data : [];
 
       // Обновляем только промоции, не трогая остальное состояние
       dispatch({ 
         type: 'SET_PROMOTIONS', 
-        payload: promotionsArray
+        payload: promotions
       });
       
       console.log('✅ Promotions loaded:', promotions.length);

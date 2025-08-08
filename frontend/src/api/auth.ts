@@ -1,4 +1,5 @@
 import apiClient from './client';
+import axios from 'axios';
 import type { User } from './types';
 import { API_CONFIG } from '../config/api';
 
@@ -17,9 +18,13 @@ interface TelegramWidgetUser {
 }
 
 // Специальный клиент для авторизации Telegram (без CSRF)
-const telegramAuthClient = apiClient.create({
+const telegramAuthClient = axios.create({
+  baseURL: API_CONFIG.BASE_URL,
+  timeout: API_CONFIG.TIMEOUT,
   headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true', // Для обхода предупреждений ngrok
+    'Access-Control-Allow-Origin': '*', // Для CORS
   },
   withCredentials: false, // Отключаем CSRF для авторизации
 });
@@ -58,14 +63,25 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
       allows_write_to_pm: userData.allows_write_to_pm || false
     };
     
+    // Формируем правильный URL
+    const authUrl = 'auth/telegram-widget/';
+    const fullUrl = `${API_CONFIG.BASE_URL}${authUrl}`;
+    
     console.log('📤 Данные для отправки:', authData);
-    console.log('🌐 URL запроса:', 'auth/telegram-widget/');
-    console.log('🔗 Полный URL:', `${API_CONFIG.BASE_URL}auth/telegram-widget/`);
+    console.log('🌐 URL запроса:', authUrl);
+    console.log('🔗 Полный URL:', fullUrl);
+    console.log('🔧 Конфигурация API:', {
+      BASE_URL: API_CONFIG.BASE_URL,
+      isDevelopment: API_CONFIG.ENV.isDevelopment,
+      isProduction: API_CONFIG.ENV.isProduction
+    });
     
     // Отправляем JSON запрос
-    const response = await telegramAuthClient.post('auth/telegram-widget/', authData, {
+    const response = await telegramAuthClient.post(authUrl, authData, {
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+        'Access-Control-Allow-Origin': '*',
       },
     });
     
@@ -73,6 +89,20 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
     return response.data;
   } catch (error: any) {
     console.error('❌ Ошибка авторизации Telegram:', error);
+    
+    // Проверяем на CORS ошибку
+    if (error.message?.includes('CORS') || error.message?.includes('blocked')) {
+      console.error('🚫 CORS ошибка - проверьте настройки сервера');
+      throw {
+        message: 'Ошибка CORS. Проверьте настройки сервера и URL.',
+        code: 'CORS_ERROR',
+        details: {
+          originalError: error.message,
+          url: `${API_CONFIG.BASE_URL}auth/telegram-widget/`,
+          suggestion: 'Убедитесь, что сервер запущен и доступен по HTTPS'
+        }
+      };
+    }
     
     // Если JSON не работает, пробуем FormData
     if (error.response?.status === 400) {
@@ -112,6 +142,8 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
         const formResponse = await telegramAuthClient.post('auth/telegram-widget/', formData, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            'ngrok-skip-browser-warning': 'true',
+            'Access-Control-Allow-Origin': '*',
           },
         });
         

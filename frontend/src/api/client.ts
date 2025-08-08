@@ -8,41 +8,51 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  // Отключаем withCredentials для всех окружений
-  withCredentials: false,
+  // Отключаем withCredentials для продакшена
+  withCredentials: API_CONFIG.ENV.isDevelopment,
 });
 
-// Функция для получения CSRF токена (больше не используется)
-// const getCSRFToken = (): string | null => {
-//   // Пытаемся получить токен из cookie
-//   const cookies = document.cookie.split(';');
-//   for (const cookie of cookies) {
-//     const [name, value] = cookie.trim().split('=');
-//     if (name === 'csrftoken') {
-//       return value;
-//     }
-//   }
-//   return null;
-// };
+// Функция для получения CSRF токена
+const getCSRFToken = (): string | null => {
+  // Пытаемся получить токен из cookie
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'csrftoken') {
+      return value;
+    }
+  }
+  return null;
+};
 
 apiClient.interceptors.request.use(
   (config: any) => {
-    const fullURL = `${config.baseURL}${config.url}`;
     console.log('🌐 API запрос:', {
       method: config.method?.toUpperCase(),
       url: config.url,
       baseURL: config.baseURL,
-      fullURL: fullURL,
-      headers: config.headers,
-      isDev: import.meta.env.DEV,
-      isProd: import.meta.env.PROD,
-      mode: import.meta.env.MODE
+      fullURL: `${config.baseURL}${config.url}`,
+      headers: config.headers
     });
+    
+    // Добавляем CSRF токен только в разработке
+    if (API_CONFIG.ENV.isDevelopment) {
+      const csrfToken = getCSRFToken();
+      if (csrfToken) {
+        config.headers['X-CSRFToken'] = csrfToken;
+      }
+    }
     
     // Добавляем токен авторизации
     const token = localStorage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    // Добавляем специальные заголовки для продакшена
+    if (!API_CONFIG.ENV.isDevelopment) {
+      config.headers['ngrok-skip-browser-warning'] = 'true';
+      config.headers['Access-Control-Allow-Origin'] = '*';
     }
     
     return config;
@@ -58,29 +68,8 @@ apiClient.interceptors.response.use(
     console.log('✅ API ответ:', {
       status: response.status,
       url: response.config.url,
-      data: response.data,
-      contentType: response.headers['content-type']
+      data: response.data
     });
-    
-    // Проверяем, что ответ содержит JSON
-    const contentType = response.headers['content-type'] || '';
-    if (contentType.includes('text/html') || (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>'))) {
-      console.error('❌ Получен HTML вместо JSON:', {
-        contentType,
-        dataType: typeof response.data,
-        dataPreview: typeof response.data === 'string' ? response.data.substring(0, 100) : response.data
-      });
-      return Promise.reject({
-        message: 'Сервер вернул HTML вместо JSON',
-        code: 'INVALID_RESPONSE',
-        details: {
-          contentType,
-          url: response.config.url,
-          data: response.data
-        }
-      });
-    }
-    
     return response;
   },
   (error: any) => {
@@ -93,12 +82,6 @@ apiClient.interceptors.response.use(
 
     if (!error.response) {
       console.error('🌐 Network error:', error.message);
-      console.error('🌐 Request details:', {
-        url: error.config?.url,
-        baseURL: API_CONFIG.BASE_URL,
-        method: error.config?.method,
-        headers: error.config?.headers
-      });
       return Promise.reject({
         message: 'Ошибка сети. Проверьте подключение к интернету.',
         code: 'NETWORK_ERROR',
