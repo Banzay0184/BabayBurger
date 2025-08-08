@@ -2046,3 +2046,31 @@ class CartView(APIView):
         except Exception as e:
             logger.error(f"Error clearing cart: {str(e)}")
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TestConnectionView(APIView):
+    """
+    Простой endpoint для тестирования подключения к API
+    """
+    
+    def get(self, request):
+        """Тестовый GET запрос"""
+        return Response({
+            'status': 'success',
+            'message': 'API подключение работает',
+            'timestamp': time.time(),
+            'server_info': {
+                'django_version': '4.2+',
+                'environment': getattr(settings, 'ENVIRONMENT', 'development'),
+                'debug': settings.DEBUG,
+            }
+        })
+    
+    def post(self, request):
+        """Тестовый POST запрос"""
+        return Response({
+            'status': 'success',
+            'message': 'POST запрос обработан',
+            'received_data': request.data,
+            'timestamp': time.time(),
+        })

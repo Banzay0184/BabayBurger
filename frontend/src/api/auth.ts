@@ -28,16 +28,84 @@ const telegramAuthClient = axios.create({
   withCredentials: false, // Отключаем CSRF для авторизации
 });
 
+// Функция для диагностики подключения к API
+export const diagnoseApiConnection = async () => {
+  console.log('🔍 Диагностика подключения к API...');
+  console.log('📊 Конфигурация:', {
+    BASE_URL: API_CONFIG.BASE_URL,
+    TELEGRAM_WIDGET_URL: API_CONFIG.TELEGRAM_WIDGET_URL,
+    ENV: API_CONFIG.ENV,
+    TIMEOUT: API_CONFIG.TIMEOUT
+  });
+  
+  try {
+    // Тестируем базовое подключение
+    const testResponse = await testApiConnection();
+    console.log('✅ Базовое подключение работает:', testResponse);
+    
+    // Тестируем CORS
+    const corsTest = await fetch(`${API_CONFIG.BASE_URL}test/`, {
+      method: 'OPTIONS',
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+      },
+    });
+    console.log('✅ CORS тест:', corsTest.status, corsTest.headers);
+    
+    return {
+      success: true,
+      message: 'API полностью доступен',
+      details: {
+        baseUrl: API_CONFIG.BASE_URL,
+        cors: corsTest.status === 200,
+        testResponse
+      }
+    };
+  } catch (error: any) {
+    console.error('❌ Диагностика показала проблемы:', error);
+    return {
+      success: false,
+      message: 'API недоступен',
+      error: error.message,
+      details: {
+        baseUrl: API_CONFIG.BASE_URL,
+        suggestion: 'Проверьте, что Django сервер запущен и ngrok туннель активен'
+      }
+    };
+  }
+};
+
 // Функция для тестирования подключения к API
 export const testApiConnection = async () => {
   try {
-    console.log('Тестируем подключение к API...');
-    const response = await apiClient.get('auth/test/');
-    console.log('API подключение успешно:', response.data);
+    console.log('🔍 Тестируем подключение к API...');
+    console.log('🌐 URL:', `${API_CONFIG.BASE_URL}test/`);
+    
+    const response = await telegramAuthClient.get('test/');
+    console.log('✅ API подключение успешно:', response.data);
     return response.data;
   } catch (error: any) {
-    console.error('Ошибка подключения к API:', error);
-    throw error;
+    console.error('❌ Ошибка подключения к API:', error);
+    
+    // Детальная диагностика
+    console.error('🔍 Детали ошибки подключения:', {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      baseURL: error.config?.baseURL,
+    });
+    
+    throw {
+      message: 'Не удается подключиться к серверу',
+      code: 'CONNECTION_ERROR',
+      details: {
+        originalError: error.message,
+        url: `${API_CONFIG.BASE_URL}test/`,
+        suggestion: 'Проверьте, что Django сервер запущен и ngrok туннель активен'
+      }
+    };
   }
 };
 
@@ -46,6 +114,16 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
   try {
     console.log('=== ДИАГНОСТИКА АВТОРИЗАЦИИ ===');
     console.log('Исходные данные пользователя:', userData);
+    
+    // Сначала проверяем подключение к API
+    const diagnosis = await diagnoseApiConnection();
+    if (!diagnosis.success) {
+      throw {
+        message: 'API недоступен. Проверьте подключение к серверу.',
+        code: 'API_UNAVAILABLE',
+        details: diagnosis.details
+      };
+    }
     
     // Создаем данные для отправки на сервер
     const authData = {
@@ -88,16 +166,32 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
   } catch (error: any) {
     console.error('❌ Ошибка авторизации Telegram:', error);
     
+    // Детальная диагностика ошибки
+    console.error('🔍 Детали ошибки:', {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      headers: error.response?.headers,
+      data: error.response?.data,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        baseURL: error.config?.baseURL,
+        headers: error.config?.headers,
+      }
+    });
+    
     // Проверяем на CORS ошибку
-    if (error.message?.includes('CORS') || error.message?.includes('blocked')) {
-      console.error('🚫 CORS ошибка - проверьте настройки сервера');
+    if (error.message?.includes('CORS') || error.message?.includes('blocked') || error.message?.includes('Network Error')) {
+      console.error('🚫 CORS/Network ошибка - проверьте настройки сервера');
       throw {
-        message: 'Ошибка CORS. Проверьте настройки сервера и URL.',
-        code: 'CORS_ERROR',
+        message: 'Ошибка подключения к серверу. Проверьте, что сервер запущен и доступен.',
+        code: 'NETWORK_ERROR',
         details: {
           originalError: error.message,
           url: `${API_CONFIG.BASE_URL}auth/telegram-widget/`,
-          suggestion: 'Убедитесь, что сервер запущен и доступен по HTTPS'
+          suggestion: 'Убедитесь, что Django сервер запущен на порту 8000 и ngrok туннель активен'
         }
       };
     }

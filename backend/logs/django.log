@@ -19107,3 +19107,64 @@ INFO 2025-08-08 17:58:55,630 autoreload 88478 140704590802880 /Users/shakhzodabi
 INFO 2025-08-08 17:58:56,360 autoreload 88493 140704590802880 Watching for file changes with StatReloader
 INFO 2025-08-08 17:59:11,318 autoreload 88493 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
 INFO 2025-08-08 17:59:12,715 autoreload 88686 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 17:59:36,705 basehttp 88686 123145527111680 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-08 17:59:39,539 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:40,808 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:41,626 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:42,128 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:42,957 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:43,297 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:43,678 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:43,912 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:44,287 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:44,678 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:45,077 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:45,338 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:45,875 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:46,112 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:46,584 basehttp 88686 123145561763840 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:46,693 basehttp 88686 123145578553344 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:46,783 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:47,527 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:48,281 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:48,963 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:49,694 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:59:50,430 basehttp 88686 123145544974336 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:00:03,791 basehttp 88686 123145527111680 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-08 18:00:07,097 basehttp 88686 123145561763840 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:01:26,808 autoreload 88686 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 18:01:28,168 autoreload 90644 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:01:30,731 autoreload 90644 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 18:01:31,722 autoreload 90664 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:02:20,817 autoreload 90664 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 18:02:21,882 autoreload 91366 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:02:23,383 autoreload 91366 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 18:02:24,244 autoreload 91375 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:02:32,569 basehttp 91375 123145517907968 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:02:36,632 basehttp 91375 123145534697472 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-08 18:05:03,803 basehttp 91375 123145517907968 "GET /api/auth/validate/ HTTP/1.1" 404 29060
+INFO 2025-08-08 18:05:27,182 basehttp 91375 123145534697472 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:05:31,670 basehttp 91375 123145551486976 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:05:47,494 basehttp 91375 123145568276480 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:05:54,880 autoreload 91375 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 18:05:55,827 autoreload 94268 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:05:56,971 basehttp 94268 123145446555648 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-08 18:05:59,115 basehttp 94268 123145464418304 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-08 18:06:10,490 basehttp 94268 123145481207808 "GET /api/auth/validate/ HTTP/1.1" 404 29060
+INFO 2025-08-08 18:06:25,175 autoreload 94268 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/views.py changed, reloading.
+INFO 2025-08-08 18:06:26,355 autoreload 94716 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:06:44,428 autoreload 94716 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/urls.py changed, reloading.
+INFO 2025-08-08 18:06:45,408 autoreload 95008 140704590802880 Watching for file changes with StatReloader
+WARNING 2025-08-08 18:06:56,523 basehttp 95008 123145559199744 "GET /api/auth/validate/ HTTP/1.1" 404 29240
+WARNING 2025-08-08 18:06:56,772 basehttp 95008 123145559199744 "GET /api/auth/validate/ HTTP/1.1" 404 29240
+INFO 2025-08-08 18:07:12,606 autoreload 95333 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 18:07:34,675 basehttp 95333 123145492131840 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 18:07:35,812 basehttp 95333 123145492131840 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+WARNING 2025-08-08 18:07:46,465 basehttp 95333 123145508921344 "GET /api/auth/validate/ HTTP/1.1" 404 29240
+WARNING 2025-08-08 18:08:13,674 basehttp 95333 123145508921344 "GET /api/auth/validate/ HTTP/1.1" 404 29240
+WARNING 2025-08-08 18:08:14,443 basehttp 95333 123145508921344 "GET /api/auth/validate/ HTTP/1.1" 404 29240
+WARNING 2025-08-08 18:08:34,430 basehttp 95333 123145508921344 "GET /api/auth/validate/ HTTP/1.1" 404 29240
+WARNING 2025-08-08 18:08:36,430 basehttp 95333 123145508921344 "GET /api/auth/validate/ HTTP/1.1" 404 29240
+INFO 2025-08-08 18:09:20,722 basehttp 95333 123145492131840 "GET /api/test/ HTTP/1.1" 200 187
+INFO 2025-08-08 18:09:33,192 autoreload 95333 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/urls.py changed, reloading.
+INFO 2025-08-08 18:09:34,705 autoreload 97427 140704590802880 Watching for file changes with StatReloader

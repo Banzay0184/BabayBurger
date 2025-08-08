@@ -45,6 +45,7 @@ CSRF_TRUSTED_ORIGINS = [
 # CORS настройки для API
 CORS_ALLOW_ALL_ORIGINS = True  # Для разработки
 CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:3000',
@@ -52,6 +53,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',
     'https://babay-burger.vercel.app',  # Vercel домен
     'https://*.vercel.app',  # Все Vercel домены
+    'https://*.ngrok-free.app',  # Ngrok домены
+    'https://*.ngrok.io',  # Старые ngrok домены
 ]
 
 # Дополнительные CORS настройки
@@ -65,6 +68,7 @@ CORS_ALLOWED_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'ngrok-skip-browser-warning',  # Для ngrok
 ]
 
 CORS_ALLOWED_METHODS = [
@@ -74,6 +78,12 @@ CORS_ALLOWED_METHODS = [
     'PATCH',
     'POST',
     'PUT',
+]
+
+# Дополнительные настройки для CORS
+CORS_EXPOSE_HEADERS = [
+    'content-type',
+    'content-length',
 ]
 
 # Настройки для webhook
@@ -188,9 +198,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Добавляем CORS middleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # Добавляем CORS middleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

@@ -6,7 +6,7 @@ from .views import (
     MenuItemViewSet, AddOnViewSet, SizeOptionViewSet, PromotionViewSet, OrderViewSet,
     TelegramLoginWidgetView, TestUserCreationView, HitsView, NewItemsView, PromotionsView,
     MenuItemDetailView, CategoryItemsView, SearchView, FeaturedView, PriceRangeView,
-    StatisticsView, CartView
+    StatisticsView, CartView, TestConnectionView
 )
 from rest_framework.routers import DefaultRouter
 
@@ -18,6 +18,8 @@ router.register(r'promotions', PromotionViewSet)
 router.register(r'orders', OrderViewSet)
 
 urlpatterns = [
+    # Тестовый endpoint
+    path('test/', TestConnectionView.as_view(), name='test-connection'),
     path('webhook/', WebhookView.as_view(), name='webhook'),
     # Аутентификация
     path('auth/', AuthView.as_view(), name='auth'),
