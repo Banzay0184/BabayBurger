@@ -1,5 +1,3 @@
-import type { ApiResponse } from './types';
-
 // Типы для API меню
 export interface ApiMenuItem {
   id: number;

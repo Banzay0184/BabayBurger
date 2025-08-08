@@ -2,8 +2,6 @@ import apiClient from './client';
 import type { ApiResponse } from './types';
 import type {
   ApiMenuItem,
-  ApiSizeOption,
-  ApiAddOn,
   ApiCategory,
   ApiPromotion,
   ApiMenuResponse,
@@ -159,8 +157,6 @@ export const menuApi = {
 // Реэкспортируем типы для удобства
 export type {
   ApiMenuItem,
-  ApiSizeOption,
-  ApiAddOn,
   ApiCategory,
   ApiPromotion,
   ApiMenuResponse,
