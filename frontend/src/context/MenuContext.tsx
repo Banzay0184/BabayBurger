@@ -115,8 +115,8 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
       const items = menuResponse.data?.all_items || menuResponse.data?.items || []; // Бэкенд возвращает all_items
       const promotions = promotionsResponse.data || [];
 
-      // Проверяем, что данные являются массивами
-      if (!Array.isArray(categories) || !Array.isArray(items) || !Array.isArray(promotions)) {
+      // Проверяем, что данные являются массивами или объектами, которые можно обработать
+      if (!categories || !items || !promotions) {
         console.error('❌ Получены некорректные данные:', {
           categories: typeof categories,
           items: typeof items,
@@ -128,24 +128,29 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
         throw new Error('Сервер вернул некорректные данные');
       }
 
+      // Убеждаемся, что данные являются массивами
+      const categoriesArray = Array.isArray(categories) ? categories : [];
+      const itemsArray = Array.isArray(items) ? items : [];
+      const promotionsArray = Array.isArray(promotions) ? promotions : [];
+
       console.log('📊 Menu loaded:', {
-        categories: categories.length,
-        items: items.length,
-        promotions: promotions.length
+        categories: categoriesArray.length,
+        items: itemsArray.length,
+        promotions: promotionsArray.length
       });
 
       // Создаем категории с товарами
       let categoriesWithItems: MenuCategory[];
       
       // Проверяем, есть ли уже товары в категориях
-      if (categories.length > 0 && (categories[0] as any).items) {
+      if (categoriesArray.length > 0 && (categoriesArray[0] as any).items) {
         // Бэкенд уже вернул категории с товарами
-        categoriesWithItems = categories as MenuCategory[];
+        categoriesWithItems = categoriesArray as MenuCategory[];
       } else {
         // Нужно создать категории с товарами
-        categoriesWithItems = categories.map(category => ({
+        categoriesWithItems = categoriesArray.map(category => ({
           ...category,
-          items: items.filter((item: any) => item.category === category.id)
+          items: itemsArray.filter((item: any) => item.category === category.id)
         }));
       }
 
@@ -153,8 +158,8 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
         type: 'SET_MENU_DATA', 
         payload: { 
           categories: categoriesWithItems, 
-          items: items,
-          promotions: Array.isArray(promotions) ? promotions : []
+          items: itemsArray,
+          promotions: promotionsArray
         } 
       });
       
@@ -176,12 +181,15 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
         throw new Error('Ошибка загрузки акций');
       }
 
-      const promotions = Array.isArray(response.data) ? response.data : [];
+      const promotions = response.data || [];
+
+      // Убеждаемся, что промоции являются массивом
+      const promotionsArray = Array.isArray(promotions) ? promotions : [];
 
       // Обновляем только промоции, не трогая остальное состояние
       dispatch({ 
         type: 'SET_PROMOTIONS', 
-        payload: promotions
+        payload: promotionsArray
       });
       
       console.log('✅ Promotions loaded:', promotions.length);
