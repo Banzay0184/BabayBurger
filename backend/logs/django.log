@@ -18695,3 +18695,9 @@ INFO 2025-08-08 17:07:15,080 autoreload 44973 140704590802880 Watching for file 
 INFO 2025-08-08 17:07:29,922 basehttp 44973 123145474715648 "GET /django-api/test-cors/ HTTP/1.1" 200 343
 INFO 2025-08-08 17:07:39,072 autoreload 44973 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/urls.py changed, reloading.
 INFO 2025-08-08 17:07:40,013 autoreload 45405 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 17:08:41,606 basehttp 45405 123145592946688 "OPTIONS /django-api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:08:41,815 basehttp 45405 123145592946688 "OPTIONS /django-api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:11:32,627 autoreload 45405 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/urls.py changed, reloading.
+INFO 2025-08-08 17:11:33,718 autoreload 48576 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 17:11:46,602 autoreload 48576 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/urls.py changed, reloading.
+INFO 2025-08-08 17:11:47,506 autoreload 48853 140704590802880 Watching for file changes with StatReloader

@@ -3,12 +3,12 @@ export const API_CONFIG = {
   // URL API в зависимости от окружения
   BASE_URL: import.meta.env.DEV 
     ? 'http://localhost:8000/api' 
-    : 'https://ec5b3f679bd2.ngrok-free.app/django-api',
+    : 'https://ec5b3f679bd2.ngrok-free.app/api',
   
   // URL для авторизации Telegram Widget
   TELEGRAM_WIDGET_URL: import.meta.env.DEV 
     ? 'http://localhost:8000/api/auth/telegram-widget/'
-    : 'https://ec5b3f679bd2.ngrok-free.app/django-api/auth/telegram-widget/',
+    : 'https://ec5b3f679bd2.ngrok-free.app/api/auth/telegram-widget/',
   
   // Таймаут запросов
   TIMEOUT: 30000, // Увеличиваем таймаут для ngrok
@@ -26,7 +26,9 @@ export const getApiUrl = (endpoint: string): string => {
   const baseUrl = API_CONFIG.BASE_URL.endsWith('/') 
     ? API_CONFIG.BASE_URL 
     : `${API_CONFIG.BASE_URL}/`;
-  return `${baseUrl}${endpoint}`;
+  const url = `${baseUrl}${endpoint}`;
+  console.log('🔗 Generated URL:', { baseUrl, endpoint, url });
+  return url;
 };
 
 // Функция для получения URL авторизации
