@@ -11,7 +11,7 @@ export const API_CONFIG = {
     : 'https://ec5b3f679bd2.ngrok-free.app/api/auth/telegram-widget/',
   
   // Таймаут запросов
-  TIMEOUT: 15000, // Увеличиваем таймаут для продакшена
+  TIMEOUT: 30000, // Увеличиваем таймаут для ngrok
   
   // Настройки для разных окружений
   ENV: {

@@ -50,7 +50,43 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:3000',
+    'https://babay-burger.vercel.app',
+    'https://*.vercel.app',
+    'https://*.ngrok-free.app',
+    'https://*.ngrok.io',
 ]
+
+# Дополнительные CORS настройки для ngrok
+CORS_ALLOWED_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'ngrok-skip-browser-warning',
+]
+
+CORS_EXPOSE_HEADERS = [
+    'content-type',
+    'x-csrftoken',
+]
+
+# Дополнительные настройки для ngrok
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Настройки для preflight запросов
+CORS_PREFLIGHT_MAX_AGE = 86400  # 24 часа
 
 # Настройки для webhook
 CSRF_COOKIE_SECURE = False  # Для разработки

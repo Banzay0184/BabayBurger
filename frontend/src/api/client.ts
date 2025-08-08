@@ -9,7 +9,7 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
   // Отключаем withCredentials для продакшена
-  withCredentials: API_CONFIG.ENV.isDevelopment,
+  withCredentials: false, // Всегда отключаем для ngrok
 });
 
 // Функция для получения CSRF токена
@@ -35,8 +35,8 @@ apiClient.interceptors.request.use(
       headers: config.headers
     });
     
-    // Добавляем CSRF токен только в разработке
-    if (API_CONFIG.ENV.isDevelopment) {
+    // Добавляем CSRF токен только в разработке и только если withCredentials включен
+    if (API_CONFIG.ENV.isDevelopment && config.withCredentials) {
       const csrfToken = getCSRFToken();
       if (csrfToken) {
         config.headers['X-CSRFToken'] = csrfToken;
@@ -49,10 +49,10 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Добавляем специальные заголовки для продакшена
+    // Добавляем специальные заголовки для ngrok
     if (!API_CONFIG.ENV.isDevelopment) {
       config.headers['ngrok-skip-browser-warning'] = 'true';
-      config.headers['Access-Control-Allow-Origin'] = '*';
+      config.headers['X-Requested-With'] = 'XMLHttpRequest';
     }
     
     return config;
@@ -82,6 +82,12 @@ apiClient.interceptors.response.use(
 
     if (!error.response) {
       console.error('🌐 Network error:', error.message);
+      console.error('🌐 Request details:', {
+        url: error.config?.url,
+        baseURL: API_CONFIG.BASE_URL,
+        method: error.config?.method,
+        headers: error.config?.headers
+      });
       return Promise.reject({
         message: 'Ошибка сети. Проверьте подключение к интернету.',
         code: 'NETWORK_ERROR',
