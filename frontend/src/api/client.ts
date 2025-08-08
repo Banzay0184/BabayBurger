@@ -34,7 +34,9 @@ apiClient.interceptors.request.use(
       baseURL: config.baseURL,
       fullURL: fullURL,
       headers: config.headers,
-      isDev: import.meta.env.DEV
+      isDev: import.meta.env.DEV,
+      isProd: import.meta.env.PROD,
+      mode: import.meta.env.MODE
     });
     
     // Добавляем токен авторизации

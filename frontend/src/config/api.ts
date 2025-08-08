@@ -3,12 +3,12 @@ export const API_CONFIG = {
   // URL API в зависимости от окружения
   BASE_URL: import.meta.env.DEV 
     ? 'http://localhost:8000/api' 
-    : import.meta.env.VITE_API_URL || 'https://ec5b3f679bd2.ngrok-free.app/api',
+    : 'http://localhost:8000/api', // Временно используем локальный сервер
   
   // URL для авторизации Telegram Widget
   TELEGRAM_WIDGET_URL: import.meta.env.DEV 
     ? 'http://localhost:8000/api/auth/telegram-widget/'
-    : (import.meta.env.VITE_API_URL || 'https://ec5b3f679bd2.ngrok-free.app/api') + '/auth/telegram-widget/',
+    : 'http://localhost:8000/api/auth/telegram-widget/', // Временно используем локальный сервер
   
   // Таймаут запросов
   TIMEOUT: 30000, // Увеличиваем таймаут для ngrok

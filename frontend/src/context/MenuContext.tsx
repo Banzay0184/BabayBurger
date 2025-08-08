@@ -95,6 +95,11 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
 
   const fetchMenu = async () => {
     console.log('🚀 Loading menu data...');
+    console.log('🔧 Environment:', {
+      isDev: import.meta.env.DEV,
+      isProd: import.meta.env.PROD,
+      mode: import.meta.env.MODE
+    });
     dispatch({ type: 'SET_LOADING', payload: true });
     dispatch({ type: 'SET_ERROR', payload: null });
     
