@@ -77,8 +77,6 @@ CORS_ALLOWED_METHODS = [
 ]
 
 # Настройки для webhook
-CSRF_COOKIE_SECURE = not DEBUG  # True для продакшена, False для разработки
-SESSION_COOKIE_SECURE = not DEBUG  # True для продакшена, False для разработки
 CSRF_COOKIE_SAMESITE = 'Lax'  # Для работы с фронтендом
 SESSION_COOKIE_SAMESITE = 'Lax'  # Для работы с фронтендом
 

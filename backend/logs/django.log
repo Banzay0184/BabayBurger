@@ -19020,3 +19020,39 @@ INFO 2025-08-08 17:43:52,226 autoreload 75690 140704590802880 Watching for file 
 INFO 2025-08-08 17:43:57,786 autoreload 75690 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
 INFO 2025-08-08 17:43:58,378 autoreload 75817 140704590802880 Watching for file changes with StatReloader
 INFO 2025-08-08 17:44:05,981 autoreload 75817 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 17:46:10,989 autoreload 77673 140704590802880 Watching for file changes with StatReloader
+WARNING 2025-08-08 17:46:32,971 basehttp 77673 123145592074240 "GET /api/auth/validate/ HTTP/1.1" 404 29047
+INFO 2025-08-08 17:46:34,380 basehttp 77673 123145625653248 "GET /api/promotions/ HTTP/1.1" 200 1723
+INFO 2025-08-08 17:46:34,708 basehttp 77673 123145608863744 "GET /api/categories/ HTTP/1.1" 200 545
+INFO 2025-08-08 17:46:34,714 basehttp 77673 123145592074240 "GET /api/menu/ HTTP/1.1" 200 15056
+INFO 2025-08-08 17:46:34,744 basehttp 77673 123145592074240 "GET /api/promotions/ HTTP/1.1" 200 1723
+INFO 2025-08-08 17:49:18,586 basehttp 77673 123145642442752 "GET /admin/api/user/ HTTP/1.1" 200 18150
+INFO 2025-08-08 17:49:18,727 basehttp 77673 123145709600768 "GET /static/admin/css/changelists.css HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,727 basehttp 77673 123145676021760 "GET /static/admin/css/dark_mode.css HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,728 basehttp 77673 123145659232256 "GET /static/admin/css/base.css HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,737 basehttp 77673 123145709600768 "GET /static/admin/js/jquery.init.js HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,753 basehttp 77673 123145726390272 "GET /static/admin/css/responsive.css HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,756 basehttp 77673 123145692811264 "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,774 basehttp 77673 123145676021760 "GET /static/admin/js/core.js HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,782 basehttp 77673 123145659232256 "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,818 basehttp 77673 123145692811264 "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,820 basehttp 77673 123145726390272 "GET /static/admin/js/actions.js HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,821 basehttp 77673 123145676021760 "GET /static/admin/js/urlify.js HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,822 basehttp 77673 123145709600768 "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,825 basehttp 77673 123145642442752 "GET /admin/jsi18n/ HTTP/1.1" 200 16066
+INFO 2025-08-08 17:49:18,826 basehttp 77673 123145659232256 "GET /static/admin/js/prepopulate.js HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:18,835 basehttp 77673 123145709600768 "GET /static/admin/img/search.svg HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:21,607 basehttp 77673 123145659232256 "GET /static/admin/js/theme.js HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:21,609 basehttp 77673 123145709600768 "GET /static/admin/js/filters.js HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:21,611 basehttp 77673 123145642442752 "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:21,638 basehttp 77673 123145659232256 "GET /static/admin/img/sorting-icons.svg HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:21,643 basehttp 77673 123145709600768 "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 304 0
+INFO 2025-08-08 17:49:21,643 basehttp 77673 123145642442752 "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 304 0
+WARNING 2025-08-08 17:49:21,845 basehttp 77673 123145642442752 "GET /favicon.ico HTTP/1.1" 404 19438
+INFO 2025-08-08 17:49:38,261 basehttp 77673 123145743179776 "POST /api/webhook/ HTTP/1.1" 200 15
+INFO 2025-08-08 17:50:08,120 autoreload 77673 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 17:50:09,608 autoreload 81075 140704590802880 Watching for file changes with StatReloader
+WARNING 2025-08-08 17:50:40,657 basehttp 81075 123145362542592 "GET /api/auth/validate/ HTTP/1.1" 404 29060
+WARNING 2025-08-08 17:50:49,427 basehttp 81075 123145362542592 "GET /api/auth/validate/ HTTP/1.1" 404 29060
+WARNING 2025-08-08 17:51:00,399 basehttp 81075 123145362542592 "GET /api/auth/validate/ HTTP/1.1" 404 29060
+WARNING 2025-08-08 17:51:08,430 basehttp 81075 123145362542592 "GET /api/auth/validate/ HTTP/1.1" 404 29060
