@@ -50,15 +50,41 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:3000',
+    'https://babay-burger.vercel.app',  # Vercel домен
+    'https://*.vercel.app',  # Все Vercel домены
+]
+
+# Дополнительные CORS настройки
+CORS_ALLOWED_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOWED_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
 ]
 
 # Настройки для webhook
-CSRF_COOKIE_SECURE = False  # Для разработки
-SESSION_COOKIE_SECURE = False  # Для разработки
+CSRF_COOKIE_SECURE = not DEBUG  # True для продакшена, False для разработки
+SESSION_COOKIE_SECURE = not DEBUG  # True для продакшена, False для разработки
 CSRF_COOKIE_SAMESITE = 'Lax'  # Для работы с фронтендом
 SESSION_COOKIE_SAMESITE = 'Lax'  # Для работы с фронтендом
 
-DEBUG = True
+# Определяем окружение
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
+DEBUG = ENVIRONMENT == 'development'
 
 # Создаем папку для логов если её нет
 LOGS_DIR = BASE_DIR / 'logs'
