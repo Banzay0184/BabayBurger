@@ -33,7 +33,8 @@ apiClient.interceptors.request.use(
       url: config.url,
       baseURL: config.baseURL,
       fullURL: fullURL,
-      headers: config.headers
+      headers: config.headers,
+      isDev: import.meta.env.DEV
     });
     
     // Добавляем токен авторизации
@@ -61,8 +62,12 @@ apiClient.interceptors.response.use(
     
     // Проверяем, что ответ содержит JSON
     const contentType = response.headers['content-type'] || '';
-    if (contentType.includes('text/html')) {
-      console.error('❌ Получен HTML вместо JSON:', response.data);
+    if (contentType.includes('text/html') || (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>'))) {
+      console.error('❌ Получен HTML вместо JSON:', {
+        contentType,
+        dataType: typeof response.data,
+        dataPreview: typeof response.data === 'string' ? response.data.substring(0, 100) : response.data
+      });
       return Promise.reject({
         message: 'Сервер вернул HTML вместо JSON',
         code: 'INVALID_RESPONSE',

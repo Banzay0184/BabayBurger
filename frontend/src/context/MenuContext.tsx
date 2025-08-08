@@ -120,7 +120,10 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
         console.error('❌ Получены некорректные данные:', {
           categories: typeof categories,
           items: typeof items,
-          promotions: typeof promotions
+          promotions: typeof promotions,
+          categoriesData: categories,
+          itemsData: items,
+          promotionsData: promotions
         });
         throw new Error('Сервер вернул некорректные данные');
       }
@@ -157,9 +160,9 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
       
       console.log('✅ Menu data loaded successfully');
     } catch (err: any) {
-      const errorMessage = err?.message || 'Ошибка загрузки меню';
+      console.error('❌ Error fetching menu:', err);
+      const errorMessage = err?.message || err?.details?.message || 'Ошибка загрузки меню';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
-      console.error('Error fetching menu:', err);
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
