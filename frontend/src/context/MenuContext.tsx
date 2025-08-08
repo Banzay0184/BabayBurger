@@ -115,6 +115,16 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
       const items = menuResponse.data?.all_items || menuResponse.data?.items || []; // Бэкенд возвращает all_items
       const promotions = promotionsResponse.data || [];
 
+      // Проверяем, что данные являются массивами
+      if (!Array.isArray(categories) || !Array.isArray(items) || !Array.isArray(promotions)) {
+        console.error('❌ Получены некорректные данные:', {
+          categories: typeof categories,
+          items: typeof items,
+          promotions: typeof promotions
+        });
+        throw new Error('Сервер вернул некорректные данные');
+      }
+
       console.log('📊 Menu loaded:', {
         categories: categories.length,
         items: items.length,

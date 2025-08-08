@@ -12,45 +12,35 @@ const apiClient = axios.create({
   withCredentials: false,
 });
 
-// Функция для получения CSRF токена
-const getCSRFToken = (): string | null => {
-  // Пытаемся получить токен из cookie
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'csrftoken') {
-      return value;
-    }
-  }
-  return null;
-};
+// Функция для получения CSRF токена (больше не используется)
+// const getCSRFToken = (): string | null => {
+//   // Пытаемся получить токен из cookie
+//   const cookies = document.cookie.split(';');
+//   for (const cookie of cookies) {
+//     const [name, value] = cookie.trim().split('=');
+//     if (name === 'csrftoken') {
+//       return value;
+//     }
+//   }
+//   return null;
+// };
 
 apiClient.interceptors.request.use(
   (config: any) => {
+    const fullURL = `${config.baseURL}${config.url}`;
     console.log('🌐 API запрос:', {
       method: config.method?.toUpperCase(),
       url: config.url,
       baseURL: config.baseURL,
-      fullURL: `${config.baseURL}${config.url}`,
+      fullURL: fullURL,
       headers: config.headers
     });
-    
-    // Добавляем CSRF токен только в разработке и только если withCredentials включен
-    if (API_CONFIG.ENV.isDevelopment && config.withCredentials) {
-      const csrfToken = getCSRFToken();
-      if (csrfToken) {
-        config.headers['X-CSRFToken'] = csrfToken;
-      }
-    }
     
     // Добавляем токен авторизации
     const token = localStorage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    // Убираем все кастомные заголовки для ngrok
-    // Добавляем только базовые заголовки
     
     return config;
   },
@@ -65,8 +55,25 @@ apiClient.interceptors.response.use(
     console.log('✅ API ответ:', {
       status: response.status,
       url: response.config.url,
-      data: response.data
+      data: response.data,
+      contentType: response.headers['content-type']
     });
+    
+    // Проверяем, что ответ содержит JSON
+    const contentType = response.headers['content-type'] || '';
+    if (contentType.includes('text/html')) {
+      console.error('❌ Получен HTML вместо JSON:', response.data);
+      return Promise.reject({
+        message: 'Сервер вернул HTML вместо JSON',
+        code: 'INVALID_RESPONSE',
+        details: {
+          contentType,
+          url: response.config.url,
+          data: response.data
+        }
+      });
+    }
+    
     return response;
   },
   (error: any) => {

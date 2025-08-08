@@ -18639,3 +18639,33 @@ INFO 2025-08-08 16:56:39,037 autoreload 34864 140704590802880 /Users/shakhzodabi
 INFO 2025-08-08 16:56:40,680 autoreload 35999 140704590802880 Watching for file changes with StatReloader
 INFO 2025-08-08 16:56:42,222 autoreload 35999 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
 INFO 2025-08-08 16:56:42,932 autoreload 36021 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 16:57:01,927 autoreload 36021 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 16:57:03,040 autoreload 36332 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 16:57:17,501 autoreload 36507 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 16:57:24,335 autoreload 36507 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/middleware.py changed, reloading.
+INFO 2025-08-08 16:57:24,917 autoreload 36678 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 16:57:36,412 basehttp 36678 123145339453440 "OPTIONS /api/auth/validate/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:57:36,419 basehttp 36678 123145356242944 - Broken pipe from ('127.0.0.1', 53401)
+INFO 2025-08-08 16:57:39,556 basehttp 36678 123145356242944 "OPTIONS /api/menu/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:57:39,557 basehttp 36678 123145373032448 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:57:39,648 basehttp 36678 123145389821952 "OPTIONS /api/promotions/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:57:41,671 basehttp 36678 123145389821952 "OPTIONS /api/menu/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:57:41,692 basehttp 36678 123145406611456 "OPTIONS /api/promotions/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:57:41,697 basehttp 36678 123145423400960 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:57:41,864 autoreload 36678 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/api/middleware.py changed, reloading.
+INFO 2025-08-08 16:57:43,701 autoreload 36963 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 16:57:45,406 basehttp 36963 123145479655424 "OPTIONS /api/auth/logout/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:57:51,300 basehttp 36963 123145496444928 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:57:51,528 basehttp 36963 123145496444928 "POST /api/auth/telegram-widget/ HTTP/1.1" 200 234
+INFO 2025-08-08 16:58:49,210 autoreload 36963 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 16:58:50,163 autoreload 37822 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 16:59:05,075 basehttp 37822 123145362931712 "OPTIONS /api/auth/telegram-widget/ HTTP/1.1" 200 0
+INFO 2025-08-08 16:59:05,324 basehttp 37822 123145362931712 "POST /api/auth/telegram-widget/ HTTP/1.1" 200 234
+INFO 2025-08-08 16:59:29,080 autoreload 37822 140704590802880 /Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/config/settings.py changed, reloading.
+INFO 2025-08-08 16:59:30,659 autoreload 38397 140704590802880 Watching for file changes with StatReloader
+INFO 2025-08-08 17:01:03,718 basehttp 38397 123145560276992 "OPTIONS /api/promotions/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:01:03,719 basehttp 38397 123145543487488 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:01:03,812 basehttp 38397 123145577066496 "OPTIONS /api/menu/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:01:04,634 basehttp 38397 123145543487488 "OPTIONS /api/menu/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:01:04,635 basehttp 38397 123145560276992 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2025-08-08 17:01:04,637 basehttp 38397 123145577066496 "OPTIONS /api/promotions/ HTTP/1.1" 200 0

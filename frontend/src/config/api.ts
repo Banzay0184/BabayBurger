@@ -23,7 +23,10 @@ export const API_CONFIG = {
 
 // Функция для получения правильного URL
 export const getApiUrl = (endpoint: string): string => {
-  return `${API_CONFIG.BASE_URL}${endpoint}`;
+  const baseUrl = API_CONFIG.BASE_URL.endsWith('/') 
+    ? API_CONFIG.BASE_URL 
+    : `${API_CONFIG.BASE_URL}/`;
+  return `${baseUrl}${endpoint}`;
 };
 
 // Функция для получения URL авторизации
