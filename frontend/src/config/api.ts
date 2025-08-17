@@ -4,13 +4,13 @@ export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_URL || 
     (import.meta.env.DEV 
       ? '/api/'  // Используем локальный прокси в разработке
-      : 'https://ec5b3f679bd2.ngrok-free.app/api/'),
+      : 'https://3e3f35c1758a.ngrok-free.app/api/'),
   
   // URL для авторизации Telegram Widget
   TELEGRAM_WIDGET_URL: import.meta.env.VITE_TELEGRAM_AUTH_URL || 
     (import.meta.env.DEV 
       ? '/api/auth/telegram-widget/'  // Используем локальный прокси
-      : 'https://ec5b3f679bd2.ngrok-free.app/api/auth/telegram-widget/'),
+      : 'https://3e3f35c1758a.ngrok-free.app/api/auth/telegram-widget/'),
   
   // Таймаут запросов
   TIMEOUT: 15000, // Увеличиваем таймаут для продакшена

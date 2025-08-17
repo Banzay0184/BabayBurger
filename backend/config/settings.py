@@ -25,7 +25,7 @@ MINI_APP_URL = os.environ.get('MINI_APP_URL', '')  # URL вашего Mini App
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'ec5b3f679bd2.ngrok-free.app',    # Ваш ngrok домен
+    '3e3f35c1758a.ngrok-free.app',    # Ваш ngrok домен
     '.ngrok-free.app',  # Все ngrok домены
     '.ngrok.io',  # Старые ngrok домены
 ]

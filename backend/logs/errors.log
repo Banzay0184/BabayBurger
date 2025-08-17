@@ -373,3 +373,4 @@ TypeError: unsupported operand type(s) for -: 'datetime.datetime' and 'NoneType'
 [2025-08-08 15:38:46,889] ERROR log log_response 241 - Internal Server Error: /api/categories/1/items/
 [2025-08-08 15:38:46,925] ERROR log log_response 241 - Internal Server Error: /api/cart/
 [2025-08-08 17:25:59,608] ERROR log log_response 241 - Internal Server Error: /api/webhook/
+[2025-08-18 01:26:18,793] ERROR log log_response 241 - Internal Server Error: /api/webhook/
