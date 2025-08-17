@@ -317,14 +317,7 @@ export const authApi = {
     }
   },
 
-  async validateToken(): Promise<boolean> {
-    try {
-      const response = await apiClient.get('auth/validate/');
-      return response.data.valid;
-    } catch (error: any) {
-      return false;
-    }
-  },
+
 
   // Добавляем функции для совместимости
   async telegramAuth(authData: any): Promise<any> {

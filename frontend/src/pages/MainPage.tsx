@@ -2,10 +2,9 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { MenuPage } from './MenuPage';
-import TestApi from '../components/TestApi';
 
 export const MainPage: React.FC = () => {
-  const { logout } = useAuth();
+  const { state, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -33,6 +32,16 @@ export const MainPage: React.FC = () => {
                 <p className="text-gray-400 text-sm">
                   Вкусные бургеры и фастфуд
                 </p>
+                {state.user && (
+                  <div className="flex items-center space-x-2 mt-1">
+                    <span className="text-xs text-gray-500">
+                      {state.user.telegram_id === 0 ? '👤 Гость' : '📱 Telegram'}
+                    </span>
+                    <span className="text-xs text-gray-600">
+                      {state.user.first_name}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -72,10 +81,7 @@ export const MainPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Тестовый компонент API */}
-        <div className="mb-6">
-          <TestApi />
-        </div>
+
 
         {/* Основной контент */}
         <div className="animate-slide-up">

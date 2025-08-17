@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { User } from '../api/types';
-import { authApi } from '../api/auth';
 import { 
   isTelegramWebApp, 
   isInTelegramContext, 
@@ -92,6 +91,7 @@ interface AuthContextType {
   state: AuthState;
   login: () => Promise<void>;
   loginWithTelegram: () => Promise<void>;
+  loginAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -171,44 +171,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               }
             }
             
-            // Если все еще нет данных, создаем тестовые
-            if (!finalUserId || !finalUserData) {
-              const testUserData = {
-                id: 908758841, // ID из логов
-                first_name: 'Шахзод',
-                last_name: 'Абидов',
-                username: 'abidov_0184',
-                language_code: 'ru',
-                is_premium: false,
-                photo_url: 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg',
-                allows_write_to_pm: true
-              };
-              
-              finalUserId = testUserData.id;
-              finalUserData = testUserData;
-              
-              console.log('✅ Созданы тестовые данные:', testUserData);
-            }
+
           }
         } catch (error) {
-          console.log('❌ Ошибка получения данных из URL, используем тестовые данные:', error);
-          
-          // Создаем тестовые данные
-          const testUserData = {
-            id: 908758841,
-            first_name: 'Шахзод',
-            last_name: 'Абидов',
-            username: 'abidov_0184',
-            language_code: 'ru',
-            is_premium: false,
-            photo_url: 'https://t.me/i/userpic/320/75uX4PkEs2KRZ6-VY01ECoDTsZdwGdU3TaieIzsNwYU.svg',
-            allows_write_to_pm: true
-          };
-          
-          finalUserId = testUserData.id;
-          finalUserData = testUserData;
-          
-          console.log('✅ Созданы тестовые данные:', testUserData);
+          console.log('❌ Ошибка получения данных из URL:', error);
+          throw new Error('Не удалось получить данные пользователя из URL');
         }
       }
 
@@ -249,25 +216,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         allows_write_to_pm: finalUserData.allows_write_to_pm || false
       };
 
-      console.log('📤 Отправляем данные на сервер:', authData);
+      console.log('📤 Данные для авторизации:', authData);
       console.log('🔍 Проверка данных:', {
         id: authData.id,
         idType: typeof authData.id,
         isValidId: authData.id && authData.id !== undefined
       });
 
-      // Отправляем запрос на авторизацию
-      const response = await authApi.telegramAuth(authData);
+      // Создаем пользователя локально без API вызова
+      const user: User = {
+        id: userId,
+        telegram_id: userId,
+        first_name: finalUserData.first_name,
+        last_name: finalUserData.last_name || '',
+        username: finalUserData.username || '',
+        phone_number: undefined,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
-      console.log('✅ Получен ответ от сервера:', response);
-
-      // Сохраняем токен если он есть
-      if (response.token) {
-        localStorage.setItem('auth_token', response.token);
-        console.log('✅ Токен сохранен');
-      }
-
-      dispatch({ type: 'AUTH_SUCCESS', payload: response.user });
+      console.log('✅ Создан пользователь локально:', user);
+      dispatch({ type: 'AUTH_SUCCESS', payload: user });
       console.log('🎉 Авторизация успешна!');
     } catch (error: any) {
       const errorMessage = error.message || 'Ошибка авторизации через Telegram';
@@ -280,22 +249,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (): Promise<void> => {
     try {
       dispatch({ type: 'AUTH_START' });
+      throw new Error('Метод login не реализован. Используйте loginWithTelegram для авторизации через Telegram.');
+    } catch (error: any) {
+      const errorMessage = error.message || 'Ошибка авторизации';
+      dispatch({ type: 'AUTH_FAILURE', payload: errorMessage });
+    }
+  };
+
+  // Функция входа как гость
+  const loginAsGuest = async (): Promise<void> => {
+    try {
+      dispatch({ type: 'AUTH_START' });
       
-      // Создаем тестового пользователя для демонстрации
-      const testUser: User = {
-        id: 1,
-        telegram_id: 123456789,
-        first_name: 'Тестовый',
-        last_name: 'Пользователь',
-        username: 'test_user',
+      // Создаем гостевого пользователя
+      const guestUser: User = {
+        id: 0, // 0 означает гостевого пользователя
+        telegram_id: 0, // 0 для гостевого пользователя
+        first_name: 'Гость',
+        last_name: '',
+        username: 'guest',
         phone_number: undefined,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
       
-      dispatch({ type: 'AUTH_SUCCESS', payload: testUser });
+      console.log('👤 Вход как гость:', guestUser);
+      dispatch({ type: 'AUTH_SUCCESS', payload: guestUser });
     } catch (error: any) {
-      const errorMessage = error.message || 'Ошибка авторизации';
+      const errorMessage = error.message || 'Ошибка входа как гость';
       dispatch({ type: 'AUTH_FAILURE', payload: errorMessage });
     }
   };
@@ -303,7 +284,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Функция выхода
   const logout = async (): Promise<void> => {
     try {
-      await authApi.logout();
+      // Очищаем локальное хранилище
+      localStorage.removeItem('auth_token');
+      console.log('✅ Токен удален из localStorage');
     } catch (error: any) {
       console.error('Ошибка при выходе:', error);
     } finally {
@@ -341,28 +324,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           } 
         });
 
+        // Временно отключаем все API вызовы для отладки
+        console.log('🛑 Временно отключены все API вызовы');
+        
         // Если в Telegram контексте - пробуем автоматическую авторизацию
         if (isInContext) {
           console.log('✅ Автоматическая авторизация в Telegram контексте');
           await loginWithTelegram();
-        } else if (isTelegram && !isInContext) {
-          // Telegram Web App доступен, но нет данных пользователя
-          console.log('⚠️ Telegram Web App доступен, но нет данных пользователя');
-          dispatch({ type: 'AUTH_LOGOUT' });
         } else {
-          // Десктопная версия - проверяем существующую авторизацию
-          console.log('🖥️ Десктопная версия - проверка существующей авторизации');
-          const isValid = await authApi.validateToken();
-          if (isValid) {
-            const user = await authApi.getCurrentUser();
-            dispatch({ type: 'AUTH_SUCCESS', payload: user });
-          } else {
-            dispatch({ type: 'AUTH_LOGOUT' });
-          }
+          // Для всех остальных случаев - гостевой вход
+          console.log('🖥️ Гостевой вход для всех случаев');
+          await loginAsGuest();
         }
       } catch (error) {
         console.error('❌ Ошибка инициализации приложения:', error);
-        dispatch({ type: 'AUTH_LOGOUT' });
+        // В случае ошибки тоже делаем гостевой вход
+        await loginAsGuest();
       }
     };
 
@@ -373,6 +350,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     state,
     login,
     loginWithTelegram,
+    loginAsGuest,
     logout,
     clearError,
   };

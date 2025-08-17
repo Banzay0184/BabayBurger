@@ -1,18 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { isInTelegramContext } from '../utils/telegram';
 
 export const AuthPage: React.FC = () => {
-  const { state, login, loginWithTelegram } = useAuth();
+  const { state, loginWithTelegram, loginAsGuest } = useAuth();
+  const isTelegram = isInTelegramContext();
+  const [authMode, setAuthMode] = useState<'telegram' | 'guest'>(isTelegram ? 'telegram' : 'guest');
 
-  const handleLogin = () => {
-    if (isInTelegramContext()) {
-      loginWithTelegram();
-    } else {
-      login();
-    }
+  const handleTelegramLogin = () => {
+    loginWithTelegram();
   };
+
+  const handleGuestLogin = () => {
+    loginAsGuest();
+  };
+
+  // Автоматический гостевой вход для веб-версии
+  React.useEffect(() => {
+    if (!isTelegram && !state.isAuthenticated && !state.isLoading) {
+      console.log('🖥️ Автоматический гостевой вход для веб-версии');
+      loginAsGuest();
+    }
+  }, [isTelegram, state.isAuthenticated, state.isLoading, loginAsGuest]);
 
   if (state.isLoading) {
     return (
@@ -68,18 +78,75 @@ export const AuthPage: React.FC = () => {
         )}
         
         <div className="space-y-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <Button 
-            onClick={handleLogin}
-            fullWidth
-            size="lg"
-            loading={state.isLoading}
-            className="animate-scale-in"
-          >
-            <span className="flex items-center justify-center">
-              <span className="mr-2">🚀</span>
-              Войти в приложение
-            </span>
-          </Button>
+          {isTelegram ? (
+            // В Telegram контексте - только Telegram авторизация
+            <Button 
+              onClick={handleTelegramLogin}
+              fullWidth
+              size="lg"
+              loading={state.isLoading}
+              className="animate-scale-in"
+            >
+              <span className="flex items-center justify-center">
+                <span className="mr-2">📱</span>
+                Войти через Telegram
+              </span>
+            </Button>
+          ) : (
+            // В веб-версии - выбор типа входа
+            <>
+              <div className="flex space-x-2 mb-4">
+                <button
+                  onClick={() => setAuthMode('telegram')}
+                  className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+                    authMode === 'telegram'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-dark-700 text-gray-400 hover:text-gray-300'
+                  }`}
+                >
+                  📱 Telegram
+                </button>
+                <button
+                  onClick={() => setAuthMode('guest')}
+                  className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+                    authMode === 'guest'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-dark-700 text-gray-400 hover:text-gray-300'
+                  }`}
+                >
+                  👤 Гость
+                </button>
+              </div>
+              
+              {authMode === 'telegram' ? (
+                <Button 
+                  onClick={handleTelegramLogin}
+                  fullWidth
+                  size="lg"
+                  loading={state.isLoading}
+                  className="animate-scale-in"
+                >
+                  <span className="flex items-center justify-center">
+                    <span className="mr-2">📱</span>
+                    Войти через Telegram
+                  </span>
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleGuestLogin}
+                  fullWidth
+                  size="lg"
+                  loading={state.isLoading}
+                  className="animate-scale-in"
+                >
+                  <span className="flex items-center justify-center">
+                    <span className="mr-2">👤</span>
+                    Войти как гость
+                  </span>
+                </Button>
+              )}
+            </>
+          )}
           
           <div className="text-center">
             <p className="text-gray-500 text-xs">
