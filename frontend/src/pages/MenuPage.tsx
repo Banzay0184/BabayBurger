@@ -112,37 +112,6 @@ export const MenuPage: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Современный заголовок с темной темой */}
-      <div className="text-center mb-10 animate-slide-up">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl mb-4 shadow-dark-glow animate-dark-pulse">
-          <span className="text-3xl">🍔</span>
-        </div>
-        <h1 className="text-3xl font-bold text-gray-100 mb-3 neon-text">
-          Меню Babay Burger
-        </h1>
-        <p className="text-gray-400 text-lg max-w-md mx-auto mb-6">
-          Выберите любимые блюда из нашего разнообразного меню
-        </p>
-        
-        {/* Статистика меню */}
-        <div className="flex justify-center gap-6 text-sm">
-          <div className="flex items-center gap-2 text-gray-400">
-            <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
-            {totalItems} блюд
-          </div>
-          <div className="flex items-center gap-2 text-gray-400">
-            <span className="w-2 h-2 bg-accent-500 rounded-full"></span>
-            {totalCategories} категорий
-          </div>
-          {totalPromotions > 0 && (
-            <div className="flex items-center gap-2 text-gray-400">
-              <span className="w-2 h-2 bg-success-500 rounded-full"></span>
-              {totalPromotions} акций
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Акции с современным дизайном для темной темы */}
       {activePromotions.length > 0 && (
         <div className="mb-10 animate-fade-in">
@@ -173,7 +142,6 @@ export const MenuPage: React.FC = () => {
           <FeaturedSection
             title="🔥 Хиты продаж"
             items={hits}
-            icon="🔥"
             onItemSelect={handleItemSelect}
           />
         </div>
@@ -185,7 +153,6 @@ export const MenuPage: React.FC = () => {
           <FeaturedSection
             title="✨ Новинки"
             items={newItems}
-            icon="✨"
             onItemSelect={handleItemSelect}
           />
         </div>

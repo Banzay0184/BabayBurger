@@ -419,3 +419,13 @@
     color: #60a5fa;
   }
 }
+
+/* Скрытие скроллбара для карусели */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
