@@ -164,45 +164,7 @@ export const MainPage: React.FC = () => {
           </div>
           
           {/* Быстрые действия с темной темой */}
-          <div className="mt-6 grid grid-cols-3 gap-3">
-            <button 
-              onClick={() => {
-                console.log('🛒 Switching to cart view');
-                setCurrentView('cart');
-              }}
-              className={`flex flex-col items-center p-3 rounded-xl transition-all duration-300 hover:scale-105 relative ${
-                currentView === 'cart' 
-                  ? 'bg-primary-600/30 border border-primary-500/50' 
-                  : 'glass-dark hover:bg-dark-700/50'
-              }`}
-            >
-              <span className="text-xl mb-1">🛒</span>
-              <span className="text-xs font-medium text-gray-300">Корзина</span>
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 w-5 h-5 bg-accent-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                  {totalItems > 99 ? '99+' : totalItems}
-                </span>
-              )}
-            </button>
-            <button 
-              onClick={() => {
-                console.log('🍽️ Switching to menu view');
-                setCurrentView('menu');
-              }}
-              className={`flex flex-col items-center p-3 rounded-xl transition-all duration-300 hover:scale-105 ${
-                currentView === 'menu' 
-                  ? 'bg-primary-600/30 border border-primary-500/50' 
-                  : 'glass-dark hover:bg-dark-700/50'
-              }`}
-            >
-              <span className="text-xl mb-1">🍽️</span>
-              <span className="text-xs font-medium text-gray-300">Меню</span>
-            </button>
-            <button className="flex flex-col items-center p-3 glass-dark rounded-xl hover:bg-dark-700/50 transition-all duration-300 hover:scale-105">
-              <span className="text-xl mb-1">📍</span>
-              <span className="text-xs font-medium text-gray-300">Адрес</span>
-            </button>
-          </div>
+          {/* Убрали кнопки - теперь они в нижней навигации */}
         </div>
 
         {/* Отладочная информация */}
@@ -213,7 +175,7 @@ export const MainPage: React.FC = () => {
         </div>
 
         {/* Основной контент */}
-        <div className="animate-slide-up">
+        <div className="animate-slide-up pb-24">
           {currentView === 'menu' ? (
             <>
               {/* Акции */}
@@ -350,6 +312,54 @@ export const MainPage: React.FC = () => {
               <CartDisplay />
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Фиксированная нижняя навигация */}
+      <div className="fixed bottom-0 left-0 right-0 bg-dark-900/95 backdrop-blur-lg border-t border-gray-700/50 z-50">
+        <div className="flex items-center justify-around px-4 py-3">
+          {/* Кнопка Меню */}
+          <button 
+            onClick={() => {
+              console.log('🍽️ Switching to menu view');
+              setCurrentView('menu');
+            }}
+            className={`flex flex-col items-center p-2 rounded-lg transition-all duration-300 min-w-[4rem] ${
+              currentView === 'menu' 
+                ? 'text-primary-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            <span className="text-xl mb-1">🍽️</span>
+            <span className="text-xs font-medium">{t('menu')}</span>
+          </button>
+
+          {/* Кнопка Корзина */}
+          <button 
+            onClick={() => {
+              console.log('🛒 Switching to cart view');
+              setCurrentView('cart');
+            }}
+            className={`flex flex-col items-center p-2 rounded-lg transition-all duration-300 min-w-[4rem] relative ${
+              currentView === 'cart' 
+                ? 'text-primary-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            <span className="text-xl mb-1">🛒</span>
+            <span className="text-xs font-medium">{t('cart')}</span>
+            {totalItems > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                {totalItems > 99 ? '99+' : totalItems}
+              </span>
+            )}
+          </button>
+
+          {/* Кнопка Адрес */}
+          <button className="flex flex-col items-center p-2 rounded-lg transition-all duration-300 min-w-[4rem] text-gray-400 hover:text-gray-300">
+            <span className="text-xl mb-1">📍</span>
+            <span className="text-xs font-medium">{t('address')}</span>
+          </button>
         </div>
       </div>
     </div>
