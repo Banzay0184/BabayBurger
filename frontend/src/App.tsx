@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { MenuProvider } from './context/MenuContext';
+import { CartProvider } from './context/CartContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { AuthPage } from './pages/AuthPage';
 import { MainPage } from './pages/MainPage';
 import { initTelegramWebApp } from './utils/telegram';
@@ -14,8 +16,6 @@ const AppContent: React.FC = () => {
     initTelegramWebApp();
   }, []);
 
-
-
   // Если загрузка или не авторизован - показываем страницу авторизации
   if (state.isLoading || !state.isAuthenticated) {
     return <AuthPage />;
@@ -24,7 +24,9 @@ const AppContent: React.FC = () => {
   // Если авторизован - показываем главную страницу с меню
   return (
     <MenuProvider>
-      <MainPage />
+      <CartProvider>
+        <MainPage />
+      </CartProvider>
     </MenuProvider>
   );
 };
@@ -32,9 +34,11 @@ const AppContent: React.FC = () => {
 // Главный компонент приложения
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </LanguageProvider>
   );
 };
 

@@ -1,86 +1,65 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMenu } from '../context/MenuContext';
 import { MenuCategory } from '../components/menu/MenuCategory';
-import { MenuFilters } from '../components/menu/MenuFilters';
+import { CategoryNavigation } from '../components/menu/CategoryNavigation';
 import { FeaturedSection } from '../components/menu/FeaturedSection';
 import { PromotionCard } from '../components/menu/PromotionCard';
 import { Button } from '../components/ui/Button';
 import type { MenuItem, Promotion } from '../types/menu';
 
 export const MenuPage: React.FC = () => {
-  console.log('🎬 MenuPage component rendered');
-  
   const { 
     state, 
     fetchMenu, 
     fetchPromotions,
-    setFilters, 
-    resetFilters, 
-    getFilteredItems, 
     getAvailableCategories,
     getActivePromotions,
     getHits,
     getNewItems
   } = useMenu();
 
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
   useEffect(() => {
-    console.log('🔄 MenuPage useEffect: loading menu data...');
-    console.log('📋 Functions available:', { 
-      fetchMenu: typeof fetchMenu, 
-      fetchPromotions: typeof fetchPromotions 
-    });
-    
-    // Сначала загружаем меню, потом промоции
     const loadData = async () => {
       await fetchMenu();
       await fetchPromotions();
     };
     
     loadData();
-  }, []); // Убираем зависимости чтобы избежать бесконечного цикла
+  }, []);
 
   const handleItemSelect = (item: MenuItem, size?: any, addOns?: any[]) => {
-    // TODO: Добавить в корзину
     console.log('Selected item:', item, 'Size:', size, 'AddOns:', addOns);
   };
 
-  const handleFiltersChange = (newFilters: Partial<typeof state.filters>) => {
-    setFilters(newFilters);
+  const handleCategorySelect = (categoryName: string) => {
+    setActiveCategory(activeCategory === categoryName ? null : categoryName);
+    
+    // Плавная прокрутка к выбранной категории
+    if (activeCategory !== categoryName) {
+      const element = document.getElementById(`category-${categoryName}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
   };
 
   const handlePromotionApply = (promotion: Promotion) => {
-    // TODO: Применить акцию к заказу
     console.log('Applied promotion:', promotion);
   };
 
   const availableCategories = getAvailableCategories() || [];
-  const filteredItems = getFilteredItems() || [];
   const activePromotions = getActivePromotions() || [];
   const hits = getHits() || [];
   const newItems = getNewItems() || [];
 
-  // Статистика для отображения
-  const totalItems = state.items.length;
-  const totalCategories = availableCategories.length;
-  const totalPromotions = activePromotions.length;
-
-  // Отладочная информация
-  console.log('📱 MenuPage state:', {
-    isLoading: state.isLoading,
-    error: state.error,
-    totalItems,
-    totalCategories,
-    totalPromotions,
-    availableCategories: availableCategories.length,
-    filteredItems: filteredItems.length,
-    hits: hits.length,
-    newItems: newItems.length,
-    stateItems: state.items.length,
-    stateCategories: state.categories.length
-  });
+  // Фильтруем категории по активной
+  const filteredCategories = activeCategory 
+    ? availableCategories.filter(cat => cat.name === activeCategory)
+    : availableCategories;
 
   if (state.isLoading) {
-    console.log('⏳ MenuPage: showing loading state');
     return (
       <div className="text-center py-16 animate-fade-in">
         <div className="relative">
@@ -112,9 +91,9 @@ export const MenuPage: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Акции с современным дизайном для темной темы */}
+      {/* Акции */}
       {activePromotions.length > 0 && (
-        <div className="mb-10 animate-fade-in">
+        <div className="mb-8 animate-fade-in">
           <div className="flex items-center mb-6">
             <div className="w-8 h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center mr-3 shadow-dark-glow">
               <span className="text-white text-sm">🎉</span>
@@ -136,7 +115,7 @@ export const MenuPage: React.FC = () => {
         </div>
       )}
 
-      {/* Хиты с современным дизайном для темной темы */}
+      {/* Хиты */}
       {hits.length > 0 && (
         <div className="animate-slide-up">
           <FeaturedSection
@@ -147,7 +126,7 @@ export const MenuPage: React.FC = () => {
         </div>
       )}
 
-      {/* Новинки с современным дизайном для темной темы */}
+      {/* Новинки */}
       {newItems.length > 0 && (
         <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
           <FeaturedSection
@@ -158,112 +137,86 @@ export const MenuPage: React.FC = () => {
         </div>
       )}
 
-      {/* Фильтры с современным дизайном для темной темы */}
-      <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
-        <MenuFilters
-          filters={state.filters}
-          categories={availableCategories.map(cat => ({ id: cat.id, name: cat.name }))}
-          onFiltersChange={handleFiltersChange}
-          onReset={resetFilters}
-        />
-      </div>
-
-      {/* Результаты поиска с современным дизайном для темной темы */}
-      {state.filters.search && (
-        <div className="mb-10 animate-fade-in">
-          <div className="flex items-center mb-6">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center mr-3 shadow-dark-glow">
-              <span className="text-white text-sm">🔍</span>
-            </div>
-            <h2 className="text-xl font-bold text-gray-100 neon-text">
-              Результаты поиска: "{state.filters.search}"
-            </h2>
-            <span className="ml-3 text-gray-400 text-sm">
-              Найдено: {filteredItems.length}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {filteredItems.map((item, index) => (
-              <div key={item.id} className="tg-card-modern p-6 animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-semibold text-gray-100 text-lg">{item.name}</h3>
-                  <span className="font-bold text-primary-400 text-lg">{item.price} ₽</span>
-                </div>
-                <p className="text-gray-400 text-sm">{item.description}</p>
-                <div className="flex gap-2 mt-3">
-                  {item.is_hit && (
-                    <span className="px-2 py-1 bg-warning-900/50 text-warning-300 text-xs rounded">
-                      🔥 Хит
-                    </span>
-                  )}
-                  {item.is_new && (
-                    <span className="px-2 py-1 bg-success-900/50 text-success-300 text-xs rounded">
-                      ✨ Новинка
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-          {filteredItems.length === 0 && (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-600/50">
-                <span className="text-2xl">🔍</span>
-              </div>
-              <p className="text-gray-300 text-lg font-medium">
-                По вашему запросу ничего не найдено
-              </p>
-              <p className="text-gray-500 text-sm mt-2">
-                Попробуйте изменить поисковый запрос
-              </p>
-            </div>
-          )}
+      {/* Быстрая навигация по категориям */}
+      {availableCategories.length > 0 && (
+        <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <CategoryNavigation
+            categories={availableCategories}
+            activeCategory={activeCategory}
+            onCategorySelect={handleCategorySelect}
+          />
         </div>
       )}
 
-      {/* Категории меню с современным дизайном для темной темы */}
-      {!state.filters.search && (
-        <div className="animate-fade-in">
-          {availableCategories.length > 0 ? (
-            <>
-              <div className="mb-8">
+      {/* Категории меню */}
+      <div className="animate-fade-in">
+        {filteredCategories.length > 0 ? (
+          <>
+            {!activeCategory && (
+              <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-100 neon-text mb-2">
-                  Категории меню
+                  Полное меню
                 </h2>
                 <p className="text-gray-400">
-                  Выберите категорию для просмотра блюд
+                  Выберите категорию выше или просмотрите все блюда
                 </p>
               </div>
-              {availableCategories.map((category, index) => (
-                <div key={category.id} style={{ animationDelay: `${index * 0.1}s` }}>
-                  <MenuCategory
-                    category={category}
-                    onItemSelect={handleItemSelect}
-                  />
+            )}
+            
+            {activeCategory && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-100 neon-text mb-2">
+                      {activeCategory}
+                    </h2>
+                    <p className="text-gray-400">
+                      Блюда из выбранной категории
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setActiveCategory(null)}
+                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-sm"
+                  >
+                    Показать все
+                  </button>
                 </div>
-              ))}
-            </>
-          ) : (
-            <div className="text-center py-16">
-              <div className="w-20 h-20 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-600/50">
-                <span className="text-3xl">🍽️</span>
               </div>
-              <p className="text-gray-300 text-lg font-medium mb-2">
-                В данный момент меню недоступно
-              </p>
-              <p className="text-gray-500 text-sm mb-6">
-                Попробуйте позже или свяжитесь с нами
-              </p>
-              <Button onClick={() => fetchMenu()} variant="primary">
-                <span className="flex items-center">
-                  <span className="mr-2">🔄</span>
-                  Обновить меню
-                </span>
-              </Button>
+            )}
+            
+            {filteredCategories.map((category, index) => (
+              <div 
+                key={category.id} 
+                id={`category-${category.name}`}
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <MenuCategory
+                  category={category}
+                  onItemSelect={handleItemSelect}
+                />
+              </div>
+            ))}
+          </>
+        ) : (
+          <div className="text-center py-16">
+            <div className="w-20 h-20 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-600/50">
+              <span className="text-3xl">🍽️</span>
             </div>
-          )}
-        </div>
-      )}
+            <p className="text-gray-300 text-lg font-medium mb-2">
+              В данный момент меню недоступно
+            </p>
+            <p className="text-gray-500 text-sm mb-6">
+              Попробуйте позже или свяжитесь с нами
+            </p>
+            <Button onClick={() => fetchMenu()} variant="primary">
+              <span className="flex items-center">
+                <span className="mr-2">🔄</span>
+                Обновить меню
+              </span>
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }; 

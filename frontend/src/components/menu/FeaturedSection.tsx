@@ -33,14 +33,14 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
   // Скролл влево
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+      scrollContainerRef.current.scrollBy({ left: -280, behavior: 'smooth' });
     }
   };
 
   // Скролл вправо
   const scrollRight = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+      scrollContainerRef.current.scrollBy({ left: 280, behavior: 'smooth' });
     }
   };
 
@@ -58,8 +58,8 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
 
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-100 neon-text">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-gray-100 neon-text">
           {title}
         </h2>
         
@@ -76,7 +76,7 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
               }
             `}
           >
-            <span className="text-lg">←</span>
+            <span className="text-sm">‹</span>
           </button>
           <button
             onClick={scrollRight}
@@ -89,7 +89,7 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
               }
             `}
           >
-            <span className="text-lg">→</span>
+            <span className="text-sm">›</span>
           </button>
         </div>
       </div>
@@ -97,41 +97,41 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
       {/* Контейнер с горизонтальным скроллом */}
       <div className="relative group">
         {/* Градиент слева */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-dark-800 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-dark-800 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Градиент справа */}
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-dark-800 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-dark-800 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Карусель */}
         <div 
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          className="flex space-x-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 pt-4"
+          className="flex space-x-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 pt-2"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-                     {items.map((item, index) => (
-             <div 
-               key={item.id} 
-               className="flex-shrink-0 w-80 animate-fade-in" 
-               style={{ animationDelay: `${index * 0.1}s` }}
-             >
-               <MenuItem
-                 item={item}
-                 onSelect={onItemSelect}
-                 isCompact={true}
-               />
-             </div>
-           ))}
+          {items.map((item, index) => (
+            <div 
+              key={item.id} 
+              className="flex-shrink-0 w-64 animate-fade-in" 
+              style={{ animationDelay: `${index * 0.05}s` }}
+            >
+              <MenuItem
+                item={item}
+                onSelect={onItemSelect}
+                isCompact={true}
+              />
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Индикатор количества элементов */}
-      <div className="flex justify-center mt-4">
-        <div className="flex space-x-2">
-          {Array.from({ length: Math.ceil(items.length / 2) }).map((_, index) => (
+      <div className="flex justify-center mt-3">
+        <div className="flex space-x-1.5">
+          {Array.from({ length: Math.min(items.length, 5) }).map((_, index) => (
             <div
               key={index}
-              className="w-2 h-2 rounded-full bg-gray-600 opacity-50"
+              className="w-1.5 h-1.5 rounded-full bg-gray-600 opacity-50"
             />
           ))}
         </div>
