@@ -115,7 +115,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   return (
     <>
-      <div className={`tg-card-modern p-4 ${isCompact ? 'max-w-xs' : ''}`}>
+      <div className={`tg-card-modern p-4 ${isCompact ? 'max-w' : ''}`}>
         {/* Верхняя часть с изображением и быстрыми действиями */}
         <div className="relative mb-3">
           {/* Изображение блюда */}

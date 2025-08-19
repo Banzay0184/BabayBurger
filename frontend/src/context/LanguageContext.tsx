@@ -26,6 +26,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Навигация
     'menu': 'Меню',
     'cart': 'Корзина',
+    'search': 'Поиск',
     'profile': 'Профиль',
     'orders': 'Заказы',
     'favorites': 'Избранное',
@@ -93,13 +94,47 @@ const translations: Record<Language, Record<string, string>> = {
     'closed': 'Закрыто',
     'guest': 'Гость',
     'telegram': 'Telegram',
+    'open_until_21': 'Открыто до 21:00',
+    'closed_sunday': 'Воскресенье - выходной',
+    'next_open_monday': 'Следующий рабочий день - понедельник',
+    'opens_at_8': 'Открывается в 8:00',
+    'closed_until_tomorrow': 'Закрыто до завтра',
+    'next_open_8': 'Следующее открытие в 8:00',
+    'closes_in': 'Закрывается через',
+    'open_until_4am': 'Открыто до 4:00 утра',
+    'open_all_night': 'Работаем всю ночь',
+    'note_24h_operation': 'Работаем круглосуточно с 8:00 до 4:00 следующего дня',
+    'restaurant_closed': 'Ресторан закрыт',
+    'next_opening': 'Следующее открытие',
+    'working_hours': 'Время работы',
+    'monday': 'Понедельник',
+    'saturday': 'Суббота',
+    'sunday': 'Воскресенье',
+    'our_address': 'Наш адрес',
+    'restaurant_address': 'г. Ташкент, ул. Примерная, д. 123, офис 456',
+    'contacts': 'Контакты',
+    'phone_number': '+998 90 123 45 67',
     
     // Кнопки
     'logout': 'Выйти',
     'login': 'Войти',
     'register': 'Регистрация',
-    'try_again': 'Попробовать снова',
-    'refresh': 'Обновить',
+    
+    // Поиск и фильтрация
+    'search_dishes': 'Поиск блюд',
+    'search_placeholder': 'Введите название блюда...',
+    'back_to_menu': 'Назад к меню',
+    'category': 'Категория',
+    'all_categories': 'Все категории',
+    'price_range': 'Диапазон цен',
+    'sort_by': 'Сортировать по',
+    'by_name': 'По названию',
+    'by_price': 'По цене',
+    'by_popularity': 'По популярности',
+    'by_newest': 'По новизне',
+    'found_items': 'Найдено блюд',
+    'no_items_found': 'Блюда не найдены',
+    'try_different_filters': 'Попробуйте изменить фильтры',
     
     // Загрузка
     'loading_menu': 'Загрузка меню...',
@@ -126,6 +161,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Навигация
     'menu': 'Menyu',
     'cart': 'Savat',
+    'search': 'Qidiruv',
     'profile': 'Profil',
     'orders': 'Buyurtmalar',
     'favorites': 'Sevimlilar',
@@ -193,23 +229,53 @@ const translations: Record<Language, Record<string, string>> = {
     'closed': 'Yopiq',
     'guest': 'Mehmon',
     'telegram': 'Telegram',
+    'open_until_21': 'Ochiq 21:00gacha',
+    'closed_sunday': 'Yakshanba - dam olish',
+    'next_open_monday': 'Keyingi ish kuni - shanba',
+    'opens_at_8': '8:00ga ochiladi',
+    'closed_until_tomorrow': 'Ertaga yopiq',
+    'next_open_8': 'Keyingi ochilish 8:00ga',
+    'closes_in': 'Yopishiga',
+    'open_until_4am': 'Ochiq 4:00gacha',
+    'open_all_night': 'Tungi vaqtda ham ishlaymiz',
+    'note_24h_operation': '8:00dan 4:00gacha ertalab ishlaymiz',
+    'restaurant_closed': 'Restoran yopiq',
+    'next_opening': 'Keyingi ochilish',
+    'working_hours': 'Ish vaqti',
+    'monday': 'Dushanba',
+    'saturday': 'Shanba',
+    'sunday': 'Yakshanba',
+    'our_address': 'Bizning manzilimiz',
+    'restaurant_address': 'Toshkent shahar, Misrli ko\'chasi, 123-uy, 456-boshqaruv xonasi',
+    'contacts': 'Aloqa',
+    'phone_number': '+998 90 123 45 67',
     
     // Кнопки
     'logout': 'Chiqish',
     'login': 'Kirish',
     'register': 'Ro\'yxatdan o\'tish',
-    'try_again': 'Qayta urinib ko\'ring',
-    'refresh': 'Yangilash',
+    
+    // Поиск и фильтрация
+    'search_dishes': 'Qidiruv taomlari',
+    'search_placeholder': 'Taom nomini kiriting...',
+    'back_to_menu': 'Menyuga qaytish',
+    'category': 'Kategoriya',
+    'all_categories': 'Barcha kategoriyalar',
+    'price_range': 'Narxlarning diapazoni',
+    'sort_by': 'Saralash',
+    'by_name': 'Nomiga ko\'ra',
+    'by_price': 'Narxidan ko\'ra',
+    'by_popularity': 'Mashhurlikka ko\'ra',
+    'by_newest': 'Yangilikka ko\'ra',
+    'found_items': 'Qidiruv taomlari',
+    'no_items_found': 'Taomlar topilmadi',
+    'try_different_filters': 'Filtrlarni o\'zgartiring',
     
     // Загрузка
     'loading_menu': 'Menyu yuklanmoqda...',
     'preparing_delicious_dishes': 'Siz uchun mazali taomlar tayyorlaymiz',
-    
-    // Поиск
-    'search_results': 'Qidiruv natijalari',
-    'found': 'Topildi',
-    'nothing_found': 'Sizning so\'rovingiz bo\'yicha hech narsa topilmadi',
-    'change_search_query': 'Qidiruv so\'rovini o\'zgartirib ko\'ring'
+    'try_again': 'Qayta urinib ko\'ring',
+    'refresh': 'Yangilash'
   }
 };
 
