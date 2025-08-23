@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { MenuProvider } from './context/MenuContext';
 import { CartProvider } from './context/CartContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { FavoriteProvider } from './context/FavoriteContext';
 import { AuthPage } from './pages/AuthPage';
 import { MainPage } from './pages/MainPage';
 import { initTelegramWebApp } from './utils/telegram';
@@ -24,9 +25,11 @@ const AppContent: React.FC = () => {
   // Если авторизован - показываем главную страницу с меню
   return (
     <MenuProvider>
-      <CartProvider>
-        <MainPage />
-      </CartProvider>
+      <FavoriteProvider>
+        <CartProvider>
+          <MainPage />
+        </CartProvider>
+      </FavoriteProvider>
     </MenuProvider>
   );
 };

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useMenu } from '../context/MenuContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useFavorites } from '../context/FavoriteContext';
 import { MenuCategory } from '../components/menu/MenuCategory';
 import { CategoryNavigation } from '../components/menu/CategoryNavigation';
 import { FeaturedSection } from '../components/menu/FeaturedSection';
@@ -10,6 +11,7 @@ import { PromotionCard } from '../components/menu/PromotionCard';
 import { CartDisplay } from '../components/cart/CartDisplay';
 import { MenuItem as MenuItemComponent } from '../components/menu/MenuItem';
 import { Button } from '../components/ui/Button';
+import { AddressManager } from '../components/address/AddressManager';
 import type { MenuItem, Promotion } from '../types/menu';
 
 export const MainPage: React.FC = () => {
@@ -26,7 +28,8 @@ export const MainPage: React.FC = () => {
   } = useMenu();
 
   const { t, language, setLanguage } = useLanguage();
-  const [currentView, setCurrentView] = useState<'menu' | 'cart' | 'search'>('menu');
+  const { favorites, isLoading: favoritesLoading } = useFavorites();
+  const [currentView, setCurrentView] = useState<'menu' | 'cart' | 'search' | 'favorites' | 'address'>('menu');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilters, setSearchFilters] = useState({
@@ -43,53 +46,62 @@ export const MainPage: React.FC = () => {
     const currentDay = now.getDay(); // 0 = воскресенье, 1 = понедельник, ...
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
-    const currentTime = currentHour * 60 + currentMinute; // время в минутах
+
+    console.log(currentDay, currentHour, currentMinute);
     
     // Настройки времени работы (можно легко изменить)
     // Чтобы изменить время открытия: измените значение OPEN_TIME
     // Например: OPEN_TIME = 9 для открытия в 9:00
     const OPEN_TIME = 8; // 8:00 утра
+    const CLOSE_TIME = 8; // 4:00 утра следующего дня
     
     // Воскресенье - не работает
-    if (currentDay === 0) {
-      return { 
-        isOpen: false, 
-        message: t('closed_sunday'), 
-        nextOpen: t('next_open_monday'),
-        nextOpenTime: `${OPEN_TIME}:00`
-      };
-    }
+    // if (currentDay === 0) {
+    //   return { 
+    //     isOpen: false, 
+    //     message: t('closed_sunday'), 
+    //     nextOpen: t('next_open_monday'),
+    //     nextOpenTime: `${OPEN_TIME}:00`
+    //   };
+    // }
     
-    // Рабочие дни: 8:00 - 4:00 следующего дня
-    const openTime = OPEN_TIME * 60; // 8:00 в минутах
+    // Логика для определения статуса работы
+    let isOpen = false;
+    let message = '';
+    let timeLeft = '';
+    let nextOpen = '';
     
-    if (currentTime >= openTime) {
-      // После 8:00 - ресторан открыт до 4:00 следующего дня
-      return { 
-        isOpen: true, 
-        message: t('open_until_4am'), 
-        timeLeft: t('open_all_night')
-      };
+    if (currentHour >= OPEN_TIME) {
+      // После 8:00 утра - ресторан открыт
+      isOpen = true;
+      message = t('open_until_4am');
+      timeLeft = t('open_all_night');
+    } else if (currentHour < CLOSE_TIME) {
+      // До 4:00 утра - ресторан еще работает (открылся вчера в 8:00)
+      isOpen = true;
+      message = t('open_until_4am');
+      timeLeft = t('open_all_night');
     } else {
-      // До 8:00 - ресторан еще не открылся
-      const hoursUntilOpen = openTime - currentTime;
-      const hours = Math.floor(hoursUntilOpen / 60);
-      const minutes = hoursUntilOpen % 60;
+      // Между 4:00 и 8:00 - ресторан закрыт
+      isOpen = false;
+      message = t('opens_at_8');
       
-      let timeUntilOpen = '';
-      if (hours > 0) {
-        timeUntilOpen = `${hours}ч ${minutes}м`;
+      // Вычисляем время до открытия
+      const hoursUntilOpen = OPEN_TIME - currentHour;
+      if (hoursUntilOpen > 0) {
+        nextOpen = `${hoursUntilOpen}ч ${currentMinute}м`;
       } else {
-        timeUntilOpen = `${minutes}м`;
+        nextOpen = `${currentMinute}м`;
       }
-      
-      return { 
-        isOpen: false, 
-        message: t('opens_at_8'), 
-        nextOpen: timeUntilOpen,
-        nextOpenTime: `${OPEN_TIME}:00`
-      };
     }
+    
+    return {
+      isOpen,
+      message,
+      timeLeft: isOpen ? timeLeft : undefined,
+      nextOpen: !isOpen ? nextOpen : undefined,
+      nextOpenTime: `${OPEN_TIME}:00`
+    };
   };
 
   const restaurantStatus = getRestaurantStatus();
@@ -197,21 +209,21 @@ export const MainPage: React.FC = () => {
             <div className="flex items-center space-x-3 sm:space-x-4">
               <div className="relative">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-dark-glow animate-dark-pulse">
-                  <span className="text-xl sm:text-2xl">🍔</span>
-                </div>
-                <div className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">🔥</span>
+                  <img src="/public/logo.jpg" alt="Babay Burger" className="w-full h-full object-cover rounded-2xl" />
                 </div>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <h1 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text leading-tight">
-                    Babay Burger
-                  </h1>
+                  Babay Burger
+                </h1>
                 </div>
-                <p className="text-gray-400 text-xs sm:text-sm leading-tight">
-                  Вкусные бургеры и фастфуд
-                </p>
+                <button
+                  onClick={() => setCurrentView('address')}
+                  className="text-gray-400 text-xs sm:text-sm leading-tight hover:text-gray-300 transition-colors cursor-pointer"
+                >
+                  {t('delivery_address')}
+                </button>
                 {state.user && (
                   <div className="flex items-center space-x-2 mt-1">
                     <span className="text-xs text-gray-500">
@@ -439,9 +451,9 @@ export const MainPage: React.FC = () => {
                             className="px-3 sm:px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-sm w-full sm:w-auto"
                           >
                             {t('show_all')}
-                          </button>
-                        </div>
-                      </div>
+            </button>
+          </div>
+        </div>
                     )}
                     
                     {filteredCategories.map((category, index) => (
@@ -481,7 +493,7 @@ export const MainPage: React.FC = () => {
           ) : currentView === 'search' ? (
             <div className="animate-fade-in">
               {/* Заголовок поиска */}
-              <div className="mb-6">
+        <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text">
                     🔍 {t('search_dishes')}
@@ -676,13 +688,72 @@ export const MainPage: React.FC = () => {
                 </div>
               </div>
             </div>
-          ) : (
-            <div>
-              <div className="text-white mb-2">🛒 Показываю корзину</div>
-              {/* Здесь будет CartDisplay */}
-              <CartDisplay />
+          ) : currentView === 'favorites' ? (
+            <div className="animate-fade-in">
+              {/* Заголовок избранного */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text">
+                    🤍 {t('favorites')}
+                  </h2>
+                  <button
+                    onClick={() => setCurrentView('menu')}
+                    className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-sm"
+                  >
+                    ← {t('back_to_menu')}
+                  </button>
+                </div>
+                
+                {/* Содержимое избранного */}
+                {favoritesLoading ? (
+                  <div className="text-center py-16">
+                    <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-300">{t('loading')}...</p>
+                  </div>
+                ) : favorites.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {favorites.map((favorite) => (
+                      <div key={favorite.id} className="animate-fade-in">
+                        <MenuItemComponent
+                          item={favorite.menu_item}
+                          onSelect={handleItemSelect}
+                          isCompact={true}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16">
+                    <div className="w-20 h-20 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-600/50">
+                      <span className="text-3xl">🤍</span>
+                    </div>
+                    <p className="text-gray-300 text-lg font-medium mb-2">
+                      {t('no_favorites')}
+                    </p>
+                    <p className="text-gray-500 text-sm mb-6">
+                      Добавьте блюда в избранное, нажав на ❤️
+                    </p>
+                    <button
+                      onClick={() => setCurrentView('menu')}
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                    >
+                      {t('back_to_menu')}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+                              ) : currentView === 'address' ? (
+                      <div className="animate-fade-in">
+                        <AddressManager />
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="text-white mb-2">🛒 Показываю корзину</div>
+                        {/* Здесь будет CartDisplay */}
+                        <CartDisplay />
+                      </div>
+                    )}
         </div>
 
         {/* Отладочная информация */}
@@ -731,6 +802,27 @@ export const MainPage: React.FC = () => {
             {totalItems > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                 {totalItems > 99 ? '99+' : totalItems}
+              </span>
+            )}
+          </button>
+
+          {/* Кнопка Избранное */}
+          <button 
+            onClick={() => {
+              console.log('🤍 Switching to favorites view');
+              setCurrentView('favorites');
+            }}
+            className={`flex flex-col items-center p-2 rounded-lg transition-all duration-300 min-w-[4rem] relative ${
+              currentView === 'favorites' 
+                ? 'text-primary-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            <span className="text-xl mb-1">🤍</span>
+            <span className="text-xs font-medium">{t('favorites')}</span>
+            {favorites.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                {favorites.length > 99 ? '99+' : favorites.length}
               </span>
             )}
           </button>

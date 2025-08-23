@@ -6,7 +6,7 @@ from .views import (
     MenuItemViewSet, AddOnViewSet, SizeOptionViewSet, PromotionViewSet, OrderViewSet,
     TelegramLoginWidgetView, TestUserCreationView, HitsView, NewItemsView, PromotionsView,
     MenuItemDetailView, CategoryItemsView, SearchView, FeaturedView, PriceRangeView,
-    StatisticsView, CartView, TestConnectionView
+    StatisticsView, CartView, TestConnectionView, FavoriteView
 )
 from rest_framework.routers import DefaultRouter
 
@@ -44,6 +44,8 @@ urlpatterns = [
     path('promotions/', PromotionsView.as_view(), name='promotions'),
     # Корзина
     path('cart/', CartView.as_view(), name='cart'),
+    # Избранные товары
+    path('favorites/', FavoriteView.as_view(), name='favorites'),
     # Статистика
     path('statistics/', StatisticsView.as_view(), name='statistics'),
     # Заказы

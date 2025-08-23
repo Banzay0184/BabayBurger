@@ -27,6 +27,7 @@ const translations: Record<Language, Record<string, string>> = {
     'menu': 'Меню',
     'cart': 'Корзина',
     'search': 'Поиск',
+    'address': 'Адрес',
     'profile': 'Профиль',
     'orders': 'Заказы',
     'favorites': 'Избранное',
@@ -88,6 +89,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Уведомления
     'removed_from_favorites': 'убран из избранного',
     'added_to_favorites': 'добавлен в избранное',
+    'error_toggle_favorite': 'Ошибка при работе с избранным',
     
     // Статусы
     'open': 'Открыто',
@@ -113,7 +115,7 @@ const translations: Record<Language, Record<string, string>> = {
     'our_address': 'Наш адрес',
     'restaurant_address': 'г. Ташкент, ул. Примерная, д. 123, офис 456',
     'contacts': 'Контакты',
-    'phone_number': '+998 90 123 45 67',
+    'restaurant_phone': '+998 90 123 45 67',
     
     // Кнопки
     'logout': 'Выйти',
@@ -139,6 +141,51 @@ const translations: Record<Language, Record<string, string>> = {
     // Загрузка
     'loading_menu': 'Загрузка меню...',
     'preparing_delicious_dishes': 'Подготавливаем вкусные блюда для вас',
+    'no_favorites': 'У вас пока нет избранных товаров',
+    
+    // Адреса
+    'delivery_address': 'Адрес доставки',
+    'delivery_addresses': 'Адреса доставки',
+    'add_address': 'Добавить адрес',
+    'edit_address': 'Редактировать адрес',
+    'street': 'Улица',
+    'house_number': 'Номер дома',
+    'apartment': 'Квартира',
+    'city': 'Город',
+    'phone_number': 'Номер телефона',
+    'comment': 'Комментарий',
+    'set_as_primary': 'Установить как основной',
+    'primary': 'Основной',
+    'set_primary': 'Сделать основным',
+    'delete': 'Удалить',
+    'update': 'Обновить',
+    'back': 'Назад',
+    'no_addresses': 'У вас пока нет адресов',
+    'add_first_address': 'Добавьте первый адрес для доставки',
+    'street_placeholder': 'Например: ул. Навои',
+    'comment_placeholder': 'Дополнительная информация (подъезд, этаж, код домофона)',
+    
+    // Карта и геолокация
+    'select_address_on_map': 'Выберите адрес на карте',
+    'loading_map': 'Загрузка карты',
+    'map_instructions': 'Нажмите на карту, чтобы выбрать адрес доставки. Зеленые зоны - доступны для доставки.',
+    'delivery_zones': 'Зоны доставки',
+    'available_address': 'Доступный адрес',
+    'unavailable_address': 'Недоступный адрес',
+    'my_location': 'Моё местоположение',
+    'selected_address': 'Выбранный адрес',
+    'confirm_address': 'Подтвердить адрес',
+    'delivery_available': 'Доставка доступна',
+    'delivery_unavailable': 'Доставка недоступна',
+    'delivery_zone': 'Зона доставки',
+    'delivery_fee': 'Стоимость доставки',
+    'currency': 'сум',
+    'address_outside_delivery_zone': 'Адрес находится вне зоны доставки',
+    'address_outside_delivery_zone_description': 'К сожалению, доставка по этому адресу недоступна',
+    'geolocation_error': 'Не удалось определить ваше местоположение',
+    'geolocation_not_supported': 'Геолокация не поддерживается вашим браузером',
+    'select_on_map': 'Выбрать на карте',
+    'enter_manually': 'Ввести вручную',
     
     // Поиск
     'search_results': 'Результаты поиска',
@@ -162,6 +209,7 @@ const translations: Record<Language, Record<string, string>> = {
     'menu': 'Menyu',
     'cart': 'Savat',
     'search': 'Qidiruv',
+    'address': 'Manzil',
     'profile': 'Profil',
     'orders': 'Buyurtmalar',
     'favorites': 'Sevimlilar',
@@ -223,6 +271,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Уведомления
     'removed_from_favorites': 'sevimlilardan olib tashlandi',
     'added_to_favorites': 'sevimlilarga qo\'shildi',
+    'error_toggle_favorite': 'Sevimli ishida xato',
     
     // Статусы
     'open': 'Ochiq',
@@ -248,7 +297,7 @@ const translations: Record<Language, Record<string, string>> = {
     'our_address': 'Bizning manzilimiz',
     'restaurant_address': 'Toshkent shahar, Misrli ko\'chasi, 123-uy, 456-boshqaruv xonasi',
     'contacts': 'Aloqa',
-    'phone_number': '+998 90 123 45 67',
+    'restaurant_phone': '+998 90 123 45 67',
     
     // Кнопки
     'logout': 'Chiqish',
@@ -274,6 +323,52 @@ const translations: Record<Language, Record<string, string>> = {
     // Загрузка
     'loading_menu': 'Menyu yuklanmoqda...',
     'preparing_delicious_dishes': 'Siz uchun mazali taomlar tayyorlaymiz',
+    'no_favorites': 'Sizda hali sevimli mahsulotlar yo\'q',
+    
+    // Адреса
+    'delivery_address': 'Yetkazib berish manzili',
+    'delivery_addresses': 'Yetkazib berish manzillari',
+    'add_address': 'Manzil qo\'shish',
+    'edit_address': 'Manzilni tahrirlash',
+    'street': 'Ko\'cha',
+    'house_number': 'Uy raqami',
+    'apartment': 'Xona',
+    'city': 'Shahar',
+    'phone_number': 'Telefon raqami',
+    'comment': 'Izoh',
+    'set_as_primary': 'Asosiy sifatida o\'rnatish',
+    'primary': 'Asosiy',
+    'set_primary': 'Asosiy qilish',
+    'delete': 'O\'chirish',
+    'update': 'Yangilash',
+    'back': 'Orqaga',
+    'no_addresses': 'Sizda hali manzillar yo\'q',
+    'add_first_address': 'Yetkazib berish uchun birinchi manzilni qo\'shing',
+    'street_placeholder': 'Masalan: Navoiy ko\'chasi',
+    'comment_placeholder': 'Qo\'shimcha ma\'lumot (eshik, qavat, domofon kodi)',
+    
+    // Карта и геолокация
+    'select_address_on_map': 'Xaritada manzilni tanlang',
+    'loading_map': 'Xarita yuklanmoqda',
+    'map_instructions': 'Yetkazib berish manzilini tanlash uchun xaritaga bosing. Yashil hududlar - yetkazib berish uchun mavjud.',
+    'delivery_zones': 'Yetkazib berish hududlari',
+    'available_address': 'Mavjud manzil',
+    'unavailable_address': 'Mavjud bo\'lmagan manzil',
+    'my_location': 'Mening joylashuvim',
+    'selected_address': 'Tanlangan manzil',
+    'confirm_address': 'Manzilni tasdiqlash',
+    'delivery_available': 'Yetkazib berish mavjud',
+    'delivery_unavailable': 'Yetkazib berish mavjud emas',
+    'delivery_zone': 'Yetkazib berish hududi',
+    'delivery_fee': 'Yetkazib berish narxi',
+    'currency': 'so\'m',
+    'address_outside_delivery_zone': 'Manzil yetkazib berish hududidan tashqarida',
+    'address_outside_delivery_zone_description': 'Afsuski, bu manzilga yetkazib berish mavjud emas',
+    'geolocation_error': 'Sizning joylashuvingizni aniqlab bo\'lmadi',
+    'geolocation_not_supported': 'Geolokatsiya brauzeringiz tomonidan qo\'llab-quvvatlanmaydi',
+    'select_on_map': 'Xaritada tanlash',
+    'enter_manually': 'Qo\'lda kiritish',
+    
     'try_again': 'Qayta urinib ko\'ring',
     'refresh': 'Yangilash'
   }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { MenuItem, SizeOption, AddOn, CartItem, CartState } from '../types/menu';
 
@@ -159,29 +159,36 @@ export const useCart = () => {
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Инициализация из localStorage
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
+      console.log('🛒 CartContext - Loading from localStorage:', raw);
       if (raw) {
         const parsed = JSON.parse(raw) as InternalCartState;
+        console.log('🛒 CartContext - Parsed cart data:', parsed);
         dispatch({ type: 'INIT', payload: parsed });
       }
     } catch (e) {
       console.warn('Failed to restore cart from storage', e);
+    } finally {
+      setIsInitialized(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Сохранение в localStorage
+  // Сохранение в localStorage (только после инициализации)
   useEffect(() => {
+    if (!isInitialized) return;
+    
     try {
+      console.log('🛒 CartContext - Saving to localStorage:', state);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
       console.warn('Failed to persist cart', e);
     }
-  }, [state]);
+  }, [state, isInitialized]);
 
   const addItem = (menuItem: MenuItem, sizeOption?: SizeOption, addOns?: AddOn[]) => {
     dispatch({ type: 'ADD_ITEM', payload: { menuItem, sizeOption, addOns } });

@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.db.models import Sum, Count
-from .models import User, MenuItem, Order, OrderItem, Category, Address, AddOn, SizeOption, Promotion, DeliveryZone
+from .models import User, MenuItem, Order, OrderItem, Category, Address, AddOn, SizeOption, Promotion, DeliveryZone, Favorite
 
 
 @admin.register(Category)
@@ -46,6 +46,15 @@ class PromotionAdmin(admin.ModelAdmin):
     search_fields = ('name', 'description')
     filter_horizontal = ('applicable_items',)
     readonly_fields = ['usage_count']
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ('user', 'menu_item', 'created_at')
+    list_filter = ('created_at', 'menu_item__category')
+    search_fields = ('user__first_name', 'user__username', 'menu_item__name')
+    ordering = ['-created_at']
+    readonly_fields = ['created_at']
 
 
 class OrderItemInline(admin.TabularInline):

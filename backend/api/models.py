@@ -951,3 +951,23 @@ class Order(models.Model):
             print(f"   - Подходящих акций не найдено")
         
         return best_promotion
+
+class Favorite(models.Model):
+    """Модель для избранных товаров пользователя"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    menu_item = models.ForeignKey(MenuItem, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Избранный товар"
+        verbose_name_plural = "Избранные товары"
+        unique_together = ('user', 'menu_item')
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['menu_item']),
+            models.Index(fields=['user', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.first_name} - {self.menu_item.name}"

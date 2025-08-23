@@ -29,6 +29,34 @@
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
+    <!-- Yandex Maps API -->
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=3033f881-c5ec-434f-96aa-e13da893f61f&lang=ru_RU" type="text/javascript"></script>
+    <script>
+      // Отладка загрузки Яндекс.Карт API
+      console.log('HTML loaded, checking Yandex Maps API...');
+      
+      function checkYandexMaps() {
+        if (typeof window.ymaps !== 'undefined') {
+          console.log('✅ Yandex Maps API loaded successfully!');
+          console.log('window.ymaps:', window.ymaps);
+          console.log('window.ymaps.ready:', typeof window.ymaps.ready);
+        } else {
+          console.log('❌ Yandex Maps API not loaded yet...');
+          setTimeout(checkYandexMaps, 100);
+        }
+      }
+      
+      // Проверяем каждые 100мс
+      checkYandexMaps();
+      
+      // Также проверяем через 2 секунды
+      setTimeout(() => {
+        if (typeof window.ymaps === 'undefined') {
+          console.error('❌ Yandex Maps API failed to load after 2 seconds!');
+        }
+      }, 2000);
+    </script>
+    
     <!-- Telegram Web App мета-теги -->
     <meta name="theme-color" content="#3b82f6" />
     <meta name="apple-mobile-web-app-capable" content="yes" />

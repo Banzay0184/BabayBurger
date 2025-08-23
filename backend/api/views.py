@@ -17,11 +17,12 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import viewsets, filters
-from .models import User, MenuItem, Order, OrderItem, Category, Address, DeliveryZone, AddOn, SizeOption, Promotion
+from .models import User, MenuItem, Order, OrderItem, Category, Address, DeliveryZone, AddOn, SizeOption, Promotion, Favorite
 from app_operator.models import Operator
 from .serializers import (
     OrderSerializer, MenuItemSerializer, CategorySerializer, AddressSerializer, 
-    AddressCreateSerializer, DeliveryZoneSerializer, AddressDeliveryZoneSerializer, AddOnSerializer, SizeOptionSerializer, PromotionSerializer
+    AddressCreateSerializer, DeliveryZoneSerializer, AddressDeliveryZoneSerializer, AddOnSerializer, SizeOptionSerializer, PromotionSerializer,
+    FavoriteSerializer, FavoriteCreateSerializer
 )
 from .bot import send_notification
 from .tasks import send_order_status_notification, geocode_yandex
@@ -2074,3 +2075,106 @@ class TestConnectionView(APIView):
             'received_data': request.data,
             'timestamp': time.time(),
         })
+
+class FavoriteView(APIView):
+    """API для работы с избранными товарами"""
+    
+    def get(self, request):
+        """Получить избранные товары пользователя"""
+        try:
+            telegram_id = request.query_params.get('telegram_id')
+            
+            if not telegram_id:
+                return Response({'error': 'telegram_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Проверяем существование пользователя
+            try:
+                user = User.objects.get(telegram_id=telegram_id)
+            except User.DoesNotExist:
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Получаем избранные товары
+            favorites = Favorite.objects.filter(user=user).select_related('menu_item__category').order_by('-created_at')
+            serializer = FavoriteSerializer(favorites, many=True)
+            
+            logger.info(f"Retrieved {len(favorites)} favorites for user: telegram_id={telegram_id}")
+            return Response({
+                'favorites': serializer.data,
+                'count': len(favorites)
+            })
+            
+        except Exception as e:
+            logger.error(f"Error getting favorites: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def post(self, request):
+        """Добавить товар в избранное"""
+        try:
+            telegram_id = request.data.get('telegram_id')
+            menu_item_id = request.data.get('menu_item_id')
+            
+            if not telegram_id:
+                return Response({'error': 'telegram_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if not menu_item_id:
+                return Response({'error': 'menu_item_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Проверяем существование пользователя
+            try:
+                user = User.objects.get(telegram_id=telegram_id)
+            except User.DoesNotExist:
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Проверяем существование товара
+            try:
+                menu_item = MenuItem.objects.get(id=menu_item_id, is_active=True)
+            except MenuItem.DoesNotExist:
+                return Response({'error': 'Menu item not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Проверяем, не добавлен ли уже товар в избранное
+            if Favorite.objects.filter(user=user, menu_item=menu_item).exists():
+                return Response({'error': 'Item already in favorites'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Создаем запись в избранном
+            favorite = Favorite.objects.create(user=user, menu_item=menu_item)
+            serializer = FavoriteSerializer(favorite)
+            
+            logger.info(f"Added item {menu_item.name} to favorites for user: telegram_id={telegram_id}")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            logger.error(f"Error adding to favorites: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def delete(self, request):
+        """Удалить товар из избранного"""
+        try:
+            telegram_id = request.data.get('telegram_id')
+            menu_item_id = request.data.get('menu_item_id')
+            
+            if not telegram_id:
+                return Response({'error': 'telegram_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if not menu_item_id:
+                return Response({'error': 'menu_item_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Проверяем существование пользователя
+            try:
+                user = User.objects.get(telegram_id=telegram_id)
+            except User.DoesNotExist:
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Находим и удаляем запись из избранного
+            try:
+                favorite = Favorite.objects.get(user=user, menu_item_id=menu_item_id)
+                favorite.delete()
+                
+                logger.info(f"Removed item {menu_item_id} from favorites for user: telegram_id={telegram_id}")
+                return Response({'message': 'Item removed from favorites'}, status=status.HTTP_200_OK)
+                
+            except Favorite.DoesNotExist:
+                return Response({'error': 'Item not in favorites'}, status=status.HTTP_404_NOT_FOUND)
+            
+        except Exception as e:
+            logger.error(f"Error removing from favorites: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

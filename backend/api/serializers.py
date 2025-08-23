@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, MenuItem, AddOn, SizeOption, Promotion, Order, OrderItem, Category, Address, DeliveryZone
+from .models import User, MenuItem, AddOn, SizeOption, Promotion, Order, OrderItem, Category, Address, DeliveryZone, Favorite
 from app_operator.models import Operator
 
 class UserSerializer(serializers.ModelSerializer):
@@ -181,3 +181,24 @@ class AddressDeliveryZoneSerializer(serializers.ModelSerializer):
     def get_delivery_zone_info(self, obj):
         """Возвращает информацию о зонах доставки для города"""
         return obj.get_delivery_zones_info()
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    """Сериализатор для избранных товаров"""
+    menu_item = MenuItemSerializer(read_only=True)
+    
+    class Meta:
+        model = Favorite
+        fields = ['id', 'menu_item', 'created_at']
+        read_only_fields = ['created_at']
+
+class FavoriteCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания избранного товара"""
+    class Meta:
+        model = Favorite
+        fields = ['menu_item']
+    
+    def validate_menu_item(self, value):
+        """Проверяем, что товар активен"""
+        if not value.is_active:
+            raise serializers.ValidationError("Нельзя добавить в избранное неактивный товар")
+        return value
