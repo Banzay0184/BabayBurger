@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { Button } from '../ui/Button';
 import { YandexMapPicker } from '../map/YandexMapPicker';
-import apiClient from '../../api/client';
 import type { MapAddress } from '../../types/yandex-maps';
 
 interface Address {
@@ -12,34 +10,20 @@ interface Address {
   house_number: string;
   apartment?: string;
   city: string;
-  latitude?: number;
-  longitude?: number;
-  is_primary: boolean;
   phone_number: string;
   comment?: string;
-  full_address: string;
-  created_at: string;
-}
-
-interface AddressFormData {
-  street: string;
-  house_number: string;
-  apartment: string;
-  city: string;
-  phone_number: string;
-  comment: string;
   is_primary: boolean;
 }
 
 export const AddressManager: React.FC = () => {
-  const { state: authState } = useAuth();
   const { t } = useLanguage();
+  
+  // Состояния
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
-  const [formData, setFormData] = useState<AddressFormData>({
+  const [formData, setFormData] = useState({
     street: '',
     house_number: '',
     apartment: '',
@@ -49,29 +33,36 @@ export const AddressManager: React.FC = () => {
     is_primary: false
   });
 
-  const telegramId = authState.user?.telegram_id;
+  // Загрузка адресов при монтировании
+  useEffect(() => {
+    loadAddresses();
+  }, []);
 
   // Загрузка адресов
-  const fetchAddresses = async () => {
-    if (!telegramId) return;
-    
+  const loadAddresses = async () => {
     try {
-      setIsLoading(true);
-      const response = await apiClient.get(`/addresses/?telegram_id=${telegramId}`);
-      setAddresses(response.data);
+      // Здесь должен быть API запрос для загрузки адресов
+      // Пока используем моковые данные
+      const mockAddresses: Address[] = [
+        {
+          id: 1,
+          street: 'Улица Навои',
+          house_number: '15',
+          apartment: '45',
+          city: 'Ташкент',
+          phone_number: '+998 90 123 45 67',
+          comment: 'Около метро',
+          is_primary: true
+        }
+      ];
+      setAddresses(mockAddresses);
     } catch (error) {
-      console.error('Error fetching addresses:', error);
-    } finally {
-      setIsLoading(false);
+      console.error('Error loading addresses:', error);
     }
   };
 
-  useEffect(() => {
-    fetchAddresses();
-  }, [telegramId]);
-
   // Обработка изменения формы
-  const handleInputChange = (field: keyof AddressFormData, value: string | boolean) => {
+  const handleInputChange = (field: keyof typeof formData, value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -93,7 +84,37 @@ export const AddressManager: React.FC = () => {
     setShowForm(false);
   };
 
-  // Открытие формы для редактирования
+  // Сохранение адреса
+  const handleSave = async () => {
+    try {
+      if (!formData.street || !formData.house_number || !formData.phone_number) {
+        alert('Пожалуйста, заполните обязательные поля');
+        return;
+      }
+
+      if (editingAddress) {
+        // Обновление существующего адреса
+        const updatedAddresses = addresses.map(addr =>
+          addr.id === editingAddress.id ? { ...addr, ...formData } : addr
+        );
+        setAddresses(updatedAddresses);
+      } else {
+        // Добавление нового адреса
+        const newAddress: Address = {
+          id: Date.now(),
+          ...formData
+        };
+        setAddresses(prev => [...prev, newAddress]);
+      }
+
+      resetForm();
+    } catch (error) {
+      console.error('Error saving address:', error);
+      alert('Ошибка сохранения адреса');
+    }
+  };
+
+  // Редактирование адреса
   const handleEdit = (address: Address) => {
     setEditingAddress(address);
     setFormData({
@@ -108,165 +129,130 @@ export const AddressManager: React.FC = () => {
     setShowForm(true);
   };
 
-  // Сохранение адреса
-  const handleSave = async () => {
-    if (!telegramId) return;
-
-    try {
-      const addressData = {
-        ...formData,
-        telegram_id: telegramId
-      };
-
-      if (editingAddress) {
-        // Обновление существующего адреса
-        await apiClient.put(`/addresses/${editingAddress.id}/`, addressData);
-      } else {
-        // Создание нового адреса
-        await apiClient.post('/addresses/', addressData);
-      }
-
-      await fetchAddresses();
-      resetForm();
-    } catch (error: any) {
-      console.error('Error saving address:', error);
-      alert(error.response?.data?.error || 'Ошибка сохранения адреса');
-    }
-  };
-
   // Удаление адреса
-  const handleDelete = async (addressId: number) => {
-    if (!confirm('Вы уверены, что хотите удалить этот адрес?')) return;
-
-    try {
-      await apiClient.delete(`/addresses/${addressId}/`, {
-        data: { telegram_id: telegramId }
-      });
-      await fetchAddresses();
-    } catch (error: any) {
-      console.error('Error deleting address:', error);
-      alert(error.response?.data?.error || 'Ошибка удаления адреса');
+  const handleDelete = async (id: number) => {
+    if (confirm('Вы уверены, что хотите удалить этот адрес?')) {
+      try {
+        setAddresses(prev => prev.filter(addr => addr.id !== id));
+      } catch (error) {
+        console.error('Error deleting address:', error);
+        alert('Ошибка удаления адреса');
+      }
     }
   };
 
   // Установка основного адреса
-  const handleSetPrimary = async (addressId: number) => {
+  const handleSetPrimary = async (id: number) => {
     try {
-      await apiClient.patch(`/addresses/${addressId}/`, {
-        telegram_id: telegramId,
-        is_primary: true
-      });
-      await fetchAddresses();
-    } catch (error: any) {
+      const updatedAddresses = addresses.map(addr => ({
+        ...addr,
+        is_primary: addr.id === id
+      }));
+      setAddresses(updatedAddresses);
+    } catch (error) {
       console.error('Error setting primary address:', error);
-      alert(error.response?.data?.error || 'Ошибка установки основного адреса');
+      alert('Ошибка установки основного адреса');
     }
   };
 
-  // Обработка выбора адреса на карте
+  // Обработка выбора адреса с карты
   const handleMapAddressSelect = (mapAddress: MapAddress) => {
-    console.log('🗺️ AddressManager: Address selected from map:', mapAddress);
-    setFormData(prev => ({
-      ...prev,
+    console.log('🗺️ Address selected from map:', mapAddress);
+    
+    // Заполняем форму данными с карты
+    setFormData({
       street: mapAddress.street || '',
       house_number: mapAddress.house || '',
+      apartment: '',
       city: mapAddress.city || 'Ташкент',
-      // Сохраняем координаты в комментариях для использования в будущем
-      comment: prev.comment + ` [${mapAddress.coordinates[0]}, ${mapAddress.coordinates[1]}]`
-    }));
+      phone_number: '',
+      comment: `Выбрано на карте: ${mapAddress.address}`,
+      is_primary: addresses.length === 0 // Первый адрес = основной
+    });
+    
+    // Закрываем карту и показываем форму
     setShowMapPicker(false);
     setShowForm(true);
   };
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-16">
-        <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gray-300">{t('loading')}...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="animate-fade-in">
+    <div className="max-w-4xl mx-auto p-4">
       {/* Заголовок */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text">
-            📍 {t('delivery_addresses')}
-          </h2>
-          <button
-            onClick={() => window.history.back()}
-            className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-sm"
-          >
-            ← {t('back')}
-          </button>
-        </div>
+        <h2 className="text-2xl font-bold text-gray-100 mb-2">
+          📍 {t('delivery_addresses')}
+        </h2>
+        <p className="text-gray-400">
+          {t('manage_delivery_addresses')}
+        </p>
       </div>
 
       {/* Список адресов */}
       {addresses.length > 0 ? (
         <div className="space-y-4 mb-6">
           {addresses.map((address) => (
-            <div key={address.id} className="tg-card-modern p-4">
+            <div
+              key={address.id}
+              className={`p-4 rounded-lg border ${
+                address.is_primary
+                  ? 'border-primary-500 bg-primary-500/10'
+                  : 'border-gray-600 bg-gray-700'
+              }`}
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-gray-100">
-                      {address.full_address}
-                    </h3>
                     {address.is_primary && (
-                      <span className="px-2 py-1 bg-primary-600 text-white text-xs rounded-full">
+                      <span className="px-2 py-1 bg-primary-600 text-white text-xs rounded">
                         {t('primary')}
                       </span>
                     )}
+                    <h3 className="font-medium text-gray-100">
+                      {address.street}, {address.house_number}
+                      {address.apartment && `, кв. ${address.apartment}`}
+                    </h3>
                   </div>
-                  
-                  <div className="text-gray-400 text-sm space-y-1">
-                    <p>📱 {address.phone_number}</p>
-                    {address.comment && (
-                      <p>💬 {address.comment}</p>
-                    )}
-                    <p className="text-xs text-gray-500">
-                      {new Date(address.created_at).toLocaleDateString()}
+                  <p className="text-gray-400 text-sm mb-1">
+                    {address.city}
+                  </p>
+                  <p className="text-gray-400 text-sm mb-2">
+                    {address.phone_number}
+                  </p>
+                  {address.comment && (
+                    <p className="text-gray-500 text-sm italic">
+                      {address.comment}
                     </p>
-                  </div>
-                </div>
-                
-                <div className="flex flex-col gap-2 ml-4">
-                  {!address.is_primary && (
-                    <button
-                      onClick={() => handleSetPrimary(address.id)}
-                      className="px-3 py-1 bg-primary-600 hover:bg-primary-700 text-white text-xs rounded-lg transition-colors"
-                    >
-                      {t('set_primary')}
-                    </button>
                   )}
-                  
-                  <button
+                </div>
+                <div className="flex gap-2 ml-4">
+                  {!address.is_primary && (
+                    <Button
+                      onClick={() => handleSetPrimary(address.id)}
+                      className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1 text-sm"
+                    >
+                      {t('set_as_primary')}
+                    </Button>
+                  )}
+                  <Button
                     onClick={() => handleEdit(address)}
-                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-sm"
                   >
-                    ✏️ {t('edit')}
-                  </button>
-                  
-                  <button
+                    {t('edit')}
+                  </Button>
+                  <Button
                     onClick={() => handleDelete(address.id)}
-                    className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors"
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 text-sm"
                   >
-                    🗑️ {t('delete')}
-                  </button>
+                    {t('delete')}
+                  </Button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-16">
-          <div className="w-20 h-20 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-600/50">
-            <span className="text-3xl">📍</span>
-          </div>
-          <p className="text-gray-300 text-lg font-medium mb-2">
+        <div className="text-center py-8 mb-6">
+          <p className="text-gray-400 text-lg mb-2">
             {t('no_addresses')}
           </p>
           <p className="text-gray-500 text-sm mb-6">
@@ -423,10 +409,8 @@ export const AddressManager: React.FC = () => {
         <YandexMapPicker
           onAddressSelect={handleMapAddressSelect}
           onClose={() => setShowMapPicker(false)}
-          initialCenter={[41.2995, 69.2401]} // Ташкент
-          initialZoom={11}
         />
       )}
     </div>
   );
-};
+}; 
