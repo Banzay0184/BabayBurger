@@ -27,7 +27,7 @@ export const AddressManager: React.FC = () => {
     street: '',
     house_number: '',
     apartment: '',
-    city: 'Ташкент',
+    city: '',
     phone_number: '',
     comment: '',
     is_primary: false
@@ -41,23 +41,20 @@ export const AddressManager: React.FC = () => {
   // Загрузка адресов
   const loadAddresses = async () => {
     try {
-      // Здесь должен быть API запрос для загрузки адресов
-      // Пока используем моковые данные
-      const mockAddresses: Address[] = [
-        {
-          id: 1,
-          street: 'Улица Навои',
-          house_number: '15',
-          apartment: '45',
-          city: 'Ташкент',
-          phone_number: '+998 90 123 45 67',
-          comment: 'Около метро',
-          is_primary: true
-        }
-      ];
-      setAddresses(mockAddresses);
+      console.log('🗺️ Loading addresses from backend...');
+      
+      const response = await fetch('/api/addresses/');
+      if (response.ok) {
+        const addressesData = await response.json();
+        setAddresses(addressesData);
+        console.log('🗺️ Addresses loaded:', addressesData.length);
+      } else {
+        console.error('Failed to load addresses:', response.status);
+        setAddresses([]);
+      }
     } catch (error) {
       console.error('Error loading addresses:', error);
+      setAddresses([]);
     }
   };
 
@@ -75,7 +72,7 @@ export const AddressManager: React.FC = () => {
       street: '',
       house_number: '',
       apartment: '',
-      city: 'Ташкент',
+      city: '',
       phone_number: '',
       comment: '',
       is_primary: false
@@ -87,30 +84,79 @@ export const AddressManager: React.FC = () => {
   // Сохранение адреса
   const handleSave = async () => {
     try {
-      if (!formData.street || !formData.house_number || !formData.phone_number) {
-        alert('Пожалуйста, заполните обязательные поля');
+      // Проверяем обязательные поля
+      if (!formData.street) {
+        alert('Пожалуйста, введите улицу');
+        return;
+      }
+      
+      if (!formData.house_number || formData.house_number.trim() === '') {
+        alert('Пожалуйста, введите номер дома');
+        return;
+      }
+      
+      if (!formData.phone_number) {
+        alert('Пожалуйста, введите номер телефона');
         return;
       }
 
+      // Подготавливаем данные для отправки
+      const addressData = {
+        street: formData.street,
+        house_number: formData.house_number,
+        apartment: formData.apartment || '',
+        city: formData.city || 'Бухара',
+        phone_number: formData.phone_number,
+        comment: formData.comment || '',
+        is_primary: formData.is_primary
+      };
+
+      console.log('🗺️ Saving address to backend:', addressData);
+
       if (editingAddress) {
         // Обновление существующего адреса
-        const updatedAddresses = addresses.map(addr =>
-          addr.id === editingAddress.id ? { ...addr, ...formData } : addr
-        );
-        setAddresses(updatedAddresses);
+        const response = await fetch('/api/addresses/' + editingAddress.id + '/', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(addressData)
+        });
+
+        if (response.ok) {
+          const updatedAddress = await response.json();
+          const updatedAddresses = addresses.map(addr =>
+            addr.id === editingAddress.id ? updatedAddress : addr
+          );
+          setAddresses(updatedAddresses);
+          console.log('🗺️ Address updated successfully');
+        } else {
+          throw new Error('Failed to update address');
+        }
       } else {
         // Добавление нового адреса
-        const newAddress: Address = {
-          id: Date.now(),
-          ...formData
-        };
-        setAddresses(prev => [...prev, newAddress]);
+        const response = await fetch('/api/addresses/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(addressData)
+        });
+
+        if (response.ok) {
+          const newAddress = await response.json();
+          setAddresses(prev => [...prev, newAddress]);
+          console.log('🗺️ Address added successfully');
+        } else {
+          throw new Error('Failed to add address');
+        }
       }
 
       resetForm();
     } catch (error) {
       console.error('Error saving address:', error);
-      alert('Ошибка сохранения адреса');
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      alert('Ошибка сохранения адреса: ' + errorMessage);
     }
   };
 
@@ -159,16 +205,33 @@ export const AddressManager: React.FC = () => {
   const handleMapAddressSelect = (mapAddress: MapAddress) => {
     console.log('🗺️ Address selected from map:', mapAddress);
     
+    // Получаем номер телефона из localStorage или профиля пользователя
+    const getUserPhone = () => {
+      // Пробуем получить из localStorage
+      const savedPhone = localStorage.getItem('user_phone');
+      if (savedPhone) return savedPhone;
+      
+      // Пробуем получить из Telegram WebApp
+      if ((window as any).Telegram?.WebApp?.initDataUnsafe?.user?.phone_number) {
+        return (window as any).Telegram.WebApp.initDataUnsafe.user.phone_number;
+      }
+      
+      // Fallback на пустую строку
+      return '';
+    };
+    
     // Заполняем форму данными с карты
     setFormData({
       street: mapAddress.street || '',
-      house_number: mapAddress.house || '',
+      house_number: mapAddress.house || '1', // Пустая строка если дом не определен
       apartment: '',
-      city: mapAddress.city || 'Ташкент',
-      phone_number: '',
-      comment: `Выбрано на карте: ${mapAddress.address}`,
+      city: mapAddress.city || 'Бухара',
+      phone_number: getUserPhone(), // Автоматически заполняем номер телефона
+      comment: '',
       is_primary: addresses.length === 0 // Первый адрес = основной
     });
+    
+    console.log('🗺️ Form filled with phone:', getUserPhone());
     
     // Закрываем карту и показываем форму
     setShowMapPicker(false);
@@ -341,7 +404,7 @@ export const AddressManager: React.FC = () => {
                   value={formData.city}
                   onChange={(e) => handleInputChange('city', e.target.value)}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none"
-                  placeholder="Ташкент"
+                  placeholder="Введите город"
                 />
               </div>
             </div>

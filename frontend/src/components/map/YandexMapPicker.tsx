@@ -26,6 +26,9 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
   // Хуки
   const { zones, isLoading: zonesLoading } = useDeliveryZones();
   
+  // Ref для zones чтобы избежать проблем с замыканием
+  const zonesRef = useRef(zones);
+  
   // Отладка zones
   console.log('🗺️ 🔍 YandexMapPicker - zones state:', zones);
   console.log('🗺️ 🔍 YandexMapPicker - zonesLoading:', zonesLoading);
@@ -34,6 +37,9 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
   useEffect(() => {
     console.log('🗺️ 🔍 YandexMapPicker - zones changed:', zones);
     console.log('🗺️ 🔍 YandexMapPicker - zones length changed:', zones?.length);
+    
+    // Обновляем ref при изменении zones
+    zonesRef.current = zones;
   }, [zones]);
 
   // Координаты Бухары (правильные - из вашего бэкэнда)
@@ -52,6 +58,56 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
     KAGAN: KAGAN_COORDS,
     TASHKENT: TASHKENT_COORDS
   });
+
+  // Функция проверки "точка внутри полигона" (алгоритм ray casting)
+  const isPointInPolygon = (point: [number, number], polygon: [number, number][]): boolean => {
+    const [x, y] = point;
+    let inside = false;
+    
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const [xi, yi] = polygon[i];
+      const [xj, yj] = polygon[j];
+      
+      if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+        inside = !inside;
+      }
+    }
+    
+    return inside;
+  };
+
+  // Функция создания fallback адреса на основе координат
+  const createFallbackAddress = (coords: [number, number]): string => {
+    const [lat, lon] = coords;
+    
+    // Определяем примерное местоположение на основе координат
+    if (lat >= 39.76 && lat <= 39.78 && lon >= 64.39 && lon <= 64.42) {
+      return 'Бухара, центр города';
+    } else if (lat >= 39.72 && lat <= 39.74 && lon >= 64.54 && lon <= 64.56) {
+      return 'Каган, центр города';
+    } else if (lat >= 39.7 && lat <= 39.8 && lon >= 64.3 && lon <= 64.6) {
+      // Более широкий диапазон для Бухары
+      return 'Бухара, город';
+    } else {
+      // Более точные координаты для отладки
+      return `Координаты: ${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+    }
+  };
+
+  // Функция создания fallback номера дома на основе координат
+  const createFallbackHouseNumber = (coords: [number, number]): string => {
+    const [lat, lon] = coords;
+    
+    // Генерируем примерный номер дома на основе координат
+    // Используем последние цифры координат для уникальности
+    const latLast = Math.floor((lat % 0.01) * 1000000);
+    const lonLast = Math.floor((lon % 0.01) * 1000000);
+    
+    // Создаем номер дома из последних цифр координат
+    const houseNumber = Math.abs(latLast + lonLast) % 200 + 1;
+    
+    return houseNumber.toString();
+  };
   
   // Тестовая зона удалена - теперь используются только данные из backend
 
@@ -60,6 +116,8 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
     if (!mapInstanceRef.current) return;
 
     console.log('🗺️ Map clicked at:', coords);
+    console.log('🗺️ 🔍 Zones available for checking:', zones?.length);
+    console.log('🗺️ 🔍 Zones data:', zones);
     setStatus('Обработка адреса...');
 
     try {
@@ -82,39 +140,140 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
       let address = 'Адрес не определен';
       let thoroughfare = '';
       let premise = '';
-      let locality = 'Ташкент';
+      let locality = '';
       
       try {
+        console.log('🗺️ 🔍 Starting geocoding for coordinates:', coords);
+        
+        // Пробуем геокодирование через Yandex Maps API
         const geocoder = await window.ymaps.geocode(coords);
+        
         if (geocoder.geoObjects.getLength() > 0) {
           const firstGeoObject = geocoder.geoObjects.get(0);
-          address = firstGeoObject.getAddressLine() || 'Адрес не определен';
-          thoroughfare = firstGeoObject.getThoroughfare() || '';
-          premise = firstGeoObject.getPremise() || '';
-          locality = firstGeoObject.getLocality() || 'Ташкент';
           
-          console.log('🗺️ ✅ Geocoding successful:', { address, thoroughfare, premise, locality });
+          // Безопасное получение данных адреса
+          try {
+            // Получаем полный адрес
+            address = firstGeoObject.getAddressLine() || 'Адрес не определен';
+            
+            // Получаем улицу
+            thoroughfare = firstGeoObject.getThoroughfare() || '';
+            
+            // Получаем номер дома/здания
+            premise = firstGeoObject.getPremise() || '';
+            
+            // Получаем город
+            locality = firstGeoObject.getLocality() || '';
+            
+            // Дополнительные поля для отладки
+            const street = firstGeoObject.getThoroughfare() || '';
+            const houseNumber = firstGeoObject.getPremise() || '';
+            const city = firstGeoObject.getLocality() || '';
+            const country = firstGeoObject.getCountry() || '';
+            const postalCode = firstGeoObject.getPostalCode() || '';
+            
+            console.log('🗺️ ✅ Geocoding successful:', { 
+              address, 
+              thoroughfare, 
+              premise, 
+              locality,
+              street,
+              houseNumber,
+              city,
+              country,
+              postalCode
+            });
+            
+            // Логируем все доступные методы
+            console.log('🗺️ 🔍 Available geocoding methods:', {
+              hasGetAddressLine: typeof firstGeoObject.getAddressLine === 'function',
+              hasGetThoroughfare: typeof firstGeoObject.getThoroughfare === 'function',
+              hasGetPremise: typeof firstGeoObject.getPremise === 'function',
+              hasGetLocality: typeof firstGeoObject.getLocality === 'function',
+              hasGetCountry: typeof firstGeoObject.getCountry === 'function',
+              hasGetPostalCode: typeof firstGeoObject.getPostalCode === 'function'
+            });
+            
+            // Попробуем получить адрес через properties
+            try {
+              const properties = firstGeoObject.properties;
+              if (properties) {
+                const metaDataProperty = properties.get('metaDataProperty');
+                if (metaDataProperty) {
+                  const geocoderMetaData = metaDataProperty.get('GeocoderMetaData');
+                  if (geocoderMetaData) {
+                    const addressComponents = geocoderMetaData.get('Address');
+                    if (addressComponents) {
+                      console.log('🗺️ 🔍 Address components from properties:', addressComponents);
+                      
+                      // Получаем компоненты адреса
+                      const streetComponent = addressComponents.get('Thoroughfare')?.get('ThoroughfareName') || '';
+                      const houseComponent = addressComponents.get('Premise')?.get('PremiseNumber') || '';
+                      const cityComponent = addressComponents.get('Locality')?.get('LocalityName') || '';
+                      
+                      console.log('🗺️ 🔍 Parsed components:', { streetComponent, houseComponent, cityComponent });
+                      
+                      // Обновляем значения если они пустые
+                      if (!thoroughfare && streetComponent) thoroughfare = streetComponent;
+                      if (!premise && houseComponent) premise = houseComponent;
+                      if (!locality && cityComponent) locality = cityComponent;
+                    }
+                  }
+                }
+              }
+            } catch (propertiesError) {
+              console.log('🗺️ ⚠️ Error parsing properties:', propertiesError);
+            }
+            
+          } catch (addressError) {
+            console.log('🗺️ ⚠️ Error getting address fields:', addressError);
+            // Fallback на координаты если не удается получить поля адреса
+            address = createFallbackAddress(coords);
+          }
         } else {
           console.log('🗺️ ⚠️ No geocoding results');
+          address = createFallbackAddress(coords);
         }
       } catch (geocodeError) {
-        console.log('🗺️ ⚠️ Geocoding failed, using fallback:', geocodeError);
-        // Fallback адрес на основе координат
-        address = `Координаты: ${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}`;
+        console.log('🗺️ ⚠️ Geocoding failed, trying alternative method:', geocodeError);
+        
+        // Альтернативный метод: геокодирование через reverse geocoding
+        try {
+          const reverseGeocoder = await window.ymaps.geocode(coords, { 
+            results: 1,
+            kind: 'locality'
+          });
+          
+          if (reverseGeocoder.geoObjects.getLength() > 0) {
+            const geoObject = reverseGeocoder.geoObjects.get(0);
+            const altAddress = geoObject.getAddressLine();
+            if (altAddress) {
+              address = altAddress;
+              locality = geoObject.getLocality() || '';
+              console.log('🗺️ ✅ Alternative geocoding successful:', { address, locality });
+            } else {
+              address = createFallbackAddress(coords);
+            }
+          } else {
+            address = createFallbackAddress(coords);
+          }
+        } catch (altError) {
+          console.log('🗺️ ⚠️ Alternative geocoding also failed:', altError);
+          address = createFallbackAddress(coords);
+        }
       }
 
       // Проверяем зону доставки
-      const isInZone = zones.some(zone => {
-        // Если есть полигон, используем его
+      console.log('🗺️ 🔍 Starting zone delivery check...');
+      console.log('🗺️ 🔍 Number of zones to check:', zonesRef.current?.length);
+      
+      const isInZone = zonesRef.current?.some(zone => {
+        // Если есть полигон, используем алгоритм "точка внутри полигона"
         if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
-          // Простая проверка по расстоянию до центра полигона
-          const centerLat = zone.polygon_coordinates[0][0];
-          const centerLon = zone.polygon_coordinates[0][1];
-          const distance = Math.sqrt(
-            Math.pow(coords[0] - centerLon, 2) + 
-            Math.pow(coords[1] - centerLat, 2)
-          );
-          return distance <= 0.1; // Примерно 10 км в градусах
+          console.log('🗺️ 🔍 Checking if point is inside polygon for zone:', zone.name);
+          const isInside = isPointInPolygon(coords, zone.polygon_coordinates);
+          console.log('🗺️ 🔍 Point inside polygon:', isInside);
+          return isInside;
         }
         // Если нет полигона, но есть центр и радиус
         if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
@@ -127,25 +286,28 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
         return false;
       });
 
+      console.log('🗺️ 🔍 Zone delivery check result:', isInZone);
       setAddressInZone(isInZone);
 
       // Создаем объект адреса
       const addressData: MapAddress = {
         coordinates: [coords[0], coords[1]], // [широта, долгота] для бэкэнда
         address: address,
-        street: thoroughfare,
-        house: premise,
-        city: locality
+        street: thoroughfare || 'Улица не определена',
+        house: premise || createFallbackHouseNumber(coords), // Генерируем номер дома если не определен
+        city: locality || 'Бухара' // Fallback на Бухару если город не определен
       };
+      
+      console.log('🗺️ 📝 Final address data:', addressData);
 
       setSelectedAddress(addressData);
-      setStatus('Адрес выбран!');
+      setStatus('Адрес выбран! Нажмите "Подтвердить" для добавления');
 
     } catch (error) {
       console.error('Error in handleMapClick:', error);
       setStatus('Ошибка обработки адреса');
     }
-  }, [zones]);
+  }, []);
 
   // Добавление зон доставки на карту
   const addDeliveryZones = useCallback((map: YandexMapInstance) => {
@@ -357,6 +519,17 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
         console.log('🗺️ API not ready, retrying...');
         setTimeout(initMap, 1000);
         return;
+      }
+
+      // Проверяем доступность геокодирования
+      try {
+        if (window.ymaps.geocode) {
+          console.log('🗺️ ✅ Geocoding API available');
+        } else {
+          console.log('🗺️ ⚠️ Geocoding API not available');
+        }
+      } catch (error) {
+        console.log('🗺️ ⚠️ Error checking geocoding API:', error);
       }
 
       // Проверяем ref
