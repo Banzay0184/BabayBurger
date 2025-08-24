@@ -25,9 +25,35 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
 
   // Хуки
   const { zones, isLoading: zonesLoading } = useDeliveryZones();
+  
+  // Отладка zones
+  console.log('🗺️ 🔍 YandexMapPicker - zones state:', zones);
+  console.log('🗺️ 🔍 YandexMapPicker - zonesLoading:', zonesLoading);
+  
+  // Отладка изменения zones
+  useEffect(() => {
+    console.log('🗺️ 🔍 YandexMapPicker - zones changed:', zones);
+    console.log('🗺️ 🔍 YandexMapPicker - zones length changed:', zones?.length);
+  }, [zones]);
 
-  // Координаты Ташкента (правильные)
-  const TASHKENT_COORDS: [number, number] = [69.2797, 41.2995];
+  // Координаты Бухары (правильные - из вашего бэкэнда)
+  const BUKHARA_COORDS: [number, number] = [39.767966, 64.421728];
+  
+  // Координаты Кагана (ваш город)
+  const KAGAN_COORDS: [number, number] = [39.723543, 64.547178];
+  
+  
+  // Координаты Ташкента (для справки)
+  const TASHKENT_COORDS: [number, number] = [41.2995, 69.2797];
+  
+  // Отладка координат
+  console.log('🗺️ 📍 Coordinates loaded:', {
+    BUKHARA: BUKHARA_COORDS,
+    KAGAN: KAGAN_COORDS,
+    TASHKENT: TASHKENT_COORDS
+  });
+  
+  // Тестовая зона удалена - теперь используются только данные из backend
 
   // Обработчик клика по карте
   const handleMapClick = useCallback(async (coords: [number, number]) => {
@@ -53,28 +79,63 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
       placemarkRef.current = placemark;
 
       // Геокодирование для получения адреса
-      const geocoder = await window.ymaps.geocode(coords);
-      const firstGeoObject = geocoder.geoObjects.get(0);
-      const address = firstGeoObject.getAddressLine();
+      let address = 'Адрес не определен';
+      let thoroughfare = '';
+      let premise = '';
+      let locality = 'Ташкент';
+      
+      try {
+        const geocoder = await window.ymaps.geocode(coords);
+        if (geocoder.geoObjects.getLength() > 0) {
+          const firstGeoObject = geocoder.geoObjects.get(0);
+          address = firstGeoObject.getAddressLine() || 'Адрес не определен';
+          thoroughfare = firstGeoObject.getThoroughfare() || '';
+          premise = firstGeoObject.getPremise() || '';
+          locality = firstGeoObject.getLocality() || 'Ташкент';
+          
+          console.log('🗺️ ✅ Geocoding successful:', { address, thoroughfare, premise, locality });
+        } else {
+          console.log('🗺️ ⚠️ No geocoding results');
+        }
+      } catch (geocodeError) {
+        console.log('🗺️ ⚠️ Geocoding failed, using fallback:', geocodeError);
+        // Fallback адрес на основе координат
+        address = `Координаты: ${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}`;
+      }
 
       // Проверяем зону доставки
       const isInZone = zones.some(zone => {
-        const distance = Math.sqrt(
-          Math.pow(coords[0] - zone.center_longitude, 2) + 
-          Math.pow(coords[1] - zone.center_latitude, 2)
-        );
-        return distance <= zone.radius_km / 111; // Примерное расстояние в градусах
+        // Если есть полигон, используем его
+        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
+          // Простая проверка по расстоянию до центра полигона
+          const centerLat = zone.polygon_coordinates[0][0];
+          const centerLon = zone.polygon_coordinates[0][1];
+          const distance = Math.sqrt(
+            Math.pow(coords[0] - centerLon, 2) + 
+            Math.pow(coords[1] - centerLat, 2)
+          );
+          return distance <= 0.1; // Примерно 10 км в градусах
+        }
+        // Если нет полигона, но есть центр и радиус
+        if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+          const distance = Math.sqrt(
+            Math.pow(coords[0] - zone.center_longitude, 2) + 
+            Math.pow(coords[1] - zone.center_latitude, 2)
+          );
+          return distance <= zone.radius_km / 111; // Примерное расстояние в градусах
+        }
+        return false;
       });
 
       setAddressInZone(isInZone);
 
       // Создаем объект адреса
       const addressData: MapAddress = {
-        coordinates: [coords[1], coords[0]], // [широта, долгота] для бэкэнда
+        coordinates: [coords[0], coords[1]], // [широта, долгота] для бэкэнда
         address: address,
-        street: firstGeoObject.getThoroughfare() || '',
-        house: firstGeoObject.getPremise() || '',
-        city: firstGeoObject.getLocality() || 'Ташкент'
+        street: thoroughfare,
+        house: premise,
+        city: locality
       };
 
       setSelectedAddress(addressData);
@@ -88,33 +149,110 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
 
   // Добавление зон доставки на карту
   const addDeliveryZones = useCallback((map: YandexMapInstance) => {
-    if (!zones || zones.length === 0) return;
+    console.log('🗺️ 🚀 addDeliveryZones function called!');
+    console.log('🗺️ Map instance:', map);
+    console.log('🗺️ Adding delivery zones...');
+    console.log('🗺️ 🔍 Zones in addDeliveryZones:', zones);
+    console.log('🗺️ 🔍 Zones length:', zones?.length);
+    console.log('🗺️ 🔍 Zones type:', typeof zones);
 
-    console.log('🗺️ Adding delivery zones:', zones.length);
+    // Добавляем зоны из backend
+    if (!zones || zones.length === 0) {
+      console.log('🗺️ No backend zones to add');
+      console.log('🗺️ 🔍 Zones is empty or undefined');
+      return;
+    }
+
+    console.log('🗺️ Adding backend zones:', zones.length);
 
     zones.forEach((zone, index) => {
       try {
-        // Создаем круг зоны доставки
-        const circle = new window.ymaps.Circle([
-          [zone.center_longitude, zone.center_latitude], // [долгота, широта]
-          zone.radius_km * 1000 // Радиус в метрах
-        ], {
-          fillColor: '#00ff00',
-          fillOpacity: 0.2,
-          strokeColor: '#00ff00',
-          strokeOpacity: 0.8,
-          strokeWidth: 2
-        }, {
-          hintContent: `${zone.name || `Зона ${index + 1}`} - Доставка: ${zone.delivery_fee} сум`
-        });
+        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 0) {
+          // Создаем полигон зоны доставки с настройками из backend
+          console.log(`🎨 Zone ${index + 1} styles:`, {
+            fillColor: zone.polygon_fill_color,
+            fillOpacity: zone.polygon_fill_opacity,
+            strokeColor: zone.polygon_stroke_color,
+            strokeOpacity: zone.polygon_stroke_opacity,
+            strokeWidth: zone.polygon_stroke_width
+          });
+          
+          const polygon = new window.ymaps.Polygon([zone.polygon_coordinates], {
+            fillColor: zone.polygon_fill_color || '#00ff00',
+            fillOpacity: zone.polygon_fill_opacity || 0.2,
+            strokeColor: zone.polygon_stroke_color || '#00ff00',
+            strokeOpacity: zone.polygon_stroke_opacity || 0.8,
+            strokeWidth: zone.polygon_stroke_width || 2
+          }, {
+            hintContent: `${zone.name || `Зона ${index + 1}`} - Доставка: ${zone.delivery_fee} сум`
+          });
 
-        map.geoObjects.add(circle);
-        console.log(`✅ Zone ${index + 1} added`);
+          // Принудительно применяем стили
+          polygon.options.set({
+            fillColor: zone.polygon_fill_color || '#00ff00',
+            fillOpacity: zone.polygon_fill_opacity || 0.2,
+            strokeColor: zone.polygon_stroke_color || '#00ff00',
+            strokeOpacity: zone.polygon_stroke_opacity || 0.8,
+            strokeWidth: zone.polygon_stroke_width || 2
+          });
+
+          // Делаем полигон прозрачным для кликов
+          polygon.options.set('interactive', false);
+
+          map.geoObjects.add(polygon);
+          console.log(`✅ Polygon zone ${index + 1} added (${zone.polygon_coordinates.length} points) with styles applied and click-through enabled`);
+        } else if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+          // Fallback на круг, если нет полигона, но есть центр и радиус
+          const circle = new window.ymaps.Circle([
+            [zone.center_latitude, zone.center_longitude], // [широта, долгота]
+            zone.radius_km * 1000 // Радиус в метрах
+          ], {
+            fillColor: '#00ff00',
+            fillOpacity: 0.2,
+            strokeColor: '#00ff00',
+            strokeOpacity: 0.8,
+            strokeWidth: 2
+          }, {
+            hintContent: `${zone.name || `Зона ${index + 1}`} - Доставка: ${zone.delivery_fee} сум`
+          });
+
+          // Делаем круг прозрачным для кликов
+          circle.options.set('interactive', false);
+
+          map.geoObjects.add(circle);
+          console.log(`✅ Circle zone ${index + 1} added (center: [${zone.center_latitude}, ${zone.center_longitude}], radius: ${zone.radius_km}km) with click-through enabled`);
+        }
       } catch (error) {
         console.error(`❌ Zone ${index + 1} error:`, error);
       }
     });
   }, [zones]);
+
+  // Добавляем зоны когда они загружаются после создания карты
+  useEffect(() => {
+    console.log('🗺️ 🔍 useEffect triggered - zones:', zones?.length, 'mapInstance:', !!mapInstanceRef.current);
+    
+    if (mapInstanceRef.current && zones && zones.length > 0) {
+      console.log('🗺️ 🔍 Zones loaded after map creation, adding zones now...');
+      addDeliveryZones(mapInstanceRef.current);
+    } else {
+      console.log('🗺️ 🔍 useEffect - conditions not met:', {
+        hasMapInstance: !!mapInstanceRef.current,
+        zonesLength: zones?.length,
+        zones: zones
+      });
+    }
+  }, [zones, addDeliveryZones]);
+
+  // Добавляем зоны когда карта создается после загрузки зон
+  useEffect(() => {
+    console.log('🗺️ 🔍 useEffect mapInstance triggered - mapInstance:', !!mapInstanceRef.current, 'zones:', zones?.length);
+    
+    if (mapInstanceRef.current && zones && zones.length > 0) {
+      console.log('🗺️ 🔍 Map created after zones loaded, adding zones now...');
+      addDeliveryZones(mapInstanceRef.current);
+    }
+  }, [mapInstanceRef.current, zones, addDeliveryZones]);
 
   // Определение местоположения пользователя
   const getUserLocation = useCallback(() => {
@@ -122,14 +260,27 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
       setStatus('Геолокация не поддерживается');
       return;
     }
+    
+    // Проверяем, доступна ли геолокация
+    if (!navigator.permissions) {
+      console.log('🗺️ 🔍 Permissions API not supported, trying geolocation anyway...');
+    } else {
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+        console.log('🗺️ 🔍 Geolocation permission status:', result.state);
+        if (result.state === 'denied') {
+          setStatus('Доступ к геолокации запрещен. Разрешите в настройках браузера.');
+          return;
+        }
+      });
+    }
 
     setStatus('Определение местоположения...');
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const coords: [number, number] = [
-          position.coords.longitude, // Долгота
-          position.coords.latitude   // Широта
+          position.coords.latitude,   // Широта
+          position.coords.longitude   // Долгота
         ];
 
         console.log('🗺️ User location:', coords);
@@ -142,29 +293,44 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
       },
       (error) => {
         console.log('🗺️ Geolocation error:', error.message);
-        setStatus('Геолокация недоступна');
+        console.log('🗺️ Error code:', error.code);
         
-        // Fallback на Ташкент
+        let errorMessage = 'Геолокация недоступна';
+        if (error.code === 1) {
+          errorMessage = 'Доступ к геолокации запрещен';
+        } else if (error.code === 2) {
+          errorMessage = 'Местоположение недоступно';
+        } else if (error.code === 3) {
+          errorMessage = 'Превышено время ожидания';
+        }
+        
+        setStatus(errorMessage);
+        
+        // Fallback на центр Бухары
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.setCenter(TASHKENT_COORDS, 12);
-          setStatus('Перемещено в Ташкент');
+          console.log('🗺️ 🔍 Attempting fallback to Bukhara center...');
+          console.log('🗺️ 🔍 Bukhara coordinates:', BUKHARA_COORDS);
+          mapInstanceRef.current.setCenter(BUKHARA_COORDS, 12);
+          setStatus('Перемещено в центр Бухары (геолокация недоступна)');
+          console.log('🗺️ ✅ Fallback to Bukhara center completed');
+          
+          // Показываем инструкцию пользователю
+          setTimeout(() => {
+            setStatus('Используйте кнопки "Бухара", "Каган" или кликните по карте для выбора адреса');
+          }, 3000);
+        } else {
+          console.log('🗺️ ❌ Cannot set fallback - mapInstance not ready');
         }
       },
       {
-        enableHighAccuracy: false,
-        timeout: 15000,
-        maximumAge: 300000
+        enableHighAccuracy: true,
+        timeout: 30000,
+        maximumAge: 60000
       }
     );
   }, [handleMapClick]);
 
-  // Перемещение в Ташкент
-  const goToTashkent = useCallback(() => {
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.setCenter(TASHKENT_COORDS, 12);
-      setStatus('Перемещено в центр Ташкента');
-    }
-  }, []);
+
 
   // Инициализация карты
   useEffect(() => {
@@ -206,10 +372,12 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
       try {
         // Создаем карту
         const map = new window.ymaps.Map(mapRef.current, {
-          center: TASHKENT_COORDS, // [долгота, широта]
+          center: BUKHARA_COORDS, // [широта, долгота] - Бухара
           zoom: 12,
           controls: ['zoomControl']
         });
+        
+        console.log('🗺️ 🎯 Map centered at Bukhara:', BUKHARA_COORDS);
 
         mapInstanceRef.current = map;
         console.log('🗺️ ✅ Map created successfully!');
@@ -217,15 +385,16 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
         // Обработчик клика
         map.events.add('click', (e: any) => {
           const coords = e.get('coords');
+          console.log('🗺️ 🖱️ Map clicked at coordinates:', coords);
           handleMapClick(coords);
         });
 
-        // Добавляем зоны доставки
-        addDeliveryZones(map);
+        // Зоны доставки будут добавлены автоматически через useEffect когда zones загрузятся
+        console.log('🗺️ Map ready, waiting for zones to load...');
 
         // Убираем загрузку
         setIsMapLoading(false);
-        setStatus('Карта готова!');
+        setStatus('Карта готова! Используйте кнопки для навигации');
         console.log('🗺️ 🎉 Map initialization completed!');
 
       } catch (error) {
@@ -251,7 +420,7 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
         }
       }
     };
-  }, [addDeliveryZones, handleMapClick]);
+  }, []); // Убираем зависимости для предотвращения перемонтирования
 
   // Загрузка зон
   if (zonesLoading) {
@@ -268,12 +437,12 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-lg w-full max-w-4xl h-[80vh] flex flex-col">
-        {/* Заголовок */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-100">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-hidden">
+      <div className="bg-gray-800 rounded-lg w-full h-full sm:h-[80vh] sm:max-w-4xl flex flex-col overflow-hidden">
+        {/* Заголовок - фиксированный */}
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-700 flex-shrink-0">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-100">
               📍 Выбор адреса на карте
             </h3>
             <p className="text-xs text-gray-400 mt-1">
@@ -282,38 +451,83 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-200 text-xl"
+            className="text-gray-400 hover:text-gray-200 text-xl p-2 ml-2"
           >
             ✕
           </button>
         </div>
 
-        {/* Кнопки управления */}
-        <div className="p-4 bg-gray-750 border-b border-gray-700">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Кнопки управления - фиксированные */}
+        <div className="p-3 sm:p-4 bg-gray-750 border-b border-gray-700 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
             <div className="flex-1 min-w-0">
               <p className="text-sm text-gray-300 mb-2">
                 Кликните по карте для выбора адреса доставки
               </p>
               {zones.length > 0 && (
-                <div className="flex items-center gap-4 text-xs text-gray-400">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-gray-400">
                   <div className="flex items-center gap-1">
                     <div className="w-3 h-3 bg-green-500 bg-opacity-50 border border-green-500 rounded-full"></div>
                     <span>Зоны доставки ({zones.length})</span>
                   </div>
+                  <div className="text-orange-400">
+                    📍 Текущие зоны: {zones.map(zone => `${zone.city || 'Неизвестно'}`).join(', ')}
+                  </div>
                 </div>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 xs:grid-cols-4 sm:flex sm:flex-wrap gap-1 sm:gap-2">
               <Button
                 onClick={getUserLocation}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-1 sm:px-2 md:px-3 py-2 text-xs sm:text-sm"
               >
                 📍 Мое местоположение
               </Button>
               <Button
-                onClick={goToTashkent}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 text-sm"
+                onClick={() => {
+                  if (mapInstanceRef.current) {
+                    // Пробуем определить местоположение снова
+                    setStatus('Повторная попытка определения местоположения...');
+                    getUserLocation();
+                  }
+                }}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-1 sm:px-2 md:px-3 py-2 text-xs sm:text-sm"
+              >
+                🔄 Повторить
+              </Button>
+              <Button
+                onClick={() => {
+                  if (mapInstanceRef.current) {
+                    mapInstanceRef.current.setCenter(BUKHARA_COORDS, 12);
+                    setStatus('Перемещено в центр Бухары');
+                    console.log('🗺️ Moved to Bukhara center:', BUKHARA_COORDS);
+                  }
+                }}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-1 sm:px-2 md:px-3 py-2 text-xs sm:text-sm"
+              >
+                🏛️ Бухара
+              </Button>
+              <Button
+                onClick={() => {
+                  if (mapInstanceRef.current) {
+                    mapInstanceRef.current.setCenter(KAGAN_COORDS, 12);
+                    setStatus('Перемещено в центр Кагана');
+                    console.log('🗺️ Moved to Kagan center:', KAGAN_COORDS);
+                  }
+                }}
+                className="bg-green-600 hover:bg-gray-700 text-white px-1 sm:px-2 md:px-3 py-2 text-xs sm:text-sm"
+              >
+                🏘️ Каган
+              </Button>
+              <Button
+                onClick={() => {
+                  if (mapInstanceRef.current) {
+                    mapInstanceRef.current.setCenter(TASHKENT_COORDS, 12);
+                    setStatus('Перемещено в Ташкент');
+                    console.log('🗺️ Moved to Tashkent:', TASHKENT_COORDS);
+                  }
+                }}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-1 sm:px-2 md:px-3 py-2 text-xs sm:text-sm"
               >
                 🏙️ Ташкент
               </Button>
@@ -321,8 +535,8 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
           </div>
         </div>
 
-        {/* Карта */}
-        <div className="flex-1 relative">
+        {/* Карта - скроллируемая */}
+        <div className="flex-1 relative overflow-auto">
           {isMapLoading && (
             <div className="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-10">
               <div className="text-center">
@@ -331,7 +545,7 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
               </div>
             </div>
           )}
-          <div ref={mapRef} className="w-full h-full" />
+          <div ref={mapRef} className="w-full h-full min-h-[300px] sm:min-h-[400px]" />
         </div>
 
         {/* Информация о выбранном адресе */}

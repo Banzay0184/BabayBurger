@@ -828,7 +828,17 @@ export const MainPage: React.FC = () => {
           </button>
 
           {/* Кнопка Адрес */}
-          <button className="flex flex-col items-center p-2 rounded-lg transition-all duration-300 min-w-[4rem] text-gray-400 hover:text-gray-300">
+          <button 
+            onClick={() => {
+              console.log('📍 Switching to address view');
+              setCurrentView('address');
+            }}
+            className={`flex flex-col items-center p-2 rounded-lg transition-all duration-300 min-w-[4rem] ${
+              currentView === 'address' 
+                ? 'text-primary-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
             <span className="text-xl mb-1">📍</span>
             <span className="text-xs font-medium">{t('address')}</span>
           </button>

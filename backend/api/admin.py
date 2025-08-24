@@ -238,12 +238,28 @@ class DeliveryZoneAdmin(admin.ModelAdmin):
             'fields': ('name', 'city', 'is_active')
         }),
         ('География', {
-            'fields': ('center_latitude', 'center_longitude', 'radius_km')
+            'fields': ('polygon_coordinates',),
+            'description': 'Задайте координаты полигона для точных границ зоны'
+        }),
+        ('Стилизация полигона', {
+            'fields': (
+                'polygon_fill_color', 'polygon_fill_opacity',
+                'polygon_stroke_color', 'polygon_stroke_width', 'polygon_stroke_opacity'
+            ),
+            'description': 'Настройте внешний вид полигона на карте'
         }),
         ('Стоимость доставки', {
             'fields': ('delivery_fee', 'min_order_amount')
         }),
     )
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if 'polygon_coordinates' in form.base_fields:
+            form.base_fields['polygon_coordinates'].help_text = (
+                'Введите координаты в формате: [[широта, долгота], [широта, долгота], ...]'
+            )
+        return form
 
 
 # Настройка админ-панели

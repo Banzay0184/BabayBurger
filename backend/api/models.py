@@ -120,26 +120,35 @@ class DeliveryZone(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название зоны")
     city = models.CharField(max_length=100, verbose_name="Город")
     
-    # Центр зоны доставки
+    # Центр зоны доставки (необязательно, если есть полигон)
     center_latitude = models.DecimalField(
         max_digits=9, 
         decimal_places=6,
         validators=[MinValueValidator(-90), MaxValueValidator(90)],
-        verbose_name="Широта центра"
+        verbose_name="Широта центра",
+        null=True,
+        blank=True,
+        help_text="Необязательно, если задан полигон"
     )
     center_longitude = models.DecimalField(
         max_digits=9, 
         decimal_places=6,
         validators=[MinValueValidator(-180), MaxValueValidator(180)],
-        verbose_name="Долгота центра"
+        verbose_name="Долгота центра",
+        null=True,
+        blank=True,
+        help_text="Необязательно, если задан полигон"
     )
     
-    # Радиус зоны доставки в километрах
+    # Радиус зоны доставки в километрах (необязательно, если есть полигон)
     radius_km = models.DecimalField(
         max_digits=5,
         decimal_places=2,
         validators=[MinValueValidator(0.1), MaxValueValidator(100)],
-        verbose_name="Радиус зоны (км)"
+        verbose_name="Радиус зоны (км)",
+        null=True,
+        blank=True,
+        help_text="Необязательно, если задан полигон"
     )
     
     # Стоимость доставки в зоне
@@ -162,6 +171,54 @@ class DeliveryZone(models.Model):
     # Статус зоны
     is_active = models.BooleanField(default=True, verbose_name="Активна")
     
+    # Координаты полигона для точных границ зоны
+    polygon_coordinates = models.JSONField(
+        null=True, 
+        blank=True, 
+        verbose_name="Координаты полигона",
+        help_text="Массив координат [[широта, долгота], ...] для точных границ зоны"
+    )
+    
+    # Стилизация полигона
+    polygon_fill_color = models.CharField(
+        max_length=7,
+        default='#ffd21e',
+        verbose_name="Цвет заливки полигона",
+        help_text="Цвет в формате #RRGGBB (например: #ffd21e)"
+    )
+    
+    polygon_fill_opacity = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=0.6,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        verbose_name="Прозрачность заливки",
+        help_text="От 0.0 (прозрачно) до 1.0 (непрозрачно)"
+    )
+    
+    polygon_stroke_color = models.CharField(
+        max_length=7,
+        default='#ffd21e',
+        verbose_name="Цвет обводки полигона",
+        help_text="Цвет в формате #RRGGBB (например: #ffd21e)"
+    )
+    
+    polygon_stroke_width = models.PositiveIntegerField(
+        default=5,
+        validators=[MinValueValidator(1), MaxValueValidator(20)],
+        verbose_name="Ширина обводки",
+        help_text="Ширина линии в пикселях"
+    )
+    
+    polygon_stroke_opacity = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=0.9,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        verbose_name="Прозрачность обводки",
+        help_text="От 0.0 (прозрачно) до 1.0 (непрозрачно)"
+    )
+    
     # Метаданные
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -181,18 +238,43 @@ class DeliveryZone(models.Model):
     def is_address_in_zone(self, latitude, longitude):
         """
         Проверяет, находится ли адрес в зоне доставки
+        Использует только полигон для точной проверки
         """
         if not latitude or not longitude:
             return False
         
-        distance = calculate_distance(
-            float(self.center_latitude),
-            float(self.center_longitude),
-            float(latitude),
-            float(longitude)
-        )
+        # Проверяем только полигон
+        if self.polygon_coordinates and len(self.polygon_coordinates) > 2:
+            return self._is_point_in_polygon(latitude, longitude)
         
-        return distance <= float(self.radius_km)
+        # Если полигон не задан, зона не работает
+        return False
+    
+    def _is_point_in_polygon(self, latitude, longitude):
+        """
+        Проверяет, находится ли точка внутри полигона
+        Использует алгоритм ray casting
+        """
+        if not self.polygon_coordinates or len(self.polygon_coordinates) < 3:
+            return False
+        
+        x, y = float(longitude), float(latitude)
+        n = len(self.polygon_coordinates)
+        inside = False
+        
+        p1x, p1y = self.polygon_coordinates[0]
+        for i in range(n + 1):
+            p2x, p2y = self.polygon_coordinates[i % n]
+            if y > min(p1y, p2y):
+                if y <= max(p1y, p2y):
+                    if x <= max(p1x, p2x):
+                        if p1y != p2y:
+                            xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                        if p1x == p2x or x <= xinters:
+                            inside = not inside
+            p1x, p1y = p2x, p2y
+        
+        return inside
     
     def get_distance_to_zone(self, latitude, longitude):
         """

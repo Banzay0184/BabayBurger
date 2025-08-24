@@ -152,8 +152,9 @@ class DeliveryZoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryZone
         fields = [
-            'id', 'name', 'city', 'center_latitude', 'center_longitude',
-            'radius_km', 'delivery_fee', 'min_order_amount', 'is_active', 
+            'id', 'name', 'city', 'delivery_fee', 'min_order_amount', 'is_active',
+            'polygon_coordinates', 'polygon_fill_color', 'polygon_fill_opacity',
+            'polygon_stroke_color', 'polygon_stroke_width', 'polygon_stroke_opacity',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']

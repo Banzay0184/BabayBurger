@@ -11,8 +11,11 @@ export const useDeliveryZones = () => {
     try {
       setIsLoading(true);
       setError(null);
+      console.log('🗺️ 🔍 useDeliveryZones: Fetching zones...');
       const response = await apiClient.get('/delivery-zones/');
+      console.log('🗺️ 🔍 useDeliveryZones: API response:', response.data);
       setZones(response.data);
+      console.log('🗺️ 🔍 useDeliveryZones: Zones set to state');
     } catch (error: any) {
       console.error('Error fetching delivery zones:', error);
       setError(error.response?.data?.error || 'Ошибка загрузки зон доставки');
@@ -28,15 +31,28 @@ export const useDeliveryZones = () => {
   // Проверка, находится ли адрес в зонах доставки
   const isAddressInDeliveryZone = (latitude: number, longitude: number): { inZone: boolean; zone?: DeliveryZone } => {
     for (const zone of zones) {
-      const distance = calculateDistance(
-        latitude,
-        longitude,
-        zone.center_latitude,
-        zone.center_longitude
-      );
-      
-      if (distance <= zone.radius_km) {
-        return { inZone: true, zone };
+      // Если есть полигон, используем его
+      if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
+        // Простая проверка по расстоянию до центра полигона
+        const centerLat = zone.polygon_coordinates[0][0];
+        const centerLon = zone.polygon_coordinates[0][1];
+        const distance = calculateDistance(latitude, longitude, centerLat, centerLon);
+        if (distance <= 10) { // Примерно 10 км
+          return { inZone: true, zone };
+        }
+      }
+      // Если нет полигона, но есть центр и радиус
+      else if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+        const distance = calculateDistance(
+          latitude,
+          longitude,
+          zone.center_latitude,
+          zone.center_longitude
+        );
+        
+        if (distance <= zone.radius_km) {
+          return { inZone: true, zone };
+        }
       }
     }
     
