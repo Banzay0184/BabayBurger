@@ -22,7 +22,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
   const [selectedAddOns, setSelectedAddOns] = useState<AddOn[]>([]);
   const [totalPrice, setTotalPrice] = useState<number>(Number(item.price) || 0);
 
-  // Проверяем iOS
+  // Проверяем iOS и Telegram WebApp
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isTelegramWebApp = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp;
 
@@ -79,33 +79,26 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
     }
   };
 
+  // Специальные стили для iOS в Telegram WebApp
+  const modalZIndex = isIOS && isTelegramWebApp ? 999999 : 99999;
+  const contentZIndex = isIOS && isTelegramWebApp ? 999999 : 10;
+
   return (
     <div 
-      className={`
-        fixed inset-0 flex justify-center items-center p-4 animate-fade-in
-        ${isIOS && isTelegramWebApp ? 'z-[999999]' : 'z-[99999]'}
-      `}
+      className="fixed inset-0 flex justify-center items-center p-4 animate-fade-in" 
       style={{
         backgroundColor: 'rgba(0, 0, 0, 0.95)',
         backdropFilter: isIOS ? 'blur(20px)' : 'blur(12px)',
         WebkitBackdropFilter: isIOS ? 'blur(20px)' : 'blur(12px)',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: isIOS && isTelegramWebApp ? 999999 : 99999
+        zIndex: modalZIndex
       }}
       onClick={handleBackdropClick}
     >
       <div 
-        className={`
-          bg-dark-800 rounded-2xl w-full max-w-md max-h-[95vh] flex flex-col shadow-2xl border border-gray-700 overflow-hidden
-          ${isIOS ? 'transform-none' : ''}
-        `}
+        className="bg-dark-800 rounded-2xl w-full max-w-md max-h-[95vh] flex flex-col shadow-2xl border border-gray-700 overflow-hidden"
         style={{
           position: 'relative',
-          zIndex: isIOS ? 999999 : 99999,
+          zIndex: contentZIndex,
           WebkitTransform: isIOS ? 'translateZ(0)' : 'none',
           transform: isIOS ? 'translateZ(0)' : 'none',
           WebkitOverflowScrolling: 'touch'
@@ -116,7 +109,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
           className="p-4 border-b border-gray-700 flex-shrink-0 bg-dark-800"
           style={{
             position: 'relative',
-            zIndex: isIOS ? 999999 : 99999
+            zIndex: contentZIndex
           }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -160,7 +153,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
           className="flex-1 overflow-y-auto p-4 space-y-4 bg-dark-800"
           style={{
             position: 'relative',
-            zIndex: isIOS ? 999999 : 99999,
+            zIndex: contentZIndex,
             WebkitOverflowScrolling: 'touch'
           }}
         >
@@ -245,7 +238,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
           className="p-4 border-t border-gray-700 flex-shrink-0 bg-dark-800"
           style={{
             position: 'relative',
-            zIndex: isIOS ? 999999 : 99999
+            zIndex: contentZIndex
           }}
         >
           <div className="flex items-center justify-between mb-4">
