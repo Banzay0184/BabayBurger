@@ -10,15 +10,13 @@ interface MenuItemProps {
   onSelect?: (item: MenuItemType, size?: SizeOption, addOns?: AddOn[]) => void;
   isCompact?: boolean;
   hideDescription?: boolean;
-  showOptionsModal?: boolean;
 }
 
 export const MenuItem: React.FC<MenuItemProps> = ({ 
   item, 
   onSelect, 
   isCompact = false,
-  hideDescription = false,
-  showOptionsModal = false
+  hideDescription = false
 }) => {
   const { addItem, decrementByKey, getItemCountForMenuItem, state: cartState } = useCart();
   const { t, formatCurrency } = useLanguage();
@@ -31,10 +29,16 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   // Открытие модала
   const handleOpenModal = () => {
-    if (showOptionsModal) {
+    // Если есть опции (размеры или дополнения), всегда показываем модал
+    if (availableSizes.length > 0 || availableAddOns.length > 0) {
       setIsModalOpen(true);
     } else if (onSelect) {
+      // Если опций нет, вызываем onSelect напрямую
       onSelect(item);
+    } else {
+      // Если нет onSelect, добавляем в корзину напрямую
+      addItem(item);
+      showNotification(`${item.name} ${t('added_to_cart')}`);
     }
   };
 
