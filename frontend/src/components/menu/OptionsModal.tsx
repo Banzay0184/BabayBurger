@@ -22,6 +22,10 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
   const [selectedAddOns, setSelectedAddOns] = useState<AddOn[]>([]);
   const [totalPrice, setTotalPrice] = useState<number>(Number(item.price) || 0);
 
+  // Проверяем iOS
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isTelegramWebApp = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp;
+
   const handleSizeSelect = (size: SizeOption) => {
     console.log('📏 OptionsModal - Выбран размер:', size.name, 'модификатор цены:', size.price_modifier);
     setSelectedSize(size);
@@ -76,10 +80,45 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex justify-center items-center z-[99999] p-4 animate-fade-in" onClick={handleBackdropClick}>
-      <div className="bg-dark-800 rounded-2xl w-full max-w-md max-h-[95vh] flex flex-col shadow-2xl border border-gray-700 overflow-hidden relative">
+    <div 
+      className={`
+        fixed inset-0 flex justify-center items-center p-4 animate-fade-in
+        ${isIOS && isTelegramWebApp ? 'z-[999999]' : 'z-[99999]'}
+      `}
+      style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.95)',
+        backdropFilter: isIOS ? 'blur(20px)' : 'blur(12px)',
+        WebkitBackdropFilter: isIOS ? 'blur(20px)' : 'blur(12px)',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: isIOS && isTelegramWebApp ? 999999 : 99999
+      }}
+      onClick={handleBackdropClick}
+    >
+      <div 
+        className={`
+          bg-dark-800 rounded-2xl w-full max-w-md max-h-[95vh] flex flex-col shadow-2xl border border-gray-700 overflow-hidden
+          ${isIOS ? 'transform-none' : ''}
+        `}
+        style={{
+          position: 'relative',
+          zIndex: isIOS ? 999999 : 99999,
+          WebkitTransform: isIOS ? 'translateZ(0)' : 'none',
+          transform: isIOS ? 'translateZ(0)' : 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
         {/* Заголовок - фиксированный */}
-        <div className="p-4 border-b border-gray-700 flex-shrink-0 bg-dark-800 relative z-10">
+        <div 
+          className="p-4 border-b border-gray-700 flex-shrink-0 bg-dark-800"
+          style={{
+            position: 'relative',
+            zIndex: isIOS ? 999999 : 99999
+          }}
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-100">{item.name}</h3>
             <button
@@ -117,7 +156,14 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
         </div>
 
         {/* Скроллируемый контент */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-dark-800 relative z-10">
+        <div 
+          className="flex-1 overflow-y-auto p-4 space-y-4 bg-dark-800"
+          style={{
+            position: 'relative',
+            zIndex: isIOS ? 999999 : 99999,
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
           {/* Размеры */}
           {availableSizes.length > 0 && (
             <div className="border-b border-gray-700 pb-4">
@@ -195,7 +241,13 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
         </div>
 
         {/* Итого и кнопка - фиксированные внизу */}
-        <div className="p-4 border-t border-gray-700 flex-shrink-0 bg-dark-800 relative z-10">
+        <div 
+          className="p-4 border-t border-gray-700 flex-shrink-0 bg-dark-800"
+          style={{
+            position: 'relative',
+            zIndex: isIOS ? 999999 : 99999
+          }}
+        >
           <div className="flex items-center justify-between mb-4">
             <span className="text-gray-300 text-sm">{t('total')}:</span>
             <span className="text-xl font-bold text-primary-400">

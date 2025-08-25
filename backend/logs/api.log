@@ -10040,3 +10040,150 @@ Retrieved 3 active promotions
 Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
 Retrieved 3 active promotions
 Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.014, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Creating/updating user: 908758841 - Шахзод Абидов (@abidov_0184)
+Updated existing user: Шахзод Абидов (@abidov_0184)
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.401, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/favorites/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148", "query_params": {"telegram_id": ["908758841"]}}
+Retrieved 0 favorites for user: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/favorites/", "status_code": 200, "duration": 0.012, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 26}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/menu/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Menu data not found in cache, fetching from database
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.016, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Menu data cached successfully, 6 categories, 3 items
+Ответ: {"type": "response", "method": "GET", "path": "/api/menu/", "status_code": 200, "duration": 0.074, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 4685}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/categories/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Categories data served from cache
+Ответ: {"type": "response", "method": "GET", "path": "/api/categories/", "status_code": 200, "duration": 0.002, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 734}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.011, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Creating/updating user: 908758841 - Шахзод Абидов (@abidov_0184)
+Updated existing user: Шахзод Абидов (@abidov_0184)
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.367, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/favorites/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148", "query_params": {"telegram_id": ["908758841"]}}
+Retrieved 0 favorites for user: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/favorites/", "status_code": 200, "duration": 0.006, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 26}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/menu/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/categories/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Menu data served from cache
+Categories data served from cache
+Ответ: {"type": "response", "method": "GET", "path": "/api/menu/", "status_code": 200, "duration": 0.01, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 4685}
+Ответ: {"type": "response", "method": "GET", "path": "/api/categories/", "status_code": 200, "duration": 0.009, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 734}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.028, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.011, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Creating/updating user: 908758841 - Шахзод Абидов (@abidov_0184)
+Updated existing user: Шахзод Абидов (@abidov_0184)
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.374, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/favorites/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "query_params": {"telegram_id": ["908758841"]}}
+Retrieved 0 favorites for user: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/favorites/", "status_code": 200, "duration": 0.007, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 26}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/categories/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/menu/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"}
+Categories data served from cache
+Ответ: {"type": "response", "method": "GET", "path": "/api/categories/", "status_code": 200, "duration": 0.003, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 734}
+Menu data served from cache
+Ответ: {"type": "response", "method": "GET", "path": "/api/menu/", "status_code": 200, "duration": 0.009, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 4685}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.008, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/media/categories/2025-08-25_14.34.20.jpg", "user": "AnonymousUser", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"}
+Ответ: {"type": "response", "method": "GET", "path": "/media/categories/2025-08-25_14.34.20.jpg", "status_code": 304, "duration": 0.002, "user": "AnonymousUser", "ip": "127.0.0.1", "response_size": 0}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.007, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/favorites/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148", "query_params": {"telegram_id": ["908758841"]}}
+Retrieved 0 favorites for user: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/favorites/", "status_code": 200, "duration": 0.005, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 26}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/menu/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/categories/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Menu data served from cache
+Categories data served from cache
+Ответ: {"type": "response", "method": "GET", "path": "/api/menu/", "status_code": 200, "duration": 0.003, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 4685}
+Ответ: {"type": "response", "method": "GET", "path": "/api/categories/", "status_code": 200, "duration": 0.003, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 734}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.009, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.01, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/favorites/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148", "query_params": {"telegram_id": ["908758841"]}}
+Retrieved 0 favorites for user: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/favorites/", "status_code": 200, "duration": 0.007, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 26}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/categories/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Categories data served from cache
+Ответ: {"type": "response", "method": "GET", "path": "/api/categories/", "status_code": 200, "duration": 0.005, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 734}
+Retrieved 3 active promotions
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/menu/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Menu data served from cache
+Ответ: {"type": "response", "method": "GET", "path": "/api/menu/", "status_code": 200, "duration": 0.013, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 4685}
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.02, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.019, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 5507227904 in chat 5507227904
+Creating/updating user: 5507227904 - 😍Sabina😍  (@)
+Created new user: 😍Sabina😍
+Start command processed successfully for chat 5507227904
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.419, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/favorites/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.94 Mobile Safari/537.36 Telegram-Android/11.14.1 (Xiaomi 23129RAA4G; Android 13; SDK 33; HIGH)", "query_params": {"telegram_id": ["5507227904"]}}
+Retrieved 0 favorites for user: telegram_id=5507227904
+Ответ: {"type": "response", "method": "GET", "path": "/api/favorites/", "status_code": 200, "duration": 0.005, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 26}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/menu/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.94 Mobile Safari/537.36 Telegram-Android/11.14.1 (Xiaomi 23129RAA4G; Android 13; SDK 33; HIGH)"}
+Menu data served from cache
+Ответ: {"type": "response", "method": "GET", "path": "/api/menu/", "status_code": 200, "duration": 0.014, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 4685}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/categories/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.94 Mobile Safari/537.36 Telegram-Android/11.14.1 (Xiaomi 23129RAA4G; Android 13; SDK 33; HIGH)"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.94 Mobile Safari/537.36 Telegram-Android/11.14.1 (Xiaomi 23129RAA4G; Android 13; SDK 33; HIGH)"}
+Categories data served from cache
+Ответ: {"type": "response", "method": "GET", "path": "/api/categories/", "status_code": 200, "duration": 0.635, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 734}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.64, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.94 Mobile Safari/537.36 Telegram-Android/11.14.1 (Xiaomi 23129RAA4G; Android 13; SDK 33; HIGH)"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.009, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1726}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/delivery-zones/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.94 Mobile Safari/537.36 Telegram-Android/11.14.1 (Xiaomi 23129RAA4G; Android 13; SDK 33; HIGH)"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/delivery-zones/", "status_code": 200, "duration": 0.007, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 1635}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/favorites/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.94 Mobile Safari/537.36 Telegram-Android/11.14.1 (Xiaomi 23129RAA4G; Android 13; SDK 33; HIGH)"}
+Added item Пицца Цезарь to favorites for user: telegram_id=5507227904
+Ответ: {"type": "response", "method": "POST", "path": "/api/favorites/", "status_code": 201, "duration": 0.021, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 727}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/favorites/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.94 Mobile Safari/537.36 Telegram-Android/11.14.1 (Xiaomi 23129RAA4G; Android 13; SDK 33; HIGH)"}
+Added item Шеф Бургер to favorites for user: telegram_id=5507227904
+Ответ: {"type": "response", "method": "POST", "path": "/api/favorites/", "status_code": 201, "duration": 0.014, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 399}
+Входящий запрос: {"type": "request", "method": "DELETE", "path": "/api/favorites/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.94 Mobile Safari/537.36 Telegram-Android/11.14.1 (Xiaomi 23129RAA4G; Android 13; SDK 33; HIGH)"}
+Removed item 14 from favorites for user: telegram_id=5507227904
+Ответ: {"type": "response", "method": "DELETE", "path": "/api/favorites/", "status_code": 200, "duration": 0.01, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 41}
+Входящий запрос: {"type": "request", "method": "DELETE", "path": "/api/favorites/", "user": "AnonymousUser", "ip": "213.230.92.24", "user_agent": "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.94 Mobile Safari/537.36 Telegram-Android/11.14.1 (Xiaomi 23129RAA4G; Android 13; SDK 33; HIGH)"}
+Removed item 15 from favorites for user: telegram_id=5507227904
+Ответ: {"type": "response", "method": "DELETE", "path": "/api/favorites/", "status_code": 200, "duration": 0.008, "user": "AnonymousUser", "ip": "213.230.92.24", "response_size": 41}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/favorites/", "user": "AnonymousUser", "ip": "213.230.92.83", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 iMe/11.14.0", "query_params": {"telegram_id": ["6401729581"]}}
+Ответ: {"type": "response", "method": "GET", "path": "/api/favorites/", "status_code": 404, "duration": 0.038, "user": "AnonymousUser", "ip": "213.230.92.83", "response_size": 26}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/menu/", "user": "AnonymousUser", "ip": "213.230.92.83", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 iMe/11.14.0"}
+Menu data not found in cache, fetching from database
+Menu data cached successfully, 6 categories, 3 items
+Ответ: {"type": "response", "method": "GET", "path": "/api/menu/", "status_code": 200, "duration": 0.06, "user": "AnonymousUser", "ip": "213.230.92.83", "response_size": 4685}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.83", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 iMe/11.14.0"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/categories/", "user": "AnonymousUser", "ip": "213.230.92.83", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 iMe/11.14.0"}
+Categories data not found in cache, fetching from database
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.03, "user": "AnonymousUser", "ip": "213.230.92.83", "response_size": 1726}
+Categories data cached successfully, 6 categories
+Ответ: {"type": "response", "method": "GET", "path": "/api/categories/", "status_code": 200, "duration": 0.036, "user": "AnonymousUser", "ip": "213.230.92.83", "response_size": 734}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.83", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 iMe/11.14.0"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.012, "user": "AnonymousUser", "ip": "213.230.92.83", "response_size": 1726}
