@@ -73,15 +73,32 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   // Специальные стили для iOS в Telegram WebApp
   const modalZIndex = isIOS && isTelegramWebApp ? 999999 : 99999;
   const contentZIndex = isIOS && isTelegramWebApp ? 999999 : 10;
+
+  console.log('🔍 OptionsModal - Рендерим модал:', {
+    itemName: item.name,
+    isOpen,
+    isIOS,
+    isTelegramWebApp,
+    modalZIndex,
+    contentZIndex
+  });
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    console.log('🔍 OptionsModal - handleBackdropClick вызван:', {
+      target: e.target,
+      currentTarget: e.currentTarget,
+      isTarget: e.target === e.currentTarget,
+      itemName: item.name
+    });
+    
+    if (e.target === e.currentTarget) {
+      console.log('✅ OptionsModal - Закрываем модал по клику на backdrop');
+      onClose();
+    }
+  };
 
   return (
     <div 

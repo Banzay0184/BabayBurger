@@ -63,12 +63,14 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   // Отладочная информация о состоянии модала
   useEffect(() => {
-    console.log('🔍 MenuItem - Состояние модала изменилось:', {
-      itemName: item.name,
-      isModalOpen,
-      availableSizes: availableSizes.length,
-      availableAddOns: availableAddOns.length
-    });
+    if (isModalOpen) {
+      console.log('🔍 MenuItem - Модал открыт:', {
+        itemName: item.name,
+        isModalOpen,
+        availableSizes: availableSizes.length,
+        availableAddOns: availableAddOns.length
+      });
+    }
   }, [isModalOpen, item.name, availableSizes.length, availableAddOns.length]);
 
   // Обработка подтверждения опций из модала
@@ -319,11 +321,6 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       </div>
 
       {/* Модальное окно для выбора опций */}
-      {console.log('🔍 MenuItem - Рендерим OptionsModal:', {
-        itemName: item.name,
-        isModalOpen,
-        hasOptions: availableSizes.length > 0 || availableAddOns.length > 0
-      })}
       <OptionsModal
         item={item}
         isOpen={isModalOpen}
