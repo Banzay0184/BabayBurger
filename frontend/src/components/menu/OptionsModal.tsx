@@ -74,8 +74,8 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
   if (!isOpen) return null;
 
   // Специальные стили для iOS в Telegram WebApp
-  const modalZIndex = isIOS && isTelegramWebApp ? 999999 : 999999; // Увеличиваю z-index
-  const contentZIndex = isIOS && isTelegramWebApp ? 999999 : 999999; // Увеличиваю z-index
+  const modalZIndex = isIOS && isTelegramWebApp ? 999998 : 999998; // Чуть ниже логотипа
+  const contentZIndex = 999997; // Еще ниже для внутренних элементов
 
   console.log('🔍 OptionsModal - Рендерим модал:', {
     itemName: item.name,

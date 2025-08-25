@@ -61,7 +61,7 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({
 
   return (
     <div className={`
-      fixed inset-0 z-[99999] bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700
+      fixed inset-0 z-[999999] bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700
       flex flex-col items-center justify-center
       transition-opacity duration-1000 ease-out
       ${isVisible ? 'opacity-100' : 'opacity-0'}

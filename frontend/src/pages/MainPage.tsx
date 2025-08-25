@@ -312,7 +312,7 @@ export const MainPage: React.FC = () => {
           <div className="animate-slide-up pb-24">
           {/* Блокировка экрана когда ресторан закрыт */}
           {!restaurantStatus.isOpen && (
-            <div className="fixed inset-0 bg-black/90 backdrop-blur-lg z-[100] flex items-center justify-center p-4">
+            <div className="fixed inset-0 bg-black/90 backdrop-blur-lg z-[999996] flex items-center justify-center p-4">
               <div className="bg-dark-900 border border-red-600/50 rounded-2xl p-6 sm:p-8 max-w-md w-full text-center animate-fade-in">
                 {/* Иконка закрытого ресторана */}
                 <div className="w-20 h-20 bg-gradient-to-br from-red-900/50 to-red-800/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-600/50">
