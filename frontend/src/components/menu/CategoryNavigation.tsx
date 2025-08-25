@@ -24,7 +24,7 @@ export const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
     }
     
     // Добавляем базовый URL API (как в MenuItem.tsx)
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000' || 'https://3e3f35c1758a.ngrok-free.app';
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
     return `${apiBaseUrl}${imagePath}`;
   };
 

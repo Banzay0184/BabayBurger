@@ -180,6 +180,10 @@ export default {
         'float': 'float 3s ease-in-out infinite',
         'dark-pulse': 'darkPulse 3s ease-in-out infinite',
         'neon-glow': 'neonGlow 2s ease-in-out infinite',
+        'logo-appear': 'logoAppear 1s ease-out',
+        'text-fade': 'textFade 1s ease-out',
+        'burger-spin': 'burgerSpin 1s ease-out',
+        'particle-float': 'particleFloat 4s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -230,6 +234,54 @@ export default {
           '50%': { 
             textShadow: '0 0 10px rgba(59, 130, 246, 1), 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.6)',
             color: '#60a5fa'
+          },
+        },
+        logoAppear: {
+          '0%': { 
+            transform: 'scale(0) rotate(-180deg)',
+            opacity: '0'
+          },
+          '100%': { 
+            transform: 'scale(1) rotate(0deg)',
+            opacity: '1'
+          },
+        },
+        textFade: {
+          '0%': { 
+            transform: 'translateY(20px)',
+            opacity: '0'
+          },
+          '100%': { 
+            transform: 'translateY(0)',
+            opacity: '1'
+          },
+        },
+        burgerSpin: {
+          '0%': { 
+            transform: 'rotate(0deg) scale(0.8)',
+            opacity: '0'
+          },
+          '100%': { 
+            transform: 'rotate(360deg) scale(1)',
+            opacity: '1'
+          },
+        },
+        particleFloat: {
+          '0%, 100%': { 
+            transform: 'translateY(0px) translateX(0px)',
+            opacity: '0.7'
+          },
+          '25%': { 
+            transform: 'translateY(-15px) translateX(10px)',
+            opacity: '1'
+          },
+          '50%': { 
+            transform: 'translateY(-25px) translateX(-5px)',
+            opacity: '0.8'
+          },
+          '75%': { 
+            transform: 'translateY(-10px) translateX(-15px)',
+            opacity: '0.9'
           },
         },
       },

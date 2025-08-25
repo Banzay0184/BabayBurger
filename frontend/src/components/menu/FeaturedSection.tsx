@@ -159,6 +159,7 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
                 onSelect={onItemSelect}
                 isCompact={true}
                 hideDescription={true}
+                showOptionsModal={true}
               />
             </div>
           ))}

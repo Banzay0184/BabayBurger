@@ -10,13 +10,15 @@ interface MenuItemProps {
   onSelect?: (item: MenuItemType, size?: SizeOption, addOns?: AddOn[]) => void;
   isCompact?: boolean;
   hideDescription?: boolean;
+  showOptionsModal?: boolean;
 }
 
 export const MenuItem: React.FC<MenuItemProps> = ({ 
   item, 
   onSelect, 
   isCompact = false,
-  hideDescription = false
+  hideDescription = false,
+  showOptionsModal = false
 }) => {
   const { addItem, decrementByKey, getItemCountForMenuItem, state: cartState } = useCart();
   const { t, formatCurrency } = useLanguage();
@@ -29,7 +31,11 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   // Открытие модала
   const handleOpenModal = () => {
-    setIsModalOpen(true);
+    if (showOptionsModal) {
+      setIsModalOpen(true);
+    } else if (onSelect) {
+      onSelect(item);
+    }
   };
 
   // Закрытие модала

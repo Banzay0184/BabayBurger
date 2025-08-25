@@ -76,10 +76,10 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex justify-center z-50 p-4 animate-fade-in" onClick={handleBackdropClick}>
-      <div className="bg-dark-800 rounded-2xl max-w-sm w-full max-h-[85vh] flex flex-col justify-around shadow-2xl border border-gray-700">
-        {/* Заголовок */}
-        <div className="p-4 border-b border-gray-700">
+    <div className="fixed inset-0 bg-black/80 flex justify-center z-[9999] p-4 animate-fade-in" onClick={handleBackdropClick}>
+      <div className="bg-dark-800 rounded-2xl max-w-sm w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-700 overflow-hidden">
+        {/* Заголовок - фиксированный */}
+        <div className="p-4 border-b border-gray-700 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-100">{item.name}</h3>
             <button
@@ -94,7 +94,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
           {/* Изображение блюда в модальном окне */}
           {item.image && (
             <div className="mt-3 flex justify-center">
-              <div className="w-80 h-40 bg-gradient-to-br from-gray-800 to-gray-700 rounded-lg flex items-center justify-center border border-gray-600/50 overflow-hidden">
+              <div className="w-full h-40 bg-gradient-to-br from-gray-800 to-gray-700 rounded-lg flex items-center justify-center border border-gray-600/50 overflow-hidden">
                 <img 
                   src={getImageUrl(item.image)} 
                   alt={item.name}
@@ -116,83 +116,86 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
           )}
         </div>
 
-        {/* Размеры */}
-        {availableSizes.length > 0 && (
-          <div className="p-4 border-b border-gray-700">
-            <h4 className="text-sm font-semibold text-gray-100 mb-3 flex items-center">
-              <span className="mr-2">📏</span>
-              {t('select_size')}:
-            </h4>
-            <div className="grid grid-cols-2 gap-3">
-              {availableSizes.map((size) => (
-                <button
-                  key={size.id}
-                  onClick={() => handleSizeSelect(size)}
-                  className={`
-                    relative p-3 text-sm rounded-lg border-2 transition-all duration-300 font-medium text-center
-                    ${selectedSize?.id === size.id
-                      ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white border-primary-500 shadow-dark-glow scale-105'
-                      : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-primary-500/50 hover:shadow-dark-card hover:scale-102'
-                    }
-                  `}
-                >
-                  <div className="font-semibold mb-1">{size.name}</div>
-                  {Number(size.price_modifier) !== 0 && (
-                    <div className={`text-xs ${selectedSize?.id === size.id ? 'text-primary-100' : 'text-gray-400'}`}>
-                      {Number(size.price_modifier) > 0 ? '+' : ''}{formatCurrency(Number(size.price_modifier) || 0)}
-                    </div>
-                  )}
-                  {selectedSize?.id === size.id && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs">✓</span>
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Дополнения */}
-        {availableAddOns.length > 0 && (
-          <div className="p-4 border-b border-gray-700">
-            <h4 className="text-sm font-semibold text-gray-100 mb-3 flex items-center">
-              <span className="mr-2">➕</span>
-              {t('additions_optional')}:
-            </h4>
-            <div className="grid grid-cols-2 gap-3">
-              {availableAddOns.map((addOn) => {
-                const isSelected = selectedAddOns.find(a => a.id === addOn.id);
-                return (
+        {/* Скроллируемый контент */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Размеры */}
+          {availableSizes.length > 0 && (
+            <div className="border-b border-gray-700 pb-4">
+              <h4 className="text-sm font-semibold text-gray-100 mb-3 flex items-center">
+                <span className="mr-2">📏</span>
+                {t('select_size')}:
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                {availableSizes.map((size) => (
                   <button
-                    key={addOn.id}
-                    onClick={() => handleAddOnToggle(addOn)}
+                    key={size.id}
+                    onClick={() => handleSizeSelect(size)}
                     className={`
                       relative p-3 text-sm rounded-lg border-2 transition-all duration-300 font-medium text-center
-                      ${isSelected
-                        ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-500 shadow-dark-glow scale-105'
-                        : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-accent-500/50 hover:shadow-dark-card hover:scale-102'
+                      ${selectedSize?.id === size.id
+                        ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white border-primary-500 shadow-dark-glow scale-105'
+                        : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-primary-500/50 hover:shadow-dark-card hover:scale-102'
                       }
                     `}
                   >
-                    <div className="font-semibold mb-1">{addOn.name}</div>
-                    <div className={`text-xs ${isSelected ? 'text-accent-100' : 'text-gray-400'}`}>
-                      +{formatCurrency(Number(addOn.price) || 0)}
-                    </div>
-                    {isSelected && (
+                    <div className="font-semibold mb-1">{size.name}</div>
+                    {Number(size.price_modifier) !== 0 && (
+                      <div className={`text-xs ${selectedSize?.id === size.id ? 'text-primary-100' : 'text-gray-400'}`}>
+                        {Number(size.price_modifier) > 0 ? '+' : ''}{formatCurrency(Number(size.price_modifier) || 0)}
+                      </div>
+                    )}
+                    {selectedSize?.id === size.id && (
                       <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">✓</span>
                       </div>
                     )}
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Итого и кнопка */}
-        <div className="p-4">
+          {/* Дополнения */}
+          {availableAddOns.length > 0 && (
+            <div className="border-b border-gray-700 pb-4">
+              <h4 className="text-sm font-semibold text-gray-100 mb-3 flex items-center">
+                <span className="mr-2">➕</span>
+                {t('additions_optional')}:
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                {availableAddOns.map((addOn) => {
+                  const isSelected = selectedAddOns.find(a => a.id === addOn.id);
+                  return (
+                    <button
+                      key={addOn.id}
+                      onClick={() => handleAddOnToggle(addOn)}
+                      className={`
+                        relative p-3 text-sm rounded-lg border-2 transition-all duration-300 font-medium text-center
+                        ${isSelected
+                          ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-500 shadow-dark-glow scale-105'
+                          : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-accent-500/50 hover:shadow-dark-card hover:scale-102'
+                        }
+                      `}
+                    >
+                      <div className="font-semibold mb-1">{addOn.name}</div>
+                      <div className={`text-xs ${isSelected ? 'text-accent-100' : 'text-gray-400'}`}>
+                        +{formatCurrency(Number(addOn.price) || 0)}
+                      </div>
+                      {isSelected && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs">✓</span>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Итого и кнопка - фиксированные внизу */}
+        <div className="p-4 border-t border-gray-700 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <span className="text-gray-300 text-sm">{t('total')}:</span>
             <span className="text-xl font-bold text-primary-400">

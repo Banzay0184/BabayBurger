@@ -12,6 +12,7 @@ import { CartDisplay } from '../components/cart/CartDisplay';
 import { MenuItem as MenuItemComponent } from '../components/menu/MenuItem';
 import { Button } from '../components/ui/Button';
 import { AddressManager } from '../components/address/AddressManager';
+import { RestaurantLogo } from '../components/common/RestaurantLogo';
 import type { MenuItem, Promotion } from '../types/menu';
 
 export const MainPage: React.FC = () => {
@@ -32,6 +33,7 @@ export const MainPage: React.FC = () => {
   const [currentView, setCurrentView] = useState<'menu' | 'cart' | 'search' | 'favorites' | 'address'>('menu');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showLogo, setShowLogo] = useState(true);
   const [searchFilters, setSearchFilters] = useState({
     category: null as string | null,
     priceRange: [0, 100000] as [number, number],
@@ -117,13 +119,16 @@ export const MainPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const loadData = async () => {
-      await fetchMenu();
-      await fetchPromotions();
-    };
-    
-    loadData();
-  }, []);
+    // Загружаем данные только после завершения анимации логотипа
+    if (!showLogo) {
+      const loadData = async () => {
+        await fetchMenu();
+        await fetchPromotions();
+      };
+      
+      loadData();
+    }
+  }, [showLogo]);
 
   const handleItemSelect = (item: MenuItem, size?: any, addOns?: any[]) => {
     console.log('Selected item:', item, 'Size:', size, 'AddOns:', addOns);
@@ -200,7 +205,17 @@ export const MainPage: React.FC = () => {
   }
 
   return (
-    <div className="tg-webapp bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800 pt-5">
+    <>
+      {/* Анимированный логотип при загрузке */}
+      <RestaurantLogo 
+        showLogo={showLogo}
+        onAnimationComplete={() => {
+          console.log('🎉 Logo animation completed!');
+          setShowLogo(false);
+        }}
+      />
+      
+      <div className="tg-webapp bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800 pt-5">
       <div className="max-w-4xl mx-auto p-4 tg-safe-top tg-safe-bottom">
         {/* Современный хедер с темной темой */}
         <div className="tg-card-modern p-4  sm:p-6 mb-6 animate-fade-in">
@@ -285,8 +300,9 @@ export const MainPage: React.FC = () => {
         {/* Быстрые действия с темной темой */}
         {/* Убрали кнопки - теперь они в нижней навигации */}
 
-        {/* Основной контент */}
-        <div className="animate-slide-up pb-24">
+        {/* Основной контент - показывается только после завершения анимации логотипа */}
+        {!showLogo && (
+          <div className="animate-slide-up pb-24">
           {/* Блокировка экрана когда ресторан закрыт */}
           {!restaurantStatus.isOpen && (
             <div className="fixed inset-0 bg-black/90 backdrop-blur-lg z-[100] flex items-center justify-center p-4">
@@ -754,11 +770,13 @@ export const MainPage: React.FC = () => {
                         <CartDisplay />
                       </div>
                     )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Фиксированная нижняя навигация */}
-      <div className="fixed bottom-0 left-0 right-0 bg-dark-900/95 backdrop-blur-lg border-t border-gray-700/50 z-50">
+      {/* Фиксированная нижняя навигация - скрыта во время анимации логотипа */}
+      {!showLogo && (
+        <div className="fixed bottom-0 left-0 right-0 bg-dark-900/95 backdrop-blur-lg border-t border-gray-700/50 z-50">
         <div className="flex items-center justify-around px-4 py-3">
           {/* Кнопка Меню */}
           <button 
@@ -834,7 +852,9 @@ export const MainPage: React.FC = () => {
             <span className="text-xs font-medium">{t('search')}</span>
           </button>
         </div>
+        </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }; 
