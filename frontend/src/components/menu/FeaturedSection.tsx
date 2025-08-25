@@ -16,17 +16,38 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // Отладочная информация
+  console.log(`🎠 FeaturedSection "${title}":`, {
+    itemsCount: items?.length || 0,
+    items: items?.map(item => ({ 
+      id: item.id, 
+      name: item.name, 
+      is_hit: item.is_hit,
+      is_new: item.is_new,
+      priority: item.priority
+    })) || [],
+    canScrollLeft,
+    canScrollRight
+  });
 
   if (!items || items.length === 0) {
+    console.log(`🎠 FeaturedSection "${title}": No items to display`);
     return null;
   }
 
-  // Проверяем возможность скролла
+  // Проверяем возможность скролла и активную позицию
   const checkScroll = () => {
     if (scrollContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
       setCanScrollLeft(scrollLeft > 0);
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+      
+      // Вычисляем активную позицию
+      const itemWidth = 280; // 256px (ширина элемента) + 24px (space-x-4)
+      const newActiveIndex = Math.round(scrollLeft / itemWidth);
+      setActiveIndex(Math.min(newActiveIndex, Math.min(items.length - 1, 4)));
     }
   };
 
@@ -49,12 +70,20 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
     checkScroll();
   };
 
-  // Проверяем скролл при монтировании
+  // Проверяем скролл при монтировании и изменении элементов
   React.useEffect(() => {
-    checkScroll();
+    // Небольшая задержка для корректного расчета размеров
+    const timer = setTimeout(() => {
+      checkScroll();
+      console.log(`🎠 FeaturedSection "${title}": Checked scroll after mount/update`);
+    }, 100);
+    
     window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
-  }, [items]);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [items, title]);
 
   return (
     <div className="mb-8">
@@ -75,6 +104,7 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
                 : 'bg-gray-700 text-gray-500 cursor-not-allowed'
               }
             `}
+            title={`Скролл влево (${canScrollLeft ? 'доступно' : 'недоступно'})`}
           >
             <span className="text-sm">‹</span>
           </button>
@@ -88,6 +118,7 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
                 : 'bg-gray-700 text-gray-500 cursor-not-allowed'
               }
             `}
+            title={`Скролл вправо (${canScrollRight ? 'доступно' : 'недоступно'})`}
           >
             <span className="text-sm">›</span>
           </button>
@@ -107,18 +138,27 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
           ref={scrollContainerRef}
           onScroll={handleScroll}
           className="flex space-x-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 pt-2"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}
         >
           {items.map((item, index) => (
             <div 
               key={item.id} 
               className="flex-shrink-0 w-64 animate-fade-in" 
-              style={{ animationDelay: `${index * 0.05}s` }}
+              style={{ 
+                animationDelay: `${index * 0.05}s`,
+                minWidth: '256px', // 16rem = 256px
+                maxWidth: '256px'
+              }}
             >
               <MenuItem
                 item={item}
                 onSelect={onItemSelect}
                 isCompact={true}
+                hideDescription={true}
               />
             </div>
           ))}
@@ -129,9 +169,25 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
       <div className="flex justify-center mt-3">
         <div className="flex space-x-1.5">
           {Array.from({ length: Math.min(items.length, 5) }).map((_, index) => (
-            <div
+            <button
               key={index}
-              className="w-1.5 h-1.5 rounded-full bg-gray-600 opacity-50"
+              onClick={() => {
+                if (scrollContainerRef.current) {
+                  const targetScroll = index * 280; // 280 = 256px (ширина элемента) + 24px (space-x-4)
+                  scrollContainerRef.current.scrollTo({ 
+                    left: targetScroll, 
+                    behavior: 'smooth' 
+                  });
+                }
+              }}
+              className={`
+                w-2 h-2 rounded-full transition-all duration-300 cursor-pointer
+                ${activeIndex === index
+                  ? 'bg-primary-500 scale-125 shadow-lg shadow-primary-500/50' 
+                  : 'bg-gray-600 hover:bg-gray-500 hover:scale-110'
+                }
+              `}
+              title={`Перейти к элементу ${index + 1} из ${Math.min(items.length, 5)}`}
             />
           ))}
         </div>

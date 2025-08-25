@@ -618,9 +618,6 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
             <h3 className="text-base sm:text-lg font-semibold text-gray-100">
               📍 Выбор адреса на карте
             </h3>
-            <p className="text-xs text-gray-400 mt-1">
-              Статус: {status}
-            </p>
           </div>
           <button
             onClick={onClose}
@@ -659,18 +656,6 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
               <Button
                 onClick={() => {
                   if (mapInstanceRef.current) {
-                    // Пробуем определить местоположение снова
-                    setStatus('Повторная попытка определения местоположения...');
-                    getUserLocation();
-                  }
-                }}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-1 sm:px-2 md:px-3 py-2 text-xs sm:text-sm"
-              >
-                🔄 Повторить
-              </Button>
-              <Button
-                onClick={() => {
-                  if (mapInstanceRef.current) {
                     mapInstanceRef.current.setCenter(BUKHARA_COORDS, 12);
                     setStatus('Перемещено в центр Бухары');
                     console.log('🗺️ Moved to Bukhara center:', BUKHARA_COORDS);
@@ -691,18 +676,6 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
                 className="bg-green-600 hover:bg-gray-700 text-white px-1 sm:px-2 md:px-3 py-2 text-xs sm:text-sm"
               >
                 🏘️ Каган
-              </Button>
-              <Button
-                onClick={() => {
-                  if (mapInstanceRef.current) {
-                    mapInstanceRef.current.setCenter(TASHKENT_COORDS, 12);
-                    setStatus('Перемещено в Ташкент');
-                    console.log('🗺️ Moved to Tashkent:', TASHKENT_COORDS);
-                  }
-                }}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-1 sm:px-2 md:px-3 py-2 text-xs sm:text-sm"
-              >
-                🏙️ Ташкент
               </Button>
             </div>
           </div>

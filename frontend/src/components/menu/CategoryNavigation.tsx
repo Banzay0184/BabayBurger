@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import type { MenuCategory } from '../../types/menu';
 
 interface CategoryNavigationProps {
@@ -13,103 +13,114 @@ export const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
   onCategorySelect
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
 
-  const checkScroll = () => {
-    if (!scrollContainerRef.current) return;
+  // Функция для исправления путей изображений (как в MenuItem.tsx)
+  const fixImagePath = (imagePath: string | undefined): string | undefined => {
+    if (!imagePath) return undefined;
     
-    const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-    setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    // Если путь уже полный (начинается с http)
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    // Добавляем базовый URL API (как в MenuItem.tsx)
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000' || 'https://3e3f35c1758a.ngrok-free.app';
+    return `${apiBaseUrl}${imagePath}`;
   };
 
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -200, behavior: 'smooth' });
-    }
-  };
-
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 200, behavior: 'smooth' });
-    }
-  };
-
-  useEffect(() => {
-    checkScroll();
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener('scroll', checkScroll);
-      window.addEventListener('resize', checkScroll);
-      
-      return () => {
-        container.removeEventListener('scroll', checkScroll);
-        window.removeEventListener('resize', checkScroll);
-      };
-    }
-  }, []);
+  // Отладочная информация
+  console.log('🎯 CategoryNavigation:', {
+    categoriesCount: categories.length,
+    categories: categories.map(cat => ({ 
+      id: cat.id, 
+      name: cat.name, 
+      image: cat.image,
+      fixedImage: fixImagePath(cat.image),
+      hasImage: !!cat.image 
+    }))
+  });
 
   if (categories.length === 0) return null;
 
   return (
-    <div className="relative mb-6">
-      {/* Заголовок */}
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-100">📂 Выберите категорию</h3>
-      </div>
+    <div className="mb-8">
 
       {/* Контейнер с прокруткой */}
       <div className="relative group">
-        {/* Кнопка прокрутки влево */}
-        {canScrollLeft && (
-          <button
-            onClick={scrollLeft}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-gray-800/90 hover:bg-gray-700 rounded-full flex items-center justify-center text-white shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-110"
-          >
-            <span className="text-sm">‹</span>
-          </button>
-        )}
-
-        {/* Кнопка прокрутки вправо */}
-        {canScrollRight && (
-          <button
-            onClick={scrollRight}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-gray-800/90 hover:bg-gray-700 rounded-full flex items-center justify-center text-white shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-110"
-          >
-            <span className="text-sm">›</span>
-          </button>
-        )}
-
         {/* Категории */}
         <div
           ref={scrollContainerRef}
-          className="flex space-x-3 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
+          className="flex space-x-4 overflow-x-auto scrollbar-hide scroll-smooth p-3"
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}
         >
           {categories.map((category) => (
             <button
               key={category.id}
               onClick={() => onCategorySelect(category.name)}
               className={`
-                flex-shrink-0 px-4 py-2.5 rounded-lg border-2 transition-all duration-300 hover:scale-105 whitespace-nowrap
+                flex-shrink-0 relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105
+                w-32 h-40 group/cat cursor-pointer
                 ${activeCategory === category.name
-                  ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white border-primary-500 shadow-lg shadow-primary-500/25'
-                  : 'bg-gray-800/50 text-gray-300 border-gray-600/50 hover:bg-gray-700/50 hover:border-primary-500/50'
+                  ? 'border-primary-400 shadow-xl shadow-primary-500/30 transform scale-105 ring-2 ring-primary-500/50'
+                  : 'border-gray-600/50 hover:border-primary-400/50 hover:shadow-lg'
                 }
               `}
             >
-              <div className="flex items-center space-x-2">
-                <span className="text-base">🍽️</span>
-                <span className="font-medium">{category.name}</span>
-                <span className="text-xs opacity-75">({category.items?.length || 0})</span>
+              {/* Фоновое изображение категории */}
+              {category.image ? (
+                <img 
+                  src={fixImagePath(category.image)} 
+                  alt={category.name} 
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/cat:scale-110"
+                  onError={(e) => {
+                    console.error('❌ Failed to load category image:', category.image);
+                    console.log('🔍 Category data:', { 
+                      id: category.id, 
+                      name: category.name, 
+                      image: category.image,
+                      fixedImage: fixImagePath(category.image),
+                      imageLength: category.image?.length 
+                    });
+                    
+                    // Показываем fallback эмодзи вместо скрытия
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      parent.innerHTML = '<div class="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-700 flex items-center justify-center"><span class="text-4xl">🍽️</span></div>';
+                    }
+                  }}
+                  onLoad={() => console.log('✅ Category image loaded:', fixImagePath(category.image))}
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-700 flex items-center justify-center">
+                  <span className="text-4xl">🍽️</span>
+                </div>
+              )}
+              
+              {/* Градиентный оверлей для лучшей читаемости текста */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+              
+              {/* Название категории внизу */}
+              <div className="absolute bottom-0 left-0 right-0 p-3">
+                <span className={`
+                  block font-bold text-sm leading-tight text-center text-white
+                  ${activeCategory === category.name ? 'text-primary-200' : 'text-white'}
+                  drop-shadow-lg
+                `}>
+                  {category.name}
+                </span>
               </div>
+              
+              {/* Индикатор активной категории */}
+              {activeCategory === category.name && (
+                <div className="absolute top-2 right-2 w-3 h-3 bg-primary-500 rounded-full shadow-lg animate-pulse" />
+              )}
             </button>
           ))}
         </div>
-
-        {/* Градиентные края для плавного перехода */}
-        <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-dark-900 to-transparent pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-dark-900 to-transparent pointer-events-none" />
       </div>
     </div>
   );

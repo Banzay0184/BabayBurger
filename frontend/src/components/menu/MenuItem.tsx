@@ -9,12 +9,14 @@ interface MenuItemProps {
   item: MenuItemType;
   onSelect?: (item: MenuItemType, size?: SizeOption, addOns?: AddOn[]) => void;
   isCompact?: boolean;
+  hideDescription?: boolean;
 }
 
 export const MenuItem: React.FC<MenuItemProps> = ({ 
   item, 
   onSelect, 
-  isCompact = false 
+  isCompact = false,
+  hideDescription = false
 }) => {
   const { addItem, decrementByKey, getItemCountForMenuItem, state: cartState } = useCart();
   const { t, formatCurrency } = useLanguage();
@@ -113,11 +115,11 @@ export const MenuItem: React.FC<MenuItemProps> = ({
     }
     
     if (item.is_hit) {
-      tags.push({ text: `🔥 ${t('hit')}`, color: 'bg-orange-600/20 text-orange-400 border-orange-500/30' });
+      tags.push({ text: `🔥 ${t('hit')}`, color: 'bg-white/20 text-white border-white/30' });
     }
     
     if (item.is_new) {
-      tags.push({ text: `✨ ${t('new')}`, color: 'bg-purple-600/20 text-purple-400 border-purple-500/30' });
+      tags.push({ text: `✨ ${t('new')}`, color: 'bg-white/20 text-white border-white/30' });
     }
     
     return tags;
@@ -134,7 +136,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   return (
     <>
-      <div className={`tg-card-modern p-4 ${isCompact ? 'max-w' : ''}`}>
+      <div className={`tg-card-modern p-2 ${isCompact ? 'max-w' : ''}`}>
         {/* Верхняя часть с изображением и быстрыми действиями */}
         <div className="relative mb-3">
           {/* Изображение блюда */}
@@ -209,34 +211,28 @@ export const MenuItem: React.FC<MenuItemProps> = ({
           </div>
           
           {/* Описание */}
-          {!isCompact && (
+          {!isCompact && !hideDescription && (
             <p className="text-gray-400 text-sm leading-relaxed line-clamp-2">
             {item.description}
           </p>
           )}
 
-          {/* Счетчик в корзине */}
-          {currentCount > 0 && (
-            <div className="flex items-center justify-center">
-              <span className="inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 rounded-full bg-accent-600 text-white text-[11px] font-bold">
-                {t('in_cart')}: {currentCount}
-              </span>
-            </div>
-          )}
+          
+
+          
         </div>
             
         {/* Кнопка выбора опций или управления количеством */}
         {availableSizes.length > 0 || availableAddOns.length > 0 ? (
           // Если есть опции - показываем кнопку шестеренки
-          <button
+                  <button
             onClick={handleOpenModal}
             className={`w-full ${isCompact ? 'px-3 py-2 text-xs' : 'px-4 py-2.5 text-sm'} bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-lg font-semibold hover:from-accent-600 hover:to-accent-700 transition-all duration-300 hover:scale-105 shadow-dark-card hover:shadow-dark-card-hover mt-3`}
           >
             <span className="flex items-center justify-center">
-              <span className="mr-2">⚙️</span>
-              {t('select_options')}
-            </span>
-          </button>
+              {t('add_to_cart')}
+                      </span>
+                  </button>
         ) : (
           // Если опций нет - показываем кнопки - 1 +
           <div className="flex items-center justify-center space-x-2 mt-3">
@@ -267,11 +263,11 @@ export const MenuItem: React.FC<MenuItemProps> = ({
               disabled={currentCount === 0}
             >
               <span className="text-lg font-bold">-</span>
-            </button>
+                  </button>
             
             <span className="min-w-[2rem] text-center font-bold text-gray-100">
-              {currentCount}
-            </span>
+              {currentCount} 
+                </span>
             
             <button
               onClick={() => {

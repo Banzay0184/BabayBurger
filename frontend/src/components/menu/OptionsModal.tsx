@@ -76,15 +76,15 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-fade-in" onClick={handleBackdropClick}>
-      <div className="bg-dark-800 rounded-2xl max-w-sm w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-gray-700">
+    <div className="fixed inset-0 bg-black/80 flex justify-center z-50 p-4 animate-fade-in" onClick={handleBackdropClick}>
+      <div className="bg-dark-800 rounded-2xl max-w-sm w-full max-h-[85vh] flex flex-col justify-around shadow-2xl border border-gray-700">
         {/* Заголовок */}
         <div className="p-4 border-b border-gray-700">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-100">{item.name}</h3>
             <button
               onClick={onClose}
-              className="w-7 h-7 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"
+              className="w-7 h-7 bg-red-500 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"
             >
               <span className="text-gray-300 text-base">×</span>
             </button>
@@ -94,7 +94,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
           {/* Изображение блюда в модальном окне */}
           {item.image && (
             <div className="mt-3 flex justify-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-gray-800 to-gray-700 rounded-lg flex items-center justify-center border border-gray-600/50 overflow-hidden">
+              <div className="w-80 h-40 bg-gradient-to-br from-gray-800 to-gray-700 rounded-lg flex items-center justify-center border border-gray-600/50 overflow-hidden">
                 <img 
                   src={getImageUrl(item.image)} 
                   alt={item.name}
@@ -123,7 +123,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
               <span className="mr-2">📏</span>
               {t('select_size')}:
             </h4>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               {availableSizes.map((size) => (
                 <button
                   key={size.id}
@@ -160,7 +160,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
               <span className="mr-2">➕</span>
               {t('additions_optional')}:
             </h4>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               {availableAddOns.map((addOn) => {
                 const isSelected = selectedAddOns.find(a => a.id === addOn.id);
                 return (
@@ -214,7 +214,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
             >
               <span className="flex items-center justify-center">
                 <span className="mr-2">🛒</span>
-                {t('add_to_cart')}
+                {t('add')}
               </span>
             </button>
           </div>

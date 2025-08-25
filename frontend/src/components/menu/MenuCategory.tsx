@@ -18,8 +18,29 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({ category, onItemSele
       {/* Современный заголовок категории для темной темы */}
       <div className="mb-8">
         <div className="flex items-center mb-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center mr-4 shadow-dark-glow">
-            <span className="text-white text-lg">🍽️</span>
+          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center mr-4 shadow-dark-glow overflow-hidden">
+            {category.image ? (
+              <img 
+                src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000' || 'https://3e3f35c1758a.ngrok-free.app'  }${category.image}`}
+                alt={category.name}
+                className="w-8 h-8 object-cover rounded-lg"
+                onError={(e) => {
+                  console.error('❌ Failed to load category image:', category.image);
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    const fallback = document.createElement('span');
+                    fallback.className = 'text-white text-lg';
+                    fallback.textContent = '🍽️';
+                    parent.appendChild(fallback);
+                  }
+                }}
+                onLoad={() => console.log('✅ Category image loaded:', category.image)}
+              />
+            ) : (
+              <span className="text-white text-lg">🍽️</span>
+            )}
           </div>
           <h2 className="text-2xl font-bold text-gray-100 neon-text">
             {category.name}

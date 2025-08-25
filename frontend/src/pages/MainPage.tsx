@@ -755,15 +755,6 @@ export const MainPage: React.FC = () => {
                       </div>
                     )}
         </div>
-
-        {/* Отладочная информация */}
-        <div className="mb-4 p-2 sm:p-3 bg-gray-800 rounded-lg text-white text-xs sm:text-sm">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-2">
-            <div>Вид: <strong>{currentView}</strong></div>
-            <div>Корзина: <strong>{cartState.items.length}</strong></div>
-            <div>Всего: <strong>{totalItems}</strong></div>
-          </div>
-        </div>
       </div>
 
       {/* Фиксированная нижняя навигация */}
@@ -825,22 +816,6 @@ export const MainPage: React.FC = () => {
                 {favorites.length > 99 ? '99+' : favorites.length}
               </span>
             )}
-          </button>
-
-          {/* Кнопка Адрес */}
-          <button 
-            onClick={() => {
-              console.log('📍 Switching to address view');
-              setCurrentView('address');
-            }}
-            className={`flex flex-col items-center p-2 rounded-lg transition-all duration-300 min-w-[4rem] ${
-              currentView === 'address' 
-                ? 'text-primary-400' 
-                : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            <span className="text-xl mb-1">📍</span>
-            <span className="text-xs font-medium">{t('address')}</span>
           </button>
 
           {/* Кнопка Поиск */}
