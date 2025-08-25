@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useFavorites } from '../../context/FavoriteContext';
@@ -29,14 +29,27 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   // Открытие модала
   const handleOpenModal = () => {
+    console.log('🔍 MenuItem - handleOpenModal вызван:', {
+      itemName: item.name,
+      availableSizes: availableSizes.length,
+      availableAddOns: availableAddOns.length,
+      hasOptions: availableSizes.length > 0 || availableAddOns.length > 0,
+      onSelect: !!onSelect,
+      isCompact,
+      hideDescription
+    });
+
     // Если есть опции (размеры или дополнения), всегда показываем модал
     if (availableSizes.length > 0 || availableAddOns.length > 0) {
+      console.log('✅ MenuItem - Открываем модал для блюда с опциями:', item.name);
       setIsModalOpen(true);
     } else if (onSelect) {
       // Если опций нет, вызываем onSelect напрямую
+      console.log('📞 MenuItem - Вызываем onSelect для блюда без опций:', item.name);
       onSelect(item);
     } else {
       // Если нет onSelect, добавляем в корзину напрямую
+      console.log('🛒 MenuItem - Добавляем в корзину напрямую:', item.name);
       addItem(item);
       showNotification(`${item.name} ${t('added_to_cart')}`);
     }
@@ -44,8 +57,19 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   // Закрытие модала
   const handleCloseModal = () => {
+    console.log('❌ MenuItem - Закрываем модал для:', item.name);
     setIsModalOpen(false);
   };
+
+  // Отладочная информация о состоянии модала
+  useEffect(() => {
+    console.log('🔍 MenuItem - Состояние модала изменилось:', {
+      itemName: item.name,
+      isModalOpen,
+      availableSizes: availableSizes.length,
+      availableAddOns: availableAddOns.length
+    });
+  }, [isModalOpen, item.name, availableSizes.length, availableAddOns.length]);
 
   // Обработка подтверждения опций из модала
   const handleConfirmOptions = (size?: SizeOption, addOns?: AddOn[]) => {
@@ -295,6 +319,11 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       </div>
 
       {/* Модальное окно для выбора опций */}
+      {console.log('🔍 MenuItem - Рендерим OptionsModal:', {
+        itemName: item.name,
+        isModalOpen,
+        hasOptions: availableSizes.length > 0 || availableAddOns.length > 0
+      })}
       <OptionsModal
         item={item}
         isOpen={isModalOpen}
