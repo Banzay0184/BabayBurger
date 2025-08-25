@@ -132,6 +132,13 @@ export const MainPage: React.FC = () => {
 
   const handleItemSelect = (item: MenuItem, size?: any, addOns?: any[]) => {
     console.log('Selected item:', item, 'Size:', size, 'AddOns:', addOns);
+    
+    // Если переданы опции (размер или дополнения), добавляем в корзину
+    if (size || (addOns && addOns.length > 0)) {
+      // Здесь можно добавить логику для добавления в корзину с опциями
+      console.log('Adding item with options to cart:', { item, size, addOns });
+    }
+    // Если опций нет, модальное окно откроется автоматически в MenuItem
   };
 
   const handleCategorySelect = (categoryName: string) => {
