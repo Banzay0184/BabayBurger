@@ -76,10 +76,10 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex justify-center items-center z-[9999] p-4 animate-fade-in" onClick={handleBackdropClick}>
-      <div className="bg-dark-800 rounded-2xl w-full max-w-md max-h-[95vh] flex flex-col shadow-2xl border border-gray-700 overflow-hidden">
+    <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex justify-center items-center z-[99999] p-4 animate-fade-in" onClick={handleBackdropClick}>
+      <div className="bg-dark-800 rounded-2xl w-full max-w-md max-h-[95vh] flex flex-col shadow-2xl border border-gray-700 overflow-hidden relative">
         {/* Заголовок - фиксированный */}
-        <div className="p-4 border-b border-gray-700 flex-shrink-0 bg-dark-800">
+        <div className="p-4 border-b border-gray-700 flex-shrink-0 bg-dark-800 relative z-10">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-100">{item.name}</h3>
             <button
@@ -117,7 +117,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
         </div>
 
         {/* Скроллируемый контент */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-dark-800">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-dark-800 relative z-10">
           {/* Размеры */}
           {availableSizes.length > 0 && (
             <div className="border-b border-gray-700 pb-4">
@@ -173,7 +173,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
                         relative p-3 text-sm rounded-lg border-2 transition-all duration-300 font-medium text-center
                         ${isSelected
                           ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-500 shadow-dark-glow scale-105'
-                          : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-accent-500/50 hover:shadow-dark-card hover:scale-102'
+                          : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-primary-500/50 hover:shadow-dark-card hover:scale-102'
                         }
                       `}
                     >
@@ -195,7 +195,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
         </div>
 
         {/* Итого и кнопка - фиксированные внизу */}
-        <div className="p-4 border-t border-gray-700 flex-shrink-0 bg-dark-800">
+        <div className="p-4 border-t border-gray-700 flex-shrink-0 bg-dark-800 relative z-10">
           <div className="flex items-center justify-between mb-4">
             <span className="text-gray-300 text-sm">{t('total')}:</span>
             <span className="text-xl font-bold text-primary-400">
