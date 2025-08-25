@@ -74,8 +74,8 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
   if (!isOpen) return null;
 
   // Специальные стили для iOS в Telegram WebApp
-  const modalZIndex = isIOS && isTelegramWebApp ? 999999 : 99999;
-  const contentZIndex = isIOS && isTelegramWebApp ? 999999 : 10;
+  const modalZIndex = isIOS && isTelegramWebApp ? 999999 : 999999; // Увеличиваю z-index
+  const contentZIndex = isIOS && isTelegramWebApp ? 999999 : 999999; // Увеличиваю z-index
 
   console.log('🔍 OptionsModal - Рендерим модал:', {
     itemName: item.name,
@@ -107,7 +107,12 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
         backgroundColor: 'rgba(0, 0, 0, 0.95)',
         backdropFilter: isIOS ? 'blur(20px)' : 'blur(12px)',
         WebkitBackdropFilter: isIOS ? 'blur(20px)' : 'blur(12px)',
-        zIndex: modalZIndex
+        zIndex: modalZIndex,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0
       }}
       onClick={handleBackdropClick}
     >
@@ -118,7 +123,9 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
           zIndex: contentZIndex,
           WebkitTransform: isIOS ? 'translateZ(0)' : 'none',
           transform: isIOS ? 'translateZ(0)' : 'none',
-          WebkitOverflowScrolling: 'touch'
+          WebkitOverflowScrolling: 'touch',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.95)',
+          border: '2px solid rgba(59, 130, 246, 0.3)'
         }}
       >
         {/* Заголовок - фиксированный */}
