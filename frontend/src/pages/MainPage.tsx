@@ -13,6 +13,7 @@ import { MenuItem as MenuItemComponent } from '../components/menu/MenuItem';
 import { Button } from '../components/ui/Button';
 import { AddressManager } from '../components/address/AddressManager';
 import { RestaurantLogo } from '../components/common/RestaurantLogo';
+import { OptionsPage } from './OptionsPage';
 import type { MenuItem, Promotion } from '../types/menu';
 
 export const MainPage: React.FC = () => {
@@ -34,6 +35,8 @@ export const MainPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showLogo, setShowLogo] = useState(true);
+  const [showOptionsPage, setShowOptionsPage] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [searchFilters, setSearchFilters] = useState({
     category: null as string | null,
     priceRange: [0, 100000] as [number, number],
@@ -137,8 +140,11 @@ export const MainPage: React.FC = () => {
     if (size || (addOns && addOns.length > 0)) {
       // Здесь можно добавить логику для добавления в корзину с опциями
       console.log('Adding item with options to cart:', { item, size, addOns });
+    } else {
+      // Если опций нет, открываем OptionsPage
+      setSelectedItem(item);
+      setShowOptionsPage(true);
     }
-    // Если опций нет, модальное окно откроется автоматически в MenuItem
   };
 
   const handleCategorySelect = (categoryName: string) => {
@@ -155,6 +161,11 @@ export const MainPage: React.FC = () => {
 
   const handlePromotionApply = (promotion: Promotion) => {
     console.log('Applied promotion:', promotion);
+  };
+
+  const handleCloseOptionsPage = () => {
+    setShowOptionsPage(false);
+    setSelectedItem(null);
   };
 
   const toggleLanguage = () => {
@@ -225,7 +236,24 @@ export const MainPage: React.FC = () => {
       <div className="tg-webapp bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800 pt-5">
       <div className="max-w-4xl mx-auto p-4 tg-safe-top tg-safe-bottom">
         {/* Современный хедер с темной темой */}
-        <div className="tg-card-modern p-4  sm:p-6 mb-6 animate-fade-in">
+        
+
+        {/* Быстрые действия с темной темой */}
+        {/* Убрали кнопки - теперь они в нижней навигации */}
+
+        {/* Основной контент - показывается только после завершения анимации логотипа */}
+        {!showLogo && (
+          <>
+            {/* OptionsPage - показывается вместо основного контента */}
+            {showOptionsPage && selectedItem ? (
+              <OptionsPage
+                item={selectedItem}
+                onClose={handleCloseOptionsPage}
+              />
+            ) : (
+              <>
+                <div className="animate-slide-up pb-24">
+                <div className="tg-card-modern p-4  sm:p-6 mb-6 animate-fade-in">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
             <div className='flex items-center justify-between w-full'>
             <div className="flex items-center space-x-3 sm:space-x-4">
@@ -303,389 +331,435 @@ export const MainPage: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Быстрые действия с темной темой */}
-        {/* Убрали кнопки - теперь они в нижней навигации */}
-
-        {/* Основной контент - показывается только после завершения анимации логотипа */}
-        {!showLogo && (
-          <div className="animate-slide-up pb-24">
-          {/* Блокировка экрана когда ресторан закрыт */}
-          {!restaurantStatus.isOpen && (
-            <div className="fixed inset-0 bg-black/90 backdrop-blur-lg z-70 flex items-center justify-center p-4">
-              <div className="bg-dark-900 border border-red-600/50 rounded-2xl p-6 sm:p-8 max-w-md w-full text-center animate-fade-in">
-                {/* Иконка закрытого ресторана */}
-                <div className="w-20 h-20 bg-gradient-to-br from-red-900/50 to-red-800/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-600/50">
-                  <span className="text-4xl">🚫</span>
-                </div>
-                
-                {/* Заголовок */}
-                <h2 className="text-2xl sm:text-3xl font-bold text-red-400 mb-4 neon-text">
-                  {t('restaurant_closed')}
-                </h2>
-                
-                {/* Сообщение о статусе */}
-                <p className="text-gray-300 text-lg mb-6">
-                  {restaurantStatus.message}
-                </p>
-                
-                {/* Время следующего открытия */}
-                {restaurantStatus.nextOpen && (
-                  <div className="bg-red-900/30 border border-red-600/50 rounded-lg p-4 mb-6">
-                    <p className="text-red-300 text-sm mb-2">
-                      {t('next_opening')}:
-                    </p>
-                    <p className="text-red-400 font-semibold text-lg">
-                      {restaurantStatus.nextOpen}
-                    </p>
-                  </div>
-                )}
-                
-                {/* Время работы */}
-                <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4 mb-6">
-                  <h3 className="text-gray-300 font-semibold mb-3">
-                    {t('working_hours')}:
-                  </h3>
-                  <div className="space-y-2 text-sm text-gray-400">
-                    <div className="flex justify-between">
-                      <span>{t('monday')} - {t('saturday')}:</span>
-                      <span className="text-gray-300">8:00 - 4:00</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>{t('sunday')}:</span>
-                      <span className="text-red-400">{t('closed')}</span>
-                    </div>
-                    <div className="text-xs text-primary-400 mt-2 text-center">
-                      {t('note_24h_operation')}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Адрес */}
-                <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4 mb-6">
-                  <h3 className="text-gray-300 font-semibold mb-3">
-                    📍 {t('our_address')}:
-                  </h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    {t('restaurant_address')}
-                  </p>
-                </div>
-                
-                {/* Контакты */}
-                <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4">
-                  <h3 className="text-gray-300 font-semibold mb-3">
-                    📞 {t('contacts')}:
-                  </h3>
-                  <p className="text-gray-400 text-sm">
-                    {t('phone_number')}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {currentView === 'menu' ? (
-            <>
-              {/* Акции */}
-              {activePromotions.length > 0 && (
-                <div className="mb-6 sm:mb-8 animate-fade-in">
-                  <div className="flex items-center mb-4 sm:mb-6">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center mr-2 sm:mr-3 shadow-dark-glow">
-                      <span className="text-white text-xs sm:text-sm">🎉</span>
-                    </div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text">
-                      {t('promotions_discounts')}
-                    </h2>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                    {activePromotions.map((promotion: Promotion, index: number) => (
-                      <div key={promotion.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                        <PromotionCard
-                          promotion={promotion}
-                          onApply={handlePromotionApply}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Хиты */}
-              {hits.length > 0 && (
-                <div className="animate-slide-up">
-                  <FeaturedSection
-                    title={`🔥 ${t('hits')}`}
-                    items={hits}
-                    onItemSelect={handleItemSelect}
-                  />
-                </div>
-              )}
-
-              {/* Новинки */}
-              {newItems.length > 0 && (
-                <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                  <FeaturedSection
-                    title={`✨ ${t('new_items')}`}
-                    items={newItems}
-                    onItemSelect={handleItemSelect}
-                  />
-                </div>
-              )}
-
-              {/* Быстрая навигация по категориям */}
-              {availableCategories.length > 0 && (
-                <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                  <CategoryNavigation
-                    categories={availableCategories}
-                    activeCategory={activeCategory}
-                    onCategorySelect={handleCategorySelect}
-                  />
-                </div>
-              )}
-
-              {/* Категории меню */}
-              <div className="animate-fade-in">
-                {filteredCategories.length > 0 ? (
-                  <>
-                    {!activeCategory && (
-                      <div className="mb-4 sm:mb-6">
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text mb-2">
-                          {t('full_menu')}
+                  {/* Блокировка экрана когда ресторан закрыт */}
+                  {!restaurantStatus.isOpen && (
+                    <div className="fixed inset-0 bg-black/90 backdrop-blur-lg z-70 flex items-center justify-center p-4">
+                      <div className="bg-dark-900 border border-red-600/50 rounded-2xl p-6 sm:p-8 max-w-md w-full text-center animate-fade-in">
+                        {/* Иконка закрытого ресторана */}
+                        <div className="w-20 h-20 bg-gradient-to-br from-red-900/50 to-red-800/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-600/50">
+                          <span className="text-4xl">🚫</span>
+                        </div>
+                        
+                        {/* Заголовок */}
+                        <h2 className="text-2xl sm:text-3xl font-bold text-red-400 mb-4 neon-text">
+                          {t('restaurant_closed')}
                         </h2>
-                        <p className="text-gray-400 text-sm">
-                          {t('select_category_or_view_all')}
+                        
+                        {/* Сообщение о статусе */}
+                        <p className="text-gray-300 text-lg mb-6">
+                          {restaurantStatus.message}
                         </p>
-                      </div>
-                    )}
-                    
-                    {activeCategory && (
-                      <div className="mb-4 sm:mb-6">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
-                          <div>
-                            <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text mb-2">
-                              {activeCategory}
-                            </h2>
-                            <p className="text-gray-400 text-sm">
-                              {t('dishes_from_category')}
+                        
+                        {/* Время следующего открытия */}
+                        {restaurantStatus.nextOpen && (
+                          <div className="bg-red-900/30 border border-red-600/50 rounded-lg p-4 mb-6">
+                            <p className="text-red-300 text-sm mb-2">
+                              {t('next_opening')}:
+                            </p>
+                            <p className="text-red-400 font-semibold text-lg">
+                              {restaurantStatus.nextOpen}
                             </p>
                           </div>
-                          <button
-                            onClick={() => setActiveCategory(null)}
-                            className="px-3 sm:px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-sm w-full sm:w-auto"
-                          >
-                            {t('show_all')}
-            </button>
-          </div>
-        </div>
-                    )}
-                    
-                    {filteredCategories.map((category, index) => (
-                      <div 
-                        key={category.id} 
-                        id={`category-${category.name}`}
-                        style={{ animationDelay: `${index * 0.1}s` }}
-                      >
-                        <MenuCategory
-                          category={category}
-                          onItemSelect={handleItemSelect}
-                        />
-                      </div>
-                    ))}
-                  </>
-                ) : (
-                  <div className="text-center py-16">
-                    <div className="w-20 h-20 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-600/50">
-                      <span className="text-3xl">🍽️</span>
-                    </div>
-                    <p className="text-gray-300 text-lg font-medium mb-2">
-                      {t('menu_unavailable')}
-                    </p>
-                    <p className="text-gray-500 text-sm mb-6">
-                      {t('try_later')}
-                    </p>
-                    <Button onClick={() => fetchMenu()} variant="primary">
-                      <span className="flex items-center">
-                        <span className="mr-2">🔄</span>
-                        {t('refresh_menu')}
-                      </span>
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : currentView === 'search' ? (
-            <div className="animate-fade-in">
-              {/* Заголовок поиска */}
-        <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text">
-                    🔍 {t('search_dishes')}
-                  </h2>
-                  <button
-                    onClick={() => setCurrentView('menu')}
-                    className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-sm"
-                  >
-                    ← {t('back_to_menu')}
-                  </button>
-                </div>
-                
-                {/* Поисковая строка */}
-                <div className="relative mb-6">
-                  <input
-                    type="text"
-                    placeholder={t('search_placeholder')}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
-                  />
-                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    🔍
-                  </span>
-                </div>
-
-                {/* Фильтры */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  {/* Категория */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      {t('category')}
-                    </label>
-                    <select
-                      value={searchFilters.category || ''}
-                      onChange={(e) => setSearchFilters(prev => ({ ...prev, category: e.target.value || null }))}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:border-primary-500"
-                    >
-                      <option value="">{t('all_categories')}</option>
-                      {availableCategories.map(cat => (
-                        <option key={cat.id} value={cat.name}>{cat.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Диапазон цен */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      {t('price_range')}
-                    </label>
-                    <div className="flex space-x-2">
-                      <input
-                        type="number"
-                        placeholder="От"
-                        value={searchFilters.priceRange[0]}
-                        onChange={(e) => setSearchFilters(prev => ({ ...prev, priceRange: [Number(e.target.value), prev.priceRange[1]] }))}
-                        className="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:border-primary-500"
-                      />
-                      <input
-                        type="number"
-                        placeholder="До"
-                        value={searchFilters.priceRange[1]}
-                        onChange={(e) => setSearchFilters(prev => ({ ...prev, priceRange: [prev.priceRange[0], Number(e.target.value)] }))}
-                        className="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:border-primary-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Чекбоксы */}
-                  <div className="space-y-2">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={searchFilters.isHit}
-                        onChange={(e) => setSearchFilters(prev => ({ ...prev, isHit: e.target.checked }))}
-                        className="mr-2 text-primary-500"
-                      />
-                      <span className="text-sm text-gray-300">🔥 {t('hits')}</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={searchFilters.isNew}
-                        onChange={(e) => setSearchFilters(prev => ({ ...prev, isNew: e.target.checked }))}
-                        className="mr-2 text-primary-500"
-                      />
-                      <span className="text-sm text-gray-300">✨ {t('new')}</span>
-                    </label>
-                  </div>
-
-                  {/* Сортировка */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      {t('sort_by')}
-                    </label>
-                    <select
-                      value={searchFilters.sortBy}
-                      onChange={(e) => setSearchFilters(prev => ({ ...prev, sortBy: e.target.value as any }))}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:border-primary-500"
-                    >
-                      <option value="name">{t('by_name')}</option>
-                      <option value="price">{t('by_price')}</option>
-                      <option value="popularity">{t('by_popularity')}</option>
-                      <option value="newest">{t('by_newest')}</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Результаты поиска */}
-                <div className="space-y-4">
-                  {(() => {
-                    let filteredItems = menuState.items;
-                    
-                    // Фильтрация по поисковому запросу
-                    if (searchQuery) {
-                      filteredItems = filteredItems.filter(item => 
-                        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        item.description.toLowerCase().includes(searchQuery.toLowerCase())
-                      );
-                    }
-                    
-                    // Фильтрация по категории
-                    if (searchFilters.category) {
-                      filteredItems = filteredItems.filter(item => 
-                        availableCategories.find(cat => cat.id === item.category)?.name === searchFilters.category
-                      );
-                    }
-                    
-                    // Фильтрация по цене
-                    filteredItems = filteredItems.filter(item => 
-                      item.price >= searchFilters.priceRange[0] && item.price <= searchFilters.priceRange[1]
-                    );
-                    
-                    // Фильтрация по хитам
-                    if (searchFilters.isHit) {
-                      filteredItems = filteredItems.filter(item => item.is_hit);
-                    }
-                    
-                    // Фильтрация по новинкам
-                    if (searchFilters.isNew) {
-                      filteredItems = filteredItems.filter(item => item.is_new);
-                    }
-                    
-                    // Сортировка
-                    switch (searchFilters.sortBy) {
-                      case 'price':
-                        filteredItems = [...filteredItems].sort((a, b) => a.price - b.price);
-                        break;
-                      case 'popularity':
-                        filteredItems = [...filteredItems].sort((a, b) => (b.is_hit ? 1 : 0) - (a.is_hit ? 1 : 0));
-                        break;
-                      case 'newest':
-                        filteredItems = [...filteredItems].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-                        break;
-                      default: // по имени
-                        filteredItems = [...filteredItems].sort((a, b) => a.name.localeCompare(b.name));
-                    }
-                    
-                    return (
-                      <>
-                        <div className="text-gray-400 text-sm mb-4">
-                          {t('found_items')}: <strong>{filteredItems.length}</strong>
+                        )}
+                        
+                        {/* Время работы */}
+                        <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4 mb-6">
+                          <h3 className="text-gray-300 font-semibold mb-3">
+                            {t('working_hours')}:
+                          </h3>
+                          <div className="space-y-2 text-sm text-gray-400">
+                            <div className="flex justify-between">
+                              <span>{t('monday')} - {t('saturday')}:</span>
+                              <span className="text-gray-300">8:00 - 4:00</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>{t('sunday')}:</span>
+                              <span className="text-red-400">{t('closed')}</span>
+                            </div>
+                            <div className="text-xs text-primary-400 mt-2 text-center">
+                              {t('note_24h_operation')}
+                            </div>
+                          </div>
                         </div>
-                        {filteredItems.length > 0 ? (
+                        
+                        {/* Адрес */}
+                        <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4 mb-6">
+                          <h3 className="text-gray-300 font-semibold mb-3">
+                            📍 {t('our_address')}:
+                          </h3>
+                          <p className="text-gray-400 text-sm leading-relaxed">
+                            {t('restaurant_address')}
+                          </p>
+                        </div>
+                        
+                        {/* Контакты */}
+                        <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4">
+                          <h3 className="text-gray-300 font-semibold mb-3">
+                            📞 {t('contacts')}:
+                          </h3>
+                          <p className="text-gray-400 text-sm">
+                            {t('phone_number')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {currentView === 'menu' ? (
+                    <>
+                      {/* Акции */}
+                      {activePromotions.length > 0 && (
+                        <div className="mb-6 sm:mb-8 animate-fade-in">
+                          <div className="flex items-center mb-4 sm:mb-6">
+                            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center mr-2 sm:mr-3 shadow-dark-glow">
+                              <span className="text-white text-xs sm:text-sm">🎉</span>
+                            </div>
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text">
+                              {t('promotions_discounts')}
+                            </h2>
+                          </div>
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                            {activePromotions.map((promotion: Promotion, index: number) => (
+                              <div key={promotion.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                                <PromotionCard
+                                  promotion={promotion}
+                                  onApply={handlePromotionApply}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Хиты */}
+                      {hits.length > 0 && (
+                        <div className="animate-slide-up">
+                          <FeaturedSection
+                            title={`🔥 ${t('hits')}`}
+                            items={hits}
+                            onItemSelect={handleItemSelect}
+                          />
+                        </div>
+                      )}
+
+                      {/* Новинки */}
+                      {newItems.length > 0 && (
+                        <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                          <FeaturedSection
+                            title={`✨ ${t('new_items')}`}
+                            items={newItems}
+                            onItemSelect={handleItemSelect}
+                          />
+                        </div>
+                      )}
+
+                      {/* Быстрая навигация по категориям */}
+                      {availableCategories.length > 0 && (
+                        <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                          <CategoryNavigation
+                            categories={availableCategories}
+                            activeCategory={activeCategory}
+                            onCategorySelect={handleCategorySelect}
+                          />
+                        </div>
+                      )}
+
+                      {/* Категории меню */}
+                      <div className="animate-fade-in">
+                        {filteredCategories.length > 0 ? (
+                          <>
+                            {!activeCategory && (
+                              <div className="mb-4 sm:mb-6">
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text mb-2">
+                                  {t('full_menu')}
+                                </h2>
+                                <p className="text-gray-400 text-sm">
+                                  {t('select_category_or_view_all')}
+                                </p>
+                              </div>
+                            )}
+                            
+                            {activeCategory && (
+                              <div className="mb-4 sm:mb-6">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
+                                  <div>
+                                    <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text mb-2">
+                                      {activeCategory}
+                                    </h2>
+                                    <p className="text-gray-400 text-sm">
+                                      {t('dishes_from_category')}
+                                    </p>
+                                  </div>
+                                  <button
+                                    onClick={() => setActiveCategory(null)}
+                                    className="px-3 sm:px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-sm w-full sm:w-auto"
+                                  >
+                                    {t('show_all')}
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {filteredCategories.map((category, index) => (
+                              <div 
+                                key={category.id} 
+                                id={`category-${category.name}`}
+                                style={{ animationDelay: `${index * 0.1}s` }}
+                              >
+                                <MenuCategory
+                                  category={category}
+                                  onItemSelect={handleItemSelect}
+                                />
+                              </div>
+                            ))}
+                          </>
+                        ) : (
+                          <div className="text-center py-16">
+                            <div className="w-20 h-20 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-600/50">
+                              <span className="text-3xl">🍽️</span>
+                            </div>
+                            <p className="text-gray-300 text-lg font-medium mb-2">
+                              {t('menu_unavailable')}
+                            </p>
+                            <p className="text-gray-500 text-sm mb-6">
+                              {t('try_later')}
+                            </p>
+                            <Button onClick={() => fetchMenu()} variant="primary">
+                              <span className="flex items-center">
+                                <span className="mr-2">🔄</span>
+                                {t('refresh_menu')}
+                              </span>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  ) : currentView === 'search' ? (
+                    <div className="animate-fade-in">
+                      {/* Заголовок поиска */}
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text">
+                            🔍 {t('search_dishes')}
+                          </h2>
+                          <button
+                            onClick={() => setCurrentView('menu')}
+                            className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-sm"
+                          >
+                            ← {t('back_to_menu')}
+                          </button>
+                        </div>
+                        
+                        {/* Поисковая строка */}
+                        <div className="relative mb-6">
+                          <input
+                            type="text"
+                            placeholder={t('search_placeholder')}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
+                          />
+                          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            🔍
+                          </span>
+                        </div>
+
+                        {/* Фильтры */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                          {/* Категория */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                              {t('category')}
+                            </label>
+                            <select
+                              value={searchFilters.category || ''}
+                              onChange={(e) => setSearchFilters(prev => ({ ...prev, category: e.target.value || null }))}
+                              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:border-primary-500"
+                            >
+                              <option value="">{t('all_categories')}</option>
+                              {availableCategories.map(cat => (
+                                <option key={cat.id} value={cat.name}>{cat.name}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Диапазон цен */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                              {t('price_range')}
+                            </label>
+                            <div className="flex space-x-2">
+                              <input
+                                type="number"
+                                placeholder="От"
+                                value={searchFilters.priceRange[0]}
+                                onChange={(e) => setSearchFilters(prev => ({ ...prev, priceRange: [Number(e.target.value), prev.priceRange[1]] }))}
+                                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:border-primary-500"
+                              />
+                              <input
+                                type="number"
+                                placeholder="До"
+                                value={searchFilters.priceRange[1]}
+                                onChange={(e) => setSearchFilters(prev => ({ ...prev, priceRange: [prev.priceRange[0], Number(e.target.value)] }))}
+                                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:border-primary-500"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Чекбоксы */}
+                          <div className="space-y-2">
+                            <label className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={searchFilters.isHit}
+                                onChange={(e) => setSearchFilters(prev => ({ ...prev, isHit: e.target.checked }))}
+                                className="mr-2 text-primary-500"
+                              />
+                              <span className="text-sm text-gray-300">🔥 {t('hits')}</span>
+                            </label>
+                            <label className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={searchFilters.isNew}
+                                onChange={(e) => setSearchFilters(prev => ({ ...prev, isNew: e.target.checked }))}
+                                className="mr-2 text-primary-500"
+                              />
+                              <span className="text-sm text-gray-300">✨ {t('new')}</span>
+                            </label>
+                          </div>
+
+                          {/* Сортировка */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                              {t('sort_by')}
+                            </label>
+                            <select
+                              value={searchFilters.sortBy}
+                              onChange={(e) => setSearchFilters(prev => ({ ...prev, sortBy: e.target.value as any }))}
+                              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:border-primary-500"
+                            >
+                              <option value="name">{t('by_name')}</option>
+                              <option value="price">{t('by_price')}</option>
+                              <option value="popularity">{t('by_popularity')}</option>
+                              <option value="newest">{t('by_newest')}</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Результаты поиска */}
+                        <div className="space-y-4">
+                          {(() => {
+                            let filteredItems = menuState.items;
+                            
+                            // Фильтрация по поисковому запросу
+                            if (searchQuery) {
+                              filteredItems = filteredItems.filter(item => 
+                                item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                item.description.toLowerCase().includes(searchQuery.toLowerCase())
+                              );
+                            }
+                            
+                            // Фильтрация по категории
+                            if (searchFilters.category) {
+                              filteredItems = filteredItems.filter(item => 
+                                availableCategories.find(cat => cat.id === item.category)?.name === searchFilters.category
+                              );
+                            }
+                            
+                            // Фильтрация по цене
+                            filteredItems = filteredItems.filter(item => 
+                              item.price >= searchFilters.priceRange[0] && item.price <= searchFilters.priceRange[1]
+                            );
+                            
+                            // Фильтрация по хитам
+                            if (searchFilters.isHit) {
+                              filteredItems = filteredItems.filter(item => item.is_hit);
+                            }
+                            
+                            // Фильтрация по новинкам
+                            if (searchFilters.isNew) {
+                              filteredItems = filteredItems.filter(item => item.is_new);
+                            }
+                            
+                            // Сортировка
+                            switch (searchFilters.sortBy) {
+                              case 'price':
+                                filteredItems = [...filteredItems].sort((a, b) => a.price - b.price);
+                                break;
+                              case 'popularity':
+                                filteredItems = [...filteredItems].sort((a, b) => (b.is_hit ? 1 : 0) - (a.is_hit ? 1 : 0));
+                                break;
+                              case 'newest':
+                                filteredItems = [...filteredItems].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                                break;
+                              default: // по имени
+                                filteredItems = [...filteredItems].sort((a, b) => a.name.localeCompare(b.name));
+                            }
+                            
+                            return (
+                              <>
+                                <div className="text-gray-400 text-sm mb-4">
+                                  {t('found_items')}: <strong>{filteredItems.length}</strong>
+                                </div>
+                                {filteredItems.length > 0 ? (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {filteredItems.map((item) => (
+                                      <div key={item.id} className="animate-fade-in">
+                                        <MenuItemComponent
+                                          item={item}
+                                          onSelect={handleItemSelect}
+                                          isCompact={true}
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-16">
+                                    <div className="w-20 h-20 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-600/50">
+                                      <span className="text-3xl">🔍</span>
+                                    </div>
+                                    <p className="text-gray-300 text-lg font-medium mb-2">
+                                      {t('no_items_found')}
+                                    </p>
+                                    <p className="text-gray-500 text-sm">
+                                      {t('try_different_filters')}
+                                    </p>
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  ) : currentView === 'favorites' ? (
+                    <div className="animate-fade-in">
+                      {/* Заголовок избранного */}
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text">
+                            🤍 {t('favorites')}
+                          </h2>
+                          <button
+                            onClick={() => setCurrentView('menu')}
+                            className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-sm"
+                          >
+                            ← {t('back_to_menu')}
+                          </button>
+                        </div>
+                        
+                        {/* Содержимое избранного */}
+                        {favoritesLoading ? (
+                          <div className="text-center py-16">
+                            <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-gray-300">{t('loading')}...</p>
+                          </div>
+                        ) : favorites.length > 0 ? (
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {filteredItems.map((item) => (
-                              <div key={item.id} className="animate-fade-in">
+                            {favorites.map((favorite) => (
+                              <div key={favorite.id} className="animate-fade-in">
                                 <MenuItemComponent
-                                  item={item}
+                                  item={favorite.menu_item}
                                   onSelect={handleItemSelect}
                                   isCompact={true}
                                 />
@@ -695,94 +769,44 @@ export const MainPage: React.FC = () => {
                         ) : (
                           <div className="text-center py-16">
                             <div className="w-20 h-20 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-600/50">
-                              <span className="text-3xl">🔍</span>
+                              <span className="text-3xl">🤍</span>
                             </div>
-                            <p className="text-gray-300 text-lg font-medium mb-2">
-                              {t('no_items_found')}
+                            <p className="text-xl font-medium mb-2">
+                              {t('no_favorites')}
                             </p>
-                            <p className="text-gray-500 text-sm">
-                              {t('try_different_filters')}
+                            <p className="text-gray-500 text-sm mb-6">
+                              Добавьте блюда в избранное, нажав на ❤️
                             </p>
+                            <button
+                              onClick={() => setCurrentView('menu')}
+                              className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                            >
+                              {t('back_to_menu')}
+                            </button>
                           </div>
                         )}
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
-          ) : currentView === 'favorites' ? (
-            <div className="animate-fade-in">
-              {/* Заголовок избранного */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text">
-                    🤍 {t('favorites')}
-                  </h2>
-                  <button
-                    onClick={() => setCurrentView('menu')}
-                    className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-sm"
-                  >
-                    ← {t('back_to_menu')}
-                  </button>
-                </div>
-                
-                {/* Содержимое избранного */}
-                {favoritesLoading ? (
-                  <div className="text-center py-16">
-                    <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-300">{t('loading')}...</p>
-                  </div>
-                ) : favorites.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {favorites.map((favorite) => (
-                      <div key={favorite.id} className="animate-fade-in">
-                        <MenuItemComponent
-                          item={favorite.menu_item}
-                          onSelect={handleItemSelect}
-                          isCompact={true}
-                        />
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-16">
-                    <div className="w-20 h-20 bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-600/50">
-                      <span className="text-3xl">🤍</span>
                     </div>
-                    <p className="text-gray-300 text-lg font-medium mb-2">
-                      {t('no_favorites')}
-                    </p>
-                    <p className="text-gray-500 text-sm mb-6">
-                      Добавьте блюда в избранное, нажав на ❤️
-                    </p>
-                    <button
-                      onClick={() => setCurrentView('menu')}
-                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
-                    >
-                      {t('back_to_menu')}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-                              ) : currentView === 'address' ? (
-                      <div className="animate-fade-in">
-                        <AddressManager />
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="text-white mb-2">🛒 Показываю корзину</div>
-                        {/* Здесь будет CartDisplay */}
-                        <CartDisplay />
-                      </div>
-                    )}
-          </div>
+                  ) : currentView === 'address' ? (
+                    <div className="animate-fade-in">
+                      <AddressManager />
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="text-white mb-2">🛒 Показываю корзину</div>
+                      {/* Здесь будет CartDisplay */}
+                      <CartDisplay />
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </>
         )}
       </div>
 
-      {/* Фиксированная нижняя навигация - скрыта во время анимации логотипа */}
-      {!showLogo && (
+      {/* Фиксированная нижняя навигация - скрыта во время анимации логотипа и OptionsPage */}
+      {!showLogo && !showOptionsPage && (
         <div className="fixed bottom-0 left-0 right-0 bg-dark-900/95 backdrop-blur-lg border-t border-gray-700/50 z-50">
         <div className="flex items-center justify-around px-4 py-3">
           {/* Кнопка Меню */}

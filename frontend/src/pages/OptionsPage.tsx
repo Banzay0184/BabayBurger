@@ -89,7 +89,7 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-60 bg-dark-900 text-gray-100 overflow-y-auto z-[9999]">
+    <div className="min-h-screen text-gray-100">
       {/* Заголовок страницы */}
       <div className="sticky top-0 z-50 bg-dark-800/95 backdrop-blur-lg border-b border-gray-700/50">
         <div className="flex items-center justify-between p-4">
@@ -105,7 +105,7 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
       </div>
 
       {/* Основной контент */}
-      <div className="p-4 space-y-6">
+      <div className="pt-4 space-y-6">
         {/* Информация о блюде */}
         <div className="bg-dark-800 rounded-2xl p-4 border border-gray-700/50">
           <div className="flex items-start space-x-4">

@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useFavorites } from '../../context/FavoriteContext';
-import { OptionsPage } from '../../pages/OptionsPage';
 import type { MenuItem as MenuItemType, SizeOption, AddOn } from '../../types/menu';
 
 interface MenuItemProps {
@@ -21,15 +20,15 @@ export const MenuItem: React.FC<MenuItemProps> = ({
   const { addItem, decrementByKey, getItemCountForMenuItem, state: cartState } = useCart();
   const { t, formatCurrency } = useLanguage();
   const { toggleFavorite, isFavorite } = useFavorites();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   const availableSizes = item.size_options?.filter((size: SizeOption) => size.is_active) || [];
   const availableAddOns = item.add_on_options?.filter((addOn: AddOn) => addOn.is_active) || [];
   const currentCount = getItemCountForMenuItem(item.id);
 
-  // Открытие модала
-  const handleOpenModal = () => {
-    console.log('🔍 MenuItem - handleOpenModal вызван:', {
+  // Обработка клика по блюду
+  const handleItemClick = () => {
+    console.log('🔍 MenuItem - handleItemClick вызван:', {
       itemName: item.name,
       availableSizes: availableSizes.length,
       availableAddOns: availableAddOns.length,
@@ -39,10 +38,10 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       hideDescription
     });
 
-    // Если есть опции (размеры или дополнения), всегда показываем модал
+    // Если есть опции (размеры или дополнения), вызываем onSelect для открытия OptionsPage
     if (availableSizes.length > 0 || availableAddOns.length > 0) {
-      console.log('✅ MenuItem - Открываем модал для блюда с опциями:', item.name);
-      setIsModalOpen(true);
+      console.log('✅ MenuItem - Вызываем onSelect для блюда с опциями:', item.name);
+      onSelect?.(item);
     } else if (onSelect) {
       // Если опций нет, вызываем onSelect напрямую
       console.log('📞 MenuItem - Вызываем onSelect для блюда без опций:', item.name);
@@ -54,24 +53,6 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       showNotification(`${item.name} ${t('added_to_cart')}`);
     }
   };
-
-  // Закрытие модала
-  const handleCloseModal = () => {
-    console.log('❌ MenuItem - Закрываем модал для:', item.name);
-    setIsModalOpen(false);
-  };
-
-  // Отладочная информация о состоянии модала
-  useEffect(() => {
-    if (isModalOpen) {
-      console.log('🔍 MenuItem - Модал открыт:', {
-        itemName: item.name,
-        isModalOpen,
-        availableSizes: availableSizes.length,
-        availableAddOns: availableAddOns.length
-      });
-    }
-  }, [isModalOpen, item.name, availableSizes.length, availableAddOns.length]);
 
 
 
@@ -245,7 +226,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
         {availableSizes.length > 0 || availableAddOns.length > 0 ? (
           // Если есть опции - показываем кнопку шестеренки
                   <button
-            onClick={handleOpenModal}
+            onClick={handleItemClick}
             className={`w-full ${isCompact ? 'px-3 py-2 text-xs' : 'px-4 py-2.5 text-sm'} bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-lg font-semibold hover:from-accent-600 hover:to-accent-700 transition-all duration-300 hover:scale-105 shadow-dark-card hover:shadow-dark-card-hover mt-3`}
           >
             <span className="flex items-center justify-center">
@@ -303,13 +284,6 @@ export const MenuItem: React.FC<MenuItemProps> = ({
         )}
       </div>
 
-      {/* Страница выбора опций */}
-      {isModalOpen && (
-        <OptionsPage
-          item={item}
-          onClose={handleCloseModal}
-        />
-      )}
-    </>
+            </>
   );
 }; 
