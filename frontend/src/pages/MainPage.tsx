@@ -136,14 +136,23 @@ export const MainPage: React.FC = () => {
   const handleItemSelect = (item: MenuItem, size?: any, addOns?: any[]) => {
     console.log('Selected item:', item, 'Size:', size, 'AddOns:', addOns);
     
+    // Проверяем, есть ли у блюда опции
+    const hasOptions = (item.size_options && item.size_options.filter(size => size.is_active).length > 0) ||
+                      (item.add_on_options && item.add_on_options.filter(addOn => addOn.is_active).length > 0);
+    
     // Если переданы опции (размер или дополнения), добавляем в корзину
     if (size || (addOns && addOns.length > 0)) {
-      // Здесь можно добавить логику для добавления в корзину с опциями
       console.log('Adding item with options to cart:', { item, size, addOns });
-    } else {
-      // Если опций нет, открываем OptionsPage
+      // Здесь можно добавить логику для добавления в корзину с опциями
+    } else if (hasOptions) {
+      // Если у блюда есть опции, но они не выбраны - открываем OptionsPage
+      console.log('Opening OptionsPage for item with options:', item.name);
       setSelectedItem(item);
       setShowOptionsPage(true);
+    } else {
+      // Если опций нет - добавляем в корзину напрямую
+      console.log('Adding item without options directly to cart:', item.name);
+      // Здесь можно добавить логику для добавления в корзину без опций
     }
   };
 

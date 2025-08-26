@@ -38,13 +38,9 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       hideDescription
     });
 
-    // Если есть опции (размеры или дополнения), вызываем onSelect для открытия OptionsPage
-    if (availableSizes.length > 0 || availableAddOns.length > 0) {
-      console.log('✅ MenuItem - Вызываем onSelect для блюда с опциями:', item.name);
-      onSelect?.(item);
-    } else if (onSelect) {
-      // Если опций нет, вызываем onSelect напрямую
-      console.log('📞 MenuItem - Вызываем onSelect для блюда без опций:', item.name);
+    // Всегда вызываем onSelect - MainPage сам решит что делать
+    if (onSelect) {
+      console.log('📞 MenuItem - Вызываем onSelect для блюда:', item.name);
       onSelect(item);
     } else {
       // Если нет onSelect, добавляем в корзину напрямую

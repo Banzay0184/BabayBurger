@@ -80,7 +80,10 @@ export const AddressManager: React.FC = () => {
       const telegramId = getTelegramId();
       console.log('🗺️ 🔍 Loading addresses with telegram_id:', telegramId);
       
-      const response = await fetch(`/api/addresses/?telegram_id=${telegramId}`);
+      // Используем правильный API URL
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+      const response = await fetch(`${apiBaseUrl}/api/addresses/?telegram_id=${telegramId}`);
+      
       if (response.ok) {
         const addressesData = await response.json();
         setAddresses(addressesData);
@@ -158,7 +161,8 @@ export const AddressManager: React.FC = () => {
 
       if (editingAddress) {
         // Обновление существующего адреса
-        const response = await fetch('/api/addresses/' + editingAddress.id + '/', {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+        const response = await fetch(`${apiBaseUrl}/api/addresses/${editingAddress.id}/`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -178,7 +182,8 @@ export const AddressManager: React.FC = () => {
         }
       } else {
         // Добавление нового адреса
-        const response = await fetch('/api/addresses/', {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+        const response = await fetch(`${apiBaseUrl}/api/addresses/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -230,7 +235,8 @@ export const AddressManager: React.FC = () => {
         const telegramId = getTelegramId();
         
         // Удаляем из базы данных
-        const response = await fetch(`/api/addresses/${id}/`, {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+        const response = await fetch(`${apiBaseUrl}/api/addresses/${id}/`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -281,7 +287,8 @@ export const AddressManager: React.FC = () => {
       
       // Обновляем в базе данных
       const telegramId = getTelegramId();
-      const response = await fetch(`/api/addresses/${id}/set-primary/`, {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+      const response = await fetch(`${apiBaseUrl}/api/addresses/${id}/set-primary/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

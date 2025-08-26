@@ -257,8 +257,7 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
               className="flex-1 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg font-semibold hover:from-primary-600 hover:to-primary-700 transition-all duration-300 hover:scale-105 shadow-dark-card disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <span className="flex items-center justify-center">
-                <span className="mr-2">🛒</span>
-                {t('add_to_cart')}
+                {t('add')}
               </span>
             </button>
           </div>
