@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useFavorites } from '../../context/FavoriteContext';
-import { OptionsModal } from './OptionsModal';
+import { OptionsPage } from '../../pages/OptionsPage';
 import type { MenuItem as MenuItemType, SizeOption, AddOn } from '../../types/menu';
 
 interface MenuItemProps {
@@ -73,24 +73,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
     }
   }, [isModalOpen, item.name, availableSizes.length, availableAddOns.length]);
 
-  // Обработка подтверждения опций из модала
-  const handleConfirmOptions = (size?: SizeOption, addOns?: AddOn[]) => {
-    addItem(item, size, addOns);
-    if (onSelect) onSelect(item, size, addOns);
-    
-    const optionsText = [];
-    if (size) optionsText.push(`${t('size')}: ${size.name}`);
-    if (addOns && addOns.length > 0) {
-      optionsText.push(`${t('addition')}: ${addOns.map(a => a.name).join(', ')}`);
-    }
-    
-    const message = optionsText.length > 0 
-      ? `${item.name} ${t('with_options')} ${optionsText.join(', ')} ${t('added_to_cart')}`
-      : `${item.name} ${t('added_to_cart')}`;
-    
-    showNotification(message);
-    handleCloseModal();
-  };
+
 
   // Переключение избранного
   const [isToggling, setIsToggling] = useState(false);
@@ -243,28 +226,32 @@ export const MenuItem: React.FC<MenuItemProps> = ({
             </h3>
             <span className={`font-bold text-primary-400 ${isCompact ? 'text-sm' : 'text-lg'} flex-shrink-0`}>
               {formatCurrency(item.price)}
-            </span>
+                </span>
           </div>
           
           {/* Описание */}
           {!isCompact && !hideDescription && (
             <p className="text-gray-400 text-sm leading-relaxed line-clamp-2">
-              {item.description}
-            </p>
+            {item.description}
+          </p>
           )}
+
+          
+
+          
         </div>
             
         {/* Кнопка выбора опций или управления количеством */}
         {availableSizes.length > 0 || availableAddOns.length > 0 ? (
-          // Если есть опции - показываем кнопку для открытия модала
-          <button
+          // Если есть опции - показываем кнопку шестеренки
+                  <button
             onClick={handleOpenModal}
             className={`w-full ${isCompact ? 'px-3 py-2 text-xs' : 'px-4 py-2.5 text-sm'} bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-lg font-semibold hover:from-accent-600 hover:to-accent-700 transition-all duration-300 hover:scale-105 shadow-dark-card hover:shadow-dark-card-hover mt-3`}
           >
             <span className="flex items-center justify-center">
               {t('add_to_cart')}
-            </span>
-          </button>
+                      </span>
+                  </button>
         ) : (
           // Если опций нет - показываем кнопки - 1 +
           <div className="flex items-center justify-center space-x-2 mt-3">
@@ -295,11 +282,11 @@ export const MenuItem: React.FC<MenuItemProps> = ({
               disabled={currentCount === 0}
             >
               <span className="text-lg font-bold">-</span>
-            </button>
+                  </button>
             
             <span className="min-w-[2rem] text-center font-bold text-gray-100">
               {currentCount} 
-            </span>
+                </span>
             
             <button
               onClick={() => {
@@ -316,14 +303,13 @@ export const MenuItem: React.FC<MenuItemProps> = ({
         )}
       </div>
 
-      {/* Модальное окно для выбора опций */}
-      <OptionsModal
-        item={item}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onConfirm={handleConfirmOptions}
-        getImageUrl={getImageUrl}
-      />
+      {/* Страница выбора опций */}
+      {isModalOpen && (
+        <OptionsPage
+          item={item}
+          onClose={handleCloseModal}
+        />
+      )}
     </>
   );
 }; 
