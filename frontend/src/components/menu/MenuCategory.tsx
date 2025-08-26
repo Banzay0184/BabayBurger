@@ -1,14 +1,13 @@
 import React from 'react';
-import MenuItem from './MenuItem';
+import { MenuItem } from './MenuItem';
 import type { MenuCategory as MenuCategoryType, MenuItem as MenuItemType } from '../../types/menu';
 
 interface MenuCategoryProps {
   category: MenuCategoryType;
   onItemSelect?: (item: MenuItemType) => void;
-  onNavigateToDetails?: (item: MenuItemType) => void;
 }
 
-export const MenuCategory: React.FC<MenuCategoryProps> = ({ category, onItemSelect, onNavigateToDetails }) => {
+export const MenuCategory: React.FC<MenuCategoryProps> = ({ category, onItemSelect }) => {
   if (!category.items || category.items.length === 0) {
     console.log('❌ MenuCategory: no items for category', category.name);
     return null;
@@ -61,7 +60,6 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({ category, onItemSele
             <MenuItem 
               item={item} 
               onSelect={onItemSelect}
-              onNavigateToDetails={onNavigateToDetails}
             />
           </div>
         ))}

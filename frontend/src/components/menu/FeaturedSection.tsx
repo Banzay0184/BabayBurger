@@ -1,19 +1,17 @@
 import React, { useRef, useState } from 'react';
-import MenuItem from './MenuItem';
+import { MenuItem } from './MenuItem';
 import type { MenuItem as MenuItemType, SizeOption, AddOn } from '../../types/menu';
 
 interface FeaturedSectionProps {
   title: string;
   items: MenuItemType[];
   onItemSelect?: (item: MenuItemType, size?: SizeOption, addOns?: AddOn[]) => void;
-  onNavigateToDetails?: (item: MenuItemType) => void;
 }
 
 export const FeaturedSection: React.FC<FeaturedSectionProps> = ({ 
   title, 
   items, 
-  onItemSelect,
-  onNavigateToDetails
+  onItemSelect 
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -159,7 +157,6 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
               <MenuItem
                 item={item}
                 onSelect={onItemSelect}
-                onNavigateToDetails={onNavigateToDetails}
                 isCompact={true}
                 hideDescription={true}
               />

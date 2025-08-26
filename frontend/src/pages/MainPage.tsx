@@ -9,12 +9,11 @@ import { CategoryNavigation } from '../components/menu/CategoryNavigation';
 import { FeaturedSection } from '../components/menu/FeaturedSection';
 import { PromotionCard } from '../components/menu/PromotionCard';
 import { CartDisplay } from '../components/cart/CartDisplay';
-import MenuItem from '../components/menu/MenuItem';
+import { MenuItem as MenuItemComponent } from '../components/menu/MenuItem';
 import { Button } from '../components/ui/Button';
 import { AddressManager } from '../components/address/AddressManager';
 import { RestaurantLogo } from '../components/common/RestaurantLogo';
-import { DishDetailsPage } from '../components/menu/DishDetailsPage';
-import type { MenuItem as MenuItemType, Promotion } from '../types/menu';
+import type { MenuItem, Promotion } from '../types/menu';
 
 export const MainPage: React.FC = () => {
   const { state } = useAuth();
@@ -31,11 +30,10 @@ export const MainPage: React.FC = () => {
 
   const { t, language, setLanguage } = useLanguage();
   const { favorites, isLoading: favoritesLoading } = useFavorites();
-  const [currentView, setCurrentView] = useState<'menu' | 'cart' | 'search' | 'favorites' | 'address' | 'dishDetails'>('menu');
+  const [currentView, setCurrentView] = useState<'menu' | 'cart' | 'search' | 'favorites' | 'address'>('menu');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showLogo, setShowLogo] = useState(true);
-  const [selectedDish, setSelectedDish] = useState<MenuItemType | null>(null);
   const [searchFilters, setSearchFilters] = useState({
     category: null as string | null,
     priceRange: [0, 100000] as [number, number],
@@ -108,26 +106,6 @@ export const MainPage: React.FC = () => {
     };
   };
 
-  // Функция для навигации к деталям блюда
-  const handleNavigateToDishDetails = (dish: MenuItemType) => {
-    setSelectedDish(dish);
-    setCurrentView('dishDetails');
-  };
-
-  // Функция для закрытия страницы деталей блюда
-  const handleCloseDishDetails = () => {
-    setSelectedDish(null);
-    setCurrentView('menu');
-  };
-
-  // Функция для добавления блюда в корзину с опциями
-  const handleAddDishToCart = (dish: MenuItemType, size?: any, addOns?: any[]) => {
-    // Здесь будет логика добавления в корзину
-    console.log('Adding to cart:', dish.name, 'Size:', size, 'AddOns:', addOns);
-    // Пока просто закрываем страницу деталей
-    handleCloseDishDetails();
-  };
-
   const restaurantStatus = getRestaurantStatus();
 
   // Автоматическое обновление статуса работы каждую минуту
@@ -152,7 +130,7 @@ export const MainPage: React.FC = () => {
     }
   }, [showLogo]);
 
-  const handleItemSelect = (item: MenuItemType, size?: any, addOns?: any[]) => {
+  const handleItemSelect = (item: MenuItem, size?: any, addOns?: any[]) => {
     console.log('Selected item:', item, 'Size:', size, 'AddOns:', addOns);
     
     // Если переданы опции (размер или дополнения), добавляем в корзину
@@ -439,7 +417,6 @@ export const MainPage: React.FC = () => {
                     title={`🔥 ${t('hits')}`}
                     items={hits}
                     onItemSelect={handleItemSelect}
-                    onNavigateToDetails={handleNavigateToDishDetails}
                   />
                 </div>
               )}
@@ -451,7 +428,6 @@ export const MainPage: React.FC = () => {
                     title={`✨ ${t('new_items')}`}
                     items={newItems}
                     onItemSelect={handleItemSelect}
-                    onNavigateToDetails={handleNavigateToDishDetails}
                   />
                 </div>
               )}
@@ -512,7 +488,6 @@ export const MainPage: React.FC = () => {
                         <MenuCategory
                           category={category}
                           onItemSelect={handleItemSelect}
-                          onNavigateToDetails={handleNavigateToDishDetails}
                         />
                       </div>
                     ))}
@@ -709,10 +684,9 @@ export const MainPage: React.FC = () => {
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredItems.map((item) => (
                               <div key={item.id} className="animate-fade-in">
-                                <MenuItem
+                                <MenuItemComponent
                                   item={item}
                                   onSelect={handleItemSelect}
-                                  onNavigateToDetails={handleNavigateToDishDetails}
                                   isCompact={true}
                                 />
                               </div>
@@ -763,10 +737,9 @@ export const MainPage: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {favorites.map((favorite) => (
                       <div key={favorite.id} className="animate-fade-in">
-                        <MenuItem
+                        <MenuItemComponent
                           item={favorite.menu_item}
                           onSelect={handleItemSelect}
-                          onNavigateToDetails={handleNavigateToDishDetails}
                           isCompact={true}
                         />
                       </div>
@@ -797,12 +770,6 @@ export const MainPage: React.FC = () => {
                       <div className="animate-fade-in">
                         <AddressManager />
                       </div>
-                    ) : currentView === 'dishDetails' && selectedDish ? (
-                      <DishDetailsPage
-                        item={selectedDish}
-                        onClose={handleCloseDishDetails}
-                        onAddToCart={handleAddDishToCart}
-                      />
                     ) : (
                       <div>
                         <div className="text-white mb-2">🛒 Показываю корзину</div>
