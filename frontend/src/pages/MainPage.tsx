@@ -34,9 +34,11 @@ export const MainPage: React.FC = () => {
   const [currentView, setCurrentView] = useState<'menu' | 'cart' | 'search' | 'favorites' | 'address'>('menu');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  // Состояния
   const [showLogo, setShowLogo] = useState(true);
   const [showOptionsPage, setShowOptionsPage] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [addresses, setAddresses] = useState<any[]>([]);
   const [searchFilters, setSearchFilters] = useState({
     category: null as string | null,
     priceRange: [0, 100000] as [number, number],
@@ -44,6 +46,34 @@ export const MainPage: React.FC = () => {
     isNew: false,
     sortBy: 'name' as 'name' | 'price' | 'popularity' | 'newest'
   });
+
+  // Загрузка адресов
+  const loadAddresses = async () => {
+    try {
+      const telegramId = state.user?.telegram_id?.toString() || '123456789';
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+      const response = await fetch(`${apiBaseUrl}/api/addresses/?telegram_id=${telegramId}`, {
+        headers: {
+          'Accept': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        }
+      });
+      
+      if (response.ok) {
+        const addressesData = await response.json();
+        setAddresses(addressesData);
+      }
+    } catch (error) {
+      console.error('Error loading addresses:', error);
+    }
+  };
+
+  // Загружаем адреса при монтировании
+  useEffect(() => {
+    if (state.user) {
+      loadAddresses();
+    }
+  }, [state.user]);
 
   // Функция для определения статуса работы ресторана
   const getRestaurantStatus = () => {
@@ -281,7 +311,13 @@ export const MainPage: React.FC = () => {
                   onClick={() => setCurrentView('address')}
                   className="text-gray-400 text-xs sm:text-sm leading-tight hover:text-gray-300 transition-colors cursor-pointer"
                 >
-                  {t('delivery_address')}
+                  {addresses.length > 0 ? (
+                    addresses.find((addr: any) => addr.is_primary)?.full_address || 
+                    addresses[0]?.full_address || 
+                    t('delivery_address')
+                  ) : (
+                    t('delivery_address')
+                  )}
                 </button>
                 {state.user && (
                   <div className="flex items-center space-x-2 mt-1">
@@ -504,9 +540,9 @@ export const MainPage: React.FC = () => {
                                     className="px-3 sm:px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-sm w-full sm:w-auto"
                                   >
                                     {t('show_all')}
-                                  </button>
-                                </div>
-                              </div>
+            </button>
+          </div>
+        </div>
                             )}
                             
                             {filteredCategories.map((category, index) => (
@@ -744,7 +780,7 @@ export const MainPage: React.FC = () => {
                   ) : currentView === 'favorites' ? (
                     <div className="animate-fade-in">
                       {/* Заголовок избранного */}
-                      <div className="mb-6">
+        <div className="mb-6">
                         <div className="flex items-center justify-between mb-4">
                           <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text">
                             🤍 {t('favorites')}

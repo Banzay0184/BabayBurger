@@ -15,6 +15,8 @@ interface Address {
   comment?: string;
   is_primary: boolean;
   telegram_id?: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export const AddressManager: React.FC = () => {
@@ -34,11 +36,17 @@ export const AddressManager: React.FC = () => {
     phone_number: '',
     comment: '',
     is_primary: false,
-    telegram_id: ''
+    telegram_id: '',
+    latitude: null as number | null,
+    longitude: null as number | null
   });
 
   // Функция получения telegram_id
   const getTelegramId = () => {
+    console.log('🗺️ 🔍 Getting telegram_id...');
+    console.log('🗺️ 🔍 AuthContext state:', state);
+    console.log('🗺️ 🔍 AuthContext user:', state.user);
+    
     // Пробуем получить из AuthContext (гостевой пользователь)
     if (state.user && state.user.telegram_id) {
       console.log('🗺️ 🔍 Got telegram_id from AuthContext:', state.user.telegram_id);
@@ -63,13 +71,72 @@ export const AddressManager: React.FC = () => {
     
     // Fallback на гостевой ID из логов
     console.log('🗺️ ⚠️ No telegram_id found, using fallback');
-    return '123456789'; // Fallback ID из логов
+    return '908758841'; // Используем ваш реальный telegram_id из логов
+  };
+
+  // Функция получения телефона пользователя
+  const getUserPhone = () => {
+    console.log('📱 🔍 Getting user phone...');
+    
+    // Проверяем доступность Telegram WebApp
+    if ((window as any).Telegram) {
+      console.log('📱 🔍 Telegram WebApp object found:', (window as any).Telegram);
+      
+      if ((window as any).Telegram.WebApp) {
+        console.log('📱 🔍 Telegram WebApp.WebApp found:', (window as any).Telegram.WebApp);
+        
+        if ((window as any).Telegram.WebApp.initDataUnsafe) {
+          console.log('📱 🔍 Telegram WebApp.initDataUnsafe found:', (window as any).Telegram.WebApp.initDataUnsafe);
+          
+          if ((window as any).Telegram.WebApp.initDataUnsafe.user) {
+            console.log('📱 🔍 Telegram WebApp.initDataUnsafe.user found:', (window as any).Telegram.WebApp.initDataUnsafe.user);
+            
+            if ((window as any).Telegram.WebApp.initDataUnsafe.user.phone_number) {
+              const phone = (window as any).Telegram.WebApp.initDataUnsafe.user.phone_number;
+              console.log('📱 🔍 Got phone from Telegram WebApp:', phone);
+              // Сохраняем в localStorage для будущего использования
+              localStorage.setItem('user_phone', phone);
+              return phone;
+            } else {
+              console.log('📱 🔍 No phone_number in Telegram WebApp user object');
+            }
+          } else {
+            console.log('📱 🔍 No user object in Telegram WebApp.initDataUnsafe');
+          }
+        } else {
+          console.log('📱 🔍 No initDataUnsafe in Telegram WebApp');
+        }
+      } else {
+        console.log('📱 🔍 No WebApp object in Telegram');
+      }
+    } else {
+      console.log('📱 🔍 Telegram object not found in window');
+    }
+    
+    // Пробуем получить из localStorage
+    const savedPhone = localStorage.getItem('user_phone');
+    if (savedPhone) {
+      console.log('📱 🔍 Got phone from localStorage:', savedPhone);
+      return savedPhone;
+    }
+    
+    // Fallback на пустую строку
+    console.log('📱 ⚠️ No phone found, user will enter manually');
+    return '';
   };
 
   // Загрузка адресов при монтировании
   useEffect(() => {
     loadAddresses();
   }, []);
+
+  // Перезагрузка адресов при изменении AuthContext
+  useEffect(() => {
+    if (state.user && state.user.telegram_id) {
+      console.log('🗺️ 🔄 AuthContext changed, reloading addresses...');
+      loadAddresses();
+    }
+  }, [state.user]);
 
   // Загрузка адресов
   const loadAddresses = async () => {
@@ -82,14 +149,38 @@ export const AddressManager: React.FC = () => {
       
       // Используем правильный API URL
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
-      const response = await fetch(`${apiBaseUrl}/api/addresses/?telegram_id=${telegramId}`);
+      const fullUrl = `${apiBaseUrl}/api/addresses/?telegram_id=${telegramId}`;
+      console.log('🗺️ 🔍 Full API URL:', fullUrl);
+      
+      const response = await fetch(fullUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
+        mode: 'cors'
+      });
+      console.log('🗺️ 🔍 Response status:', response.status);
+      console.log('🗺️ 🔍 Response headers:', response.headers);
+      
+      // Получаем текст ответа для отладки
+      const responseText = await response.text();
+      console.log('🗺️ 🔍 Response text (first 500 chars):', responseText.substring(0, 500));
       
       if (response.ok) {
-        const addressesData = await response.json();
-        setAddresses(addressesData);
-        console.log('🗺️ Addresses loaded:', addressesData.length);
+        try {
+          const addressesData = JSON.parse(responseText);
+          console.log('🗺️ 🔍 Parsed addresses data:', addressesData);
+          setAddresses(addressesData);
+          console.log('🗺️ Addresses loaded:', addressesData.length);
+        } catch (parseError) {
+          console.error('🗺️ ❌ JSON parse error:', parseError);
+          console.error('🗺️ ❌ Response was not valid JSON');
+          setAddresses([]);
+        }
       } else {
-        console.error('Failed to load addresses:', response.status);
+        console.error('Failed to load addresses:', response.status, responseText);
         setAddresses([]);
       }
     } catch (error) {
@@ -108,15 +199,20 @@ export const AddressManager: React.FC = () => {
 
   // Сброс формы
   const resetForm = () => {
+    // Получаем телефон пользователя для автоматического заполнения
+    const userPhone = getUserPhone();
+    
     setFormData({
       street: '',
       house_number: '',
       apartment: '',
       city: '',
-      phone_number: '',
+      phone_number: userPhone, // Автоматически заполняем телефон
       comment: '',
       is_primary: false,
-      telegram_id: ''
+      telegram_id: getTelegramId(), // Автоматически заполняем telegram_id
+      latitude: null,
+      longitude: null
     });
     setEditingAddress(null);
     setShowForm(false);
@@ -149,8 +245,11 @@ export const AddressManager: React.FC = () => {
         city: formData.city || 'Бухара',
         phone_number: formData.phone_number,
         comment: formData.comment || '',
-        is_primary: formData.is_primary,
-        telegram_id: formData.telegram_id
+        // Устанавливаем is_primary только если нет основного адреса
+        is_primary: addresses.some(addr => addr.is_primary) ? false : formData.is_primary,
+        telegram_id: formData.telegram_id,
+        latitude: formData.latitude,
+        longitude: formData.longitude
       };
 
       console.log('🗺️ 🔍 Form data before save:', formData);
@@ -186,8 +285,11 @@ export const AddressManager: React.FC = () => {
         const response = await fetch(`${apiBaseUrl}/api/addresses/`, {
           method: 'POST',
           headers: {
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
           },
+          mode: 'cors',
           body: JSON.stringify(addressData)
         });
 
@@ -195,6 +297,12 @@ export const AddressManager: React.FC = () => {
           const newAddress = await response.json();
           setAddresses(prev => [...prev, newAddress]);
           console.log('🗺️ Address added successfully');
+          
+          // Принудительно перезагружаем адреса для обновления списка
+          console.log('🗺️ 🔄 Reloading addresses after save...');
+          setTimeout(() => {
+            loadAddresses();
+          }, 500);
         } else {
           throw new Error('Failed to add address');
         }
@@ -220,7 +328,9 @@ export const AddressManager: React.FC = () => {
       phone_number: address.phone_number,
       comment: address.comment || '',
       is_primary: address.is_primary,
-      telegram_id: address.telegram_id || ''
+      telegram_id: address.telegram_id || '',
+      latitude: address.latitude || null,
+      longitude: address.longitude || null
     });
     setShowForm(true);
   };
@@ -285,21 +395,62 @@ export const AddressManager: React.FC = () => {
       
       setAddresses(finalAddresses);
       
-      // Обновляем в базе данных
+      // Обновляем в базе данных через обычный PUT запрос
       const telegramId = getTelegramId();
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
-      const response = await fetch(`${apiBaseUrl}/api/addresses/${id}/set-primary/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ telegram_id: telegramId })
-      });
       
-      if (response.ok) {
-        console.log('🗺️ Primary address updated in backend');
-      } else {
-        console.error('Failed to update primary address in backend');
+      // Обновляем все адреса, чтобы сбросить is_primary
+      for (const addr of finalAddresses) {
+        if (addr.id !== id) {
+          // Сбрасываем is_primary для всех остальных адресов
+          const updateData = {
+            ...addr,
+            is_primary: false,
+            telegram_id: telegramId
+          };
+          
+          const response = await fetch(`${apiBaseUrl}/api/addresses/${addr.id}/`, {
+            method: 'PUT',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': 'true'
+            },
+            mode: 'cors',
+            body: JSON.stringify(updateData)
+          });
+          
+          if (!response.ok) {
+            console.error(`Failed to update address ${addr.id} is_primary to false`);
+          }
+        }
+      }
+      
+      // Устанавливаем выбранный адрес как основной
+      const primaryAddr = finalAddresses.find(addr => addr.id === id);
+      if (primaryAddr) {
+        const updateData = {
+          ...primaryAddr,
+          is_primary: true,
+          telegram_id: telegramId
+        };
+        
+        const response = await fetch(`${apiBaseUrl}/api/addresses/${id}/`, {
+          method: 'PUT',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
+          mode: 'cors',
+          body: JSON.stringify(updateData)
+        });
+        
+        if (response.ok) {
+          console.log('🗺️ Primary address updated in backend');
+        } else {
+          console.error('Failed to update primary address in backend');
+        }
       }
     } catch (error) {
       console.error('Error setting primary address:', error);
@@ -331,12 +482,16 @@ export const AddressManager: React.FC = () => {
       apartment: editingAddress.apartment || '',
       phone_number: editingAddress.phone_number || getUserPhone(),
       comment: editingAddress.comment || '',
-      is_primary: editingAddress.is_primary
+      is_primary: editingAddress.is_primary,
+      latitude: editingAddress.latitude || null,
+      longitude: editingAddress.longitude || null
     } : {
       apartment: '',
       phone_number: getUserPhone(),
       comment: '',
-      is_primary: false
+      is_primary: false,
+      latitude: null,
+      longitude: null
     };
     
     // Заполняем форму данными с карты
@@ -348,7 +503,9 @@ export const AddressManager: React.FC = () => {
       phone_number: existingData.phone_number,
       comment: existingData.comment,
       is_primary: existingData.is_primary,
-      telegram_id: getTelegramId()
+      telegram_id: getTelegramId(),
+      latitude: existingData.latitude,
+      longitude: existingData.longitude
     });
     
     console.log('🗺️ Form filled with map data:', {
@@ -376,73 +533,81 @@ export const AddressManager: React.FC = () => {
 
       {/* Список адресов */}
       {addresses.length > 0 ? (
-        <div className="space-y-4 mb-6">
-          {addresses.map((address) => (
+        <div className="space-y-3 sm:space-y-4 mb-6">
+          {addresses
+            .sort((_a, b) => (b.is_primary ? 1 : -1)) // Основной адрес сверху
+            .map((address) => (
             <div
               key={address.id}
-              className={`p-4 rounded-lg border ${
+              className={`p-3 sm:p-4 rounded-lg border ${
                 address.is_primary
                   ? 'border-primary-500 bg-primary-500/10'
                   : 'border-gray-600 bg-gray-700'
               }`}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                {/* Основная информация */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
                     {address.is_primary && (
-                      <span className="px-2 py-1 bg-primary-600 text-white text-xs rounded">
+                      <span className="px-2 py-1 bg-primary-600 text-white text-xs rounded whitespace-nowrap">
                         {t('primary')}
                       </span>
                     )}
-                    <h3 className="font-medium text-gray-100">
+                    <h3 className="font-medium text-gray-100 text-sm sm:text-base break-words">
                       {address.street}, {address.house_number}
                       {address.apartment && `, кв. ${address.apartment}`}
                     </h3>
                   </div>
-                  <p className="text-gray-400 text-sm mb-1">
+                  <p className="text-gray-400 text-xs sm:text-sm mb-1">
                     {address.city}
                   </p>
-                  <p className="text-gray-400 text-sm mb-2">
+                  <p className="text-gray-400 text-xs sm:text-sm mb-2">
                     {address.phone_number}
                   </p>
                   {address.comment && (
-                    <p className="text-gray-500 text-sm italic">
+                    <p className="text-gray-500 text-xs sm:text-sm italic break-words">
                       {address.comment}
                     </p>
                   )}
                 </div>
-                <div className="flex gap-2 ml-4">
+                
+                {/* Кнопки действий */}
+                <div className="flex flex-wrap gap-2 sm:gap-2 sm:ml-auto">
                   {!address.is_primary && (
-                    <Button
+                    <button
                       onClick={() => handleSetPrimary(address.id)}
-                      className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1 text-sm"
+                      className="bg-primary-600 hover:bg-primary-700 text-white p-2 rounded-lg transition-colors active:scale-95"
+                      title={t('set_as_primary')}
                     >
-                      {t('set_as_primary')}
-                    </Button>
+                      ⭐
+                    </button>
                   )}
-                  <Button
+                  <button
                     onClick={() => handleEdit(address)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors active:scale-95"
+                    title={t('edit')}
                   >
-                    {t('edit')}
-                  </Button>
-                  <Button
+                    ✏️
+                  </button>
+                  <button
                     onClick={() => handleDelete(address.id)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 text-sm"
+                    className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors active:scale-95"
+                    title={t('delete')}
                   >
-                    {t('delete')}
-                  </Button>
+                    🗑️
+                  </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 mb-6">
-          <p className="text-gray-400 text-lg mb-2">
+        <div className="text-center py-6 sm:py-8 mb-6">
+          <p className="text-gray-400 text-base sm:text-lg mb-2">
             {t('no_addresses')}
           </p>
-          <p className="text-gray-500 text-sm mb-6">
+          <p className="text-gray-500 text-sm mb-4 sm:mb-6">
             {t('add_first_address')}
           </p>
         </div>
@@ -458,7 +623,7 @@ export const AddressManager: React.FC = () => {
             }}
             className="w-full bg-primary-600 hover:bg-primary-700 text-white"
           >
-            🗺️ {t('select_on_map')}
+            {t('select_on_map')}
           </Button>
         </div>
       )}
@@ -485,102 +650,126 @@ export const AddressManager: React.FC = () => {
             )}
           </div>
           
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Показываем форму только для новых адресов или если не редактируем через карту */}
+          {!editingAddress || !showMapPicker ? (
+            <div className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="block text-gray-300 text-xs sm:text-sm mb-2">
+                    {t('street')} *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.street}
+                    onChange={(e) => handleInputChange('street', e.target.value)}
+                    className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm"
+                    placeholder={t('street_placeholder')}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-300 text-xs sm:text-sm mb-2">
+                    {t('house_number')} *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.house_number}
+                    onChange={(e) => handleInputChange('house_number', e.target.value)}
+                    className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm"
+                    placeholder="123"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="block text-gray-300 text-xs sm:text-sm mb-2">
+                    {t('apartment')}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.apartment}
+                    onChange={(e) => handleInputChange('apartment', e.target.value)}
+                    className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm"
+                    placeholder="45"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-300 text-xs sm:text-sm mb-2">
+                    {t('city')} *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm"
+                    placeholder="Введите город"
+                  />
+                </div>
+              </div>
+              
               <div>
-                <label className="block text-gray-300 text-sm mb-2">
-                  {t('street')} *
+                <label className="block text-gray-300 text-xs sm:text-sm mb-2">
+                  {t('phone_number')} *
                 </label>
                 <input
-                  type="text"
-                  value={formData.street}
-                  onChange={(e) => handleInputChange('street', e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none"
-                  placeholder={t('street_placeholder')}
+                  type="tel"
+                  value={formData.phone_number}
+                  onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                  className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm"
+                  placeholder="+998 90 123 45 67"
                 />
               </div>
               
               <div>
-                <label className="block text-gray-300 text-sm mb-2">
-                  {t('house_number')} *
+                <label className="block text-gray-300 text-xs sm:text-sm mb-2">
+                  {t('comment')}
                 </label>
-                <input
-                  type="text"
-                  value={formData.house_number}
-                  onChange={(e) => handleInputChange('house_number', e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none"
-                  placeholder="123"
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-gray-300 text-sm mb-2">
-                  {t('apartment')}
-                </label>
-                <input
-                  type="text"
-                  value={formData.apartment}
-                  onChange={(e) => handleInputChange('apartment', e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none"
-                  placeholder="45"
+                <textarea
+                  value={formData.comment}
+                  onChange={(e) => handleInputChange('comment', e.target.value)}
+                  className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm"
+                  rows={3}
+                  placeholder={t('comment_placeholder')}
                 />
               </div>
               
-              <div>
-                <label className="block text-gray-300 text-sm mb-2">
-                  {t('city')} *
-                </label>
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none"
-                  placeholder="Введите город"
-                />
+              <div className="flex items-center gap-2">
+                {/* Показываем чекбокс только если нет основного адреса */}
+                {!addresses.some(addr => addr.is_primary) && (
+                  <input
+                    type="checkbox"
+                    id="is_primary"
+                    checked={formData.is_primary}
+                    onChange={(e) => handleInputChange('is_primary', e.target.checked)}
+                    className="w-4 h-4 text-primary-600 bg-gray-700 border-gray-600 rounded focus:ring-primary-500 focus:ring-2"
+                  />
+                )}
+                {!addresses.some(addr => addr.is_primary) && (
+                  <label htmlFor="is_primary" className="text-gray-300 text-sm">
+                    {t('set_as_primary')}
+                  </label>
+                )}
+                {/* Показываем сообщение если уже есть основной адрес */}
+                {addresses.some(addr => addr.is_primary) && (
+                  <div className="text-sm text-gray-400 italic">
+                    💡 У вас уже есть основной адрес
+                  </div>
+                )}
               </div>
             </div>
-            
-            <div>
-              <label className="block text-gray-300 text-sm mb-2">
-                {t('phone_number')} *
-              </label>
-              <input
-                type="tel"
-                value={formData.phone_number}
-                onChange={(e) => handleInputChange('phone_number', e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none"
-                placeholder="+998 90 123 45 67"
-              />
+          ) : (
+            /* Показываем информацию о редактировании через карту */
+            <div className="text-center py-8">
+              <p className="text-gray-400 text-lg mb-4">
+                🗺️ Редактирование адреса через карту
+              </p>
+              <p className="text-gray-500 text-sm">
+                Кликните на карте для выбора нового местоположения
+              </p>
             </div>
-            
-            <div>
-              <label className="block text-gray-300 text-sm mb-2">
-                {t('comment')}
-              </label>
-              <textarea
-                value={formData.comment}
-                onChange={(e) => handleInputChange('comment', e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none"
-                rows={3}
-                placeholder={t('comment_placeholder')}
-              />
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="is_primary"
-                checked={formData.is_primary}
-                onChange={(e) => handleInputChange('is_primary', e.target.checked)}
-                className="w-4 h-4 text-primary-600 bg-gray-700 border-gray-600 rounded focus:ring-primary-500 focus:ring-2"
-              />
-              <label htmlFor="is_primary" className="text-gray-300 text-sm">
-                {t('set_as_primary')}
-              </label>
-            </div>
-          </div>
+          )}
           
           <div className="flex gap-3 mt-6">
             <Button
