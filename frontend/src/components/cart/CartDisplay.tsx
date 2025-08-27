@@ -116,7 +116,7 @@ export const CartDisplay: React.FC = () => {
                 
                 {/* Информация о блюде */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-100 text-sm sm:text-base mb-2 truncate">
+                  <h3 className="font-semibold text-gray-100 text-sm sm:text-base mb-2 leading-tight line-clamp-2">
                     {item.menuItem.name}
                   </h3>
                   
@@ -124,32 +124,42 @@ export const CartDisplay: React.FC = () => {
                   <div className="text-xs sm:text-sm text-gray-400 space-y-1 mb-2">
                     {/* Размер блюда */}
                     {item.sizeOption && (
-                      <div className="flex items-center bg-gray-700/50 px-2 py-1 rounded">
-                        <span className="mr-2 text-primary-400">📏</span>
-                        <span className="text-gray-300">{t('size')}: {item.sizeOption.name}</span>
-                        {Number(item.sizeOption.price_modifier) !== 0 && (
-                          <span className="ml-2 text-primary-400 font-medium">
-                            ({Number(item.sizeOption.price_modifier) > 0 ? '+' : ''}{formatCurrency(Number(item.sizeOption.price_modifier) || 0)})
-                          </span>
-                        )}
+                      <div className="bg-gray-700/50 px-2 py-1 rounded">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center min-w-0 flex-1">
+                            <span className="mr-2 text-primary-400 flex-shrink-0">📏</span>
+                            <span className="text-gray-300 truncate">Р: {item.sizeOption.name}</span>
+                          </div>
+                          {Number(item.sizeOption.price_modifier) !== 0 && (
+                            <span className="ml-2 text-primary-400 font-medium flex-shrink-0">
+                              ({Number(item.sizeOption.price_modifier) > 0 ? '+' : ''}{formatCurrency(Number(item.sizeOption.price_modifier) || 0)})
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
                     
                     {/* Дополнения */}
                     {item.addOns.length > 0 && (
-                      <div className="flex items-center bg-gray-700/50 px-2 py-1 rounded">
-                        <span className="mr-2 text-accent-400">➕</span>
-                        <span className="text-gray-300">{t('addition')}: {item.addOns.map(a => a.name).join(', ')}</span>
-                        <span className="ml-2 text-accent-400 font-medium">
-                          (+{formatCurrency(item.addOns.reduce((sum, a) => sum + (Number(a.price) || 0), 0))})
-                        </span>
+                      <div className="bg-gray-700/50 px-2 py-1 rounded">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center min-w-0 flex-1">
+                            <span className="mr-2 text-accent-400 flex-shrink-0">➕</span>
+                            <div className="text-gray-300 min-w-0">
+                              <span className="block truncate">Доп: {item.addOns.map(a => a.name).join(', ')}</span>
+                            </div>
+                          </div>
+                          <span className="ml-2 text-accent-400 font-medium flex-shrink-0">
+                            (+{formatCurrency(item.addOns.reduce((sum, a) => sum + (Number(a.price) || 0), 0))})
+                          </span>
+                        </div>
                       </div>
                     )}
                     
                     {/* Показываем сообщение если нет опций */}
                     {!item.sizeOption && item.addOns.length === 0 && (
                       <div className="text-gray-500 text-xs italic">
-                        Без дополнительных опций
+                        Без доп. опций
                       </div>
                     )}
                   </div>
