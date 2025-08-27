@@ -375,3 +375,117 @@ TypeError: unsupported operand type(s) for -: 'datetime.datetime' and 'NoneType'
 [2025-08-08 17:25:59,608] ERROR log log_response 241 - Internal Server Error: /api/webhook/
 [2025-08-18 01:26:18,793] ERROR log log_response 241 - Internal Server Error: /api/webhook/
 [2025-08-24 06:42:21,810] ERROR log log_response 241 - Internal Server Error: /api/delivery-zones/
+[2025-08-27 11:08:49,553] ERROR log log_response 241 - Internal Server Error: /admin/api/address/
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/models.py", line 486, in _post_clean
+    self.instance.full_clean(exclude=exclude, validate_unique=False)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'city': ["Адрес не находится в зоне доставки: Адрес находится на расстоянии 3.6 км от зоны доставки 'Центр Бухары'"]}
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/contrib/admin/options.py", line 2013, in changelist_view
+    if formset.is_valid():
+       ~~~~~~~~~~~~~~~~^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/formsets.py", line 384, in is_valid
+    self.errors
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/formsets.py", line 366, in errors
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/formsets.py", line 429, in full_clean
+    form_errors = form.errors
+                  ^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/forms.py", line 196, in errors
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/forms.py", line 435, in full_clean
+    self._post_clean()
+    ~~~~~~~~~~~~~~~~^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/models.py", line 488, in _post_clean
+    self._update_errors(e)
+    ~~~~~~~~~~~~~~~~~~~^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/models.py", line 460, in _update_errors
+    self.add_error(None, errors)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/forms.py", line 400, in add_error
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: 'AddressForm' has no field named 'city'.
+[2025-08-27 11:09:00,764] ERROR log log_response 241 - Internal Server Error: /admin/api/address/
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/models.py", line 486, in _post_clean
+    self.instance.full_clean(exclude=exclude, validate_unique=False)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'city': ["Адрес не находится в зоне доставки: Адрес находится на расстоянии 3.6 км от зоны доставки 'Центр Бухары'"]}
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/contrib/admin/options.py", line 2013, in changelist_view
+    if formset.is_valid():
+       ~~~~~~~~~~~~~~~~^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/formsets.py", line 384, in is_valid
+    self.errors
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/formsets.py", line 366, in errors
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/formsets.py", line 429, in full_clean
+    form_errors = form.errors
+                  ^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/forms.py", line 196, in errors
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/forms.py", line 435, in full_clean
+    self._post_clean()
+    ~~~~~~~~~~~~~~~~^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/models.py", line 488, in _post_clean
+    self._update_errors(e)
+    ~~~~~~~~~~~~~~~~~~~^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/models.py", line 460, in _update_errors
+    self.add_error(None, errors)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/forms/forms.py", line 400, in add_error
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: 'AddressForm' has no field named 'city'.

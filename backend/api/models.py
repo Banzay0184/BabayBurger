@@ -71,11 +71,11 @@ def validate_uzbek_phone_number(value):
     elif cleaned.startswith('998'):
         cleaned = cleaned[3:]  # Убираем 998
     
-    # Проверяем длину (должно быть 9 цифр после кода страны)
-    if len(cleaned) != 9:
+    # Проверяем длину (должно быть 9-12 цифр после кода страны для гибкости)
+    if len(cleaned) < 9 or len(cleaned) > 12:
         raise ValidationError(
-            'Номер должен содержать 9 цифр после кода страны. '
-            'Примеры: +998 90 123 45 67, 901234567'
+            'Номер должен содержать от 9 до 12 цифр после кода страны. '
+            'Примеры: +998 90 123 45 67, +998901234567, 901234567'
         )
     
     # Проверяем код оператора (первые 2 цифры)
@@ -88,12 +88,13 @@ def validate_uzbek_phone_number(value):
             f'Допустимые коды: {", ".join(valid_operators)}'
         )
     
-    # Проверяем, что остальные цифры не все одинаковые
-    remaining_digits = cleaned[2:]
-    if len(set(remaining_digits)) == 1:
-        raise ValidationError(
-            'Номер не может состоять из повторяющихся цифр'
-        )
+    # Проверяем, что остальные цифры не все одинаковые (только если номер 9 цифр)
+    if len(cleaned) == 9:
+        remaining_digits = cleaned[2:]
+        if len(set(remaining_digits)) == 1:
+            raise ValidationError(
+                'Номер не может состоять из повторяющихся цифр'
+            )
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     """
@@ -323,16 +324,16 @@ class Address(models.Model):
     
     # Координаты для карт
     latitude = models.DecimalField(
-        max_digits=9, 
-        decimal_places=6, 
+        max_digits=10, 
+        decimal_places=7, 
         validators=[MinValueValidator(-90), MaxValueValidator(90)],
         blank=True, 
         null=True,
         verbose_name="Широта"
     )
     longitude = models.DecimalField(
-        max_digits=9, 
-        decimal_places=6, 
+        max_digits=10, 
+        decimal_places=7, 
         validators=[MinValueValidator(-180), MaxValueValidator(180)],
         blank=True, 
         null=True,

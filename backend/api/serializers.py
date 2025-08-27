@@ -65,10 +65,11 @@ class AddressCreateSerializer(serializers.ModelSerializer):
                              'Используйте существующий адрес или измените данные.'
                 })
         
-        # Координаты необязательны - будут заполнены автоматически
-        if not data.get('latitude') and not data.get('longitude'):
-            data['latitude'] = None
-            data['longitude'] = None
+        # Координаты необязательны, но если переданы - сохраняем их
+        # Убираем принудительную установку в None
+        # if not data.get('latitude') and not data.get('longitude'):
+        #     data['latitude'] = None
+        #     data['longitude'] = None
         
         # Проверяем зону доставки после создания адреса
         # Это будет выполнено в методе save() модели Address

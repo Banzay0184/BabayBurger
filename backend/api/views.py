@@ -1029,6 +1029,10 @@ class AddressView(APIView):
             address_data = request.data.copy()
             address_data['user'] = user.id
             
+            # Логируем данные для отладки координат
+            logger.info(f"Address creation data: {address_data}")
+            logger.info(f"Coordinates in request: latitude={address_data.get('latitude')}, longitude={address_data.get('longitude')}")
+            
             serializer = AddressCreateSerializer(data=address_data, context={'user': user})
             if serializer.is_valid():
                 try:

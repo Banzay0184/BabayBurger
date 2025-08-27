@@ -15,6 +15,7 @@ import { AddressManager } from '../components/address/AddressManager';
 import { RestaurantLogo } from '../components/common/RestaurantLogo';
 import { OptionsPage } from './OptionsPage';
 import type { MenuItem, Promotion } from '../types/menu';
+import type { Address } from '../types/address';
 
 export const MainPage: React.FC = () => {
   const { state } = useAuth();
@@ -38,7 +39,7 @@ export const MainPage: React.FC = () => {
   const [showLogo, setShowLogo] = useState(true);
   const [showOptionsPage, setShowOptionsPage] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
-  const [addresses, setAddresses] = useState<any[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [searchFilters, setSearchFilters] = useState({
     category: null as string | null,
     priceRange: [0, 100000] as [number, number],
@@ -74,6 +75,14 @@ export const MainPage: React.FC = () => {
       loadAddresses();
     }
   }, [state.user]);
+
+  // Автоматически переходим на адреса для новых пользователей без адресов
+  useEffect(() => {
+    if (addresses.length === 0 && !showLogo && currentView !== 'address') {
+      console.log('🗺️ 🔄 New user detected - switching to address view automatically');
+      setCurrentView('address');
+    }
+  }, [addresses.length, showLogo, currentView]);
 
   // Функция для определения статуса работы ресторана
   const getRestaurantStatus = () => {
@@ -833,9 +842,11 @@ export const MainPage: React.FC = () => {
                       </div>
                     </div>
                   ) : currentView === 'address' ? (
-                    <div className="animate-fade-in">
-                      <AddressManager />
-                    </div>
+                    <AddressManager 
+                      addresses={addresses}
+                      setAddresses={(newAddresses: Address[]) => setAddresses(newAddresses)}
+                      onViewChange={setCurrentView}
+                    />
                   ) : (
                     <div>
                       <div className="text-white mb-2">🛒 Показываю корзину</div>

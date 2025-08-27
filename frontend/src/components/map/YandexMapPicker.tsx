@@ -610,7 +610,7 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-2 sm:p-4 overflow-hidden">
       <div className="bg-gray-800 rounded-lg w-full h-full sm:h-[80vh] sm:max-w-4xl flex flex-col overflow-hidden">
         {/* Заголовок - фиксированный */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-700 flex-shrink-0">
@@ -630,22 +630,6 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
         {/* Кнопки управления - фиксированные */}
         <div className="p-3 sm:p-4 bg-gray-750 border-b border-gray-700 flex-shrink-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-300 mb-2">
-                Кликните по карте для выбора адреса доставки
-              </p>
-              {zones.length > 0 && (
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-green-500 bg-opacity-50 border border-green-500 rounded-full"></div>
-                    <span>Зоны доставки ({zones.length})</span>
-                  </div>
-                  <div className="text-orange-400">
-                    📍 Текущие зоны: {zones.map(zone => `${zone.city || 'Неизвестно'}`).join(', ')}
-                  </div>
-                </div>
-              )}
-            </div>
             <div className="grid grid-cols-2 xs:grid-cols-4 sm:flex sm:flex-wrap gap-1 sm:gap-2">
               <Button
                 onClick={getUserLocation}
@@ -697,7 +681,7 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
         {/* Информация о выбранном адресе */}
         {selectedAddress && (
           <div className="p-4 bg-gray-750 border-t border-gray-700">
-            <div className="flex items-start justify-between">
+            <div className="flex items-center">
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-gray-100 mb-1">
                   Выбранный адрес:
@@ -714,7 +698,7 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
                   </p>
                 )}
               </div>
-              <div className="flex gap-2 ml-4">
+              <div className="flex flex-col gap-2 ml-4">
                 <Button
                   onClick={onClose}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2"

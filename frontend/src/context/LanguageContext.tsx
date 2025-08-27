@@ -144,6 +144,7 @@ const translations: Record<Language, Record<string, string>> = {
     'no_favorites': 'У вас пока нет избранных товаров',
     
     // Адреса
+    'manage_delivery_addresses': 'Управление адресами доставки',
     'delivery_address': 'Адрес доставки',
     'delivery_addresses': 'Адреса доставки',
     'add_address': 'Добавить адрес',

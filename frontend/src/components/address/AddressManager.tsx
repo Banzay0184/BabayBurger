@@ -1,33 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { YandexMapPicker } from '../map/YandexMapPicker';
 import type { MapAddress } from '../../types/yandex-maps';
+import type { Address } from '../../types/address';
 
-interface Address {
-  id: number;
-  street: string;
-  house_number: string;
-  apartment?: string;
-  city: string;
-  phone_number: string;
-  comment?: string;
-  is_primary: boolean;
-  telegram_id?: string;
-  latitude?: number | null;
-  longitude?: number | null;
+interface AddressManagerProps {
+  addresses: Address[];
+  setAddresses: (addresses: Address[]) => void;
+  onViewChange?: (view: 'menu' | 'cart' | 'search' | 'favorites' | 'address') => void;
 }
 
-export const AddressManager: React.FC = () => {
+export const AddressManager: React.FC<AddressManagerProps> = ({
+  addresses,
+  setAddresses,
+  onViewChange
+}) => {
   const { t } = useLanguage();
   const { state } = useAuth();
   
   // Состояния
-  const [addresses, setAddresses] = useState<Address[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
-  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const [editingAddress, setEditingAddress] = useState<any>(null);
   const [formData, setFormData] = useState({
     street: '',
     house_number: '',
@@ -40,6 +36,11 @@ export const AddressManager: React.FC = () => {
     latitude: null as number | null,
     longitude: null as number | null
   });
+
+  // Функция-обертка для setAddresses с правильной типизацией
+  const updateAddresses = useCallback((newAddresses: Address[]) => {
+    setAddresses(newAddresses);
+  }, [setAddresses]);
 
   // Функция получения telegram_id
   const getTelegramId = () => {
@@ -125,69 +126,72 @@ export const AddressManager: React.FC = () => {
     return '';
   };
 
-  // Загрузка адресов при монтировании
+  // Автоматически открываем карту для новых пользователей без адресов
   useEffect(() => {
-    loadAddresses();
-  }, []);
+    if (addresses.length === 0 && !showForm && !showMapPicker) {
+      console.log('🗺️ 🔄 New user detected - opening address form automatically');
+      setShowMapPicker(true); // Directly open the map picker
+    }
+  }, [addresses.length, showForm, showMapPicker]);
 
   // Перезагрузка адресов при изменении AuthContext
   useEffect(() => {
     if (state.user && state.user.telegram_id) {
       console.log('🗺️ 🔄 AuthContext changed, reloading addresses...');
-      loadAddresses();
+      // loadAddresses(); // This line was removed as per the new_code.
     }
   }, [state.user]);
 
   // Загрузка адресов
-  const loadAddresses = async () => {
-    try {
-      console.log('🗺️ Loading addresses from backend...');
+  // const loadAddresses = async () => { // This function was removed as per the new_code.
+  //   try {
+  //     console.log('🗺️ Loading addresses from backend...');
       
-      // Получаем telegram_id для запроса
-      const telegramId = getTelegramId();
-      console.log('🗺️ 🔍 Loading addresses with telegram_id:', telegramId);
+  //     // Получаем telegram_id для запроса
+  //     const telegramId = getTelegramId();
+  //     console.log('🗺️ 🔍 Loading addresses with telegram_id:', telegramId);
       
-      // Используем правильный API URL
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
-      const fullUrl = `${apiBaseUrl}/api/addresses/?telegram_id=${telegramId}`;
-      console.log('🗺️ 🔍 Full API URL:', fullUrl);
+  //     // Используем правильный API URL
+  //     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+  //     const fullUrl = `${apiBaseUrl}/api/addresses/?telegram_id=${telegramId}`;
+  //     console.log('🗺️ 🔍 Full API URL:', fullUrl);
       
-      const response = await fetch(fullUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
-        },
-        mode: 'cors'
-      });
-      console.log('🗺️ 🔍 Response status:', response.status);
-      console.log('🗺️ 🔍 Response headers:', response.headers);
+  //     const response = await fetch(fullUrl, {
+  //       method: 'GET',
+  //       headers: {
+  //         'Accept': 'application/json',
+  //         'Content-Type': 'application/json',
+  //         'ngrok-skip-browser-warning': 'true'
+  //       },
+  //       mode: 'cors'
+  //     });
+  //     console.log('🗺️ 🔍 Response status:', response.status);
+  //     console.log('🗺️ 🔍 Response headers:', response.headers);
       
-      // Получаем текст ответа для отладки
-      const responseText = await response.text();
-      console.log('🗺️ 🔍 Response text (first 500 chars):', responseText.substring(0, 500));
+  //     // Получаем текст ответа для отладки
+  //     const responseText = await response.text();
+  //     console.log('🗺️ 🔍 Response text (first 500 chars):', responseText.substring(0, 500));
       
-      if (response.ok) {
-        try {
-          const addressesData = JSON.parse(responseText);
-          console.log('🗺️ 🔍 Parsed addresses data:', addressesData);
-          setAddresses(addressesData);
-          console.log('🗺️ Addresses loaded:', addressesData.length);
-        } catch (parseError) {
-          console.error('🗺️ ❌ JSON parse error:', parseError);
-          console.error('🗺️ ❌ Response was not valid JSON');
-          setAddresses([]);
-        }
-      } else {
-        console.error('Failed to load addresses:', response.status, responseText);
-        setAddresses([]);
-      }
-    } catch (error) {
-      console.error('Error loading addresses:', error);
-      setAddresses([]);
-    }
-  };
+  //     if (response.ok) {
+  //       try {
+  //         const addressesData = JSON.parse(responseText);
+  //         console.log('🗺️ 🔍 Parsed addresses data:', addressesData);
+  //         setAddresses(addressesData);
+  //         console.log('🗺️ Addresses loaded:', addressesData.length);
+  //       } catch (parseError) {
+  //         console.error('🗺️ ❌ JSON parse error:', parseError);
+  //         console.error('🗺️ ❌ Response was not valid JSON');
+  //         setAddresses([]);
+  //       }
+  //     } else {
+  //       console.error('Failed to load addresses:', response.status, responseText);
+  //       setAddresses([]);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error loading addresses:', error);
+  //     setAddresses([]);
+  //   }
+  // };
 
   // Обработка изменения формы
   const handleInputChange = (field: keyof typeof formData, value: string | boolean) => {
@@ -245,8 +249,8 @@ export const AddressManager: React.FC = () => {
         city: formData.city || 'Бухара',
         phone_number: formData.phone_number,
         comment: formData.comment || '',
-        // Устанавливаем is_primary только если нет основного адреса
-        is_primary: addresses.some(addr => addr.is_primary) ? false : formData.is_primary,
+        // Устанавливаем is_primary: true если это единственный адрес, иначе по выбору пользователя
+        is_primary: addresses.length === 0 ? true : (addresses.some(addr => addr.is_primary) ? false : formData.is_primary),
         telegram_id: formData.telegram_id,
         latitude: formData.latitude,
         longitude: formData.longitude
@@ -256,6 +260,11 @@ export const AddressManager: React.FC = () => {
       console.log('🗺️ 🔍 Address data to send:', addressData);
       console.log('🗺️ 🔍 Telegram ID in addressData:', addressData.telegram_id);
       console.log('🗺️ 🔍 User from AuthContext:', state.user);
+      console.log('🗺️ 🔍 Coordinates in addressData:', {
+        latitude: addressData.latitude,
+        longitude: addressData.longitude,
+        hasCoordinates: addressData.latitude !== null && addressData.longitude !== null
+      });
       console.log('🗺️ Saving address to backend:', addressData);
 
       if (editingAddress) {
@@ -274,7 +283,7 @@ export const AddressManager: React.FC = () => {
           const updatedAddresses = addresses.map(addr =>
             addr.id === editingAddress.id ? updatedAddress : addr
           );
-          setAddresses(updatedAddresses);
+          updateAddresses(updatedAddresses);
           console.log('🗺️ Address updated successfully');
         } else {
           throw new Error('Failed to update address');
@@ -295,20 +304,38 @@ export const AddressManager: React.FC = () => {
 
         if (response.ok) {
           const newAddress = await response.json();
-          setAddresses(prev => [...prev, newAddress]);
-          console.log('🗺️ Address added successfully');
           
-          // Принудительно перезагружаем адреса для обновления списка
-          console.log('🗺️ 🔄 Reloading addresses after save...');
-          setTimeout(() => {
-            loadAddresses();
-          }, 500);
+          if (editingAddress) {
+            // Редактирование существующего адреса
+            const updatedAddresses = addresses.map((addr: any) => 
+              addr.id === editingAddress.id ? newAddress : addr
+            );
+            updateAddresses(updatedAddresses);
+            alert('✅ Адрес обновлен!');
+          } else {
+            // Добавление нового адреса
+            const updatedAddresses = [...addresses, newAddress];
+            updateAddresses(updatedAddresses);
+            alert('✅ Адрес добавлен!');
+          }
+          
+          // Сбрасываем форму
+          resetForm();
+          
+          // Закрываем форму и карту
+          setShowForm(false);
+          setShowMapPicker(false);
+          
+          // Переключаемся на главную страницу
+          if (onViewChange) {
+            onViewChange('menu');
+          }
         } else {
           throw new Error('Failed to add address');
         }
       }
 
-      resetForm();
+      // resetForm(); // This line was removed as per the new_code.
     } catch (error) {
       console.error('Error saving address:', error);
       const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
@@ -318,16 +345,15 @@ export const AddressManager: React.FC = () => {
 
   // Редактирование адреса
   const handleEdit = (address: Address) => {
-    console.log('🗺️ Editing address:', address);
     setEditingAddress(address);
     setFormData({
-      street: address.street,
-      house_number: address.house_number,
+      street: address.street || '',
+      house_number: address.house_number || '',
       apartment: address.apartment || '',
-      city: address.city,
-      phone_number: address.phone_number,
+      city: address.city || '',
+      phone_number: address.phone_number || '',
       comment: address.comment || '',
-      is_primary: address.is_primary,
+      is_primary: address.is_primary || false,
       telegram_id: address.telegram_id || '',
       latitude: address.latitude || null,
       longitude: address.longitude || null
@@ -336,125 +362,69 @@ export const AddressManager: React.FC = () => {
   };
 
   // Удаление адреса
-  const handleDelete = async (id: number) => {
-    if (confirm('Вы уверены, что хотите удалить этот адрес?')) {
+  const handleDelete = async (addressId: number) => {
+    if (addresses.length <= 1) {
+      alert('❌ Нельзя удалить последний адрес!');
+      return;
+    }
+
+    if (confirm('🗑️ Вы уверены, что хотите удалить этот адрес?')) {
       try {
-        console.log('🗺️ Deleting address:', id);
-        
-        // Получаем telegram_id для запроса
-        const telegramId = getTelegramId();
-        
-        // Удаляем из базы данных
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
-        const response = await fetch(`${apiBaseUrl}/api/addresses/${id}/`, {
+        const response = await fetch(`${apiBaseUrl}/api/addresses/${addressId}/`, {
           method: 'DELETE',
           headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ telegram_id: telegramId })
-        });
-        
-        if (response.ok) {
-          // Удаляем из локального состояния только после успешного удаления из БД
-          setAddresses(prev => prev.filter(addr => addr.id !== id));
-          console.log('🗺️ Address deleted from backend successfully');
-          
-          // Если удаляли редактируемый адрес, закрываем форму
-          if (editingAddress && editingAddress.id === id) {
-            setEditingAddress(null);
-            setShowForm(false);
+            'Accept': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
           }
+        });
+
+        if (response.ok) {
+          // Обновляем список адресов
+          const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
+          updateAddresses(updatedAddresses);
+          alert('✅ Адрес удален!');
         } else {
-          const errorData = await response.json();
-          console.error('Failed to delete address from backend:', errorData);
-          alert(`Ошибка удаления адреса: ${errorData.error || 'Неизвестная ошибка'}`);
+          alert('❌ Ошибка удаления адреса');
         }
       } catch (error) {
         console.error('Error deleting address:', error);
-        alert('Ошибка удаления адреса: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'));
+        alert('❌ Ошибка удаления адреса');
       }
     }
   };
 
   // Установка основного адреса
-  const handleSetPrimary = async (id: number) => {
+  const handleSetPrimary = async (addressId: number) => {
+    if (addresses.length <= 1) {
+      alert('🔒 Это единственный адрес - он должен быть основным!');
+      return;
+    }
+
     try {
-      console.log('🗺️ Setting primary address:', id);
-      
-      // Сначала сбрасываем все адреса как не основные
-      const updatedAddresses = addresses.map(addr => ({
-        ...addr,
-        is_primary: false
-      }));
-      
-      // Затем устанавливаем выбранный как основной
-      const finalAddresses = updatedAddresses.map(addr => ({
-        ...addr,
-        is_primary: addr.id === id
-      }));
-      
-      setAddresses(finalAddresses);
-      
-      // Обновляем в базе данных через обычный PUT запрос
-      const telegramId = getTelegramId();
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
-      
-      // Обновляем все адреса, чтобы сбросить is_primary
-      for (const addr of finalAddresses) {
-        if (addr.id !== id) {
-          // Сбрасываем is_primary для всех остальных адресов
-          const updateData = {
-            ...addr,
-            is_primary: false,
-            telegram_id: telegramId
-          };
-          
-          const response = await fetch(`${apiBaseUrl}/api/addresses/${addr.id}/`, {
-            method: 'PUT',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'ngrok-skip-browser-warning': 'true'
-            },
-            mode: 'cors',
-            body: JSON.stringify(updateData)
-          });
-          
-          if (!response.ok) {
-            console.error(`Failed to update address ${addr.id} is_primary to false`);
-          }
+      const response = await fetch(`${apiBaseUrl}/api/addresses/${addressId}/set-primary/`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
         }
-      }
-      
-      // Устанавливаем выбранный адрес как основной
-      const primaryAddr = finalAddresses.find(addr => addr.id === id);
-      if (primaryAddr) {
-        const updateData = {
-          ...primaryAddr,
-          is_primary: true,
-          telegram_id: telegramId
-        };
-        
-        const response = await fetch(`${apiBaseUrl}/api/addresses/${id}/`, {
-          method: 'PUT',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-          },
-          mode: 'cors',
-          body: JSON.stringify(updateData)
-        });
-        
-        if (response.ok) {
-          console.log('🗺️ Primary address updated in backend');
-        } else {
-          console.error('Failed to update primary address in backend');
-        }
+      });
+
+      if (response.ok) {
+        // Обновляем список адресов
+        const updatedAddresses = addresses.map(addr => ({
+          ...addr,
+          is_primary: addr.id === addressId
+        }));
+        updateAddresses(updatedAddresses);
+        alert('⭐ Адрес установлен как основной!');
+      } else {
+        alert('❌ Ошибка установки основного адреса');
       }
     } catch (error) {
       console.error('Error setting primary address:', error);
-      alert('Ошибка установки основного адреса');
+      alert('❌ Ошибка установки основного адреса');
     }
   };
 
@@ -486,32 +456,37 @@ export const AddressManager: React.FC = () => {
       latitude: editingAddress.latitude || null,
       longitude: editingAddress.longitude || null
     } : {
-      apartment: '',
-      phone_number: getUserPhone(),
-      comment: '',
-      is_primary: false,
-      latitude: null,
-      longitude: null
+      apartment: formData.apartment || '',
+      phone_number: formData.phone_number || getUserPhone(),
+      comment: formData.comment || '',
+      is_primary: formData.is_primary,
+      latitude: formData.latitude || null,
+      longitude: formData.longitude || null
     };
     
-    // Заполняем форму данными с карты
+    // Заполняем форму данными с карты, сохраняя ручной ввод
     setFormData({
-      street: mapAddress.street || '',
-      house_number: mapAddress.house || '1',
+      street: mapAddress.street || formData.street || '',
+      house_number: mapAddress.house || formData.house_number || '1',
       apartment: existingData.apartment,
-      city: mapAddress.city || 'Бухара',
+      city: mapAddress.city || formData.city || 'Бухара',
       phone_number: existingData.phone_number,
       comment: existingData.comment,
       is_primary: existingData.is_primary,
       telegram_id: getTelegramId(),
-      latitude: existingData.latitude,
-      longitude: existingData.longitude
+      latitude: mapAddress.coordinates ? Number(mapAddress.coordinates[0].toFixed(6)) : null,  // Широта (первый элемент)
+      longitude: mapAddress.coordinates ? Number(mapAddress.coordinates[1].toFixed(6)) : null  // Долгота (второй элемент)
     });
     
     console.log('🗺️ Form filled with map data:', {
       isEditing: !!editingAddress,
       phone: existingData.phone_number,
-      existingData
+      existingData,
+      mapCoordinates: mapAddress.coordinates,
+      finalCoordinates: {
+        latitude: mapAddress.coordinates ? mapAddress.coordinates[0].toFixed(6) : null,  // Широта (первый элемент)
+        longitude: mapAddress.coordinates ? mapAddress.coordinates[1].toFixed(6) : null  // Долгота (второй элемент)
+      }
     });
     
     // Закрываем карту и показываем форму
@@ -545,7 +520,7 @@ export const AddressManager: React.FC = () => {
                   : 'border-gray-600 bg-gray-700'
               }`}
             >
-              <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+              <div className="flex items-center sm:flex-row sm:items-start gap-3 sm:gap-4">
                 {/* Основная информация */}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -574,7 +549,8 @@ export const AddressManager: React.FC = () => {
                 
                 {/* Кнопки действий */}
                 <div className="flex flex-wrap gap-2 sm:gap-2 sm:ml-auto">
-                  {!address.is_primary && (
+                  {/* Кнопка "Сделать основным" - показываем только если не единственный адрес */}
+                  {!address.is_primary && addresses.length > 1 && (
                     <button
                       onClick={() => handleSetPrimary(address.id)}
                       className="bg-primary-600 hover:bg-primary-700 text-white p-2 rounded-lg transition-colors active:scale-95"
@@ -583,6 +559,7 @@ export const AddressManager: React.FC = () => {
                       ⭐
                     </button>
                   )}
+                  {/* Кнопка "Редактировать" - показываем всегда */}
                   <button
                     onClick={() => handleEdit(address)}
                     className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors active:scale-95"
@@ -590,27 +567,23 @@ export const AddressManager: React.FC = () => {
                   >
                     ✏️
                   </button>
-                  <button
-                    onClick={() => handleDelete(address.id)}
-                    className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors active:scale-95"
-                    title={t('delete')}
-                  >
-                    🗑️
-                  </button>
+                  {/* Кнопка "Удалить" - показываем только если не единственный адрес */}
+                  {addresses.length > 1 && (
+                    <button
+                      onClick={() => handleDelete(address.id)}
+                      className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors active:scale-95"
+                      title={t('delete')}
+                    >
+                      🗑️
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-6 sm:py-8 mb-6">
-          <p className="text-gray-400 text-base sm:text-lg mb-2">
-            {t('no_addresses')}
-          </p>
-          <p className="text-gray-500 text-sm mb-4 sm:mb-6">
-            {t('add_first_address')}
-          </p>
-        </div>
+        ''
       )}
 
       {/* Кнопки добавления */}
@@ -623,8 +596,14 @@ export const AddressManager: React.FC = () => {
             }}
             className="w-full bg-primary-600 hover:bg-primary-700 text-white"
           >
-            {t('select_on_map')}
+            🗺️ {t('select_on_map')}
           </Button>
+          
+          <div className="text-center">
+            <p className="text-gray-400 text-sm">
+              💡 Адрес добавляется только через карту для точности
+            </p>
+          </div>
         </div>
       )}
 
@@ -653,6 +632,19 @@ export const AddressManager: React.FC = () => {
           {/* Показываем форму только для новых адресов или если не редактируем через карту */}
           {!editingAddress || !showMapPicker ? (
             <div className="space-y-3 sm:space-y-4">
+              {/* Кнопка для выбора координат на карте */}
+              <div className="text-center mb-4">
+                <Button
+                  onClick={() => {
+                    console.log('🗺️ Manual input: opening map for coordinates');
+                    setShowMapPicker(true);
+                  }}
+                  className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-sm"
+                >
+                  🗺️ Открыть карту
+                </Button>
+              </div>
+              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-gray-300 text-xs sm:text-sm mb-2">
@@ -736,25 +728,32 @@ export const AddressManager: React.FC = () => {
               </div>
               
               <div className="flex items-center gap-2">
-                {/* Показываем чекбокс только если нет основного адреса */}
-                {!addresses.some(addr => addr.is_primary) && (
+                {/* Показываем чекбокс только если нет основного адреса или это не единственный адрес */}
+                {(!addresses.some(addr => addr.is_primary) || addresses.length === 1) && (
                   <input
                     type="checkbox"
                     id="is_primary"
                     checked={formData.is_primary}
                     onChange={(e) => handleInputChange('is_primary', e.target.checked)}
                     className="w-4 h-4 text-primary-600 bg-gray-700 border-gray-600 rounded focus:ring-primary-500 focus:ring-2"
+                    disabled={addresses.length === 1} // Отключаем если это единственный адрес
                   />
                 )}
-                {!addresses.some(addr => addr.is_primary) && (
+                {(!addresses.some(addr => addr.is_primary) || addresses.length === 1) && (
                   <label htmlFor="is_primary" className="text-gray-300 text-sm">
                     {t('set_as_primary')}
                   </label>
                 )}
                 {/* Показываем сообщение если уже есть основной адрес */}
-                {addresses.some(addr => addr.is_primary) && (
+                {addresses.some(addr => addr.is_primary) && addresses.length > 1 && (
                   <div className="text-sm text-gray-400 italic">
                     💡 У вас уже есть основной адрес
+                  </div>
+                )}
+                {/* Показываем сообщение если это единственный адрес */}
+                {addresses.length === 1 && (
+                  <div className="text-sm text-primary-400 italic">
+                    🔒 Это единственный адрес - он должен быть основным
                   </div>
                 )}
               </div>
