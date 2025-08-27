@@ -614,19 +614,6 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
             <h3 className="text-lg font-semibold text-gray-100">
               {editingAddress ? t('edit_address') : t('add_address')}
             </h3>
-            
-            {/* Кнопка карты для редактирования */}
-            {editingAddress && (
-              <Button
-                onClick={() => {
-                  console.log('🗺️ Edit address via map clicked');
-                  setShowMapPicker(true);
-                }}
-                className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 text-sm"
-              >
-                🗺️ Изменить на карте
-              </Button>
-            )}
           </div>
           
           {/* Показываем форму только для новых адресов или если не редактируем через карту */}
