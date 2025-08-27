@@ -142,56 +142,45 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
     }
   }, [state.user]);
 
-  // Загрузка адресов
-  // const loadAddresses = async () => { // This function was removed as per the new_code.
-  //   try {
-  //     console.log('🗺️ Loading addresses from backend...');
-      
-  //     // Получаем telegram_id для запроса
-  //     const telegramId = getTelegramId();
-  //     console.log('🗺️ 🔍 Loading addresses with telegram_id:', telegramId);
-      
-  //     // Используем правильный API URL
-  //     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
-  //     const fullUrl = `${apiBaseUrl}/api/addresses/?telegram_id=${telegramId}`;
-  //     console.log('🗺️ 🔍 Full API URL:', fullUrl);
-      
-  //     const response = await fetch(fullUrl, {
-  //       method: 'GET',
-  //       headers: {
-  //         'Accept': 'application/json',
-  //         'Content-Type': 'application/json',
-  //         'ngrok-skip-browser-warning': 'true'
-  //       },
-  //       mode: 'cors'
-  //     });
-  //     console.log('🗺️ 🔍 Response status:', response.status);
-  //     console.log('🗺️ 🔍 Response headers:', response.headers);
-      
-  //     // Получаем текст ответа для отладки
-  //     const responseText = await response.text();
-  //     console.log('🗺️ 🔍 Response text (first 500 chars):', responseText.substring(0, 500));
-      
-  //     if (response.ok) {
-  //       try {
-  //         const addressesData = JSON.parse(responseText);
-  //         console.log('🗺️ 🔍 Parsed addresses data:', addressesData);
-  //         setAddresses(addressesData);
-  //         console.log('🗺️ Addresses loaded:', addressesData.length);
-  //       } catch (parseError) {
-  //         console.error('🗺️ ❌ JSON parse error:', parseError);
-  //         console.error('🗺️ ❌ Response was not valid JSON');
-  //         setAddresses([]);
-  //       }
-  //     } else {
-  //       console.error('Failed to load addresses:', response.status, responseText);
-  //       setAddresses([]);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error loading addresses:', error);
-  //     setAddresses([]);
-  //   }
-  // };
+  // Специальные стили для Telegram WebApp на мобильных
+  useEffect(() => {
+    // Добавляем стили для лучшей работы с клавиатурой на мобильных
+    const style = document.createElement('style');
+    style.textContent = `
+      @media (max-width: 768px) {
+        .tg-webapp-form {
+          padding-bottom: 120px !important;
+          min-height: 100vh !important;
+        }
+        
+        .tg-webapp-input:focus {
+          transform: translateY(-10px) !important;
+          transition: transform 0.3s ease !important;
+        }
+        
+        .tg-webapp-phone-input {
+          font-size: 16px !important; /* Предотвращает зум на iOS */
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Автоматическая прокрутка к полю ввода при фокусе
+  const handlePhoneFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Прокручиваем к полю ввода телефона
+    setTimeout(() => {
+      e.target.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center',
+        inline: 'nearest'
+      });
+    }, 300); // Небольшая задержка для открытия клавиатуры
+  };
 
   // Обработка изменения формы
   const handleInputChange = (field: keyof typeof formData, value: string | boolean) => {
@@ -224,6 +213,8 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
 
   // Сохранение адреса
   const handleSave = async () => {
+    console.log('🗺️ 🚀 handleSave called');
+    
     try {
       // Проверяем обязательные поля
       if (!formData.street) {
@@ -241,103 +232,84 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
         return;
       }
 
+      console.log('🗺️ 📝 Form validation passed, preparing to save...');
+      console.log('🗺️ 📝 Form data:', formData);
+
       // Подготавливаем данные для отправки
       const addressData = {
         street: formData.street,
         house_number: formData.house_number,
-        apartment: formData.apartment || '',
-        city: formData.city || 'Бухара',
+        apartment: formData.apartment,
+        city: formData.city,
         phone_number: formData.phone_number,
-        comment: formData.comment || '',
-        // Устанавливаем is_primary: true если это единственный адрес, иначе по выбору пользователя
-        is_primary: addresses.length === 0 ? true : (addresses.some(addr => addr.is_primary) ? false : formData.is_primary),
+        comment: formData.comment,
+        is_primary: formData.is_primary,
         telegram_id: formData.telegram_id,
         latitude: formData.latitude,
         longitude: formData.longitude
       };
 
-      console.log('🗺️ 🔍 Form data before save:', formData);
-      console.log('🗺️ 🔍 Address data to send:', addressData);
-      console.log('🗺️ 🔍 Telegram ID in addressData:', addressData.telegram_id);
-      console.log('🗺️ 🔍 User from AuthContext:', state.user);
-      console.log('🗺️ 🔍 Coordinates in addressData:', {
-        latitude: addressData.latitude,
-        longitude: addressData.longitude,
-        hasCoordinates: addressData.latitude !== null && addressData.longitude !== null
+      console.log('🗺️ 📤 Sending address data to backend:', addressData);
+
+      // Определяем URL и метод
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+      const url = editingAddress 
+        ? `${apiBaseUrl}/api/addresses/${editingAddress.id}/`
+        : `${apiBaseUrl}/api/addresses/`;
+      const method = editingAddress ? 'PUT' : 'POST';
+
+      console.log('🗺️ 🌐 API request:', { method, url });
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
+        body: JSON.stringify(addressData)
       });
-      console.log('🗺️ Saving address to backend:', addressData);
 
-      if (editingAddress) {
-        // Обновление существующего адреса
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
-        const response = await fetch(`${apiBaseUrl}/api/addresses/${editingAddress.id}/`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(addressData)
-        });
+      console.log('🗺️ 📥 Backend response status:', response.status);
 
-        if (response.ok) {
-          const updatedAddress = await response.json();
-          const updatedAddresses = addresses.map(addr =>
-            addr.id === editingAddress.id ? updatedAddress : addr
+      if (response.ok) {
+        const newAddress = await response.json();
+        console.log('🗺️ ✅ Address saved successfully:', newAddress);
+        
+        if (editingAddress) {
+          // Редактирование существующего адреса
+          const updatedAddresses = addresses.map((addr: any) => 
+            addr.id === editingAddress.id ? newAddress : addr
           );
           updateAddresses(updatedAddresses);
-          console.log('🗺️ Address updated successfully');
+          alert('✅ Адрес обновлен!');
         } else {
-          throw new Error('Failed to update address');
+          // Добавление нового адреса
+          const updatedAddresses = [...addresses, newAddress];
+          updateAddresses(updatedAddresses);
+          alert('✅ Адрес добавлен!');
+        }
+        
+        // Сбрасываем форму
+        resetForm();
+        
+        // Закрываем форму и карту
+        setShowForm(false);
+        setShowMapPicker(false);
+        
+        // Переключаемся на главную страницу
+        if (onViewChange) {
+          console.log('🗺️ 🔄 Switching view from address to menu...');
+          onViewChange('menu');
+          console.log('🗺️ ✅ View switched to menu');
         }
       } else {
-        // Добавление нового адреса
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
-        const response = await fetch(`${apiBaseUrl}/api/addresses/`, {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-          },
-          mode: 'cors',
-          body: JSON.stringify(addressData)
-        });
-
-        if (response.ok) {
-          const newAddress = await response.json();
-          
-          if (editingAddress) {
-            // Редактирование существующего адреса
-            const updatedAddresses = addresses.map((addr: any) => 
-              addr.id === editingAddress.id ? newAddress : addr
-            );
-            updateAddresses(updatedAddresses);
-            alert('✅ Адрес обновлен!');
-          } else {
-            // Добавление нового адреса
-            const updatedAddresses = [...addresses, newAddress];
-            updateAddresses(updatedAddresses);
-            alert('✅ Адрес добавлен!');
-          }
-          
-          // Сбрасываем форму
-          resetForm();
-          
-          // Закрываем форму и карту
-          setShowForm(false);
-          setShowMapPicker(false);
-          
-          // Переключаемся на главную страницу
-          if (onViewChange) {
-            onViewChange('menu');
-          }
-        } else {
-          throw new Error('Failed to add address');
-        }
+        const errorData = await response.json();
+        console.error('🗺️ ❌ Backend error:', errorData);
+        throw new Error(`Backend error: ${errorData.error || 'Unknown error'}`);
       }
-
-      // resetForm(); // This line was removed as per the new_code.
     } catch (error) {
-      console.error('Error saving address:', error);
+      console.error('🗺️ ❌ Error in handleSave:', error);
       const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
       alert('Ошибка сохранения адреса: ' + errorMessage);
     }
@@ -370,13 +342,18 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
 
     if (confirm('🗑️ Вы уверены, что хотите удалить этот адрес?')) {
       try {
+        // Получаем telegram_id для запроса
+        const telegramId = getTelegramId();
+        
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
         const response = await fetch(`${apiBaseUrl}/api/addresses/${addressId}/`, {
           method: 'DELETE',
           headers: {
             'Accept': 'application/json',
+            'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': 'true'
-          }
+          },
+          body: JSON.stringify({ telegram_id: telegramId })
         });
 
         if (response.ok) {
@@ -385,7 +362,8 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
           updateAddresses(updatedAddresses);
           alert('✅ Адрес удален!');
         } else {
-          alert('❌ Ошибка удаления адреса');
+          const errorData = await response.json();
+          alert(`❌ Ошибка удаления адреса: ${errorData.error || 'Неизвестная ошибка'}`);
         }
       } catch (error) {
         console.error('Error deleting address:', error);
@@ -402,25 +380,63 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
     }
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
-      const response = await fetch(`${apiBaseUrl}/api/addresses/${addressId}/set-primary/`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
+      // Получаем telegram_id для запроса
+      const telegramId = getTelegramId();
+      
+      // Сначала сбрасываем все адреса как не основные
+      const updatePromises = addresses.map(async (addr) => {
+        if (addr.id !== addressId) {
+          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+          return fetch(`${apiBaseUrl}/api/addresses/${addr.id}/`, {
+            method: 'PUT',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': 'true'
+            },
+            body: JSON.stringify({
+              ...addr,
+              is_primary: false,
+              telegram_id: telegramId
+            })
+          });
         }
+        return null;
       });
 
-      if (response.ok) {
-        // Обновляем список адресов
-        const updatedAddresses = addresses.map(addr => ({
-          ...addr,
-          is_primary: addr.id === addressId
-        }));
-        updateAddresses(updatedAddresses);
-        alert('⭐ Адрес установлен как основной!');
-      } else {
-        alert('❌ Ошибка установки основного адреса');
+      // Ждем завершения всех обновлений
+      await Promise.all(updatePromises.filter(Boolean));
+
+      // Теперь устанавливаем выбранный адрес как основной
+      const primaryAddr = addresses.find(addr => addr.id === addressId);
+      if (primaryAddr) {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+        const response = await fetch(`${apiBaseUrl}/api/addresses/${addressId}/`, {
+          method: 'PUT',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
+          body: JSON.stringify({
+            ...primaryAddr,
+            is_primary: true,
+            telegram_id: telegramId
+          })
+        });
+
+        if (response.ok) {
+          // Обновляем список адресов
+          const updatedAddresses = addresses.map(addr => ({
+            ...addr,
+            is_primary: addr.id === addressId
+          }));
+          updateAddresses(updatedAddresses);
+          alert('⭐ Адрес установлен как основной!');
+        } else {
+          const errorData = await response.json();
+          alert(`❌ Ошибка установки основного адреса: ${errorData.error || 'Неизвестная ошибка'}`);
+        }
       }
     } catch (error) {
       console.error('Error setting primary address:', error);
@@ -492,6 +508,13 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
     // Закрываем карту и показываем форму
     setShowMapPicker(false);
     setShowForm(true);
+  };
+
+  // Обработчик отправки формы
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault(); // Предотвращаем стандартную отправку формы
+    console.log('🗺️ Form submitted, calling handleSave...');
+    handleSave();
   };
 
   return (
@@ -607,171 +630,169 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
         </div>
       )}
 
-      {/* Форма добавления/редактирования */}
+      {/* Форма добавления/редактирования адреса */}
       {showForm && (
-        <div className="tg-card-modern p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-100">
+        <div className="bg-gray-800 rounded-lg p-4 sm:p-6 mb-6 animate-fade-in min-h-screen sm:min-h-0 tg-webapp-form">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-100">
               {editingAddress ? t('edit_address') : t('add_address')}
             </h3>
           </div>
           
-          {/* Показываем форму только для новых адресов или если не редактируем через карту */}
-          {!editingAddress || !showMapPicker ? (
-            <div className="space-y-3 sm:space-y-4">
-              {/* Кнопка для выбора координат на карте */}
-              <div className="text-center mb-4">
-                <Button
-                  onClick={() => {
-                    console.log('🗺️ Manual input: opening map for coordinates');
-                    setShowMapPicker(true);
-                  }}
-                  className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-sm"
-                >
-                  🗺️ Открыть карту
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-gray-300 text-xs sm:text-sm mb-2">
-                    {t('street')} *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.street}
-                    onChange={(e) => handleInputChange('street', e.target.value)}
-                    className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm"
-                    placeholder={t('street_placeholder')}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-300 text-xs sm:text-sm mb-2">
-                    {t('house_number')} *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.house_number}
-                    onChange={(e) => handleInputChange('house_number', e.target.value)}
-                    className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm"
-                    placeholder="123"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-gray-300 text-xs sm:text-sm mb-2">
-                    {t('apartment')}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.apartment}
-                    onChange={(e) => handleInputChange('apartment', e.target.value)}
-                    className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm"
-                    placeholder="45"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-300 text-xs sm:text-sm mb-2">
-                    {t('city')} *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                    className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm"
-                    placeholder="Введите город"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-gray-300 text-xs sm:text-sm mb-2">
-                  {t('phone_number')} *
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phone_number}
-                  onChange={(e) => handleInputChange('phone_number', e.target.value)}
-                  className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm"
-                  placeholder="+998 90 123 45 67"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-gray-300 text-xs sm:text-sm mb-2">
-                  {t('comment')}
-                </label>
-                <textarea
-                  value={formData.comment}
-                  onChange={(e) => handleInputChange('comment', e.target.value)}
-                  className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm"
-                  rows={3}
-                  placeholder={t('comment_placeholder')}
-                />
-              </div>
-              
-              <div className="flex items-center gap-2">
-                {/* Показываем чекбокс только если нет основного адреса или это не единственный адрес */}
-                {(!addresses.some(addr => addr.is_primary) || addresses.length === 1) && (
-                  <input
-                    type="checkbox"
-                    id="is_primary"
-                    checked={formData.is_primary}
-                    onChange={(e) => handleInputChange('is_primary', e.target.checked)}
-                    className="w-4 h-4 text-primary-600 bg-gray-700 border-gray-600 rounded focus:ring-primary-500 focus:ring-2"
-                    disabled={addresses.length === 1} // Отключаем если это единственный адрес
-                  />
-                )}
-                {(!addresses.some(addr => addr.is_primary) || addresses.length === 1) && (
-                  <label htmlFor="is_primary" className="text-gray-300 text-sm">
-                    {t('set_as_primary')}
-                  </label>
-                )}
-                {/* Показываем сообщение если уже есть основной адрес */}
-                {addresses.some(addr => addr.is_primary) && addresses.length > 1 && (
-                  <div className="text-sm text-gray-400 italic">
-                    💡 У вас уже есть основной адрес
-                  </div>
-                )}
-                {/* Показываем сообщение если это единственный адрес */}
-                {addresses.length === 1 && (
-                  <div className="text-sm text-primary-400 italic">
-                    🔒 Это единственный адрес - он должен быть основным
-                  </div>
-                )}
+          <form onSubmit={handleSubmit} className="space-y-4 pb-20 sm:pb-4">
+            {/* Поле улицы */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Улица *
+              </label>
+              <input
+                type="text"
+                name="street"
+                value={formData.street}
+                onChange={(e) => handleInputChange('street', e.target.value)}
+                className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm tg-webapp-input"
+                placeholder="Введите название улицы"
+                required
+              />
+            </div>
+
+            {/* Поле номера дома */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Номер дома *
+              </label>
+              <input
+                type="text"
+                name="house_number"
+                value={formData.house_number}
+                onChange={(e) => handleInputChange('house_number', e.target.value)}
+                className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm tg-webapp-input"
+                placeholder="Введите номер дома"
+                required
+              />
+            </div>
+
+            {/* Поле квартиры */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Квартира
+              </label>
+              <input
+                type="text"
+                name="apartment"
+                value={formData.apartment}
+                onChange={(e) => handleInputChange('apartment', e.target.value)}
+                className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm tg-webapp-input"
+                placeholder="Введите номер квартиры (необязательно)"
+              />
+            </div>
+
+            {/* Поле города */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Город *
+              </label>
+              <input
+                type="text"
+                name="city"
+                value={formData.city}
+                onChange={(e) => handleInputChange('city', e.target.value)}
+                className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm tg-webapp-input"
+                placeholder="Введите название города"
+                required
+              />
+            </div>
+
+            {/* Поле телефона - улучшенное для мобильных */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Номер телефона *
+              </label>
+              <input
+                type="tel"
+                name="phone_number"
+                value={formData.phone_number}
+                onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                onFocus={handlePhoneFocus}
+                className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm tg-webapp-input tg-webapp-phone-input"
+                placeholder="+998 90 123 45 67"
+                required
+                autoComplete="tel"
+                inputMode="numeric"
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                <span className="text-xs text-gray-400">📱</span>
               </div>
             </div>
-          ) : (
-            /* Показываем информацию о редактировании через карту */
-            <div className="text-center py-8">
-              <p className="text-gray-400 text-lg mb-4">
-                🗺️ Редактирование адреса через карту
-              </p>
-              <p className="text-gray-500 text-sm">
-                Кликните на карте для выбора нового местоположения
-              </p>
+
+            {/* Поле комментария */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Комментарий
+              </label>
+              <textarea
+                name="comment"
+                value={formData.comment}
+                onChange={(e) => handleInputChange('comment', e.target.value)}
+                className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm resize-none"
+                placeholder="Дополнительная информация (необязательно)"
+                rows={2}
+              />
             </div>
-          )}
-          
-          <div className="flex gap-3 mt-6">
-            <Button
-              onClick={handleSave}
-              className="flex-1 bg-primary-600 hover:bg-primary-700 text-white"
-            >
-              {editingAddress ? t('update') : t('save')}
-            </Button>
-            
-            <Button
-              onClick={resetForm}
-              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
-            >
-              {t('cancel')}
-            </Button>
-          </div>
+
+            {/* Кнопка для выбора координат на карте */}
+            <div className="text-center mb-4">
+              <Button
+                onClick={() => {
+                  console.log('🗺️ Manual input: opening map for coordinates');
+                  setShowMapPicker(true);
+                }}
+                className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-sm"
+              >
+                🗺️ Открыть карту
+              </Button>
+            </div>
+
+            {/* Чекбокс основного адреса */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="is_primary"
+                name="is_primary"
+                checked={formData.is_primary}
+                onChange={(e) => handleInputChange('is_primary', e.target.checked)}
+                disabled={addresses.length === 0}
+                className="w-4 h-4 text-primary-600 bg-gray-700 border-gray-600 rounded focus:ring-primary-500 focus:ring-2"
+              />
+              <label htmlFor="is_primary" className="text-sm text-gray-300">
+                {addresses.length === 0 
+                  ? '🔒 Это единственный адрес - он должен быть основным'
+                  : 'Установить как основной адрес доставки'
+                }
+              </label>
+            </div>
+
+            {/* Кнопки действий */}
+            <div className="flex flex-col sm:flex-row gap-2 pt-4">
+              <Button
+                type="submit"
+                className="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-sm"
+              >
+                {editingAddress ? 'Обновить адрес' : 'Добавить адрес'}
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingAddress(null);
+                  resetForm();
+                }}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 text-sm"
+              >
+                Отмена
+              </Button>
+            </div>
+          </form>
         </div>
       )}
 

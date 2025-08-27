@@ -14,18 +14,43 @@ export const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Функция для исправления путей изображений (как в MenuItem.tsx)
-  const fixImagePath = (imagePath: string | undefined): string | undefined => {
-    if (!imagePath) return undefined;
+  // Функция для исправления путей изображений
+  const fixImagePath = (imagePath: string | undefined): string => {
+    if (!imagePath) return '/placeholder-category.jpg';
     
     // Если путь уже полный (начинается с http)
     if (imagePath.startsWith('http')) {
       return imagePath;
     }
     
-    // Добавляем базовый URL API (как в MenuItem.tsx)
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000' || 'https://3e3f35c1758a.ngrok-free.app';
-    return `${apiBaseUrl}${imagePath}`;
+    // Используем относительный путь для прокси
+    return imagePath;
+  };
+
+  // Функция для обработки ошибок загрузки изображений
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>, categoryName: string) => {
+    const target = e.currentTarget;
+    console.log('🖼️ Image failed to load for category:', categoryName, 'Path:', target.src);
+    
+    // Предотвращаем бесконечные циклы
+    if (target.dataset.fallbackAttempted === 'true') {
+      // Если fallback уже пытались загрузить, показываем эмодзи
+      const parent = target.parentElement;
+      if (parent) {
+        parent.innerHTML = `
+          <div class="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-700 flex items-center justify-center">
+            <span class="text-4xl">🍽️</span>
+          </div>
+        `;
+      }
+      return;
+    }
+    
+    // Отмечаем, что fallback уже пытались загрузить
+    target.dataset.fallbackAttempted = 'true';
+    
+    // Заменяем на fallback изображение
+    target.src = '/placeholder-category.jpg';
   };
 
   // Отладочная информация
@@ -76,22 +101,7 @@ export const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
                   src={fixImagePath(category.image)} 
                   alt={category.name} 
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/cat:scale-110"
-                  onError={(e) => {
-                    console.error('❌ Failed to load category image:', category.image);
-                    console.log('🔍 Category data:', { 
-                      id: category.id, 
-                      name: category.name, 
-                      image: category.image,
-                      fixedImage: fixImagePath(category.image),
-                      imageLength: category.image?.length 
-                    });
-                    
-                    // Показываем fallback эмодзи вместо скрытия
-                    const parent = e.currentTarget.parentElement;
-                    if (parent) {
-                      parent.innerHTML = '<div class="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-700 flex items-center justify-center"><span class="text-4xl">🍽️</span></div>';
-                    }
-                  }}
+                  onError={(e) => handleImageError(e, category.name)}
                   onLoad={() => console.log('✅ Category image loaded:', fixImagePath(category.image))}
                 />
               ) : (

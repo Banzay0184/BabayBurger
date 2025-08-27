@@ -33,6 +33,12 @@ export const MainPage: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
   const { favorites, isLoading: favoritesLoading } = useFavorites();
   const [currentView, setCurrentView] = useState<'menu' | 'cart' | 'search' | 'favorites' | 'address'>('menu');
+  
+  // Логируем изменения currentView
+  useEffect(() => {
+    console.log('🔄 MainPage: currentView changed to:', currentView);
+  }, [currentView]);
+  
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   // Состояния
@@ -849,8 +855,6 @@ export const MainPage: React.FC = () => {
                     />
                   ) : (
                     <div>
-                      <div className="text-white mb-2">🛒 Показываю корзину</div>
-                      {/* Здесь будет CartDisplay */}
                       <CartDisplay />
                     </div>
                   )}

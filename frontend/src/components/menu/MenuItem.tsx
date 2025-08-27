@@ -127,7 +127,8 @@ export const MenuItem: React.FC<MenuItemProps> = ({
   const getImageUrl = (imagePath: string | null): string => {
     if (!imagePath) return '';
     if (imagePath.startsWith('http')) return imagePath;
-    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${imagePath}`;
+    // Используем относительный путь для прокси
+    return imagePath;
   };
 
   return (

@@ -13,6 +13,14 @@ export default defineConfig({
         headers: {
           'ngrok-skip-browser-warning': 'true',
         },
+      },
+      '/media': {
+        target: 'https://3e3f35c1758a.ngrok-free.app',
+        changeOrigin: true,
+        secure: false,
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
       }
     }
   }
