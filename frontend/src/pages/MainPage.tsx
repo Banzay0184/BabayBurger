@@ -14,6 +14,8 @@ import { Button } from '../components/ui/Button';
 import { AddressManager } from '../components/address/AddressManager';
 import { RestaurantLogo } from '../components/common/RestaurantLogo';
 import { OptionsPage } from './OptionsPage';
+import { ProfilePage } from './ProfilePage';
+import { CheckoutPage } from './CheckoutPage';
 import type { MenuItem, Promotion } from '../types/menu';
 import type { Address } from '../types/address';
 
@@ -32,7 +34,7 @@ export const MainPage: React.FC = () => {
 
   const { t, language, setLanguage } = useLanguage();
   const { favorites, isLoading: favoritesLoading } = useFavorites();
-  const [currentView, setCurrentView] = useState<'menu' | 'cart' | 'search' | 'favorites' | 'address'>('menu');
+  const [currentView, setCurrentView] = useState<'menu' | 'cart' | 'search' | 'favorites' | 'address' | 'profile'>('menu');
   
   // Логируем изменения currentView
   useEffect(() => {
@@ -44,6 +46,8 @@ export const MainPage: React.FC = () => {
   // Состояния
   const [showLogo, setShowLogo] = useState(true);
   const [showOptionsPage, setShowOptionsPage] = useState(false);
+  const [showProfilePage, setShowProfilePage] = useState(false);
+  const [showCheckoutPage, setShowCheckoutPage] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [searchFilters, setSearchFilters] = useState({
@@ -304,6 +308,15 @@ export const MainPage: React.FC = () => {
                 item={selectedItem}
                 onClose={handleCloseOptionsPage}
               />
+            ) : showProfilePage ? (
+              <ProfilePage
+                onClose={() => setShowProfilePage(false)}
+              />
+            ) : showCheckoutPage ? (
+              <CheckoutPage
+                onClose={() => setShowCheckoutPage(false)}
+                onViewChange={setCurrentView}
+              />
             ) : (
               <>
                 <div className="animate-slide-up pb-24">
@@ -346,13 +359,7 @@ export const MainPage: React.FC = () => {
                 )}
               </div>
             </div>
-            <button
-                    onClick={() => setCurrentView('search')}
-                    className="p-2 text-gray-300 rounded-lg transition-colors active:scale-95"
-                    aria-label="Поиск блюд"
-                  >
-                    <span className="text-lg">🔍</span>
-                  </button>
+
             </div>
             
             <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-end">
@@ -855,7 +862,7 @@ export const MainPage: React.FC = () => {
                     />
                   ) : (
                     <div>
-                      <CartDisplay />
+                      <CartDisplay onCheckout={() => setShowCheckoutPage(true)} />
                     </div>
                   )}
                 </div>
@@ -865,8 +872,8 @@ export const MainPage: React.FC = () => {
         )}
       </div>
 
-      {/* Фиксированная нижняя навигация - скрыта во время анимации логотипа и OptionsPage */}
-      {!showLogo && !showOptionsPage && (
+      {/* Фиксированная нижняя навигация - скрыта во время анимации логотипа, OptionsPage, ProfilePage и CheckoutPage */}
+      {!showLogo && !showOptionsPage && !showProfilePage && !showCheckoutPage && (
         <div className="fixed bottom-0 left-0 right-0 bg-dark-900/95 backdrop-blur-lg border-t border-gray-700/50 z-50">
         <div className="flex items-center justify-around px-4 py-3">
           {/* Кнопка Меню */}
@@ -927,20 +934,20 @@ export const MainPage: React.FC = () => {
             )}
           </button>
 
-          {/* Кнопка Поиск */}
+          {/* Кнопка Профиль */}
           <button 
             onClick={() => {
-              console.log('🔍 Switching to search view');
-              setCurrentView('search');
+              console.log('👤 Opening profile page');
+              setShowProfilePage(true);
             }}
             className={`flex flex-col items-center p-2 rounded-lg transition-all duration-300 min-w-[4rem] ${
-              currentView === 'search' 
+              showProfilePage 
                 ? 'text-primary-400' 
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
-            <span className="text-xl mb-1">🔍</span>
-            <span className="text-xs font-medium">{t('search')}</span>
+            <span className="text-xl mb-1">👤</span>
+            <span className="text-xs font-medium">{t('profile')}</span>
           </button>
         </div>
         </div>

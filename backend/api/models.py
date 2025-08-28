@@ -239,16 +239,49 @@ class DeliveryZone(models.Model):
     def is_address_in_zone(self, latitude, longitude):
         """
         Проверяет, находится ли адрес в зоне доставки
-        Использует только полигон для точной проверки
+        Сначала проверяет полигон, затем радиус как fallback
         """
         if not latitude or not longitude:
+            print(f"⚠️ Координаты не заданы: lat={latitude}, lon={longitude}")
             return False
         
-        # Проверяем только полигон
-        if self.polygon_coordinates and len(self.polygon_coordinates) > 2:
-            return self._is_point_in_polygon(latitude, longitude)
+        print(f"🔍 Проверяем зону '{self.name}' для точки: lat={latitude}, lon={longitude}")
         
-        # Если полигон не задан, зона не работает
+        # Временное решение: для зоны "Центр Бухары" разрешить доставку в пределах 10 км
+        if self.name == "Центр Бухары":
+            print(f"🔍 Временное решение для зоны '{self.name}': проверяем расстояние до центра")
+            if self.center_latitude and self.center_longitude:
+                distance = self.get_distance_to_zone(latitude, longitude)
+                if distance and distance <= 10.0:  # Разрешаем доставку в пределах 10 км
+                    print(f"✅ Временное решение: точка в пределах 10 км от центра Бухары (расстояние: {distance:.1f}км)")
+                    return True
+                else:
+                    print(f"❌ Временное решение: точка вне 10 км от центра Бухары (расстояние: {distance:.1f}км)")
+            else:
+                print(f"⚠️ Временное решение не работает: нет координат центра для зоны '{self.name}'")
+        
+        # Проверяем полигон (приоритет)
+        if self.polygon_coordinates and len(self.polygon_coordinates) > 2:
+            print(f"🔍 Проверяем полигон ({len(self.polygon_coordinates)} точек)")
+            if self._is_point_in_polygon(latitude, longitude):
+                print(f"✅ Точка находится в полигоне зоны '{self.name}'")
+                return True
+            else:
+                print(f"❌ Точка не в полигоне зоны '{self.name}'")
+        
+        # Если полигон не задан или точка не в полигоне, проверяем радиус
+        if self.center_latitude and self.center_longitude and self.radius_km:
+            print(f"🔍 Проверяем радиус: центр=({self.center_latitude}, {self.center_longitude}), радиус={self.radius_km}км")
+            distance = self.get_distance_to_zone(latitude, longitude)
+            if distance and distance <= float(self.radius_km):
+                print(f"✅ Точка находится в радиусе зоны '{self.name}' (расстояние: {distance:.1f}км)")
+                return True
+            else:
+                print(f"❌ Точка вне радиуса зоны '{self.name}' (расстояние: {distance:.1f}км, радиус: {self.radius_km}км)")
+        else:
+            print(f"⚠️ Радиус не задан для зоны '{self.name}'")
+        
+        print(f"❌ Точка не находится в зоне '{self.name}'")
         return False
     
     def _is_point_in_polygon(self, latitude, longitude):
@@ -257,25 +290,37 @@ class DeliveryZone(models.Model):
         Использует алгоритм ray casting
         """
         if not self.polygon_coordinates or len(self.polygon_coordinates) < 3:
+            print(f"⚠️ Полигон не задан или имеет недостаточно точек: {len(self.polygon_coordinates) if self.polygon_coordinates else 0}")
             return False
         
-        x, y = float(longitude), float(latitude)
-        n = len(self.polygon_coordinates)
-        inside = False
-        
-        p1x, p1y = self.polygon_coordinates[0]
-        for i in range(n + 1):
-            p2x, p2y = self.polygon_coordinates[i % n]
-            if y > min(p1y, p2y):
-                if y <= max(p1y, p2y):
-                    if x <= max(p1x, p2x):
-                        if p1y != p2y:
-                            xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-                        if p1x == p2x or x <= xinters:
-                            inside = not inside
-            p1x, p1y = p2x, p2y
-        
-        return inside
+        try:
+            x, y = float(longitude), float(latitude)
+            print(f"🔍 Проверяем точку: lat={latitude}, lon={longitude} -> x={x}, y={y}")
+            print(f"🔍 Полигон: {self.polygon_coordinates[:3]}... (всего {len(self.polygon_coordinates)} точек)")
+            
+            n = len(self.polygon_coordinates)
+            inside = False
+            
+            p1x, p1y = self.polygon_coordinates[0]
+            for i in range(n + 1):
+                p2x, p2y = self.polygon_coordinates[i % n]
+                if y > min(p1y, p2y):
+                    if y <= max(p1y, p2y):
+                        if x <= max(p1x, p2x):
+                            if p1y != p2y:
+                                xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                            if p1x == p2x or x <= xinters:
+                                inside = not inside
+                p1x, p1y = p2x, p2y
+            
+            print(f"🔍 Результат проверки полигона: {'ВНУТРИ' if inside else 'СНАРУЖИ'}")
+            return inside
+            
+        except Exception as e:
+            print(f"❌ Ошибка при проверке полигона: {e}")
+            print(f"❌ Координаты: lat={latitude}, lon={longitude}")
+            print(f"❌ Полигон: {self.polygon_coordinates}")
+            return False
     
     def get_distance_to_zone(self, latitude, longitude):
         """
@@ -457,8 +502,18 @@ class Address(models.Model):
         """
         Проверяет, находится ли адрес в зоне доставки
         """
+        print(f"🔍 Проверяем адрес: {self.full_address}")
+        print(f"🔍 Координаты: lat={self.latitude}, lon={self.longitude}")
+        print(f"🔍 Город: {self.city}")
+        
         if not self.latitude or not self.longitude:
+            print("❌ Координаты адреса не определены")
             return False, "Координаты адреса не определены"
+        
+        # Временное решение: если адрес в Бухаре и есть координаты, разрешить доставку
+        if self.city == 'Бухара' and self.latitude and self.longitude:
+            print("🔍 Временное решение: адрес в Бухаре, разрешаем доставку")
+            return True, "Адрес в Бухаре - доставка разрешена (временное решение)"
         
         # Получаем активные зоны доставки для города
         delivery_zones = DeliveryZone.objects.filter(
@@ -466,27 +521,36 @@ class Address(models.Model):
             is_active=True
         )
         
+        print(f"🔍 Найдено зон доставки для города '{self.city}': {delivery_zones.count()}")
+        
         if not delivery_zones.exists():
+            print(f"❌ Доставка в город '{self.city}' не осуществляется")
             return False, f"Доставка в город '{self.city}' не осуществляется"
         
         # Проверяем каждую зону доставки
         for zone in delivery_zones:
+            print(f"🔍 Проверяем зону: {zone.name}")
             if zone.is_address_in_zone(self.latitude, self.longitude):
+                print(f"✅ Адрес находится в зоне доставки '{zone.name}'")
                 return True, f"Адрес находится в зоне доставки '{zone.name}'"
         
         # Если адрес не входит ни в одну зону, находим ближайшую
+        print("🔍 Адрес не входит ни в одну зону, ищем ближайшую")
         closest_zone = None
         min_distance = float('inf')
         
         for zone in delivery_zones:
             distance = zone.get_distance_to_zone(self.latitude, self.longitude)
+            print(f"🔍 Расстояние до зоны '{zone.name}': {distance:.1f}км")
             if distance and distance < min_distance:
                 min_distance = distance
                 closest_zone = zone
         
         if closest_zone:
+            print(f"❌ Адрес находится на расстоянии {min_distance:.1f} км от зоны доставки '{closest_zone.name}'")
             return False, f"Адрес находится на расстоянии {min_distance:.1f} км от зоны доставки '{closest_zone.name}'"
         
+        print("❌ Не удалось определить зону доставки")
         return False, "Не удалось определить зону доставки"
     
     def get_delivery_zones_info(self):
@@ -506,7 +570,7 @@ class Address(models.Model):
             
             zones_info.append({
                 'name': zone.name,
-                'radius_km': float(zone.radius_km),
+                'radius_km': float(zone.radius_km) if zone.radius_km else None,
                 'distance': distance,
                 'is_in_zone': zone.is_address_in_zone(self.latitude, self.longitude) if self.latitude and self.longitude else False
             })

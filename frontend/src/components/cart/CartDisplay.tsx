@@ -3,6 +3,10 @@ import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import type { MenuItem, SizeOption, AddOn } from '../../types/menu';
 
+interface CartDisplayProps {
+  onCheckout?: () => void;
+}
+
 interface CartItemDisplay {
   key: string;
   menuItem: MenuItem;
@@ -13,7 +17,7 @@ interface CartItemDisplay {
   pricePerItem: number;
 }
 
-export const CartDisplay: React.FC = () => {
+export const CartDisplay: React.FC<CartDisplayProps> = ({ onCheckout }) => {
   const { state, incrementByKey, decrementByKey, removeByKey, clear } = useCart();
   const { t, formatCurrency } = useLanguage();
 
@@ -238,7 +242,10 @@ export const CartDisplay: React.FC = () => {
           {t('total_items')}: {state.items.reduce((sum, item) => sum + item.quantity, 0)}
         </div>
         
-        <button className="w-full px-4 py-3 sm:px-6 sm:py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg font-semibold hover:from-primary-600 hover:to-primary-700 transition-all duration-300 hover:scale-105 shadow-lg">
+        <button 
+          onClick={onCheckout}
+          className="w-full px-4 py-3 sm:px-6 sm:py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg font-semibold hover:from-primary-600 hover:to-primary-700 transition-all duration-300 hover:scale-105 shadow-lg"
+        >
           <span className="flex items-center justify-center">
             <span className="mr-2">💳</span>
             {t('checkout')}
