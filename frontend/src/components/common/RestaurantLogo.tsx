@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import logo from '/public/logobabay.png';
+
 
 // Типы для Telegram WebApp
 declare global {
@@ -117,7 +119,7 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({
             will-change-transform
           ">
             <img 
-              src="/public/logobabay.png" 
+              src={logo} 
               alt="Babay Burger" 
               className="w-full h-full object-contain drop-shadow-2xl" 
             />
