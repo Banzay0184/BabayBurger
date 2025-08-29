@@ -1,28 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import type { Address } from '../types/address';
+import { YandexMapPicker } from '../components/map/YandexMapPicker';
 
 interface CheckoutPageProps {
   onClose: () => void;
-  onViewChange: (view: 'menu' | 'cart' | 'search' | 'favorites' | 'address' | 'profile') => void;
 }
 
 type ServiceType = 'delivery' | 'pickup';
 type PaymentMethod = 'cash' | 'card' | 'telegram';
 
-export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose, onViewChange }) => {
+export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
   const { state } = useAuth();
   const { state: cartState, clear } = useCart();
   const [serviceType, setServiceType] = useState<ServiceType>('delivery');
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [notes, setNotes] = useState('');
+  const [additionalPhone, setAdditionalPhone] = useState(''); // Дополнительный номер клиента
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [showAddressModal, setShowAddressModal] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false); // Модальное окно карты
 
   // Загрузка адресов пользователя
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -80,7 +82,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose, onViewChang
   }, [state.user]);
 
   // Расчет стоимости доставки
-  const getDeliveryFee = () => {
+  const getDeliveryFee = useMemo(() => {
     if (serviceType === 'pickup') return 0;
     if (!selectedAddress) return 0;
     
@@ -109,12 +111,12 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose, onViewChang
     const deliveryFee = Number(addressZone.delivery_fee) || 0;
     console.log('💰 Стоимость доставки:', deliveryFee);
     return deliveryFee;
-  };
+  }, [serviceType, selectedAddress, deliveryZones, cartState.total]);
 
   // Расчет итоговой суммы
   const getTotalAmount = () => {
     const subtotal = cartState.total;
-    const deliveryFee = getDeliveryFee();
+    const deliveryFee = getDeliveryFee;
     return subtotal + deliveryFee;
   };
 
@@ -143,12 +145,75 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose, onViewChang
       const telegramId = state.user?.telegram_id?.toString() || '123456789';
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
       
+      let finalAddressId = selectedAddress?.id;
+      
+      // Если адрес выбран с карты (временный), сначала сохраняем его
+      if (selectedAddress?.id === -1) {
+        console.log('🗺️ Сохраняем временный адрес с карты...');
+        
+        // Показываем уведомление пользователю
+        setError(null);
+        setError('🗺️ Сохраняем выбранный адрес...');
+        
+        const addressData = {
+          telegram_id: telegramId,
+          street: selectedAddress.street || 'Улица не определена',
+          house_number: selectedAddress.house_number || '200',
+          apartment: selectedAddress.apartment || '',
+          city: selectedAddress.city || 'Бухара',
+          comment: selectedAddress.comment || '',
+          coordinates: `${selectedAddress.longitude || 0},${selectedAddress.latitude || 0}`,
+          // Ограничиваем координаты до 6 знаков после запятой для соответствия backend
+          latitude: Number((selectedAddress.latitude || 0).toFixed(6)),
+          longitude: Number((selectedAddress.longitude || 0).toFixed(6)),
+          phone_number: selectedAddress.phone_number || state.user?.phone_number || '+9989041410184',
+          is_primary: false // Не делаем основным автоматически
+        };
+        
+        console.log('📍 Данные адреса для сохранения:', addressData);
+        
+        const addressResponse = await fetch(`${apiBaseUrl}/api/addresses/`, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
+          body: JSON.stringify(addressData)
+        });
+        
+        if (addressResponse.ok) {
+          const savedAddress = await addressResponse.json();
+          console.log('✅ Адрес сохранен:', savedAddress);
+          finalAddressId = savedAddress.id;
+          
+          // Обновляем selectedAddress с реальным ID
+          setSelectedAddress({
+            ...selectedAddress,
+            id: savedAddress.id
+          });
+          
+          // Обновляем список адресов
+          setAddresses(prev => [...prev, savedAddress]);
+          
+          // Очищаем сообщение о сохранении
+          setError(null);
+        } else {
+          const addressError = await addressResponse.json();
+          console.error('❌ Ошибка сохранения адреса:', addressError);
+          setError(`Ошибка сохранения адреса: ${addressError.error || 'Неизвестная ошибка'}`);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
       const orderData = {
         telegram_id: telegramId,
         service_type: serviceType,
-        address_id: selectedAddress?.id || null,
+        address_id: finalAddressId, // Теперь у нас всегда есть реальный ID
         payment_method: paymentMethod,
         notes: notes,
+        additional_phone: additionalPhone,
         items: cartState.items.map(item => ({
           menu_item_id: item.menuItem.id,
           quantity: item.quantity,
@@ -157,8 +222,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose, onViewChang
           price: item.totalPrice / item.quantity
         })),
         total_price: getTotalAmount(),
-        delivery_fee: getDeliveryFee()
+        delivery_fee: getDeliveryFee
       };
+
+      console.log('📦 Отправляем заказ:', orderData);
+      console.log('📍 Финальный ID адреса:', finalAddressId);
 
       const response = await fetch(`${apiBaseUrl}/api/orders/create/`, {
         method: 'POST',
@@ -237,20 +305,71 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose, onViewChang
             </button>
           ))}
           
-          <button
-            onClick={() => {
-              setShowAddressModal(false);
-              // Переходим к странице управления адресами
-              onClose();
-              onViewChange('address');
-            }}
-            className="w-full p-4 border-2 border-dashed border-gray-600 rounded-xl text-gray-400 hover:border-primary-500 hover:text-primary-400 transition-colors"
-          >
-            <div className="text-center">
-              <div className="text-2xl mb-2">➕</div>
-              <div className="font-semibold">Добавить новый адрес</div>
-            </div>
-          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Модальное окно карты для выбора адреса
+  const MapModal = () => (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+      <div className="bg-dark-800 rounded-2xl border border-gray-700/50 w-full max-w-4xl max-h-[90vh] overflow-hidden">
+        <div className="p-6 border-b border-gray-700/50">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-gray-100">Выбор адреса на карте</h3>
+            <button
+              onClick={() => setShowMapModal(false)}
+              className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"
+            >
+              <span className="text-gray-300 text-lg">×</span>
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-6">
+          <div className="h-96 rounded-xl overflow-hidden">
+            <YandexMapPicker
+              onAddressSelect={(addressData) => {
+                console.log('🗺️ Выбран адрес с карты:', addressData);
+                console.log('📍 Координаты с карты:', addressData.coordinates);
+                console.log('📍 Longitude (долгота):', addressData.coordinates[0]);
+                console.log('📍 Latitude (широта):', addressData.coordinates[1]);
+                
+                // Создаем временный адрес для использования в заказе
+                const tempAddress: Address = {
+                  id: -1, // Временный ID
+                  user: Number(state.user?.id) || 0,
+                  street: addressData.street || '',
+                  house_number: addressData.house || '',
+                  apartment: '',
+                  city: addressData.city || 'Бухара',
+                  comment: '',
+                  // Формируем координаты правильно: longitude,latitude
+                  coordinates: `${addressData.coordinates[0]},${addressData.coordinates[1]}`,
+                  // coordinates[0] - это longitude, coordinates[1] - это latitude
+                  latitude: addressData.coordinates[1],
+                  longitude: addressData.coordinates[0],
+                  phone_number: state.user?.phone_number || '+9989041410184',
+                  formatted_phone: state.user?.phone_number || '+9989041410184',
+                  full_address: addressData.address || 'Выбрано на карте',
+                  is_primary: false,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                  telegram_id: String(state.user?.telegram_id || '123456789')
+                };
+                
+                setSelectedAddress(tempAddress);
+                setShowMapModal(false);
+              }}
+              onClose={() => setShowMapModal(false)}
+            />
+          </div>
+          
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-400">
+              Кликните по карте для выбора адреса доставки
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -457,20 +576,41 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose, onViewChang
                 
                 {/* Кнопка добавления нового адреса */}
                 <button
-                  onClick={() => {
-                    // Переходим к странице управления адресами
-                    onClose();
-                    onViewChange('address');
-                  }}
+                  onClick={() => setShowMapModal(true)}
                   className="w-full p-3 border border-gray-600 rounded-lg text-gray-400 hover:border-primary-500 hover:text-primary-400 transition-colors"
                 >
                   <div className="flex items-center justify-center">
-                    <span className="mr-2">➕</span>
-                    Добавить новый адрес
+                    <span className="mr-2">🗺️</span>
+                    Выбрать адрес на карте
                   </div>
                 </button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Дополнительный номер клиента (только для доставки) */}
+        {serviceType === 'delivery' && (
+          <div className="bg-dark-800 rounded-2xl p-6 border border-gray-700/50">
+            <h3 className="text-lg font-bold text-gray-100 mb-4 flex items-center">
+              <span className="mr-2">📱</span>
+              Дополнительный номер клиента
+            </h3>
+            
+            <div className="space-y-3">
+              <div className="relative">
+                <input
+                  type="tel"
+                  value={additionalPhone}
+                  onChange={(e) => setAdditionalPhone(e.target.value)}
+                  placeholder="+998 90 123 45 67 (необязательно)"
+                  className="w-full p-4 bg-gray-700/50 border border-gray-600 rounded-xl text-gray-100 placeholder-gray-500 focus:border-primary-500 focus:outline-none transition-colors"
+                />
+                <div className="text-xs text-gray-500 mt-2">
+                  Укажите дополнительный номер для связи с клиентом (если отличается от основного)
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -602,7 +742,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose, onViewChang
                 <>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Стоимость доставки:</span>
-                    <span className="text-gray-300">{getDeliveryFee()} сум</span>
+                    <span className="text-gray-300">{getDeliveryFee} сум</span>
                   </div>
                   
                   {/* Информация о зоне доставки */}
@@ -694,6 +834,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose, onViewChang
 
       {/* Модальное окно выбора адреса */}
       {showAddressModal && <AddressSelectionModal />}
+      {showMapModal && <MapModal />}
     </div>
   );
 };

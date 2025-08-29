@@ -98,20 +98,10 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
               // Сохраняем в localStorage для будущего использования
               localStorage.setItem('user_phone', phone);
               return phone;
-            } else {
-              console.log('📱 🔍 No phone_number in Telegram WebApp user object');
             }
-          } else {
-            console.log('📱 🔍 No user object in Telegram WebApp.initDataUnsafe');
           }
-        } else {
-          console.log('📱 🔍 No initDataUnsafe in Telegram WebApp');
         }
-      } else {
-        console.log('📱 🔍 No WebApp object in Telegram');
       }
-    } else {
-      console.log('📱 🔍 Telegram object not found in window');
     }
     
     // Пробуем получить из localStorage
@@ -121,9 +111,35 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
       return savedPhone;
     }
     
-    // Fallback на пустую строку
-    console.log('📱 ⚠️ No phone found, user will enter manually');
+    // Fallback на пустой телефон
+    console.log('📱 ⚠️ No phone found, using empty string');
     return '';
+  };
+
+  // Функция загрузки адресов
+  const loadAddresses = async () => {
+    try {
+      console.log('🗺️ 🔄 Loading addresses in AddressManager...');
+      const telegramId = getTelegramId();
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+      
+      const response = await fetch(`${apiBaseUrl}/api/addresses/?telegram_id=${telegramId}`, {
+        headers: {
+          'Accept': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        }
+      });
+      
+      if (response.ok) {
+        const addressesData = await response.json();
+        console.log('🗺️ ✅ Addresses loaded in AddressManager:', addressesData);
+        setAddresses(addressesData);
+      } else {
+        console.error('🗺️ ❌ Failed to load addresses in AddressManager:', response.status);
+      }
+    } catch (error) {
+      console.error('🗺️ ❌ Error loading addresses in AddressManager:', error);
+    }
   };
 
   // Автоматически открываем карту для новых пользователей без адресов
@@ -134,11 +150,17 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
     }
   }, [addresses.length, showForm, showMapPicker]);
 
+  // Загружаем адреса при монтировании компонента
+  useEffect(() => {
+    console.log('🗺️ 🔄 AddressManager mounted, loading addresses...');
+    loadAddresses();
+  }, []);
+
   // Перезагрузка адресов при изменении AuthContext
   useEffect(() => {
     if (state.user && state.user.telegram_id) {
       console.log('🗺️ 🔄 AuthContext changed, reloading addresses...');
-      // loadAddresses(); // This line was removed as per the new_code.
+      loadAddresses();
     }
   }, [state.user]);
 

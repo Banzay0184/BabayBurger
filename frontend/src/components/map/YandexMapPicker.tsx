@@ -143,36 +143,42 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
       let locality = '';
       
       try {
-        console.log('🗺️ 🔍 Starting geocoding for coordinates:', coords);
+        console.log('🗺️ 🔍 Starting enhanced geocoding for coordinates:', coords);
         
-        // Пробуем геокодирование через Yandex Maps API
-        const geocoder = await window.ymaps.geocode(coords);
+        // Используем более детальные параметры геокодирования
+        const geocoder = await window.ymaps.geocode(coords, {
+          results: 1,
+          kind: 'house', // Запрашиваем дом для более точного результата
+          lang: 'ru_RU'  // Язык результатов
+        });
         
         if (geocoder.geoObjects.getLength() > 0) {
           const firstGeoObject = geocoder.geoObjects.get(0);
+          
+          console.log('🗺️ 🔍 GeoObject received:', firstGeoObject);
           
           // Безопасное получение данных адреса
           try {
             // Получаем полный адрес
             address = firstGeoObject.getAddressLine() || 'Адрес не определен';
             
-            // Получаем улицу
-            thoroughfare = firstGeoObject.getThoroughfare() || '';
+            // Получаем улицу (проверяем существование метода)
+            thoroughfare = (typeof firstGeoObject.getThoroughfare === 'function' && firstGeoObject.getThoroughfare()) || '';
             
-            // Получаем номер дома/здания
-            premise = firstGeoObject.getPremise() || '';
+            // Получаем номер дома/здания (проверяем существование метода)
+            premise = (typeof firstGeoObject.getPremise === 'function' && firstGeoObject.getPremise()) || '';
             
-            // Получаем город
-            locality = firstGeoObject.getLocality() || '';
+            // Получаем город (проверяем существование метода)
+            locality = (typeof firstGeoObject.getLocality === 'function' && firstGeoObject.getLocality()) || '';
             
-            // Дополнительные поля для отладки
-            const street = firstGeoObject.getThoroughfare() || '';
-            const houseNumber = firstGeoObject.getPremise() || '';
-            const city = firstGeoObject.getLocality() || '';
-            const country = firstGeoObject.getCountry() || '';
-            const postalCode = firstGeoObject.getPostalCode() || '';
+            // Дополнительные поля для отладки (с проверками)
+            const street = (typeof firstGeoObject.getThoroughfare === 'function' && firstGeoObject.getThoroughfare()) || '';
+            const houseNumber = (typeof firstGeoObject.getPremise === 'function' && firstGeoObject.getPremise()) || '';
+            const city = (typeof firstGeoObject.getLocality === 'function' && firstGeoObject.getLocality()) || '';
+            const country = (typeof firstGeoObject.getCountry === 'function' && firstGeoObject.getCountry()) || '';
+            const postalCode = (typeof firstGeoObject.getPostalCode === 'function' && firstGeoObject.getPostalCode()) || '';
             
-            console.log('🗺️ ✅ Geocoding successful:', { 
+            console.log('🗺️ ✅ Basic geocoding successful:', { 
               address, 
               thoroughfare, 
               premise, 
@@ -184,17 +190,7 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
               postalCode
             });
             
-            // Логируем все доступные методы
-            console.log('🗺️ 🔍 Available geocoding methods:', {
-              hasGetAddressLine: typeof firstGeoObject.getAddressLine === 'function',
-              hasGetThoroughfare: typeof firstGeoObject.getThoroughfare === 'function',
-              hasGetPremise: typeof firstGeoObject.getPremise === 'function',
-              hasGetLocality: typeof firstGeoObject.getLocality === 'function',
-              hasGetCountry: typeof firstGeoObject.getCountry === 'function',
-              hasGetPostalCode: typeof firstGeoObject.getPostalCode === 'function'
-            });
-            
-            // Попробуем получить адрес через properties
+            // Улучшенное извлечение компонентов адреса через properties
             try {
               const properties = firstGeoObject.properties;
               if (properties) {
@@ -204,26 +200,134 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
                   if (geocoderMetaData) {
                     const addressComponents = geocoderMetaData.get('Address');
                     if (addressComponents) {
-                      console.log('🗺️ 🔍 Address components from properties:', addressComponents);
+                      console.log('🗺️ 🔍 Full address components:', addressComponents);
                       
-                      // Получаем компоненты адреса
+                      // Получаем все доступные компоненты адреса
                       const streetComponent = addressComponents.get('Thoroughfare')?.get('ThoroughfareName') || '';
                       const houseComponent = addressComponents.get('Premise')?.get('PremiseNumber') || '';
                       const cityComponent = addressComponents.get('Locality')?.get('LocalityName') || '';
+                      const countryComponent = addressComponents.get('Country')?.get('CountryName') || '';
+                      const postalCodeComponent = addressComponents.get('PostalCode') || '';
                       
-                      console.log('🗺️ 🔍 Parsed components:', { streetComponent, houseComponent, cityComponent });
+                      // Дополнительные компоненты для более точного адреса
+                      const subLocality = addressComponents.get('SubLocality')?.get('SubLocalityName') || '';
+                      const area = addressComponents.get('Area')?.get('AreaName') || '';
+                      const district = addressComponents.get('DependentLocality')?.get('DependentLocalityName') || '';
                       
-                      // Обновляем значения если они пустые
-                      if (!thoroughfare && streetComponent) thoroughfare = streetComponent;
-                      if (!premise && houseComponent) premise = houseComponent;
-                      if (!locality && cityComponent) locality = cityComponent;
+                      console.log('🗺️ 🔍 Enhanced components:', { 
+                        streetComponent, 
+                        houseComponent, 
+                        cityComponent, 
+                        countryComponent,
+                        postalCodeComponent,
+                        subLocality,
+                        area,
+                        district
+                      });
+                      
+                      // Обновляем значения если они пустые или более точные
+                      if (streetComponent && (!thoroughfare || streetComponent.length > thoroughfare.length)) {
+                        thoroughfare = streetComponent;
+                      }
+                      if (houseComponent && (!premise || houseComponent.length > premise.length)) {
+                        premise = houseComponent;
+                      }
+                      if (cityComponent && (!locality || cityComponent.length > locality.length)) {
+                        locality = cityComponent;
+                      }
+                      
+                      // Формируем улучшенный адрес
+                      let enhancedAddress = '';
+                      if (cityComponent) enhancedAddress += cityComponent;
+                      if (subLocality) enhancedAddress += `, ${subLocality}`;
+                      if (area) enhancedAddress += `, ${area}`;
+                      if (streetComponent) enhancedAddress += `, ${streetComponent}`;
+                      if (houseComponent) enhancedAddress += `, ${houseComponent}`;
+                      
+                      if (enhancedAddress) {
+                        address = enhancedAddress;
+                        console.log('🗺️ ✅ Enhanced address created:', enhancedAddress);
+                      }
                     }
                   }
                 }
               }
             } catch (propertiesError) {
-              console.log('🗺️ ⚠️ Error parsing properties:', propertiesError);
+              console.log('🗺️ ⚠️ Error parsing enhanced properties:', propertiesError);
             }
+            
+            // Если все еще нет улицы или дома, пробуем альтернативные методы
+            if (!thoroughfare || !premise) {
+              console.log('🗺️ 🔍 Trying alternative address extraction...');
+              
+              // Пробуем получить адрес через getAddressLine и парсинг
+              const fullAddress = firstGeoObject.getAddressLine();
+              if (fullAddress) {
+                console.log('🗺️ 🔍 Full address line:', fullAddress);
+                
+                // Парсим адрес вручную для извлечения улицы и дома
+                const addressParts = fullAddress.split(',').map((part: string) => part.trim());
+                console.log('🗺️ 🔍 Parsed address parts:', addressParts);
+                
+                // Ищем улицу (обычно содержит слово "улица", "проспект", "переулок" и т.д.)
+                const streetPart = addressParts.find((part: string) => 
+                  part.toLowerCase().includes('улица') || 
+                  part.toLowerCase().includes('проспект') || 
+                  part.toLowerCase().includes('переулок') ||
+                  part.toLowerCase().includes('шоссе') ||
+                  part.toLowerCase().includes('набережная')
+                );
+                
+                if (streetPart && !thoroughfare) {
+                  thoroughfare = streetPart;
+                  console.log('🗺️ ✅ Street extracted from address line:', streetPart);
+                }
+                
+                // Ищем номер дома (обычно последняя часть с цифрами)
+                const housePart = addressParts.find((part: string) => 
+                  /\d+/.test(part) && 
+                  (part.toLowerCase().includes('дом') || 
+                   part.toLowerCase().includes('д.') ||
+                   /^\d+[а-я]*$/i.test(part))
+                );
+                
+                if (housePart && !premise) {
+                  premise = housePart;
+                  console.log('🗺️ ✅ House number extracted from address line:', housePart);
+                }
+              }
+              
+              // Если все еще нет номера дома, пробуем детальное геокодирование
+              if (!premise) {
+                console.log('🗺️ 🔍 Trying detailed geocoding for house number...');
+                try {
+                  const detailedGeocoder = await window.ymaps.geocode(coords, {
+                    results: 1,
+                    kind: 'house',
+                    lang: 'ru_RU',
+                    json: true // Запрашиваем JSON формат для более детального анализа
+                  });
+                  
+                  if (detailedGeocoder.geoObjects.getLength() > 0) {
+                    const detailedObject = detailedGeocoder.geoObjects.get(0);
+                    const detailedPremise = detailedObject.getPremise();
+                    if (detailedPremise) {
+                      premise = detailedPremise;
+                      console.log('🗺️ ✅ House number from detailed geocoding:', detailedPremise);
+                    }
+                  }
+                } catch (detailedError) {
+                  console.log('🗺️ ⚠️ Detailed geocoding failed:', detailedError);
+                }
+              }
+            }
+            
+            console.log('🗺️ ✅ Final geocoding result:', { 
+              address, 
+              thoroughfare, 
+              premise, 
+              locality 
+            });
             
           } catch (addressError) {
             console.log('🗺️ ⚠️ Error getting address fields:', addressError);
@@ -235,30 +339,29 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
           address = createFallbackAddress(coords);
         }
       } catch (geocodeError) {
-        console.log('🗺️ ⚠️ Geocoding failed, trying alternative method:', geocodeError);
+        console.log('🗺️ ⚠️ Enhanced geocoding failed, trying fallback method:', geocodeError);
         
-        // Альтернативный метод: геокодирование через reverse geocoding
+        // Fallback метод: базовое геокодирование
         try {
-          const reverseGeocoder = await window.ymaps.geocode(coords, { 
-            results: 1,
-            kind: 'locality'
-          });
+          const fallbackGeocoder = await window.ymaps.geocode(coords);
           
-          if (reverseGeocoder.geoObjects.getLength() > 0) {
-            const geoObject = reverseGeocoder.geoObjects.get(0);
-            const altAddress = geoObject.getAddressLine();
-            if (altAddress) {
-              address = altAddress;
-              locality = geoObject.getLocality() || '';
-              console.log('🗺️ ✅ Alternative geocoding successful:', { address, locality });
+          if (fallbackGeocoder.geoObjects.getLength() > 0) {
+            const geoObject = fallbackGeocoder.geoObjects.get(0);
+            const fallbackAddress = geoObject.getAddressLine();
+            if (fallbackAddress) {
+              address = fallbackAddress;
+              locality = (typeof geoObject.getLocality === 'function' && geoObject.getLocality()) || '';
+              thoroughfare = (typeof geoObject.getThoroughfare === 'function' && geoObject.getThoroughfare()) || '';
+              premise = (typeof geoObject.getPremise === 'function' && geoObject.getPremise()) || '';
+              console.log('🗺️ ✅ Fallback geocoding successful:', { address, locality, thoroughfare, premise });
             } else {
               address = createFallbackAddress(coords);
             }
           } else {
             address = createFallbackAddress(coords);
           }
-        } catch (altError) {
-          console.log('🗺️ ⚠️ Alternative geocoding also failed:', altError);
+        } catch (fallbackError) {
+          console.log('🗺️ ⚠️ Fallback geocoding also failed:', fallbackError);
           address = createFallbackAddress(coords);
         }
       }

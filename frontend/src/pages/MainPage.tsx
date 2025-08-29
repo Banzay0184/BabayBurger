@@ -315,7 +315,6 @@ export const MainPage: React.FC = () => {
             ) : showCheckoutPage ? (
               <CheckoutPage
                 onClose={() => setShowCheckoutPage(false)}
-                onViewChange={setCurrentView}
               />
             ) : (
               <>
