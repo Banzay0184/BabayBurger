@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import type { Restaurant } from '../../types/yandex-maps';
 import { useRestaurants } from '../../hooks/useRestaurants';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface RestaurantPickerProps {
   onRestaurantSelect: (restaurant: Restaurant) => void;
@@ -14,6 +15,7 @@ export const RestaurantPicker: React.FC<RestaurantPickerProps> = ({
   onClose
 }) => {
   const { restaurants, loading, error } = useRestaurants();
+  const { t } = useLanguage();
   const [mapInstance, setMapInstance] = useState<any>(null);
   const [mapLoading, setMapLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -112,7 +114,7 @@ export const RestaurantPicker: React.FC<RestaurantPickerProps> = ({
         
         const map = new window.ymaps.Map(mapRef.current, {
           center: [64.553131, 39.731224], // Центр на ресторане BABAY1 в Бухаре [долгота, широта]
-          zoom: 15,
+          zoom: 20, // Максимальный масштаб
           controls: ['zoomControl', 'fullscreenControl'],
           // Дополнительные настройки для мобильных устройств
           behaviors: ['drag', 'scrollZoom', 'multiTouch'],
@@ -420,7 +422,7 @@ export const RestaurantPicker: React.FC<RestaurantPickerProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-0">
       <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] sm:max-h-[90vh] overflow-hidden">
         {/* Заголовок */}
-        <div className="bg-primary-500 text-white p-3 sm:p-4 flex justify-between items-center">
+        <div className="bg-primary-600 text-white p-3 sm:p-4 flex justify-between items-center">
           <h2 className="text-lg sm:text-xl font-bold text-white">Выберите ресторан для самовывоза</h2>
           <button
             onClick={stableOnClose}
@@ -457,7 +459,7 @@ export const RestaurantPicker: React.FC<RestaurantPickerProps> = ({
                         </p>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm space-y-1 sm:space-y-0">
                           <span className="text-gray-500">
-                            Минимум: {restaurant.min_order_amount.toLocaleString()} сум
+                            {t('minimum_order')}: {restaurant.min_order_amount.toLocaleString()} {t('economy_currency')}
                           </span>
                           <span className="text-gray-500">
                             {restaurant.pickup_time}

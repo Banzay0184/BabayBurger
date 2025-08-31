@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.db.models import Sum, Count
-from .models import User, MenuItem, Order, OrderItem, Category, Address, AddOn, SizeOption, Promotion, DeliveryZone, Favorite, Restaurant, PromoCode
+from .models import User, MenuItem, Order, OrderItem, Category, Address, AddOn, SizeOption, Promotion, DeliveryZone, Favorite, Restaurant, PromoCode, PromoCodeUsage
 
 
 @admin.register(Category)
@@ -72,24 +72,28 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'status', 'total_price', 'discounted_total', 'delivery_fee', 'promotion', 'delivery_time', 'created_at')
-    list_filter = ('status', 'promotion', 'delivery_time')
-    search_fields = ('user__first_name', 'user__username', 'notes')
+    list_display = ('id', 'user', 'restaurant_info', 'status', 'service_type_display', 'total_price', 'discounted_total', 'delivery_fee', 'promotion', 'delivery_time', 'created_at')
+    list_filter = ('status', 'service_type', 'promotion', 'delivery_time')
+    search_fields = ('user__first_name', 'user__username', 'restaurant__name', 'notes')
     ordering = ['-created_at']
     list_editable = ['status']
-    readonly_fields = ['total_price', 'created_at']
+    readonly_fields = ['total_price', 'created_at', 'discount_amount', 'final_price']
     
     inlines = [OrderItemInline]
     
     fieldsets = (
         ('Основная информация', {
-            'fields': ('user', 'status', 'total_price', 'created_at')
+            'fields': ('user', 'restaurant', 'status', 'service_type', 'total_price', 'created_at')
         }),
         ('Доставка', {
-            'fields': ('address', 'delivery_fee', 'delivery_time', 'notes')
+            'fields': ('address', 'phone', 'delivery_fee', 'delivery_time', 'notes')
         }),
         ('Акции', {
             'fields': ('promotion', 'discounted_total'),
+            'classes': ('collapse',)
+        }),
+        ('Промокоды', {
+            'fields': ('promo_code', 'discount_amount', 'final_price'),
             'classes': ('collapse',)
         }),
     )
@@ -105,6 +109,20 @@ class OrderAdmin(admin.ModelAdmin):
             return f"{obj.address.full_address[:50]}..."
         return "Адрес не указан"
     address_info.short_description = 'Адрес'
+    
+    def restaurant_info(self, obj):
+        if obj.restaurant:
+            return f"{obj.restaurant.name} ({obj.restaurant.city})"
+        return "Ресторан не указан"
+    restaurant_info.short_description = 'Ресторан'
+    
+    def service_type_display(self, obj):
+        service_type_map = {
+            'delivery': '🚚 Доставка',
+            'pickup': '🏪 Самовывоз'
+        }
+        return service_type_map.get(obj.service_type, obj.service_type)
+    service_type_display.short_description = 'Тип заказа'
     
     def items_count(self, obj):
         return obj.orderitem_set.count()
@@ -292,24 +310,35 @@ class RestaurantAdmin(admin.ModelAdmin):
 
 @admin.register(PromoCode)
 class PromoCodeAdmin(admin.ModelAdmin):
-    list_display = ['code', 'discount_percent', 'max_discount', 'min_order_amount', 'is_active', 'is_used', 'used_by', 'expires_at', 'created_at']
-    list_filter = ['is_active', 'is_used', 'discount_percent', 'created_at', 'expires_at']
-    search_fields = ['code', 'used_by__first_name', 'used_by__telegram_id']
-    readonly_fields = ['created_at', 'used_at']
+    list_display = ['code', 'discount_percent', 'max_discount', 'min_order_amount', 'is_active', 'max_uses', 'usage_count', 'expires_at', 'created_at']
+    list_filter = ['is_active', 'discount_percent', 'created_at', 'expires_at']
+    search_fields = ['code']
+    readonly_fields = ['created_at', 'usage_count']
     fieldsets = (
         ('Основная информация', {
             'fields': ('code', 'discount_percent', 'max_discount', 'min_order_amount')
         }),
         ('Статус', {
-            'fields': ('is_active', 'is_used', 'used_by', 'used_at')
+            'fields': ('is_active', 'max_uses')
         }),
         ('Время', {
             'fields': ('created_at', 'expires_at')
         }),
     )
     
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('used_by')
+    def usage_count(self, obj):
+        """Показывает количество использований промокода"""
+        return PromoCodeUsage.objects.filter(promo_code=obj).count()
+    usage_count.short_description = 'Использований'
+
+
+@admin.register(PromoCodeUsage)
+class PromoCodeUsageAdmin(admin.ModelAdmin):
+    list_display = ['promo_code', 'user', 'used_at']
+    list_filter = ['used_at', 'promo_code']
+    search_fields = ['promo_code__code', 'user__first_name', 'user__telegram_id']
+    readonly_fields = ['used_at']
+    ordering = ['-used_at']
 
 
 # Настройка админ-панели

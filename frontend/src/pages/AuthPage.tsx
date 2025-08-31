@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { isInTelegramContext } from '../utils/telegram';
+import { useLanguage } from '../context/LanguageContext';
+import { PageTransition } from '../components/common/PageTransition';
 
 export const AuthPage: React.FC = () => {
   const { state, loginWithTelegram, loginAsGuest } = useAuth();
+  const { t } = useLanguage();
   const isTelegram = isInTelegramContext();
   const [authMode, setAuthMode] = useState<'telegram' | 'guest'>(isTelegram ? 'telegram' : 'guest');
 
@@ -40,7 +43,8 @@ export const AuthPage: React.FC = () => {
   }
 
   return (
-    <div className="tg-webapp flex items-center justify-center tg-safe-top tg-safe-bottom bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
+    <PageTransition>
+      <div className="tg-webapp flex items-center justify-center tg-safe-top tg-safe-bottom bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
       <div className="max-w-md w-full space-y-8 p-8">
         <div className="text-center animate-slide-up">
           <div className="mb-8">
@@ -59,7 +63,7 @@ export const AuthPage: React.FC = () => {
               Войдите в приложение для продолжения
             </p>
             <p className="text-gray-500 text-sm mt-2">
-              Вкусные бургеры и быстрая доставка
+                              {t('delicious_burgers_fast_delivery')}
             </p>
           </div>
         </div>
@@ -160,7 +164,7 @@ export const AuthPage: React.FC = () => {
           <div className="grid grid-cols-3 gap-4 text-center">
             <div className="p-4 glass-dark rounded-xl">
               <span className="text-2xl mb-2 block">🚚</span>
-              <p className="text-xs font-medium text-gray-300">Быстрая доставка</p>
+              <p className="text-xs font-medium text-gray-300">{t('fast_delivery')}</p>
             </div>
             <div className="p-4 glass-dark rounded-xl">
               <span className="text-2xl mb-2 block">🍔</span>
@@ -174,5 +178,6 @@ export const AuthPage: React.FC = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }; 

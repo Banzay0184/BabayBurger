@@ -13,6 +13,7 @@ import { MenuItem as MenuItemComponent } from '../components/menu/MenuItem';
 import { Button } from '../components/ui/Button';
 import { AddressManager } from '../components/address/AddressManager';
 import { RestaurantLogo } from '../components/common/RestaurantLogo';
+import { PageTransition } from '../components/common/PageTransition';
 import { OptionsPage } from './OptionsPage';
 import { ProfilePage } from './ProfilePage';
 import { CheckoutPage } from './CheckoutPage';
@@ -281,7 +282,7 @@ export const MainPage: React.FC = () => {
   }
 
   return (
-    <>
+    <PageTransition>
       {/* Анимированный логотип при загрузке */}
       <RestaurantLogo 
         showLogo={showLogo}
@@ -952,6 +953,6 @@ export const MainPage: React.FC = () => {
         </div>
         )}
       </div>
-    </>
+    </PageTransition>
   );
 }; 

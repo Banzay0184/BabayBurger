@@ -6,7 +6,9 @@ import { LanguageProvider } from './context/LanguageContext';
 import { FavoriteProvider } from './context/FavoriteContext';
 import { AuthPage } from './pages/AuthPage';
 import { MainPage } from './pages/MainPage';
+import { TelegramWebAppOptimizer } from './components/common/TelegramWebAppOptimizer';
 import { initTelegramWebApp } from './utils/telegram';
+import './styles/telegram-optimization.css';
 
 // Компонент для отображения контента в зависимости от состояния авторизации
 const AppContent: React.FC = () => {
@@ -37,11 +39,13 @@ const AppContent: React.FC = () => {
 // Главный компонент приложения
 const App: React.FC = () => {
   return (
-    <LanguageProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </LanguageProvider>
+    <TelegramWebAppOptimizer>
+      <LanguageProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </LanguageProvider>
+    </TelegramWebAppOptimizer>
   );
 };
 

@@ -888,15 +888,11 @@ class PromoCode(models.Model):
         help_text="Минимальная сумма заказа для применения промокода"
     )
     is_active = models.BooleanField(default=True, verbose_name="Активен")
-    is_used = models.BooleanField(default=False, verbose_name="Использован")
-    used_by = models.ForeignKey(
-        User, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True, 
-        verbose_name="Использован пользователем"
+    max_uses = models.PositiveIntegerField(
+        default=1, 
+        verbose_name="Максимальное количество использований",
+        help_text="Сколько раз можно использовать промокод (0 = безлимит)"
     )
-    used_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата использования")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     expires_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата истечения")
     
@@ -913,17 +909,21 @@ class PromoCode(models.Model):
         if not self.is_active:
             return False, "Промокод неактивен"
         
-        if self.is_used:
-            return False, "Промокод уже использован"
-        
-        if self.used_by and self.used_by != user:
-            return False, "Промокод уже использован другим пользователем"
-        
         if self.expires_at and timezone.now() > self.expires_at:
             return False, "Промокод истек"
         
         if order_amount < self.min_order_amount:
             return False, f"Минимальная сумма заказа: {self.min_order_amount} сум"
+        
+        # Проверяем, использовал ли пользователь этот промокод
+        if user and PromoCodeUsage.objects.filter(promo_code=self, user=user).exists():
+            return False, "Вы уже использовали этот промокод"
+        
+        # Проверяем лимит использований
+        if self.max_uses > 0:
+            usage_count = PromoCodeUsage.objects.filter(promo_code=self).count()
+            if usage_count >= self.max_uses:
+                return False, "Промокод больше недоступен (достигнут лимит использований)"
         
         return True, "Промокод валиден"
     
@@ -933,11 +933,37 @@ class PromoCode(models.Model):
         return min(discount_amount, self.max_discount)
     
     def mark_as_used(self, user):
-        """Отмечает промокод как использованный"""
-        self.is_used = True
-        self.used_by = user
-        self.used_at = timezone.now()
-        self.save()
+        """Отмечает промокод как использованный конкретным пользователем"""
+        PromoCodeUsage.objects.create(
+            promo_code=self,
+            user=user,
+            used_at=timezone.now()
+        )
+
+
+class PromoCodeUsage(models.Model):
+    """Модель для отслеживания использований промокодов пользователями"""
+    promo_code = models.ForeignKey(
+        PromoCode, 
+        on_delete=models.CASCADE, 
+        verbose_name="Промокод"
+    )
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        verbose_name="Пользователь"
+    )
+    used_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата использования")
+    
+    class Meta:
+        verbose_name = "Использование промокода"
+        verbose_name_plural = "Использования промокодов"
+        unique_together = ['promo_code', 'user']  # Один пользователь - один раз на промокод
+        ordering = ['-used_at']
+    
+    def __str__(self):
+        return f"{self.user.first_name} использовал {self.promo_code.code}"
+
 
 # --- ДОРАБОТКА Order ---
 class Order(models.Model):
@@ -948,11 +974,20 @@ class Order(models.Model):
         ('completed', 'Выполнен'),
         ('cancelled', 'Отменен'),
     )
+    
+    SERVICE_TYPE_CHOICES = (
+        ('delivery', 'Доставка'),
+        ('pickup', 'Самовывоз'),
+    )
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, verbose_name="Ресторан", null=True, blank=True)
     items = models.ManyToManyField(MenuItem, through='OrderItem')
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    service_type = models.CharField(max_length=20, choices=SERVICE_TYPE_CHOICES, default='delivery', verbose_name="Тип услуги")
     address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name="Адрес доставки")
+    phone = models.CharField(max_length=20, verbose_name="Телефон")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     promotion = models.ForeignKey(Promotion, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Примененная акция")

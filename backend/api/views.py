@@ -17,7 +17,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import viewsets, filters
-from .models import User, MenuItem, Order, OrderItem, Category, Address, DeliveryZone, AddOn, SizeOption, Promotion, Favorite, Restaurant, PromoCode
+from .models import User, MenuItem, Order, OrderItem, Category, Address, DeliveryZone, AddOn, SizeOption, Promotion, Favorite, Restaurant, PromoCode, PromoCodeUsage
 from app_operator.models import Operator
 from .serializers import (
     OrderSerializer, MenuItemSerializer, CategorySerializer, AddressSerializer, 
@@ -762,7 +762,7 @@ class OrderView(APIView):
                 return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
             
             # Получаем заказы пользователя с элементами заказа
-            orders = Order.objects.filter(user=user).select_related('user', 'address').prefetch_related(
+            orders = Order.objects.filter(user=user).select_related('user', 'address', 'restaurant', 'promo_code').prefetch_related(
                 'orderitem_set__menu_item'
             ).order_by('-created_at')
             
@@ -772,15 +772,25 @@ class OrderView(APIView):
                 order_info = {
                     'id': order.id,
                     'total_price': str(order.total_price),
+                    'service_type': order.service_type,
                     'status': order.status,
                     'status_display': order.get_status_display(),
                     'address': order.address.full_address,
-                    'phone_number': order.address.phone_number,
+                    'phone_number': order.phone or order.address.phone_number or '',
                     'created_at': order.created_at.isoformat(),
                     'discount_percent': order.promo_code.discount_percent if order.promo_code else None,
                     'discount_amount': str(order.discount_amount),
                     'final_price': str(order.final_price),
                     'delivery_fee': str(order.delivery_fee),
+                    'promo_code': {
+                        'code': order.promo_code.code,
+                        'discount_percent': order.promo_code.discount_percent
+                    } if order.promo_code else None,
+                    'restaurant': {
+                        'id': order.restaurant.id,
+                        'name': order.restaurant.name,
+                        'city': order.restaurant.city
+                    } if order.restaurant else None,
                     'items': []
                 }
                 
@@ -1238,13 +1248,28 @@ class OrderCreateView(APIView):
             if not items_data:
                 return Response({'error': 'No valid items found'}, status=status.HTTP_400_BAD_REQUEST)
             
+            # Получаем ресторан если указан
+            restaurant = None
+            restaurant_id = request.data.get('restaurant')
+            if restaurant_id:
+                try:
+                    restaurant = Restaurant.objects.get(id=restaurant_id, is_active=True)
+                except Restaurant.DoesNotExist:
+                    logger.warning(f"Restaurant not found: restaurant_id={restaurant_id}")
+            
+            # Получаем телефон из запроса или из адреса
+            phone = request.data.get('phone', '') or address.phone_number or ''
+            
             # Создаем заказ
             order = Order.objects.create(
                 user=user,
+                restaurant=restaurant,  # Может быть None для доставки
                 address=address,
+                phone=phone,
                 total_price=0,
                 notes=request.data.get('notes', ''),
-                delivery_fee=request.data.get('delivery_fee', 0)
+                delivery_fee=request.data.get('delivery_fee', 0),
+                service_type=request.data.get('service_type', 'delivery')  # По умолчанию доставка
             )
             
             total_price = 0

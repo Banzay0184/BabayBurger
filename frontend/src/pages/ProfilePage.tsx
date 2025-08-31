@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoriteContext';
+import { PageTransition } from '../components/common/PageTransition';
 
 interface Order {
   id: number;
   total_price: string;
   status: string;
+  service_type: string; // 'delivery' или 'pickup'
   created_at: string;
   address: string; // Backend возвращает полный адрес как строку
   delivery_fee?: string;
@@ -110,6 +112,24 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
     return statusMap[status] || status;
   };
 
+  // Форматирование типа заказа
+  const getServiceTypeText = (serviceType: string) => {
+    const serviceTypeMap: Record<string, string> = {
+      'delivery': t('delivery'),
+      'pickup': t('pickup')
+    };
+    return serviceTypeMap[serviceType] || serviceType;
+  };
+
+  // Получение иконки для типа заказа
+  const getServiceTypeIcon = (serviceType: string) => {
+    const iconMap: Record<string, string> = {
+      'delivery': '🚚',
+      'pickup': '🏪'
+    };
+    return iconMap[serviceType] || '❓';
+  };
+
   // Форматирование статуса заказа для стилей
   const getStatusStyle = (status: string) => {
     const styleMap: Record<string, string> = {
@@ -182,7 +202,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
   }
 
   return (
-    <div className="min-h-screen text-gray-100">
+    <PageTransition>
+      <div className="min-h-screen text-gray-100">
       {/* CSS анимации */}
       <style>{`
         @keyframes fadeInUp {
@@ -299,7 +320,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
                       : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50 hover:scale-102'
                   }`}
                 >
-                  {status === 'all' ? 'Все заказы' : getStatusText(status)}
+                  {status === 'all' ? t('all_orders') : getStatusText(status)}
                   {status !== 'all' && (
                     <span className="ml-1 sm:ml-2 text-xs">
                       ({orders.filter(order => order.status === status).length})
@@ -313,7 +334,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
             <div className="mt-3 text-center sm:text-left">
               <span className="text-sm text-gray-400">
                 Показано {filteredOrders.length} из {orders.length} заказов
-                {selectedStatus !== 'all' && ` со статусом "${getStatusText(selectedStatus)}"`}
+                {selectedStatus !== 'all' && ` ${t('no_orders_with_status')} "${getStatusText(selectedStatus)}"`}
                   </span>
                 </div>
           </div>
@@ -339,9 +360,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       <span className="text-lg">🛒</span>
-                      <span className="font-semibold text-gray-100">
-                        {t('order')} #{order.id}
-                      </span>
+                      <div>
+                        <span className="font-semibold text-gray-100">
+                          {t('order')} #{order.id}
+                        </span>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className="text-xs text-gray-400">{getServiceTypeIcon(order.service_type)} {getServiceTypeText(order.service_type)}</span>
+                        </div>
+                      </div>
                     </div>
                     <div className={`px-4 py-2 rounded-full text-sm font-medium border ${getStatusStyle(order.status)} flex items-center space-x-2`}>
                       <span className="text-lg">{getStatusIcon(order.status)}</span>
@@ -407,7 +433,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
                   </div>
 
                   {/* Детали заказа */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
                     <div className="flex items-center text-sm text-gray-400 bg-gray-800/30 rounded-lg p-3">
                       <span className="mr-2 text-lg">📅</span>
                       <div className="min-w-0 flex-1">
@@ -423,16 +449,23 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
                       </div>
                     </div>
                     <div className="flex items-center text-sm text-gray-400 bg-gray-800/30 rounded-lg p-3">
+                      <span className="mr-2 text-lg">{getServiceTypeIcon(order.service_type)}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-gray-300 text-xs sm:text-sm">{t('order_type')}</div>
+                        <div className="text-xs sm:text-sm truncate">{getServiceTypeText(order.service_type)}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-400 bg-gray-800/30 rounded-lg p-3">
                       <span className="mr-2 text-lg">💰</span>
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium text-gray-300 text-xs sm:text-sm">Итого к оплате</div>
+                        <div className="font-medium text-gray-300 text-xs sm:text-sm">{t('final_price_label')}</div>
                         <div className="text-primary-400 font-bold text-xs sm:text-sm">
-                          {order.final_price || order.total_price || '0'} сум
+                                                      {order.final_price || order.total_price || '0'} {t('economy_currency')}
                         </div>
                         {order.discount_amount && Number(order.discount_amount) > 0 && (
-                          <div className="text-green-400 text-xs mt-1">
-                            Экономия: -{order.discount_amount} сум
-                          </div>
+                                                      <div className="text-xs mt-1">
+                              {t('discount_label')}: -{order.discount_amount} {t('economy_currency')}
+                            </div>
                         )}
                       </div>
                     </div>
@@ -442,7 +475,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
                       <div className="flex items-center text-sm text-gray-400 bg-gray-800/30 rounded-lg p-3">
                         <span className="mr-2 text-lg">🎫</span>
                         <div className="min-w-0 flex-1">
-                          <div className="font-medium text-gray-300 text-xs sm:text-sm">Промокод</div>
+                          <div className="font-medium text-gray-300 text-xs sm:text-sm">{t('promo_code')}</div>
                           <div className="text-green-400 text-xs sm:text-sm">
                             {order.promo_code.code} (-{order.promo_code.discount_percent}%)
                           </div>
@@ -456,7 +489,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
                     <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-4 mb-4">
                       <div className="flex items-center justify-center space-x-2 text-green-400">
                         <span className="text-2xl">🎉</span>
-                        <span className="font-semibold">Вы сэкономили {order.discount_amount} сум!</span>
+                        <span className="font-semibold">{t('economy_message')} {order.discount_amount} {t('economy_currency')}!</span>
                         <span className="text-2xl">🎉</span>
                       </div>
                     </div>
@@ -467,26 +500,32 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
                     <div className="bg-gray-800/50 rounded-lg p-4 mb-4">
                       <h4 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
                         <span className="mr-2">💳</span>
-                        Детализация оплаты
+                        {t('order_details')}
                       </h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Сумма заказа (без скидки):</span>
-                          <span className="text-gray-300">{order.total_price} сум</span>
+                          <span className="text-gray-400">{t('order_amount_without_discount')}:</span>
+                          <span className="text-gray-300">{order.total_price} {t('economy_currency')}</span>
                         </div>
-                        {order.delivery_fee && Number(order.delivery_fee) > 0 && (
+                        {order.service_type === 'delivery' && order.delivery_fee && Number(order.delivery_fee) > 0 && (
                           <div className="flex justify-between">
-                            <span className="text-gray-400">Доставка:</span>
-                            <span className="text-gray-300">{order.delivery_fee} сум</span>
+                            <span className="text-gray-400">{t('delivery_cost_label')}:</span>
+                            <span className="text-gray-300">{order.delivery_fee} {t('economy_currency')}</span>
+                          </div>
+                        )}
+                        {order.service_type === 'pickup' && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">{t('order_type')}:</span>
+                            <span className="text-gray-300">{t('pickup')}</span>
                           </div>
                         )}
                         <div className="flex justify-between text-green-400">
-                          <span>Скидка по промокоду:</span>
-                          <span>-{order.discount_amount} сум</span>
+                          <span>{t('promo_discount_by_promo')}:</span>
+                          <span>-{order.discount_amount} {t('economy_currency')}</span>
                         </div>
                         <div className="flex justify-between border-t border-gray-600 pt-2">
-                          <span className="text-gray-200 font-semibold">Итого к оплате:</span>
-                          <span className="text-primary-400 font-bold">{order.final_price} сум</span>
+                          <span className="text-gray-200 font-semibold">{t('total_to_pay_colon')}</span>
+                          <span className="text-primary-400 font-bold">{order.final_price} {t('economy_currency')}</span>
                         </div>
                       </div>
                     </div>
@@ -495,22 +534,28 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
                     <div className="bg-gray-800/50 rounded-lg p-4 mb-4">
                       <h4 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
                         <span className="mr-2">💳</span>
-                        Детализация оплаты
+                        {t('order_details')}
                       </h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Сумма заказа (без скидки):</span>
-                          <span className="text-gray-300">{order.total_price} сум</span>
+                          <span className="text-gray-400">{t('order_amount_without_discount')}:</span>
+                          <span className="text-gray-300">{order.total_price} {t('economy_currency')}</span>
                         </div>
-                        {order.delivery_fee && Number(order.delivery_fee) > 0 && (
+                        {order.service_type === 'delivery' && order.delivery_fee && Number(order.delivery_fee) > 0 && (
                           <div className="flex justify-between">
-                            <span className="text-gray-400">Доставка:</span>
-                            <span className="text-gray-300">{order.delivery_fee} сум</span>
+                            <span className="text-gray-400">{t('delivery_cost_label')}:</span>
+                            <span className="text-gray-300">{order.delivery_fee} {t('economy_currency')}</span>
+                          </div>
+                        )}
+                        {order.service_type === 'pickup' && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">{t('order_type')}:</span>
+                            <span className="text-gray-300">{t('pickup')}</span>
                           </div>
                         )}
                         <div className="flex justify-between border-t border-gray-600 pt-2">
-                          <span className="text-gray-200 font-semibold">Итого к оплате:</span>
-                          <span className="text-primary-400 font-bold">{order.total_price} сум</span>
+                          <span className="text-gray-200 font-semibold">{t('total_to_pay_colon')}</span>
+                          <span className="text-primary-400 font-bold">{order.total_price} {t('economy_currency')}</span>
                         </div>
                       </div>
                     </div>
@@ -537,16 +582,16 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
                               <span className="text-lg">🍕</span>
                               <div>
                                 <div className="text-gray-300 font-medium">{item.menu_item_name || 'Неизвестное блюдо'}</div>
-                                <div className="text-gray-500 text-xs">Количество: {item.quantity || 0}</div>
+                                <div className="text-gray-500 text-xs">{t('quantity')}: {item.quantity || 0}</div>
                               </div>
                             </div>
                             <span className="text-gray-300 font-bold">
-                              {item.price || '0'} сум
+                              {item.price || '0'} {t('economy_currency')}
                             </span>
                           </div>
                         ))
                       ) : (
-                        <div className="text-gray-500 text-sm text-center py-4">Товары не найдены</div>
+                        <div className="text-gray-500 text-sm text-center py-4">{t('items_not_found')}</div>
                       )}
                     </div>
                   </div>
@@ -559,11 +604,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
               <p className="text-gray-400 text-lg mb-2">
                 {selectedStatus === 'all' ? t('no_orders_yet') : `Нет заказов со статусом "${getStatusText(selectedStatus)}"`}
               </p>
-              <p className="text-gray-500 text-sm">Попробуйте изменить фильтр или закажите что-нибудь вкусное!</p>
+              <p className="text-gray-500 text-sm">{t('try_change_filter')}</p>
             </div>
           )}
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };

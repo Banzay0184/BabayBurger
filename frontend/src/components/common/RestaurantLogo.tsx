@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import logo from '/public/logobabay.png';
+import { useLanguage } from '../../context/LanguageContext';
 
 
 // Типы для Telegram WebApp
@@ -20,6 +21,7 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({
   onAnimationComplete,
   showLogo = true 
 }) => {
+  const { t } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
   const [logoScale, setLogoScale] = useState(0);
   const [logoPosition, setLogoPosition] = useState({ x: 0, y: 0 });
@@ -147,7 +149,7 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({
         ">
           ВКУСНАЯ ЕДА
           <br />
-          БЫСТРАЯ ДОСТАВКА
+                          {t('fast_delivery').toUpperCase()}
         </p>
       </div>
 

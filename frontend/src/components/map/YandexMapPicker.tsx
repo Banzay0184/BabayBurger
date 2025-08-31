@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useDeliveryZones } from '../../hooks/useDeliveryZones';
 import { Button } from '../ui/Button';
 import type { YandexMapInstance, MapAddress } from '../../types/yandex-maps';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface YandexMapPickerProps {
   onAddressSelect: (address: MapAddress) => void;
@@ -12,11 +13,12 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
   onAddressSelect,
   onClose
 }) => {
+  const { t } = useLanguage();
   // Состояния
   const [isMapLoading, setIsMapLoading] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState<MapAddress | null>(null);
   const [addressInZone, setAddressInZone] = useState<boolean>(false);
-  const [status, setStatus] = useState<string>('Загрузка карты...');
+  const [status, setStatus] = useState<string>(t('loading_map'));
 
   // Refs
   const mapRef = useRef<HTMLDivElement>(null);
@@ -449,7 +451,7 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
             strokeOpacity: zone.polygon_stroke_opacity || 0.8,
             strokeWidth: zone.polygon_stroke_width || 2
           }, {
-            hintContent: `${zone.name || `Зона ${index + 1}`} - Доставка: ${zone.delivery_fee} сум`
+            hintContent: `${zone.name || `${t('zone')} ${index + 1}`} - ${t('delivery_cost_hint')}: ${zone.delivery_fee} ${t('economy_currency')}`
           });
 
           // Принудительно применяем стили
@@ -478,7 +480,7 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
             strokeOpacity: 0.8,
             strokeWidth: 2
           }, {
-            hintContent: `${zone.name || `Зона ${index + 1}`} - Доставка: ${zone.delivery_fee} сум`
+            hintContent: `${zone.name || `${t('zone')} ${index + 1}`} - ${t('delivery_cost_hint')}: ${zone.delivery_fee} ${t('economy_currency')}`
           });
 
           // Делаем круг прозрачным для кликов
@@ -522,7 +524,7 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
   // Определение местоположения пользователя
   const getUserLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      setStatus('Геолокация не поддерживается');
+      setStatus(t('geolocation_not_supported_status'));
       return;
     }
     
@@ -533,13 +535,13 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
       navigator.permissions.query({ name: 'geolocation' }).then((result) => {
         console.log('🗺️ 🔍 Geolocation permission status:', result.state);
         if (result.state === 'denied') {
-          setStatus('Доступ к геолокации запрещен. Разрешите в настройках браузера.');
+          setStatus(t('geolocation_permission_denied'));
           return;
         }
       });
     }
 
-    setStatus('Определение местоположения...');
+    setStatus(t('determining_location'));
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -560,13 +562,13 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
         console.log('🗺️ Geolocation error:', error.message);
         console.log('🗺️ Error code:', error.code);
         
-        let errorMessage = 'Геолокация недоступна';
+        let errorMessage = t('geolocation_unavailable');
         if (error.code === 1) {
-          errorMessage = 'Доступ к геолокации запрещен';
+                      errorMessage = t('geolocation_access_denied');
         } else if (error.code === 2) {
-          errorMessage = 'Местоположение недоступно';
+                      errorMessage = t('location_unavailable');
         } else if (error.code === 3) {
-          errorMessage = 'Превышено время ожидания';
+                      errorMessage = t('timeout_exceeded');
         }
         
         setStatus(errorMessage);
@@ -576,7 +578,7 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
           console.log('🗺️ 🔍 Attempting fallback to Bukhara center...');
           console.log('🗺️ 🔍 Bukhara coordinates:', BUKHARA_COORDS);
           mapInstanceRef.current.setCenter(BUKHARA_COORDS, 12);
-          setStatus('Перемещено в центр Бухары (геолокация недоступна)');
+          setStatus(t('moved_to_bukhara_center'));
           console.log('🗺️ ✅ Fallback to Bukhara center completed');
           
           // Показываем инструкцию пользователю

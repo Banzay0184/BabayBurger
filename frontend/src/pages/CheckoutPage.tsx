@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useLanguage } from '../context/LanguageContext';
 import type { Address } from '../types/address';
 import { YandexMapPicker } from '../components/map/YandexMapPicker';
 import { useRestaurants } from '../hooks/useRestaurants';
 import { RestaurantPicker } from '../components/restaurant/RestaurantPicker';
 import { PromoCodeInput } from '../components/promo/PromoCodeInput';
+import { PageTransition } from '../components/common/PageTransition';
 
 interface CheckoutPageProps {
   onClose: () => void;
@@ -17,6 +19,7 @@ type PaymentMethod = 'cash' | 'card' | 'telegram';
 export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
   const { state } = useAuth();
   const { state: cartState, clear } = useCart();
+  const { t } = useLanguage();
   const [serviceType, setServiceType] = useState<ServiceType>('delivery');
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
@@ -526,7 +529,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
               <div className="flex justify-between">
                 <span className="text-gray-400">Тип услуги:</span>
                 <span className="text-gray-100">
-                  {serviceType === 'delivery' ? 'Доставка' : 'Самовывоз'}
+                  {serviceType === 'delivery' ? t('delivery') : t('pickup')}
                 </span>
               </div>
               
@@ -580,7 +583,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
   }
 
   return (
-    <div className="min-h-screen text-gray-100 bg-dark-900">
+    <PageTransition>
+      <div className="min-h-screen text-gray-100 bg-dark-900">
       {/* Заголовок страницы */}
       <div className="sticky top-0 z-50 bg-dark-800/95 backdrop-blur-lg border-b border-gray-700/50">
         <div className="flex items-center justify-between p-4">
@@ -614,7 +618,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
               }`}
             >
               <div className="text-2xl mb-2">🚚</div>
-              <div className="font-semibold">Доставка</div>
+                              <div className="font-semibold">{t('delivery')}</div>
               <div className="text-sm opacity-80">30-40 минут</div>
             </button>
             
@@ -627,7 +631,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
               }`}
             >
               <div className="text-2xl mb-2">🏪</div>
-              <div className="font-semibold">Самовывоз</div>
+                              <div className="font-semibold">{t('pickup')}</div>
               <div className="text-sm opacity-80">15-20 минут</div>
             </button>
           </div>
@@ -652,7 +656,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                       {selectedRestaurant.address}, {selectedRestaurant.city}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      Минимум: {selectedRestaurant.min_order_amount.toLocaleString()} сум • {selectedRestaurant.pickup_time}
+                      {t('minimum_order')}: {selectedRestaurant.min_order_amount.toLocaleString()} {t('economy_currency')} • {selectedRestaurant.pickup_time}
                     </div>
                   </div>
                   <button
@@ -872,7 +876,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                       {item.quantity}x {item.menuItem.name}
                     </span>
                     <span className="text-gray-300 font-medium">
-                      {item.totalPrice} сум
+                      {item.totalPrice} {t('economy_currency')}
                     </span>
                   </div>
                 ))}
@@ -883,14 +887,14 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
             <div className="border-t border-gray-600 pt-4 space-y-2">
               {/* <div className="flex justify-between">
                 <span className="text-gray-400">Стоимость товаров:</span>
-                <span className="text-gray-300">{cartState.total} сум</span>
+                <span className="text-gray-300">{cartState.total} {t('economy_currency')}</span>
               </div> */}
               
               {serviceType === 'delivery' && (
                 <>
                   {/* <div className="flex justify-between">
                     <span className="text-gray-400">Стоимость доставки:</span>
-                    <span className="text-gray-300">{getDeliveryFee} сум</span>
+                    <span className="text-gray-300">{getDeliveryFee} {t('economy_currency')}</span>
                   </div> */}
                   
                   {/* Информация о зоне доставки */}
@@ -910,7 +914,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                             
                             {isFreeDelivery ? (
                               <div className="text-green-400 text-sm font-medium">
-                                ✅ Бесплатная доставка (заказ от {Number(addressZone.min_order_amount).toLocaleString()} сум)
+                                ✅ {t('free_delivery_from')} {Number(addressZone.min_order_amount).toLocaleString()} {t('economy_currency')})
                               </div>
                             ) : (
                               <div className="text-sm">
@@ -960,13 +964,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
               {appliedPromoCode && (
                 <div className="flex justify-between text-sm border-t border-gray-600 pt-2">
                   <span className="text-gray-400">Скидка по промокоду:</span>
-                  <span className="text-green-400 font-medium">-{appliedPromoCode.discountAmount} сум</span>
+                  <span className="text-green-400 font-medium">-{appliedPromoCode.discountAmount} {t('economy_currency')}</span>
                 </div>
               )}
               
               <div className="flex justify-between text-lg font-bold border-t border-gray-600 pt-2">
                 <span className="text-gray-100">Итого:</span>
-                <span className="text-primary-400">{getTotalAmount()} сум</span>
+                <span className="text-primary-400">{getTotalAmount()} {t('economy_currency')}</span>
               </div>
             </div>
             
@@ -1003,9 +1007,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
               Оформление заказа...
             </span>
           ) : isOrderBelowMinAmount() ? (
-            `Добавьте товаров на ${getRemainingAmount().toLocaleString()} сум`
+                            `${t('add_items_for_amount')} ${getRemainingAmount().toLocaleString()} ${t('economy_currency')}`
           ) : (
-            `Оформить заказ за ${getTotalAmount()} сум`
+                          `${t('checkout_for_amount')} ${getTotalAmount()} ${t('economy_currency')}`
           )}
         </button>
       </div>
@@ -1023,5 +1027,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         />
       )}
     </div>
+    </PageTransition>
   );
 };

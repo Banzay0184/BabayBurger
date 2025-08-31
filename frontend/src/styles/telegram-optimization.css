@@ -1,0 +1,107 @@
+/* Оптимизация для Telegram Web App */
+
+/* Отключаем bounce эффект на iOS */
+html, body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Улучшаем скролл в Telegram */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Фиксируем позицию скролла */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Оптимизация для мобильных устройств */
+@media (max-width: 768px) {
+  body {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}
+
+/* Стили для Telegram Web App */
+.tg-webapp {
+  /* Используем CSS переменные из Telegram */
+  background-color: var(--tg-theme-bg-color, #1f2937);
+  color: var(--tg-theme-text-color, #f9fafb);
+}
+
+/* Оптимизация скролла */
+.page-transition {
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  /* Плавные переходы */
+  transition: all 0.3s ease-in-out;
+}
+
+/* Улучшение производительности анимаций */
+.animate-fadeInUp,
+.animate-fadeInRight,
+.animate-slideIn {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Оптимизация для Telegram */
+.tg-safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.tg-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Улучшение скролла в модальных окнах */
+.modal-content {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Оптимизация для быстрых переходов */
+.fast-transition {
+  transition: none !important;
+}
+
+/* Улучшение производительности */
+* {
+  box-sizing: border-box;
+}
+
+/* Оптимизация для темной темы Telegram */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tg-theme-bg-color: #1f2937;
+    --tg-theme-text-color: #f9fafb;
+    --tg-theme-hint-color: #9ca3af;
+    --tg-theme-link-color: #6366f1;
+    --tg-theme-button-color: #6366f1;
+    --tg-theme-button-text-color: #ffffff;
+  }
+}
+
+/* Оптимизация для светлой темы Telegram */
+@media (prefers-color-scheme: light) {
+  :root {
+    --tg-theme-bg-color: #ffffff;
+    --tg-theme-text-color: #1f2937;
+    --tg-theme-hint-color: #6b7280;
+    --tg-theme-link-color: #6366f1;
+    --tg-theme-button-color: #6366f1;
+    --tg-theme-button-text-color: #ffffff;
+  }
+}
