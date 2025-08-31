@@ -63,6 +63,24 @@ export interface DeliveryZone {
   polygon_stroke_opacity?: number;
 }
 
+export interface Restaurant {
+  id: number;
+  name: string;
+  address: string;
+  city: string;
+  latitude?: number;
+  longitude?: number;
+  pickup_available: boolean;
+  min_order_amount: number;
+  pickup_time: string;
+  phone?: string;
+  working_hours?: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface MapAddress {
   coordinates: [number, number];
   address: string;

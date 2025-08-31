@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import type { Address } from '../types/address';
 import { YandexMapPicker } from '../components/map/YandexMapPicker';
+import { useRestaurants } from '../hooks/useRestaurants';
+import { RestaurantPicker } from '../components/restaurant/RestaurantPicker';
+import { PromoCodeInput } from '../components/promo/PromoCodeInput';
 
 interface CheckoutPageProps {
   onClose: () => void;
@@ -25,10 +28,21 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false); // Модальное окно карты
+  const [showRestaurantPicker, setShowRestaurantPicker] = useState(false); // Модальное окно выбора ресторана
+  const [selectedRestaurant, setSelectedRestaurant] = useState<any>(null); // Состояние для выбранного ресторана
+  
+  // Состояние для промокода
+  const [appliedPromoCode, setAppliedPromoCode] = useState<{
+    code: string;
+    discountAmount: number;
+    finalPrice: number;
+    promoCodeId: number;
+  } | undefined>(undefined);
 
   // Загрузка адресов пользователя
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [deliveryZones, setDeliveryZones] = useState<any[]>([]);
+  const { restaurants: _ } = useRestaurants(); // Используем только хук, но не переменную
 
   useEffect(() => {
     const loadAddresses = async () => {
@@ -117,13 +131,58 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
   const getTotalAmount = () => {
     const subtotal = cartState.total;
     const deliveryFee = getDeliveryFee;
-    return subtotal + deliveryFee;
+    const discountAmount = appliedPromoCode?.discountAmount || 0;
+    return Math.max(0, subtotal + deliveryFee - discountAmount);
   };
 
   // Время доставки
   const getDeliveryTime = () => {
-    if (serviceType === 'pickup') return '15-20 минут';
+    if (serviceType === 'pickup' && selectedRestaurant) {
+      return selectedRestaurant.pickup_time || '15-20 минут';
+    }
     return '30-40 минут';
+  };
+
+  // Проверка минимальной суммы заказа для зоны доставки
+  const isOrderBelowMinAmount = () => {
+    if (serviceType === 'delivery' && selectedAddress) {
+      const addressZone = deliveryZones.find(zone => 
+        zone.city === selectedAddress.city && zone.is_active
+      );
+      if (addressZone && addressZone.min_order_amount) {
+        return cartState.total < Number(addressZone.min_order_amount);
+      }
+    }
+    
+    // Проверка минимальной суммы для самовывоза
+    if (serviceType === 'pickup' && selectedRestaurant) {
+      if (selectedRestaurant.min_order_amount) {
+        return cartState.total < Number(selectedRestaurant.min_order_amount);
+      }
+    }
+    
+    return false;
+  };
+
+  // Получение оставшейся суммы для минимального заказа
+  const getRemainingAmount = () => {
+    if (serviceType === 'delivery' && selectedAddress) {
+      const addressZone = deliveryZones.find(zone => 
+        zone.city === selectedAddress.city && zone.is_active
+      );
+      if (addressZone && addressZone.min_order_amount) {
+        return Math.max(0, Number(addressZone.min_order_amount) - cartState.total);
+      }
+    }
+    
+    // Для самовывоза
+    if (serviceType === 'pickup' && selectedRestaurant) {
+      if (selectedRestaurant.min_order_amount) {
+        return Math.max(0, Number(selectedRestaurant.min_order_amount) - cartState.total);
+      }
+    }
+    
+    return 0;
   };
 
   // Оформление заказа
@@ -136,6 +195,36 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
     if (cartState.items.length === 0) {
       setError('Корзина пуста');
       return;
+    }
+
+    // Проверка минимальной суммы заказа для зоны доставки
+    if (serviceType === 'delivery' && selectedAddress) {
+      const addressZone = deliveryZones.find(zone => 
+        zone.city === selectedAddress.city && zone.is_active
+      );
+      
+      if (addressZone && addressZone.min_order_amount) {
+        const minAmount = Number(addressZone.min_order_amount);
+        const currentTotal = cartState.total;
+        
+        if (currentTotal < minAmount) {
+          const remaining = minAmount - currentTotal;
+          setError(`Минимальная сумма заказа для зоны "${addressZone.name}": ${minAmount.toLocaleString()} сум. Добавьте товаров на ${remaining.toLocaleString()} сум`);
+          return;
+        }
+      }
+    }
+    
+    // Проверка минимальной суммы заказа для самовывоза
+    if (serviceType === 'pickup' && selectedRestaurant) {
+      const minAmount = Number(selectedRestaurant.min_order_amount);
+      const currentTotal = cartState.total;
+      
+      if (currentTotal < minAmount) {
+        const remaining = minAmount - currentTotal;
+        setError(`Минимальная сумма заказа для самовывоза: ${minAmount.toLocaleString()} сум. Добавьте товаров на ${remaining.toLocaleString()} сум`);
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -221,8 +310,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
           add_ons: item.addOns.map(addon => addon.id),
           price: item.totalPrice / item.quantity
         })),
-        total_price: getTotalAmount(),
-        delivery_fee: getDeliveryFee
+        total_price: cartState.total + getDeliveryFee, // Оригинальная сумма без скидки
+        delivery_fee: getDeliveryFee,
+        promo_code_id: appliedPromoCode?.promoCodeId || null,
+        discount_amount: appliedPromoCode?.discountAmount || 0
       };
 
       console.log('📦 Отправляем заказ:', orderData);
@@ -375,6 +466,30 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
     </div>
   );
 
+  // Стабилизируем функции для RestaurantPicker
+  const handleRestaurantSelect = useCallback((restaurant: any) => {
+    setSelectedRestaurant(restaurant);
+    setShowRestaurantPicker(false);
+  }, []);
+
+  const handleRestaurantPickerClose = useCallback(() => {
+    setShowRestaurantPicker(false);
+  }, []);
+
+  // Обработчики промокода
+  const handlePromoCodeApplied = useCallback((discountAmount: number, finalPrice: number, promoCodeId: number) => {
+    setAppliedPromoCode({
+      code: 'PROMO', // Код будет получен из ответа API
+      discountAmount,
+      finalPrice,
+      promoCodeId
+    });
+  }, []);
+
+  const handlePromoCodeRemoved = useCallback(() => {
+    setAppliedPromoCode(undefined);
+  }, []);
+
   if (success) {
     return (
       <div className="min-h-screen text-gray-100 bg-dark-900">
@@ -517,6 +632,51 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
             </button>
           </div>
         </div>
+
+        {/* Выбор ресторана (только для самовывоза) */}
+        {serviceType === 'pickup' && (
+          <div className="bg-dark-800 rounded-2xl p-6 border border-gray-700/50">
+            <h3 className="text-lg font-bold text-gray-100 mb-4 flex items-center">
+              <span className="mr-2">🏪</span>
+              Выбор ресторана
+            </h3>
+            
+            {selectedRestaurant ? (
+              <div className="p-4 rounded-xl border-2 border-primary-500 bg-primary-500/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-100">
+                      {selectedRestaurant.name}
+                    </div>
+                    <div className="text-sm text-gray-400">
+                      {selectedRestaurant.address}, {selectedRestaurant.city}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Минимум: {selectedRestaurant.min_order_amount.toLocaleString()} сум • {selectedRestaurant.pickup_time}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowRestaurantPicker(true)}
+                    className="text-primary-400 hover:text-primary-300 text-sm font-medium"
+                  >
+                    Изменить
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowRestaurantPicker(true)}
+                className="w-full p-4 border-2 border-dashed border-gray-600 rounded-xl text-gray-400 hover:border-primary-500 hover:text-primary-400 transition-colors"
+              >
+                <div className="text-center">
+                  <div className="text-2xl mb-2">🏪</div>
+                  <div className="font-semibold">Выбрать ресторан для самовывоза</div>
+                  <div className="text-sm mt-1">Нажмите, чтобы выбрать ресторан на карте</div>
+                </div>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Выбор адреса (только для доставки) */}
         {serviceType === 'delivery' && (
@@ -666,27 +826,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
               </div>
             </button>
             
-            <button
-              onClick={() => setPaymentMethod('telegram')}
-              className={`w-full p-4 rounded-xl border-2 transition-all duration-300 text-left ${
-                paymentMethod === 'telegram'
-                  ? 'border-primary-500 bg-primary-500/20'
-                  : 'border-gray-600 bg-gray-700/50 hover:border-gray-500'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <span className="text-2xl mr-3">📱</span>
-                  <div>
-                    <div className="font-semibold text-gray-100">Telegram</div>
-                    <div className="text-sm text-gray-400">Через Telegram Pay</div>
-                  </div>
-                </div>
-                {paymentMethod === 'telegram' && (
-                  <span className="text-primary-400 text-xl">✓</span>
-                )}
-              </div>
-            </button>
+            
           </div>
         </div>
 
@@ -705,6 +845,14 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
             rows={3}
           />
         </div>
+
+        {/* Промокод */}
+        <PromoCodeInput
+          orderAmount={cartState.total}
+          onPromoCodeApplied={handlePromoCodeApplied}
+          onPromoCodeRemoved={handlePromoCodeRemoved}
+          appliedPromoCode={appliedPromoCode}
+        />
 
         {/* Итоговая информация */}
         <div className="bg-dark-800 rounded-2xl p-6 border border-gray-700/50">
@@ -733,17 +881,17 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
             
             {/* Стоимость */}
             <div className="border-t border-gray-600 pt-4 space-y-2">
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <span className="text-gray-400">Стоимость товаров:</span>
                 <span className="text-gray-300">{cartState.total} сум</span>
-              </div>
+              </div> */}
               
               {serviceType === 'delivery' && (
                 <>
-                  <div className="flex justify-between">
+                  {/* <div className="flex justify-between">
                     <span className="text-gray-400">Стоимость доставки:</span>
                     <span className="text-gray-300">{getDeliveryFee} сум</span>
-                  </div>
+                  </div> */}
                   
                   {/* Информация о зоне доставки */}
                   {selectedAddress && deliveryZones.length > 0 && (
@@ -758,9 +906,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                         
                         return (
                           <div className="bg-gray-700/30 rounded-lg p-3 border border-gray-600/50">
-                            <div className="text-xs text-gray-400 mb-2">
-                              📍 Зона доставки: {addressZone.name}
-                            </div>
+                            
                             
                             {isFreeDelivery ? (
                               <div className="text-green-400 text-sm font-medium">
@@ -768,15 +914,14 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                               </div>
                             ) : (
                               <div className="text-sm">
-                                <div className="text-gray-300 mb-1">
-                                  💰 Стоимость доставки: {Number(addressZone.delivery_fee).toLocaleString()} сум
-                                </div>
-                                <div className="text-gray-400 text-xs">
-                                  🆓 Бесплатно от {Number(addressZone.min_order_amount).toLocaleString()} сум
-                                </div>
-                                <div className="text-primary-400 text-xs mt-1">
-                                  До бесплатной доставки: {Math.max(0, Number(addressZone.min_order_amount) - cartState.total).toLocaleString()} сум
-                                </div>
+                                
+                                
+                                
+                                {cartState.total < Number(addressZone.min_order_amount) && (
+                                  <div className="text-red-400 text-xs mt-2 font-medium">
+                                    ⚠️  Минимальная сумма заказа: {Number(addressZone.min_order_amount).toLocaleString()} сум
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
@@ -786,6 +931,37 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                     })()
                   )}
                 </>
+              )}
+              
+              {/* Информация о самовывозе */}
+              {serviceType === 'pickup' && selectedRestaurant && (
+                <div className="bg-gray-700/30 rounded-lg p-3 border border-gray-600/50">
+                  <div className="text-xs text-gray-400 mb-2">
+                    🏪 Самовывоз: {selectedRestaurant.address}, {selectedRestaurant.city}
+                  </div>
+                  
+                  {selectedRestaurant.min_order_amount && (
+                    <div className="text-sm">
+                      {cartState.total >= Number(selectedRestaurant.min_order_amount) ? (
+                        <div className="text-green-400 text-sm font-medium">
+                          ✅ Заказ доступен для самовывоза
+                        </div>
+                      ) : (
+                        <div className="text-red-400 text-xs mt-2 font-medium">
+                          ⚠️ Минимальная сумма для самовывоза: {Number(selectedRestaurant.min_order_amount).toLocaleString()} сум
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Скидка по промокоду */}
+              {appliedPromoCode && (
+                <div className="flex justify-between text-sm border-t border-gray-600 pt-2">
+                  <span className="text-gray-400">Скидка по промокоду:</span>
+                  <span className="text-green-400 font-medium">-{appliedPromoCode.discountAmount} сум</span>
+                </div>
               )}
               
               <div className="flex justify-between text-lg font-bold border-t border-gray-600 pt-2">
@@ -814,9 +990,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         {/* Кнопка оформления заказа */}
         <button
           onClick={handleSubmitOrder}
-          disabled={isSubmitting || (serviceType === 'delivery' && !selectedAddress)}
+          disabled={isSubmitting || (serviceType === 'delivery' && !selectedAddress) || (serviceType === 'pickup' && !selectedRestaurant) || isOrderBelowMinAmount()}
           className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 ${
-            isSubmitting || (serviceType === 'delivery' && !selectedAddress)
+            isSubmitting || (serviceType === 'delivery' && !selectedAddress) || (serviceType === 'pickup' && !selectedRestaurant) || isOrderBelowMinAmount()
               ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
               : 'bg-primary-600 hover:bg-primary-700 text-white hover:scale-105'
           }`}
@@ -826,6 +1002,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
               Оформление заказа...
             </span>
+          ) : isOrderBelowMinAmount() ? (
+            `Добавьте товаров на ${getRemainingAmount().toLocaleString()} сум`
           ) : (
             `Оформить заказ за ${getTotalAmount()} сум`
           )}
@@ -835,6 +1013,15 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
       {/* Модальное окно выбора адреса */}
       {showAddressModal && <AddressSelectionModal />}
       {showMapModal && <MapModal />}
+      
+      {/* Модальное окно выбора ресторана */}
+      {showRestaurantPicker && (
+        <RestaurantPicker
+          onRestaurantSelect={handleRestaurantSelect}
+          selectedRestaurant={selectedRestaurant}
+          onClose={handleRestaurantPickerClose}
+        />
+      )}
     </div>
   );
 };

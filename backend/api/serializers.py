@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, MenuItem, AddOn, SizeOption, Promotion, Order, OrderItem, Category, Address, DeliveryZone, Favorite
+from .models import User, MenuItem, AddOn, SizeOption, Promotion, Order, OrderItem, Category, Address, DeliveryZone, Favorite, Restaurant, PromoCode
 from app_operator.models import Operator
 
 class UserSerializer(serializers.ModelSerializer):
@@ -139,7 +139,8 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'items', 'total_price', 'status', 'address',
             'created_at', 'updated_at', 'promotion', 'delivery_fee', 
-            'discounted_total', 'delivery_time', 'notes'
+            'discounted_total', 'delivery_time', 'notes', 'promo_code',
+            'discount_amount', 'final_price'
         ]
 
 class OrderCreateSerializer(serializers.ModelSerializer):
@@ -155,7 +156,18 @@ class DeliveryZoneSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'city', 'delivery_fee', 'min_order_amount', 'is_active',
             'polygon_coordinates', 'polygon_fill_color', 'polygon_fill_opacity',
-            'polygon_stroke_color', 'polygon_stroke_width', 'polygon_stroke_opacity',
+            'polygon_stroke_color', 'polygon_stroke_width', 'polygon_stroke_opacity'
+        ]
+
+
+class RestaurantSerializer(serializers.ModelSerializer):
+    """Сериализатор для ресторанов"""
+    class Meta:
+        model = Restaurant
+        fields = [
+            'id', 'name', 'address', 'city', 'latitude', 'longitude',
+            'pickup_available', 'min_order_amount', 'pickup_time',
+            'phone', 'working_hours', 'description', 'is_active',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
@@ -204,3 +216,24 @@ class FavoriteCreateSerializer(serializers.ModelSerializer):
         if not value.is_active:
             raise serializers.ValidationError("Нельзя добавить в избранное неактивный товар")
         return value
+
+class PromoCodeSerializer(serializers.ModelSerializer):
+    """Сериализатор для промокодов"""
+    
+    class Meta:
+        model = PromoCode
+        fields = ['id', 'code', 'discount_percent', 'max_discount', 'min_order_amount', 'is_active', 'expires_at']
+        read_only_fields = ['id', 'is_active', 'expires_at']
+
+class PromoCodeValidationSerializer(serializers.Serializer):
+    """Сериализатор для валидации промокода"""
+    code = serializers.CharField(max_length=20)
+    order_amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+class PromoCodeResponseSerializer(serializers.Serializer):
+    """Сериализатор для ответа по промокоду"""
+    is_valid = serializers.BooleanField()
+    message = serializers.CharField()
+    discount_amount = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
+    discount_percent = serializers.IntegerField(required=False)
+    final_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)

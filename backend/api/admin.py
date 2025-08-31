@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.db.models import Sum, Count
-from .models import User, MenuItem, Order, OrderItem, Category, Address, AddOn, SizeOption, Promotion, DeliveryZone, Favorite
+from .models import User, MenuItem, Order, OrderItem, Category, Address, AddOn, SizeOption, Promotion, DeliveryZone, Favorite, Restaurant, PromoCode
 
 
 @admin.register(Category)
@@ -227,7 +227,7 @@ class AddressAdmin(admin.ModelAdmin):
 
 @admin.register(DeliveryZone)
 class DeliveryZoneAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city', 'delivery_fee', 'min_order_amount', 'radius_km', 'is_active')
+    list_display = ('name', 'city', 'delivery_fee', 'min_order_amount', 'is_active')
     list_filter = ('is_active', 'city')
     search_fields = ('name', 'city')
     ordering = ['city', 'name']
@@ -237,9 +237,13 @@ class DeliveryZoneAdmin(admin.ModelAdmin):
         ('Основная информация', {
             'fields': ('name', 'city', 'is_active')
         }),
-        ('География', {
+        ('Доставка', {
+            'fields': ('delivery_fee', 'min_order_amount'),
+            'description': 'Настройки для доставки'
+        }),
+        ('География доставки', {
             'fields': ('polygon_coordinates',),
-            'description': 'Задайте координаты полигона для точных границ зоны'
+            'description': 'Задайте координаты полигона для точных границ зоны доставки'
         }),
         ('Стилизация полигона', {
             'fields': (
@@ -247,9 +251,6 @@ class DeliveryZoneAdmin(admin.ModelAdmin):
                 'polygon_stroke_color', 'polygon_stroke_width', 'polygon_stroke_opacity'
             ),
             'description': 'Настройте внешний вид полигона на карте'
-        }),
-        ('Стоимость доставки', {
-            'fields': ('delivery_fee', 'min_order_amount')
         }),
     )
     
@@ -260,6 +261,55 @@ class DeliveryZoneAdmin(admin.ModelAdmin):
                 'Введите координаты в формате: [[широта, долгота], [широта, долгота], ...]'
             )
         return form
+
+
+@admin.register(Restaurant)
+class RestaurantAdmin(admin.ModelAdmin):
+    list_display = ('name', 'city', 'address', 'pickup_available', 'min_order_amount', 'is_active')
+    list_filter = ('is_active', 'pickup_available', 'city')
+    search_fields = ('name', 'address', 'city')
+    ordering = ['city', 'name']
+    list_editable = ['pickup_available', 'min_order_amount', 'is_active']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('name', 'address', 'city', 'is_active')
+        }),
+        ('Координаты', {
+            'fields': ('latitude', 'longitude'),
+            'description': 'Координаты ресторана на карте'
+        }),
+        ('Самовывоз', {
+            'fields': ('pickup_available', 'min_order_amount', 'pickup_time'),
+            'description': 'Настройки для самовывоза'
+        }),
+        ('Дополнительно', {
+            'fields': ('phone', 'working_hours', 'description'),
+            'description': 'Дополнительная информация о ресторане'
+        }),
+    )
+
+
+@admin.register(PromoCode)
+class PromoCodeAdmin(admin.ModelAdmin):
+    list_display = ['code', 'discount_percent', 'max_discount', 'min_order_amount', 'is_active', 'is_used', 'used_by', 'expires_at', 'created_at']
+    list_filter = ['is_active', 'is_used', 'discount_percent', 'created_at', 'expires_at']
+    search_fields = ['code', 'used_by__first_name', 'used_by__telegram_id']
+    readonly_fields = ['created_at', 'used_at']
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('code', 'discount_percent', 'max_discount', 'min_order_amount')
+        }),
+        ('Статус', {
+            'fields': ('is_active', 'is_used', 'used_by', 'used_at')
+        }),
+        ('Время', {
+            'fields': ('created_at', 'expires_at')
+        }),
+    )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('used_by')
 
 
 # Настройка админ-панели

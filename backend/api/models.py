@@ -5,6 +5,7 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.utils import timezone
 import re
 
 def get_coordinates_from_address(address_string):
@@ -220,121 +221,133 @@ class DeliveryZone(models.Model):
         help_text="От 0.0 (прозрачно) до 1.0 (непрозрачно)"
     )
     
-    # Метаданные
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
     class Meta:
         verbose_name = "Зона доставки"
         verbose_name_plural = "Зоны доставки"
         ordering = ['city', 'name']
-        indexes = [
-            models.Index(fields=['city']),
-            models.Index(fields=['is_active']),
-        ]
     
     def __str__(self):
         return f"{self.name} ({self.city})"
     
     def is_address_in_zone(self, latitude, longitude):
-        """
-        Проверяет, находится ли адрес в зоне доставки
-        Сначала проверяет полигон, затем радиус как fallback
-        """
-        if not latitude or not longitude:
-            print(f"⚠️ Координаты не заданы: lat={latitude}, lon={longitude}")
-            return False
-        
-        print(f"🔍 Проверяем зону '{self.name}' для точки: lat={latitude}, lon={longitude}")
-        
-        # Временное решение: для зоны "Центр Бухары" разрешить доставку в пределах 10 км
-        if self.name == "Центр Бухары":
-            print(f"🔍 Временное решение для зоны '{self.name}': проверяем расстояние до центра")
-            if self.center_latitude and self.center_longitude:
-                distance = self.get_distance_to_zone(latitude, longitude)
-                if distance and distance <= 10.0:  # Разрешаем доставку в пределах 10 км
-                    print(f"✅ Временное решение: точка в пределах 10 км от центра Бухары (расстояние: {distance:.1f}км)")
-                    return True
-                else:
-                    print(f"❌ Временное решение: точка вне 10 км от центра Бухары (расстояние: {distance:.1f}км)")
-            else:
-                print(f"⚠️ Временное решение не работает: нет координат центра для зоны '{self.name}'")
-        
-        # Проверяем полигон (приоритет)
-        if self.polygon_coordinates and len(self.polygon_coordinates) > 2:
-            print(f"🔍 Проверяем полигон ({len(self.polygon_coordinates)} точек)")
-            if self._is_point_in_polygon(latitude, longitude):
-                print(f"✅ Точка находится в полигоне зоны '{self.name}'")
-                return True
-            else:
-                print(f"❌ Точка не в полигоне зоны '{self.name}'")
-        
-        # Если полигон не задан или точка не в полигоне, проверяем радиус
-        if self.center_latitude and self.center_longitude and self.radius_km:
-            print(f"🔍 Проверяем радиус: центр=({self.center_latitude}, {self.center_longitude}), радиус={self.radius_km}км")
-            distance = self.get_distance_to_zone(latitude, longitude)
-            if distance and distance <= float(self.radius_km):
-                print(f"✅ Точка находится в радиусе зоны '{self.name}' (расстояние: {distance:.1f}км)")
-                return True
-            else:
-                print(f"❌ Точка вне радиуса зоны '{self.name}' (расстояние: {distance:.1f}км, радиус: {self.radius_km}км)")
-        else:
-            print(f"⚠️ Радиус не задан для зоны '{self.name}'")
-        
-        print(f"❌ Точка не находится в зоне '{self.name}'")
-        return False
-    
-    def _is_point_in_polygon(self, latitude, longitude):
-        """
-        Проверяет, находится ли точка внутри полигона
-        Использует алгоритм ray casting
-        """
-        if not self.polygon_coordinates or len(self.polygon_coordinates) < 3:
-            print(f"⚠️ Полигон не задан или имеет недостаточно точек: {len(self.polygon_coordinates) if self.polygon_coordinates else 0}")
-            return False
-        
+        """Проверяет, находится ли адрес в зоне доставки"""
         try:
-            x, y = float(longitude), float(latitude)
-            print(f"🔍 Проверяем точку: lat={latitude}, lon={longitude} -> x={x}, y={y}")
-            print(f"🔍 Полигон: {self.polygon_coordinates[:3]}... (всего {len(self.polygon_coordinates)} точек)")
+            # Если есть полигон, используем его для проверки
+            if self.polygon_coordinates and len(self.polygon_coordinates) > 2:
+                return self._is_point_in_polygon(latitude, longitude)
             
-            n = len(self.polygon_coordinates)
+            # Если нет полигона, но есть центр и радиус, используем радиус
+            elif self.center_latitude and self.center_longitude and self.radius_km:
+                distance = calculate_distance(
+                    latitude, longitude,
+                    self.center_latitude, self.center_longitude
+                )
+                return distance <= self.radius_km
+            
+            # Временное решение для существующих зон
+            elif self.name in ["Бухара", "Центр Бухары"]:
+                if self.name == "Бухара":
+                    return True  # Вся Бухара
+                elif self.name == "Центр Бухары":
+                    # Проверяем расстояние до центра Бухары
+                    bukhara_center_lat, bukhara_center_lon = 39.7681, 64.4556
+                    distance = calculate_distance(latitude, longitude, bukhara_center_lat, bukhara_center_lon)
+                    return distance <= 10  # 10 км от центра
+            
+            return False
+            
+        except Exception as e:
+            print(f"Ошибка проверки зоны доставки: {e}")
+            return False
+    
+    def _is_point_in_polygon(self, lat, lon):
+        """Проверяет, находится ли точка внутри полигона (алгоритм ray casting)"""
+        try:
+            if not self.polygon_coordinates or len(self.polygon_coordinates) < 3:
+                return False
+            
+            # Преобразуем координаты в нужный формат
+            polygon = self.polygon_coordinates
+            
+            # Алгоритм ray casting
             inside = False
+            j = len(polygon) - 1
             
-            p1x, p1y = self.polygon_coordinates[0]
-            for i in range(n + 1):
-                p2x, p2y = self.polygon_coordinates[i % n]
-                if y > min(p1y, p2y):
-                    if y <= max(p1y, p2y):
-                        if x <= max(p1x, p2x):
-                            if p1y != p2y:
-                                xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-                            if p1x == p2x or x <= xinters:
-                                inside = not inside
-                p1x, p1y = p2x, p2y
+            for i in range(len(polygon)):
+                if ((polygon[i][1] > lat) != (polygon[j][1] > lat)) and \
+                   (lon < (polygon[j][0] - polygon[i][0]) * (lat - polygon[i][1]) / 
+                    (polygon[j][1] - polygon[i][1]) + polygon[i][0]):
+                    inside = not inside
+                j = i
             
-            print(f"🔍 Результат проверки полигона: {'ВНУТРИ' if inside else 'СНАРУЖИ'}")
             return inside
             
         except Exception as e:
-            print(f"❌ Ошибка при проверке полигона: {e}")
-            print(f"❌ Координаты: lat={latitude}, lon={longitude}")
-            print(f"❌ Полигон: {self.polygon_coordinates}")
+            print(f"Ошибка проверки точки в полигоне: {e}")
             return False
+
+
+class Restaurant(models.Model):
+    """Модель для ресторанов с самовывозом"""
+    name = models.CharField(max_length=100, verbose_name="Название ресторана")
+    address = models.CharField(max_length=200, verbose_name="Адрес ресторана")
+    city = models.CharField(max_length=100, verbose_name="Город")
     
-    def get_distance_to_zone(self, latitude, longitude):
-        """
-        Возвращает расстояние от адреса до центра зоны доставки
-        """
-        if not latitude or not longitude:
-            return None
-        
-        return calculate_distance(
-            float(self.center_latitude),
-            float(self.center_longitude),
-            float(latitude),
-            float(longitude)
-        )
+    # Координаты ресторана
+    latitude = models.DecimalField(
+        max_digits=9, 
+        decimal_places=6,
+        validators=[MinValueValidator(-90), MaxValueValidator(90)],
+        verbose_name="Широта",
+        null=True,
+        blank=True
+    )
+    longitude = models.DecimalField(
+        max_digits=9, 
+        decimal_places=6,
+        validators=[MinValueValidator(-180), MaxValueValidator(180)],
+        verbose_name="Долгота",
+        null=True,
+        blank=True
+    )
+    
+    # Настройки самовывоза
+    pickup_available = models.BooleanField(default=True, verbose_name="Доступен самовывоз")
+    min_order_amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0,
+        verbose_name="Минимальная сумма заказа для самовывоза"
+    )
+    pickup_time = models.CharField(
+        max_length=100, 
+        default="15-20 минут",
+        verbose_name="Время готовности для самовывоза"
+    )
+    
+    # Дополнительная информация
+    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Телефон")
+    working_hours = models.CharField(max_length=100, blank=True, null=True, verbose_name="Часы работы")
+    description = models.TextField(blank=True, null=True, verbose_name="Описание")
+    
+    # Статус
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    
+    # Метаданные
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    
+    class Meta:
+        verbose_name = "Ресторан"
+        verbose_name_plural = "Рестораны"
+        ordering = ['city', 'name']
+    
+    def __str__(self):
+        return f"{self.name} - {self.address}"
+    
+    def get_full_address(self):
+        """Возвращает полный адрес ресторана"""
+        return f"{self.address}, {self.city}"
 
 class User(models.Model):
     telegram_id = models.BigIntegerField(unique=True)
@@ -857,6 +870,75 @@ class OrderItem(models.Model):
                             'add_ons': f'Дополнение "{addon.name}" недоступно для категории "{self.menu_item.category.name}"'
                         })
 
+# --- Промокоды ---
+class PromoCode(models.Model):
+    """Модель для промокодов"""
+    code = models.CharField(max_length=20, unique=True, verbose_name="Код промокода")
+    discount_percent = models.IntegerField(verbose_name="Процент скидки", help_text="Скидка в процентах (0-100)")
+    max_discount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        verbose_name="Максимальная скидка в сумах",
+        help_text="Максимальная сумма скидки в сумах"
+    )
+    min_order_amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        verbose_name="Минимальная сумма заказа",
+        help_text="Минимальная сумма заказа для применения промокода"
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    is_used = models.BooleanField(default=False, verbose_name="Использован")
+    used_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        verbose_name="Использован пользователем"
+    )
+    used_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата использования")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    expires_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата истечения")
+    
+    class Meta:
+        verbose_name = "Промокод"
+        verbose_name_plural = "Промокоды"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.code} ({self.discount_percent}%)"
+    
+    def is_valid(self, user, order_amount):
+        """Проверяет валидность промокода"""
+        if not self.is_active:
+            return False, "Промокод неактивен"
+        
+        if self.is_used:
+            return False, "Промокод уже использован"
+        
+        if self.used_by and self.used_by != user:
+            return False, "Промокод уже использован другим пользователем"
+        
+        if self.expires_at and timezone.now() > self.expires_at:
+            return False, "Промокод истек"
+        
+        if order_amount < self.min_order_amount:
+            return False, f"Минимальная сумма заказа: {self.min_order_amount} сум"
+        
+        return True, "Промокод валиден"
+    
+    def calculate_discount(self, order_amount):
+        """Рассчитывает скидку по промокоду"""
+        discount_amount = (order_amount * self.discount_percent) / 100
+        return min(discount_amount, self.max_discount)
+    
+    def mark_as_used(self, user):
+        """Отмечает промокод как использованный"""
+        self.is_used = True
+        self.used_by = user
+        self.used_at = timezone.now()
+        self.save()
+
 # --- ДОРАБОТКА Order ---
 class Order(models.Model):
     STATUS_CHOICES = (
@@ -876,6 +958,25 @@ class Order(models.Model):
     promotion = models.ForeignKey(Promotion, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Примененная акция")
     delivery_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Стоимость доставки")
     discounted_total = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Итоговая сумма после скидки")
+    promo_code = models.ForeignKey(
+        PromoCode, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        verbose_name="Промокод"
+    )
+    discount_amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0, 
+        verbose_name="Сумма скидки"
+    )
+    final_price = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0, 
+        verbose_name="Итоговая стоимость"
+    )
     
     # Время доставки
     delivery_time = models.DateTimeField(
@@ -906,6 +1007,12 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order #{self.id} by {self.user}"
+
+    def save(self, *args, **kwargs):
+        """Автоматически рассчитывает итоговую стоимость при сохранении"""
+        # total_price уже включает delivery_fee, поэтому не добавляем его снова
+        self.final_price = self.total_price - self.discount_amount
+        super().save(*args, **kwargs)
 
     def calculate_total(self):
         total = 0

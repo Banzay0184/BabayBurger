@@ -17,17 +17,20 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import viewsets, filters
-from .models import User, MenuItem, Order, OrderItem, Category, Address, DeliveryZone, AddOn, SizeOption, Promotion, Favorite
+from .models import User, MenuItem, Order, OrderItem, Category, Address, DeliveryZone, AddOn, SizeOption, Promotion, Favorite, Restaurant, PromoCode
 from app_operator.models import Operator
 from .serializers import (
     OrderSerializer, MenuItemSerializer, CategorySerializer, AddressSerializer, 
     AddressCreateSerializer, DeliveryZoneSerializer, AddressDeliveryZoneSerializer, AddOnSerializer, SizeOptionSerializer, PromotionSerializer,
-    FavoriteSerializer, FavoriteCreateSerializer
+    FavoriteSerializer, FavoriteCreateSerializer, RestaurantSerializer, PromoCodeValidationSerializer, PromoCodeResponseSerializer
 )
 from .bot import send_notification
 from .tasks import send_order_status_notification, geocode_yandex
 from celery.result import AsyncResult
 from django.db import models
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from django.shortcuts import get_object_or_404
 
 logger = logging.getLogger(__name__)
 
@@ -774,6 +777,10 @@ class OrderView(APIView):
                     'address': order.address.full_address,
                     'phone_number': order.address.phone_number,
                     'created_at': order.created_at.isoformat(),
+                    'discount_percent': order.promo_code.discount_percent if order.promo_code else None,
+                    'discount_amount': str(order.discount_amount),
+                    'final_price': str(order.final_price),
+                    'delivery_fee': str(order.delivery_fee),
                     'items': []
                 }
                 
@@ -1236,7 +1243,8 @@ class OrderCreateView(APIView):
                 user=user,
                 address=address,
                 total_price=0,
-                notes=request.data.get('notes', '')
+                notes=request.data.get('notes', ''),
+                delivery_fee=request.data.get('delivery_fee', 0)
             )
             
             total_price = 0
@@ -1283,8 +1291,31 @@ class OrderCreateView(APIView):
                     logger.warning(f"Menu item not found: menu_item_id={menu_item_id}")
                     continue
             
-            # Обновляем общую стоимость заказа
-            order.total_price = total_price
+            # Обновляем общую стоимость заказа (включая доставку)
+            order.total_price = total_price + order.delivery_fee
+            
+            # Обрабатываем промокод если указан
+            promo_code_id = request.data.get('promo_code_id')
+            if promo_code_id:
+                try:
+                    promo_code = PromoCode.objects.get(id=promo_code_id, is_active=True)
+                    # Проверяем валидность промокода
+                    is_valid, message = promo_code.is_valid(user, order.total_price)
+                    if is_valid:
+                        # Рассчитываем скидку
+                        discount_amount = promo_code.calculate_discount(order.total_price)
+                        order.promo_code = promo_code
+                        order.discount_amount = discount_amount
+                        # Отмечаем промокод как использованный
+                        promo_code.mark_as_used(user)
+                        logger.info(f"Promo code applied: code={promo_code.code}, discount={discount_amount}")
+                    else:
+                        logger.warning(f"Invalid promo code: {promo_code.code}, reason: {message}")
+                except PromoCode.DoesNotExist:
+                    logger.warning(f"Promo code not found: promo_code_id={promo_code_id}")
+                except Exception as e:
+                    logger.error(f"Error applying promo code: {str(e)}")
+            
             order.save()
             
             # Применяем акции к заказу
@@ -1355,7 +1386,7 @@ class GeocodeResultView(APIView):
         return Response({'status': res.state.lower(), 'result': res.result})
 
 class DeliveryZoneView(APIView):
-    """API для работы с зонами доставки"""
+    """Представление для работы с зонами доставки"""
     
     def get(self, request):
         """Получить все активные зоны доставки"""
@@ -1364,20 +1395,10 @@ class DeliveryZoneView(APIView):
             serializer = DeliveryZoneSerializer(zones, many=True)
             return Response(serializer.data)
         except Exception as e:
-            logger.error(f"Error getting delivery zones: {str(e)}")
-            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-    def post(self, request):
-        """Создать новую зону доставки (только для админов)"""
-        try:
-            serializer = DeliveryZoneSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            logger.error(f"Error creating delivery zone: {str(e)}")
-            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {'error': f'Ошибка получения зон доставки: {str(e)}'}, 
+                status=500
+            )
 
 class AddressDeliveryZoneCheckView(APIView):
     """API для проверки адреса в зоне доставки"""
@@ -2182,3 +2203,146 @@ class FavoriteView(APIView):
         except Exception as e:
             logger.error(f"Error removing from favorites: {str(e)}")
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class RestaurantView(APIView):
+    """Представление для работы с ресторанами"""
+    
+    def get(self, request):
+        """Получить все активные рестораны с самовывозом"""
+        try:
+            restaurants = Restaurant.objects.filter(is_active=True, pickup_available=True)
+            serializer = RestaurantSerializer(restaurants, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response(
+                {'error': f'Ошибка получения ресторанов: {str(e)}'}, 
+                status=500
+            )
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def validate_promo_code(request):
+    """Валидация промокода"""
+    try:
+        serializer = PromoCodeValidationSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({
+                'is_valid': False,
+                'message': 'Неверные данные запроса'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        code = serializer.validated_data['code'].upper().strip()
+        order_amount = serializer.validated_data['order_amount']
+        telegram_id = request.data.get('telegram_id')
+        
+        logger.info(f"Попытка валидации промокода: {code}, сумма заказа: {order_amount}, пользователь: {telegram_id}")
+        
+        # Получаем промокод
+        try:
+            promo_code = PromoCode.objects.get(code=code)
+        except PromoCode.DoesNotExist:
+            return Response({
+                'is_valid': False,
+                'message': 'Промокод не найден'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Получаем пользователя если указан telegram_id
+        user = None
+        if telegram_id:
+            try:
+                user = User.objects.get(telegram_id=telegram_id)
+            except User.DoesNotExist:
+                logger.warning(f"Пользователь с telegram_id {telegram_id} не найден")
+        
+        # Проверяем валидность промокода
+        is_valid, message = promo_code.is_valid(user, order_amount)
+        
+        if is_valid:
+            # Рассчитываем скидку
+            discount_amount = promo_code.calculate_discount(order_amount)
+            final_price = order_amount - discount_amount
+            
+            logger.info(f"Промокод {code} валиден. Скидка: {discount_amount}, итоговая цена: {final_price}")
+            
+            return Response({
+                'is_valid': True,
+                'message': message,
+                'discount_amount': discount_amount,
+                'discount_percent': promo_code.discount_percent,
+                'final_price': final_price,
+                'promo_code_id': promo_code.id
+            }, status=status.HTTP_200_OK)
+        else:
+            logger.warning(f"Промокод {code} невалиден: {message}")
+            return Response({
+                'is_valid': False,
+                'message': message
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+    except Exception as e:
+        logger.error(f"Ошибка при валидации промокода: {str(e)}")
+        return Response({
+            'is_valid': False,
+            'message': 'Произошла ошибка при проверке промокода'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def apply_promo_code(request):
+    """Применение промокода к заказу"""
+    try:
+        promo_code_id = request.data.get('promo_code_id')
+        order_id = request.data.get('order_id')
+        telegram_id = request.data.get('telegram_id')
+        
+        if not all([promo_code_id, order_id, telegram_id]):
+            return Response({
+                'success': False,
+                'message': 'Не все необходимые данные указаны'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Получаем промокод и заказ
+        try:
+            promo_code = PromoCode.objects.get(id=promo_code_id)
+            user = User.objects.get(telegram_id=telegram_id)
+            order = Order.objects.get(id=order_id, user=user)
+        except (PromoCode.DoesNotExist, User.DoesNotExist, Order.DoesNotExist):
+            return Response({
+                'success': False,
+                'message': 'Промокод, пользователь или заказ не найдены'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Проверяем валидность промокода
+        is_valid, message = promo_code.is_valid(user, order.total_price)
+        
+        if not is_valid:
+            return Response({
+                'success': False,
+                'message': message
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Применяем промокод
+        discount_amount = promo_code.calculate_discount(order.total_price)
+        order.promo_code = promo_code
+        order.discount_amount = discount_amount
+        order.final_price = order.total_price - discount_amount + order.delivery_fee
+        order.save()
+        
+        # Отмечаем промокод как использованный
+        promo_code.mark_as_used(user)
+        
+        logger.info(f"Промокод {promo_code.code} применен к заказу {order_id}. Скидка: {discount_amount}")
+        
+        return Response({
+            'success': True,
+            'message': f'Промокод применен! Скидка: {discount_amount} сум',
+            'discount_amount': discount_amount,
+            'final_price': order.final_price
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Ошибка при применении промокода: {str(e)}")
+        return Response({
+            'success': False,
+            'message': 'Произошла ошибка при применении промокода'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

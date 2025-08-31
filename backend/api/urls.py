@@ -6,7 +6,8 @@ from .views import (
     MenuItemViewSet, AddOnViewSet, SizeOptionViewSet, PromotionViewSet, OrderViewSet,
     TelegramLoginWidgetView, TestUserCreationView, HitsView, NewItemsView, PromotionsView,
     MenuItemDetailView, CategoryItemsView, SearchView, FeaturedView, PriceRangeView,
-    StatisticsView, CartView, TestConnectionView, FavoriteView
+    StatisticsView, CartView, TestConnectionView, FavoriteView, RestaurantView,
+    validate_promo_code, apply_promo_code
 )
 from rest_framework.routers import DefaultRouter
 
@@ -58,6 +59,10 @@ urlpatterns = [
     path('delivery-zones/', DeliveryZoneView.as_view(), name='delivery-zones'),
     path('addresses/delivery-zone-check/', AddressDeliveryZoneCheckView.as_view(), name='address-delivery-zone-check'),
     path('addresses/<int:address_id>/delivery-zone/', AddressDeliveryZoneDetailView.as_view(), name='address-delivery-zone-detail'),
+    # Рестораны
+    path('restaurants/', RestaurantView.as_view(), name='restaurants'),
+    path('promo-codes/validate/', validate_promo_code, name='validate_promo_code'),
+    path('promo-codes/apply/', apply_promo_code, name='apply_promo_code'),
 ]
 
 urlpatterns += router.urls
