@@ -98,7 +98,7 @@ export const TelegramWebAppOptimizer: React.FC<TelegramWebAppOptimizerProps> = (
       
       // Обработчик для корректного скролла
       let isScrolling = false;
-      let scrollTimeout: NodeJS.Timeout;
+      let scrollTimeout: ReturnType<typeof setTimeout>;
       
       const handleScroll = () => {
         if (!isScrolling) {

@@ -24534,3 +24534,26 @@ Retrieved 3 active promotions
 Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "213.230.92.210", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1", "query_params": {"telegram_id": ["123456789"]}}
 Retrieved 14 orders for user: telegram_id=123456789
 Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.043, "user": "AnonymousUser", "ip": "213.230.92.210", "response_size": 7870}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "213.230.92.210", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1", "query_params": {"telegram_id": ["123456789"]}}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/addresses/", "user": "AnonymousUser", "ip": "213.230.92.210", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1", "query_params": {"telegram_id": ["123456789"]}}
+Addresses retrieved for user: telegram_id=123456789, count=3
+Ответ: {"type": "response", "method": "GET", "path": "/api/addresses/", "status_code": 200, "duration": 0.037, "user": "AnonymousUser", "ip": "213.230.92.210", "response_size": 1406}
+Retrieved 14 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.07, "user": "AnonymousUser", "ip": "213.230.92.210", "response_size": 7870}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/categories/", "user": "AnonymousUser", "ip": "213.230.92.210", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/menu/", "user": "AnonymousUser", "ip": "213.230.92.210", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.210", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.013, "user": "AnonymousUser", "ip": "213.230.92.210", "response_size": 1727}
+Menu data not found in cache, fetching from database
+Categories data not found in cache, fetching from database
+Categories data cached successfully, 6 categories
+Ответ: {"type": "response", "method": "GET", "path": "/api/categories/", "status_code": 200, "duration": 0.08, "user": "AnonymousUser", "ip": "213.230.92.210", "response_size": 734}
+Menu data cached successfully, 6 categories, 15 items
+Ответ: {"type": "response", "method": "GET", "path": "/api/menu/", "status_code": 200, "duration": 0.207, "user": "AnonymousUser", "ip": "213.230.92.210", "response_size": 19105}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "213.230.92.210", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 14 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.025, "user": "AnonymousUser", "ip": "213.230.92.210", "response_size": 7870}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "213.230.92.210", "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.018, "user": "AnonymousUser", "ip": "213.230.92.210", "response_size": 1727}
