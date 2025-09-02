@@ -45,15 +45,15 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
   const getWebSocketUrl = useCallback(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     
-    // В продакшене используем тот же хост что и для API
+    // В продакшене используем ngrok URL для WebSocket (Vercel не поддерживает WebSocket)
     let baseUrl: string;
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       // В режиме разработки используем localhost:8000
       baseUrl = `${protocol}//localhost:8000`;
     } else {
-      // В продакшене используем тот же хост что и фронтенд
-      const host = window.location.host;
-      baseUrl = `${protocol}//${host}`;
+      // В продакшене используем ngrok URL для WebSocket (Vercel не поддерживает WebSocket)
+      const ngrokUrl = import.meta.env.VITE_WEBSOCKET_URL || '3e3f35c1758a.ngrok-free.app';
+      baseUrl = `${protocol}//${ngrokUrl}`;
     }
     
     if (telegramId) {
@@ -107,6 +107,10 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
     console.error('❌ Client WebSocket error:', error);
   }, []);
 
+  // В продакшене отключаем WebSocket если это Vercel (не поддерживает WebSocket)
+  const isVercel = window.location.hostname.includes('vercel.app');
+  const shouldEnableWebSocket = enabled && !!authState.user && !isVercel;
+
   // Инициализируем WebSocket
   const {
     isConnected,
@@ -121,7 +125,7 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
     onOpen: handleOpen,
     onClose: handleClose,
     onError: handleError,
-    enabled: enabled && !!authState.user,
+    enabled: shouldEnableWebSocket,
     reconnectInterval: 3000,
     maxReconnectAttempts: 10
   });

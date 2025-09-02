@@ -19,7 +19,9 @@ export const testWebSocketConnection = async (): Promise<WebSocketTestResult> =>
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         baseUrl = `${protocol}//localhost:8000`;
       } else {
-        baseUrl = `${protocol}//${window.location.host}`;
+        // В продакшене используем ngrok URL для WebSocket (Vercel не поддерживает WebSocket)
+        const ngrokUrl = import.meta.env.VITE_WEBSOCKET_URL || '3e3f35c1758a.ngrok-free.app';
+        baseUrl = `${protocol}//${ngrokUrl}`;
       }
       const wsUrl = `${baseUrl}/ws/operator/`;
 
@@ -95,7 +97,9 @@ export const testWebSocketWithPing = async (): Promise<WebSocketTestResult> => {
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         baseUrl = `${protocol}//localhost:8000`;
       } else {
-        baseUrl = `${protocol}//${window.location.host}`;
+        // В продакшене используем ngrok URL для WebSocket (Vercel не поддерживает WebSocket)
+        const ngrokUrl = import.meta.env.VITE_WEBSOCKET_URL || '3e3f35c1758a.ngrok-free.app';
+        baseUrl = `${protocol}//${ngrokUrl}`;
       }
       const wsUrl = `${baseUrl}/ws/operator/`;
 
