@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:operator": "vite --config vite.operator.config.ts",
     "build": "tsc -b && vite build",
+    "build:operator": "tsc -b && vite build --config vite.operator.config.ts",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },

@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import update_last_login
 from django.db.models import Q, Count, Avg, Sum
 from django.utils import timezone
 from django.core.exceptions import ValidationError
@@ -20,7 +21,7 @@ from .serializers import (
     OperatorRegistrationSerializer, OperatorLoginSerializer, OperatorProfileSerializer,
     OperatorSessionSerializer, OrderAssignmentSerializer, OrderStatusChangeSerializer,
     OrderListSerializer, OperatorNotificationSerializer, OperatorAnalyticsSerializer,
-    DeliveryZoneSerializer, OrderMapLocationSerializer
+    DeliveryZoneSerializer, OrderMapLocationSerializer, OrderForOperatorSerializer
 )
 from api.models import Order, DeliveryZone
 
@@ -40,7 +41,13 @@ class OperatorAuthViewSet(viewsets.ViewSet):
             operator = serializer.save()
             
             # Создаем токен для автоматического входа
-            token, created = Token.objects.get_or_create(user=operator)
+            try:
+                token, created = Token.objects.get_or_create(user=operator)
+            except Exception as e:
+                # Если не удалось создать токен, возвращаем ошибку
+                return Response({
+                    'error': 'Ошибка создания токена аутентификации'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
             return Response({
                 'message': 'Оператор успешно зарегистрирован',
@@ -58,7 +65,15 @@ class OperatorAuthViewSet(viewsets.ViewSet):
             operator = serializer.validated_data['operator']
             
             # Создаем или получаем токен
-            token, created = Token.objects.get_or_create(user=operator)
+            try:
+                token, created = Token.objects.get_or_create(user=operator)
+                # Обновляем время последнего входа
+                update_last_login(None, operator)
+            except Exception as e:
+                # Если не удалось создать токен, возвращаем ошибку
+                return Response({
+                    'error': 'Ошибка создания токена аутентификации'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
             return Response({
                 'message': 'Успешный вход',
@@ -73,11 +88,38 @@ class OperatorAuthViewSet(viewsets.ViewSet):
         """Выход оператора"""
         if request.user.is_authenticated:
             # Удаляем токен
-            Token.objects.filter(user=request.user).delete()
-            logout(request)
-            return Response({'message': 'Успешный выход'}, status=status.HTTP_200_OK)
+            try:
+                Token.objects.filter(user=request.user).delete()
+                logout(request)
+                return Response({'message': 'Успешный выход'}, status=status.HTTP_200_OK)
+            except Exception as e:
+                # Если не удалось удалить токен, все равно выходим
+                logout(request)
+                return Response({'message': 'Выход выполнен'}, status=status.HTTP_200_OK)
         
         return Response({'message': 'Не авторизован'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    @action(detail=False, methods=['get'])
+    def verify_token(self, request):
+        """Проверка токена оператора"""
+        if request.user.is_authenticated:
+            try:
+                # Получаем профиль оператора
+                operator_data = OperatorProfileSerializer(request.user).data
+                return Response({
+                    'valid': True,
+                    'operator': operator_data
+                }, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({
+                    'valid': False,
+                    'error': 'Ошибка получения данных оператора'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        return Response({
+            'valid': False,
+            'error': 'Токен недействителен'
+        }, status=status.HTTP_401_UNAUTHORIZED)
 
 class OperatorProfileViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -248,6 +290,22 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         assignment = OrderAssignment.objects.create(
             order=order,
             operator=operator
+        )
+        
+        # Обновляем статус заказа
+        old_status = order.status
+        order.status = 'assigned'
+        order.assigned_operator = operator
+        order.assigned_at = timezone.now()
+        order.save()
+        
+        # Создаем запись в истории статусов
+        OrderStatusHistory.objects.create(
+            order=order,
+            operator=operator,
+            old_status=old_status,
+            new_status='assigned',
+            reason='Заказ назначен оператору'
         )
         
         # Создаем уведомление
@@ -514,3 +572,408 @@ class OrderMapViewSet(viewsets.ReadOnlyModelViewSet):
         }
         
         return Response(route_info)
+
+
+# Новые views для операторов
+class OperatorOrderViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet для работы операторов с заказами
+    """
+    serializer_class = OrderForOperatorSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        """Получение заказов для оператора"""
+        operator = self.request.user
+        operator_zones = operator.assigned_zones.filter(is_active=True)
+        
+        # Базовый queryset - заказы в зонах оператора
+        queryset = Order.objects.filter(
+            address__city__in=operator_zones.values_list('city', flat=True)
+        ).select_related(
+            'user', 'address', 'restaurant', 'promo_code'
+        ).prefetch_related(
+            'orderitem_set__menu_item',
+            'orderitem_set__size_option',
+            'orderitem_set__add_ons'
+        )
+        
+        # Фильтрация по статусу
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        # Фильтрация по зоне
+        zone_filter = self.request.query_params.get('zone')
+        if zone_filter:
+            queryset = queryset.filter(
+                address__city__iexact=zone_filter
+            )
+        
+        # Фильтрация по дате
+        date_filter = self.request.query_params.get('date')
+        if date_filter:
+            try:
+                date = datetime.strptime(date_filter, '%Y-%m-%d').date()
+                queryset = queryset.filter(created_at__date=date)
+            except ValueError:
+                pass
+        
+        return queryset.order_by('-created_at')
+    
+    @action(detail=False, methods=['get'])
+    def dashboard(self, request):
+        """Дашборд оператора"""
+        operator = request.user
+        operator_zones = operator.assigned_zones.filter(is_active=True)
+        
+        # Статистика по заказам
+        total_orders = self.get_queryset().count()
+        new_orders = self.get_queryset().filter(status='new').count()
+        processing_orders = self.get_queryset().filter(status='operator_processing').count()
+        confirmed_orders = self.get_queryset().filter(status='confirmed').count()
+        completed_orders = self.get_queryset().filter(status='completed').count()
+        cancelled_orders = self.get_queryset().filter(status='cancelled').count()
+        
+        # Названия назначенных зон
+        assigned_zones = [zone.name for zone in operator_zones]
+        
+        # Последние заказы
+        recent_orders = self.get_queryset()[:10]
+        
+        # Уведомления
+        notifications = OperatorNotification.objects.filter(
+            operator=operator,
+            is_read=False
+        )[:5]
+        
+        dashboard_data = {
+            'total_orders': total_orders,
+            'new_orders': new_orders,
+            'processing_orders': processing_orders,
+            'confirmed_orders': confirmed_orders,
+            'completed_orders': completed_orders,
+            'cancelled_orders': cancelled_orders,
+            'assigned_zones': assigned_zones,
+            'recent_orders': OrderForOperatorSerializer(recent_orders, many=True).data,
+            'notifications': OperatorNotificationSerializer(notifications, many=True).data
+        }
+        
+        return Response(dashboard_data)
+    
+    @action(detail=True, methods=['post'])
+    def assign_to_me(self, request, pk=None):
+        """Назначить заказ себе"""
+        order = get_object_or_404(Order, pk=pk)
+        operator = request.user
+        
+        # Проверяем, может ли оператор обрабатывать заказ
+        can_handle, message = operator.can_handle_order(order)
+        if not can_handle:
+            return Response(
+                {'error': message}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Проверяем, не назначен ли уже заказ
+        if order.assigned_operator:
+            return Response(
+                {'error': 'Заказ уже назначен другому оператору'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Назначаем заказ
+        order.assigned_operator = operator
+        order.assigned_at = timezone.now()
+        order.status = 'assigned'
+        order.save()
+        
+        # Создаем запись о назначении
+        assignment, created = OrderAssignment.objects.get_or_create(
+            order=order,
+            defaults={
+                'operator': operator,
+                'status': 'assigned'
+            }
+        )
+        
+        # Создаем уведомление
+        OperatorNotification.objects.create(
+            operator=operator,
+            notification_type='new_order',
+            title='Новый заказ назначен',
+            message=f'Вам назначен заказ #{order.id}',
+            order=order
+        )
+        
+        return Response({
+            'message': 'Заказ успешно назначен',
+            'order': OrderForOperatorSerializer(order).data
+        })
+    
+    @action(detail=True, methods=['post'])
+    def start_processing(self, request, pk=None):
+        """Начать обработку заказа"""
+        order = get_object_or_404(Order, pk=pk)
+        operator = request.user
+        
+        # Проверяем, назначен ли заказ оператору
+        if order.assigned_operator != operator:
+            return Response(
+                {'error': 'Заказ не назначен вам'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Обновляем статус
+        order.status = 'operator_processing'
+        order.save()
+        
+        # Обновляем назначение
+        try:
+            assignment = OrderAssignment.objects.get(order=order)
+            assignment.status = 'accepted'
+            assignment.accepted_at = timezone.now()
+            assignment.save()
+        except OrderAssignment.DoesNotExist:
+            pass
+        
+        # Записываем в историю
+        OrderStatusHistory.objects.create(
+            order=order,
+            operator=operator,
+            old_status='assigned',
+            new_status='operator_processing',
+            reason='Оператор начал обработку'
+        )
+        
+        return Response({
+            'message': 'Обработка заказа начата',
+            'order': OrderForOperatorSerializer(order).data
+        })
+    
+    @action(detail=True, methods=['post'])
+    def call_customer(self, request, pk=None):
+        """Отметить, что оператор звонил клиенту"""
+        order = get_object_or_404(Order, pk=pk)
+        operator = request.user
+        
+        # Проверяем, назначен ли заказ оператору
+        if order.assigned_operator != operator:
+            return Response(
+                {'error': 'Заказ не назначен вам'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Обновляем информацию о звонке
+        order.operator_called = True
+        order.operator_call_time = timezone.now()
+        order.save()
+        
+        return Response({
+            'message': 'Звонок отмечен',
+            'order': OrderForOperatorSerializer(order).data
+        })
+    
+    @action(detail=True, methods=['post'])
+    def update_call_result(self, request, pk=None):
+        """Обновить результат звонка"""
+        order = get_object_or_404(Order, pk=pk)
+        operator = request.user
+        
+        # Проверяем, назначен ли заказ оператору
+        if order.assigned_operator != operator:
+            return Response(
+                {'error': 'Заказ не назначен вам'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        call_result = request.data.get('call_result')
+        operator_notes = request.data.get('operator_notes', '')
+        
+        if not call_result:
+            return Response(
+                {'error': 'Необходимо указать результат звонка'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Обновляем результат звонка
+        order.operator_call_result = call_result
+        order.operator_notes = operator_notes
+        
+        # Обновляем статус заказа в зависимости от результата
+        if call_result == 'confirmed':
+            order.status = 'confirmed'
+        elif call_result == 'cancelled':
+            order.status = 'cancelled'
+        elif call_result == 'modified':
+            order.status = 'operator_processing'
+        
+        order.save()
+        
+        # Записываем в историю
+        OrderStatusHistory.objects.create(
+            order=order,
+            operator=operator,
+            old_status='operator_processing',
+            new_status=order.status,
+            reason=f'Результат звонка: {call_result}'
+        )
+        
+        return Response({
+            'message': 'Результат звонка обновлен',
+            'order': OrderForOperatorSerializer(order).data
+        })
+    
+    @action(detail=True, methods=['post'])
+    def add_notes(self, request, pk=None):
+        """Добавить заметки к заказу"""
+        order = get_object_or_404(Order, pk=pk)
+        operator = request.user
+        
+        # Проверяем, назначен ли заказ оператору
+        if order.assigned_operator != operator:
+            return Response(
+                {'error': 'Заказ не назначен вам'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        notes = request.data.get('notes', '')
+        if not notes:
+            return Response(
+                {'error': 'Необходимо указать заметки'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Обновляем заметки
+        order.operator_notes = notes
+        order.save()
+        
+        return Response({
+            'message': 'Заметки добавлены',
+            'order': OrderForOperatorSerializer(order).data
+        })
+
+    @action(detail=True, methods=['post'])
+    def confirm_order(self, request, pk=None):
+        """Подтвердить заказ оператором"""
+        order = get_object_or_404(Order, pk=pk)
+        operator = request.user
+        
+        # Проверяем, что заказ в статусе pending
+        if order.status != 'pending':
+            return Response(
+                {'error': 'Можно подтверждать только заказы в статусе "Ожидает обработки"'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Обновляем имя клиента, если указано
+        customer_name = request.data.get('customer_name')
+        if customer_name and customer_name.strip():
+            # Обновляем имя клиента в заказе
+            order.user.first_name = customer_name.strip()
+            order.user.save()
+        
+        # Обновляем статус заказа
+        old_status = order.status
+        order.status = 'confirmed'
+        order.assigned_operator = operator
+        order.assigned_at = timezone.now()
+        order.operator_call_result = 'confirmed'
+        order.operator_called = True
+        order.operator_call_time = timezone.now()
+        order.save()
+        
+        # Создаем запись в истории статусов
+        OrderStatusHistory.objects.create(
+            order=order,
+            operator=operator,
+            old_status=old_status,
+            new_status='confirmed',
+            reason='Заказ подтвержден оператором'
+        )
+        
+        return Response({
+            'message': 'Заказ подтвержден',
+            'order': OrderForOperatorSerializer(order).data
+        })
+
+    @action(detail=True, methods=['post'])
+    def reject_order(self, request, pk=None):
+        """Отклонить заказ оператором"""
+        order = get_object_or_404(Order, pk=pk)
+        operator = request.user
+        
+        # Проверяем, что заказ в статусе pending
+        if order.status != 'pending':
+            return Response(
+                {'error': 'Можно отклонять только заказы в статусе "Ожидает обработки"'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Получаем причину отклонения и имя клиента
+        reason = request.data.get('reason', 'Отклонен оператором')
+        customer_name = request.data.get('customer_name')
+        
+        # Обновляем имя клиента, если указано
+        if customer_name and customer_name.strip():
+            # Обновляем имя клиента в заказе
+            order.user.first_name = customer_name.strip()
+            order.user.save()
+        
+        # Обновляем статус заказа
+        old_status = order.status
+        order.status = 'rejected'
+        order.assigned_operator = operator
+        order.assigned_at = timezone.now()
+        order.operator_call_result = 'cancelled'
+        order.operator_called = True
+        order.operator_call_time = timezone.now()
+        order.operator_notes = reason
+        order.save()
+        
+        # Создаем запись в истории статусов
+        OrderStatusHistory.objects.create(
+            order=order,
+            operator=operator,
+            old_status=old_status,
+            new_status='rejected',
+            reason=f'Заказ отклонен оператором: {reason}'
+        )
+        
+        return Response({
+            'message': 'Заказ отклонен',
+            'order': OrderForOperatorSerializer(order).data
+        })
+
+    @action(detail=True, methods=['post'])
+    def update_customer_name(self, request, pk=None):
+        """Обновить имя клиента"""
+        order = get_object_or_404(Order, pk=pk)
+        operator = request.user
+        
+        # Получаем новое имя клиента
+        customer_name = request.data.get('customer_name')
+        if not customer_name or not customer_name.strip():
+            return Response(
+                {'error': 'Необходимо указать имя клиента'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Обновляем имя клиента
+        old_name = f"{order.user.first_name} {order.user.last_name or ''}".strip()
+        order.user.first_name = customer_name.strip()
+        order.user.save()
+        
+        # Создаем запись в истории статусов
+        OrderStatusHistory.objects.create(
+            order=order,
+            operator=operator,
+            old_status=order.status,
+            new_status=order.status,
+            reason=f'Имя клиента изменено с "{old_name}" на "{customer_name.strip()}"'
+        )
+        
+        return Response({
+            'message': 'Имя клиента обновлено',
+            'order': OrderForOperatorSerializer(order).data
+        })

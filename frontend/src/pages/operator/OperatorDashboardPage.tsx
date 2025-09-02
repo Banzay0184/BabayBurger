@@ -1,0 +1,413 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { useOperatorAuth } from '../../context/OperatorAuthContext';
+import { operatorOrdersApi, operatorNotificationsApi } from '../../api/operatorApi';
+import type { OperatorDashboard, OrderForOperator, OrderStatus, OperatorNotification } from '../../types/operator';
+import { OrderCard } from '../../components/operator/OrderCard';
+// import { DashboardStats } from '../../components/operator/DashboardStats';
+import { CompactOrderFilters } from '../../components/operator/CompactOrderFilters';
+import { NotificationsPanel } from '../../components/operator/NotificationsPanel';
+import { WebSocketStatus } from '../../components/operator/WebSocketStatus';
+import { testWebSocketConnection, testWebSocketWithPing } from '../../utils/websocketTest';
+import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
+
+export const OperatorDashboardPage: React.FC = () => {
+  const { state: authState, logout } = useOperatorAuth();
+  const [dashboard, setDashboard] = useState<OperatorDashboard | null>(null);
+  const [orders, setOrders] = useState<OrderForOperator[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<OrderStatus | 'all'>('all');
+  const [selectedZone, setSelectedZone] = useState<string>('all');
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  // WebSocket обработчики для real-time обновлений
+  const handleNewOrder = useCallback((newOrder: OrderForOperator) => {
+    console.log('🆕 Получен новый заказ через WebSocket:', newOrder);
+    setOrders(prev => {
+      // Проверяем, нет ли уже такого заказа
+      const exists = prev.some(order => order.id === newOrder.id);
+      if (exists) return prev;
+      
+      // Добавляем новый заказ в начало списка
+      return [newOrder, ...prev];
+    });
+    
+    // Обновляем дашборд
+    setDashboard(prev => prev ? {
+      ...prev,
+      recent_orders: [newOrder, ...(prev.recent_orders || [])]
+    } : null);
+  }, []);
+
+  const handleOrderUpdated = useCallback((orderId: number, updatedOrder: OrderForOperator | undefined, status: string | undefined) => {
+    console.log('🔄 Заказ обновлен через WebSocket:', orderId, status);
+    
+    if (updatedOrder) {
+      // Обновляем заказ в списке
+      setOrders(prev => prev.map(order => 
+        order.id === orderId ? updatedOrder : order
+      ));
+      
+      // Обновляем дашборд
+      setDashboard(prev => prev ? {
+        ...prev,
+        recent_orders: (prev.recent_orders || []).map(order => 
+          order.id === orderId ? updatedOrder : order
+        )
+      } : null);
+    } else {
+      // Если нет полных данных заказа, перезагружаем список
+      loadOrders();
+    }
+  }, []);
+
+  const handleNotification = useCallback((notification: OperatorNotification) => {
+    console.log('🔔 Получено уведомление через WebSocket:', notification);
+    
+    // Обновляем дашборд с новым уведомлением
+    setDashboard(prev => prev ? {
+      ...prev,
+      notifications: [notification, ...(prev.notifications || [])]
+    } : null);
+  }, []);
+
+  // Инициализируем WebSocket
+  const { isConnected } = useOperatorWebSocket({
+    onOrderCreated: handleNewOrder,
+    onOrderUpdated: handleOrderUpdated,
+    onNotification: handleNotification,
+    enabled: true
+  });
+
+
+  // Загрузка дашборда
+  const loadDashboard = async () => {
+    try {
+      setIsLoading(true);
+      const dashboardData = await operatorOrdersApi.getDashboard();
+      
+      // Убеждаемся, что все поля являются массивами
+      if (dashboardData) {
+        if (!Array.isArray(dashboardData.recent_orders)) {
+          dashboardData.recent_orders = [];
+        }
+        if (!Array.isArray(dashboardData.notifications)) {
+          dashboardData.notifications = [];
+        }
+        if (!Array.isArray(dashboardData.assigned_zones)) {
+          dashboardData.assigned_zones = [];
+        }
+      }
+      
+      setDashboard(dashboardData);
+    } catch (err) {
+      setError('Ошибка загрузки дашборда');
+      console.error('Ошибка загрузки дашборда:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Загрузка заказов
+  const loadOrders = async () => {
+    try {
+      const filters: any = {};
+      if (selectedStatus !== 'all') filters.status = selectedStatus;
+      if (selectedZone !== 'all') filters.zone = selectedZone;
+      
+      console.log('🔍 Загружаем заказы с фильтрами:', filters);
+      const ordersData = await operatorOrdersApi.getOrders(filters);
+      console.log('🔍 Получены данные заказов:', ordersData);
+      console.log('🔍 Тип данных:', typeof ordersData, 'Является массивом:', Array.isArray(ordersData));
+      
+      // Убеждаемся, что ordersData - это массив
+      const ordersArray = Array.isArray(ordersData) ? ordersData : [];
+      console.log('🔍 Устанавливаем заказы:', ordersArray);
+      setOrders(ordersArray);
+    } catch (err) {
+      setError('Ошибка загрузки заказов');
+      console.error('Ошибка загрузки заказов:', err);
+      // В случае ошибки устанавливаем пустой массив
+      setOrders([]);
+    }
+  };
+
+  // Обновление заказа (после действий оператора)
+  const updateOrder = useCallback((updatedOrder: OrderForOperator) => {
+    setOrders(prev => {
+      if (!prev) return [updatedOrder];
+      return prev.map(order => 
+        order.id === updatedOrder.id ? updatedOrder : order
+      );
+    });
+    
+    // Обновляем дашборд
+    if (dashboard) {
+      setDashboard(prev => prev ? {
+        ...prev,
+        recent_orders: Array.isArray(prev.recent_orders) 
+          ? prev.recent_orders.map(order => 
+              order.id === updatedOrder.id ? updatedOrder : order
+            )
+          : [updatedOrder]
+      } : null);
+    }
+  }, [dashboard]);
+
+
+
+  // Загрузка данных при монтировании
+  useEffect(() => {
+    loadDashboard();
+    loadOrders();
+  }, []);
+
+  // Перезагрузка заказов при изменении фильтров
+  useEffect(() => {
+    loadOrders();
+  }, [selectedStatus, selectedZone]);
+
+  // Автообновление каждые 60 секунд (fallback для WebSocket)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Обновляем только если WebSocket не подключен
+      if (!isConnected) {
+        console.log('🔄 WebSocket не подключен, обновляем через API...');
+        loadDashboard();
+        loadOrders();
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [isConnected]);
+
+  // Обработка выхода
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // Выход обрабатывается автоматически через контекст
+    } catch (error) {
+      console.error('Ошибка при выходе:', error);
+    }
+  };
+
+  // Тестирование WebSocket
+  const handleTestWebSocket = async () => {
+    try {
+      console.log('🧪 Тестирование WebSocket соединения...');
+      const result = await testWebSocketConnection();
+      
+      if (result.success) {
+        alert(`✅ ${result.message}`);
+      } else {
+        alert(`❌ ${result.message}\n${result.error || ''}`);
+      }
+    } catch (error) {
+      console.error('Ошибка тестирования WebSocket:', error);
+      alert('❌ Ошибка тестирования WebSocket');
+    }
+  };
+
+  const handleTestWebSocketPing = async () => {
+    try {
+      console.log('🧪 Тестирование WebSocket с ping...');
+      const result = await testWebSocketWithPing();
+      
+      if (result.success) {
+        alert(`✅ ${result.message}`);
+      } else {
+        alert(`❌ ${result.message}\n${result.error || ''}`);
+      }
+    } catch (error) {
+      console.error('Ошибка тестирования WebSocket ping:', error);
+      alert('❌ Ошибка тестирования WebSocket ping');
+    }
+  };
+
+  if (isLoading && !dashboard) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-300">Загрузка дашборда...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-red-900/30 border border-red-600/50 rounded-lg p-6 max-w-md">
+            <p className="text-red-400 mb-4">{error}</p>
+            <button
+              onClick={() => {
+                setError(null);
+                loadDashboard();
+                loadOrders();
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Попробовать снова
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-900">
+      {/* Верхняя панель - планшетная версия */}
+      <header className="bg-gray-800 border-b border-gray-700">
+        <div className="max-w-full mx-auto px-6">
+          <div className="flex justify-between items-center h-20">
+            {/* Логотип и название */}
+            <div className="flex items-center">
+              <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mr-4">
+                <span className="text-white text-3xl">👨‍💼</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Оператор Babay Burger</h1>
+                <div className="flex items-center space-x-2">
+                  <p className="text-gray-400 text-sm">
+                    {authState.operator?.assigned_zones?.map(zone => zone.city).join(', ')}
+                  </p>
+                  {/* WebSocket статус */}
+                  <WebSocketStatus />
+                </div>
+              </div>
+            </div>
+
+            {/* Информация об операторе и действия */}
+            <div className="flex items-center space-x-6">
+              <div className="text-right">
+                <p className="text-lg text-gray-300 font-medium">
+                  {authState.operator?.first_name} {authState.operator?.last_name}
+                </p>
+                <p className="text-sm text-gray-400">
+                  Оператор
+                </p>
+              </div>
+              
+              {/* Кнопка уведомлений - планшетная версия */}
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-4 text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 rounded-xl"
+              >
+                <span className="text-2xl">🔔</span>
+                {Array.isArray(dashboard?.notifications) && dashboard.notifications.filter(n => !n.is_read).length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-sm rounded-full h-6 w-6 flex items-center justify-center font-bold">
+                    {dashboard.notifications.filter(n => !n.is_read).length}
+                  </span>
+                )}
+              </button>
+
+              {/* Кнопки тестирования WebSocket */}
+              <button
+                onClick={handleTestWebSocket}
+                className="p-4 text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 rounded-xl"
+                title="Тест WebSocket соединения"
+              >
+                <span className="text-2xl">🔌</span>
+              </button>
+
+              <button
+                onClick={handleTestWebSocketPing}
+                className="p-4 text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 rounded-xl"
+                title="Тест WebSocket ping/pong"
+              >
+                <span className="text-2xl">🏓</span>
+              </button>
+
+
+
+              {/* Кнопка выхода - планшетная версия */}
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors"
+              >
+                Выйти
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Основной контент - компактная версия */}
+      <main className="max-w-full mx-auto px-6 py-8">
+        {/* Компактная панель фильтрации */}
+        <CompactOrderFilters
+          selectedStatus={selectedStatus}
+          selectedZone={selectedZone}
+          zones={Array.isArray(dashboard?.assigned_zones) ? dashboard.assigned_zones : []}
+          onStatusChange={setSelectedStatus}
+          onZoneChange={setSelectedZone}
+        />
+
+        {/* Заказы */}
+        <div className="w-full">
+            <div className="bg-gray-800 rounded-xl p-8">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-semibold text-white">
+                  Заказы {selectedStatus !== 'all' && `(${selectedStatus})`}
+                </h2>
+                <div className="flex space-x-4">
+                  <button
+                    onClick={loadOrders}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors"
+                  >
+                    Обновить
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Переход на страницу статистики через изменение URL
+                      window.history.pushState({}, '', '/operator/stats');
+                      window.location.reload();
+                    }}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors"
+                  >
+                    📊 Статистика
+                  </button>
+                </div>
+              </div>
+
+              {/* Список заказов */}
+              {!orders || orders.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="text-gray-400 text-8xl mb-6">📋</div>
+                  <p className="text-gray-400 text-xl mb-2">Нет заказов</p>
+                  <p className="text-gray-500 text-lg">
+                    {selectedStatus !== 'all' || selectedZone !== 'all' 
+                      ? 'Попробуйте изменить фильтры' 
+                      : 'Новые заказы появятся здесь автоматически'
+                    }
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {orders.map((order) => (
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      onUpdate={updateOrder}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+        </div>
+      </main>
+
+      {/* Панель уведомлений */}
+      {showNotifications && (
+        <NotificationsPanel
+          notifications={Array.isArray(dashboard?.notifications) ? dashboard.notifications : []}
+          onClose={() => setShowNotifications(false)}
+          onMarkAsRead={operatorNotificationsApi.markAsRead}
+        />
+      )}
+    </div>
+  );
+};

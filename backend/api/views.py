@@ -620,6 +620,8 @@ class AuthView(APIView):
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class MenuView(APIView):
+    permission_classes = [AllowAny]
+    
     def get(self, request):
         try:
             # Попробуем получить из кэша
@@ -680,6 +682,8 @@ class MenuView(APIView):
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CategoryView(APIView):
+    permission_classes = [AllowAny]
+    
     def get(self, request):
         try:
             # Попробуем получить из кэша
@@ -980,12 +984,7 @@ class OrderView(APIView):
                 logger.error(f"Error saving order: {str(save_error)}")
                 return Response({'error': 'Failed to save order'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-            # Отправка уведомления через бота
-            try:
-                send_notification(user.telegram_id, f"Ваш заказ #{order.id} принят!")
-            except Exception as notification_error:
-                logger.error(f"Failed to send notification: {str(notification_error)}")
-                # Не возвращаем ошибку, так как заказ уже создан
+            # Уведомление отправляется автоматически через сигналы Django
         
             logger.info(f"Order created successfully: id={order.id}, user={user.telegram_id}, total={total_price}, items_count={len(items_data)}")
             return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
@@ -1213,15 +1212,16 @@ class OrderCreateView(APIView):
                 logger.warning(f"Address not found for order: address_id={address_id}")
                 return Response({'error': 'Address not found'}, status=status.HTTP_404_NOT_FOUND)
             
-            # Проверяем зону доставки
+            # Получаем информацию о зонах доставки для оператора (без блокировки)
             is_in_zone, message = address.is_in_delivery_zone()
+            delivery_zones_info = address.get_delivery_zones_info()
+            
+            # Логируем информацию о зоне доставки для оператора
             if not is_in_zone:
-                logger.warning(f"Address not in delivery zone: address_id={address_id}, message={message}")
-                return Response({
-                    'error': 'Address not in delivery zone',
-                    'message': message,
-                    'delivery_zones_info': address.get_delivery_zones_info()
-                }, status=status.HTTP_400_BAD_REQUEST)
+                logger.info(f"Order address outside delivery zone: {message}")
+                logger.info(f"Delivery zones info: {delivery_zones_info}")
+            else:
+                logger.info(f"Order address in delivery zone: {message}")
             
             # Получаем товары из запроса или корзины
             items_data = request.data.get('items', [])
@@ -1362,6 +1362,8 @@ class OrderCreateView(APIView):
 
 class GeocodeView(APIView):
     """API для геокодирования и обратного геокодирования через Яндекс.Карты с кэшем и Celery"""
+    permission_classes = [AllowAny]
+    
     def get(self, request):
         address = request.query_params.get('query')
         async_mode = request.query_params.get('async') == '1'
@@ -1402,6 +1404,8 @@ class GeocodeView(APIView):
 from celery.result import AsyncResult
 class GeocodeResultView(APIView):
     """Получить результат асинхронного геокодирования по task_id"""
+    permission_classes = [AllowAny]
+    
     def get(self, request, task_id):
         res = AsyncResult(task_id)
         if res.state == 'PENDING':
@@ -1412,6 +1416,7 @@ class GeocodeResultView(APIView):
 
 class DeliveryZoneView(APIView):
     """Представление для работы с зонами доставки"""
+    permission_classes = [AllowAny]
     
     def get(self, request):
         """Получить все активные зоны доставки"""
@@ -1427,6 +1432,7 @@ class DeliveryZoneView(APIView):
 
 class AddressDeliveryZoneCheckView(APIView):
     """API для проверки адреса в зоне доставки"""
+    permission_classes = [AllowAny]
     
     def post(self, request):
         """Проверить адрес в зоне доставки"""
@@ -1496,6 +1502,7 @@ from .serializers import MenuItemSerializer, AddOnSerializer, SizeOptionSerializ
 class AddOnViewSet(viewsets.ModelViewSet):
     queryset = AddOn.objects.all()
     serializer_class = AddOnSerializer
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name']
     ordering_fields = ['price', 'name']
@@ -1515,12 +1522,14 @@ class AddOnViewSet(viewsets.ModelViewSet):
 class SizeOptionViewSet(viewsets.ModelViewSet):
     queryset = SizeOption.objects.all()
     serializer_class = SizeOptionSerializer
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
 
 class PromotionViewSet(viewsets.ModelViewSet):
     queryset = Promotion.objects.all()
     serializer_class = PromotionSerializer
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['valid_from', 'valid_to', 'usage_count']
@@ -1540,6 +1549,7 @@ class PromotionViewSet(viewsets.ModelViewSet):
 class MenuItemViewSet(viewsets.ModelViewSet):
     queryset = MenuItem.objects.all()
     serializer_class = MenuItemSerializer
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['price', 'created_at', 'priority']
@@ -1577,6 +1587,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 class HitsView(APIView):
     """API для получения хитов продаж"""
+    permission_classes = [AllowAny]
     
     def get(self, request):
         try:
@@ -1598,6 +1609,7 @@ class HitsView(APIView):
 
 class NewItemsView(APIView):
     """API для получения новинок"""
+    permission_classes = [AllowAny]
     
     def get(self, request):
         try:
@@ -1619,6 +1631,7 @@ class NewItemsView(APIView):
 
 class PromotionsView(APIView):
     """API для получения активных акций"""
+    permission_classes = [AllowAny]
     
     def get(self, request):
         try:
@@ -1646,6 +1659,7 @@ class PromotionsView(APIView):
 
 class MenuItemDetailView(APIView):
     """API для получения детальной информации о товаре"""
+    permission_classes = [AllowAny]
     
     def get(self, request, item_id):
         try:
@@ -1668,6 +1682,7 @@ class MenuItemDetailView(APIView):
 
 class CategoryItemsView(APIView):
     """API для получения товаров по категории"""
+    permission_classes = [AllowAny]
     
     def get(self, request, category_id):
         try:
@@ -1700,6 +1715,7 @@ class CategoryItemsView(APIView):
 
 class SearchView(APIView):
     """API для поиска товаров"""
+    permission_classes = [AllowAny]
     
     def get(self, request):
         try:
@@ -1773,6 +1789,7 @@ class SearchView(APIView):
 
 class FeaturedView(APIView):
     """API для получения избранных товаров (хиты + новинки)"""
+    permission_classes = [AllowAny]
     
     def get(self, request):
         try:
@@ -1796,6 +1813,7 @@ class FeaturedView(APIView):
 
 class PriceRangeView(APIView):
     """API для получения товаров по диапазону цен"""
+    permission_classes = [AllowAny]
     
     def get(self, request):
         try:
@@ -1835,6 +1853,7 @@ class PriceRangeView(APIView):
 
 class StatisticsView(APIView):
     """API для получения статистики"""
+    permission_classes = [AllowAny]
     
     def get(self, request):
         try:
@@ -1895,6 +1914,7 @@ class TestUserCreationView(APIView):
     """
     Эндпоинт для тестирования создания пользователя
     """
+    permission_classes = [AllowAny]
     
     def post(self, request):
         try:
@@ -1958,6 +1978,7 @@ class TestUserCreationView(APIView):
 
 class CartView(APIView):
     """API для работы с корзиной (временное хранение в сессии)"""
+    permission_classes = [AllowAny]
     
     def get(self, request):
         """Получить содержимое корзины"""
@@ -2103,6 +2124,7 @@ class TestConnectionView(APIView):
     """
     Простой endpoint для тестирования подключения к API
     """
+    permission_classes = [AllowAny]
     
     def get(self, request):
         """Тестовый GET запрос"""
@@ -2128,6 +2150,7 @@ class TestConnectionView(APIView):
 
 class FavoriteView(APIView):
     """API для работы с избранными товарами"""
+    permission_classes = [AllowAny]
     
     def get(self, request):
         """Получить избранные товары пользователя"""
@@ -2231,6 +2254,7 @@ class FavoriteView(APIView):
 
 class RestaurantView(APIView):
     """Представление для работы с ресторанами"""
+    permission_classes = [AllowAny]
     
     def get(self, request):
         """Получить все активные рестораны с самовывозом"""

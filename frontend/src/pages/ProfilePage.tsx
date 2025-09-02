@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoriteContext';
+import { useClientWebSocket } from '../hooks/useClientWebSocket';
 import { PageTransition } from '../components/common/PageTransition';
 
 interface Order {
@@ -39,6 +40,32 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('all'); // Фильтр по статусу
+
+  // WebSocket обработчики для real-time обновлений заказов
+  const handleOrderStatusUpdate = useCallback((orderId: number, status: string, _statusDisplay: string, updatedAt: string) => {
+    console.log('🔄 Статус заказа обновлен через WebSocket:', orderId, status);
+    
+    setOrders(prev => prev.map(order => 
+      order.id === orderId 
+        ? { ...order, status, updated_at: updatedAt }
+        : order
+    ));
+  }, []);
+
+  const handleOrderDetailsUpdate = useCallback((updatedOrder: any) => {
+    console.log('📋 Детали заказа обновлены через WebSocket:', updatedOrder.id);
+    
+    setOrders(prev => prev.map(order => 
+      order.id === updatedOrder.id ? updatedOrder : order
+    ));
+  }, []);
+
+  // Инициализируем WebSocket для клиента
+  const { isConnected } = useClientWebSocket({
+    onOrderStatusUpdate: handleOrderStatusUpdate,
+    onOrderDetailsUpdate: handleOrderDetailsUpdate,
+    enabled: true
+  });
 
   // Загрузка истории заказов
   useEffect(() => {
@@ -90,6 +117,44 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
 
     loadOrders();
   }, [state.user]);
+
+  // Автообновление каждые 60 секунд (fallback для WebSocket)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Обновляем только если WebSocket не подключен
+      if (!isConnected) {
+        console.log('🔄 WebSocket не подключен, обновляем через API...');
+        const loadOrders = async () => {
+          try {
+            const telegramId = state.user?.telegram_id;
+            if (!telegramId) return;
+
+            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+            const url = `${apiBaseUrl}/api/orders/?telegram_id=${telegramId}`;
+            
+            const response = await fetch(url, {
+              method: 'GET',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true'
+              }
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              setOrders(data.orders || data || []);
+            }
+          } catch (err) {
+            console.error('❌ Ошибка автообновления заказов:', err);
+          }
+        };
+        loadOrders();
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [isConnected, state.user]);
 
   // Фильтрация заказов по статусу
   const filteredOrders = orders.filter(order => {
@@ -203,7 +268,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen text-gray-100">
+    <div className="min-h-screen text-gray-100">
       {/* CSS анимации */}
       <style>{`
         @keyframes fadeInUp {
@@ -302,9 +367,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
 
         {/* История заказов */}
         <div className="bg-dark-800 rounded-2xl p-6 border border-gray-700/50">
-          <h3 className="text-lg font-bold text-gray-100 mb-4 flex items-center">
+          <h3 className="text-lg font-bold text-gray-100 mb-4 flex items-center justify-between">
+            <div className="flex items-center">
             <span className="mr-2">📋</span>
             {t('order_history')}
+            </div>
+            {/* WebSocket статус */}
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span className="text-xs text-gray-400">
+                {isConnected ? 'Live' : 'Offline'}
+              </span>
+            </div>
           </h3>
           
           {/* Фильтры по статусам */}
@@ -361,9 +435,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
                     <div className="flex items-center space-x-3">
                       <span className="text-lg">🛒</span>
                       <div>
-                        <span className="font-semibold text-gray-100">
-                          {t('order')} #{order.id}
-                        </span>
+                      <span className="font-semibold text-gray-100">
+                        {t('order')} #{order.id}
+                      </span>
                         <div className="flex items-center space-x-2 mt-1">
                           <span className="text-xs text-gray-400">{getServiceTypeIcon(order.service_type)} {getServiceTypeText(order.service_type)}</span>
                         </div>

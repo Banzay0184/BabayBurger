@@ -3,12 +3,13 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.db.models import Q
 from datetime import datetime, timedelta
 from .models import (
     Operator, OperatorSession, OrderAssignment, 
     OrderStatusHistory, OperatorNotification, OperatorAnalytics
 )
-from api.models import Order, DeliveryZone, Address, User
+from api.models import Order, DeliveryZone, Address, User, MenuItem, OrderItem
 
 class OperatorRegistrationSerializer(serializers.ModelSerializer):
     """
@@ -81,7 +82,7 @@ class OperatorLoginSerializer(serializers.Serializer):
             # Пытаемся найти оператора по username или phone
             try:
                 operator = Operator.objects.get(
-                    models.Q(username=username) | models.Q(phone=username)
+                    Q(username=username) | Q(phone=username)
                 )
             except Operator.DoesNotExist:
                 raise serializers.ValidationError("Неверные учетные данные")
@@ -218,11 +219,11 @@ class OrderAssignmentSerializer(serializers.ModelSerializer):
         order = obj.order
         return {
             'id': order.id,
-            'total_price': float(order.total_price),
-            'discounted_total': float(order.discounted_total),
+            'total_price': float(order.total_price) if order.total_price else 0.0,
+            'discounted_total': float(order.discounted_total) if order.discounted_total else 0.0,
             'status': order.status,
             'created_at': order.created_at,
-            'delivery_fee': float(order.delivery_fee),
+            'delivery_fee': float(order.delivery_fee) if order.delivery_fee else 0.0,
             'notes': order.notes,
             'address': {
                 'street': order.address.street,
@@ -371,7 +372,7 @@ class OrderListSerializer(serializers.ModelSerializer):
             {
                 'name': item.menu_item.name,
                 'quantity': item.quantity,
-                'total': float(item.calculate_total())
+                'total': float(item.calculate_total()) if hasattr(item, 'calculate_total') else 0.0
             }
             for item in items
         ]
@@ -465,4 +466,129 @@ class OrderMapLocationSerializer(serializers.ModelSerializer):
                     'delivery_fee': float(zone.delivery_fee)
                 }
         
-        return None 
+        return None
+
+
+# Новые сериализаторы для операторов
+class OrderItemDetailSerializer(serializers.ModelSerializer):
+    """Детали товара в заказе для оператора"""
+    menu_item_name = serializers.CharField(source='menu_item.name', read_only=True)
+    menu_item_price = serializers.DecimalField(source='menu_item.price', max_digits=10, decimal_places=2, read_only=True)
+    size_option_name = serializers.CharField(source='size_option.name', read_only=True)
+    add_ons_names = serializers.SerializerMethodField()
+    total_price = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = OrderItem
+        fields = [
+            'id', 'menu_item_name', 'menu_item_price', 'quantity',
+            'size_option_name', 'add_ons_names', 'total_price'
+        ]
+    
+    def get_add_ons_names(self, obj):
+        return [addon.name for addon in obj.add_ons.all()]
+    
+    def get_total_price(self, obj):
+        if hasattr(obj, 'calculate_total'):
+            return float(obj.calculate_total())
+        return 0.0
+
+class OrderForOperatorSerializer(serializers.ModelSerializer):
+    """Заказ для оператора с деталями"""
+    user_info = serializers.SerializerMethodField()
+    address_info = serializers.SerializerMethodField()
+    items_details = serializers.SerializerMethodField()
+    delivery_zone_info = serializers.SerializerMethodField()
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    service_type_display = serializers.CharField(source='get_service_type_display', read_only=True)
+    operator_call_result_display = serializers.CharField(source='get_operator_call_result_display', read_only=True)
+    
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'status', 'status_display', 'service_type', 'service_type_display',
+            'total_price', 'final_price', 'delivery_fee', 'discount_amount',
+            'created_at', 'delivery_time', 'notes', 'operator_notes',
+            'operator_called', 'operator_call_time', 'operator_call_result',
+            'operator_call_result_display', 'assigned_operator', 'assigned_at',
+            'user_info', 'address_info', 'items_details', 'delivery_zone_info'
+        ]
+    
+    def get_user_info(self, obj):
+        user = obj.user
+        return {
+            'id': user.id,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'username': user.username,
+            'telegram_id': user.telegram_id
+        }
+    
+    def get_address_info(self, obj):
+        address = obj.address
+        return {
+            'id': address.id,
+            'full_address': address.full_address,
+            'city': address.city,
+            'latitude': float(address.latitude) if address.latitude else None,
+            'longitude': float(address.longitude) if address.longitude else None,
+            'phone_number': address.phone_number
+        }
+    
+    def get_items_details(self, obj):
+        items = obj.orderitem_set.all()
+        return OrderItemDetailSerializer(items, many=True).data
+    
+    def get_delivery_zone_info(self, obj):
+        address = obj.address
+        zones = DeliveryZone.objects.filter(
+            city__iexact=address.city,
+            is_active=True
+        )
+        
+        for zone in zones:
+            if zone.is_address_in_zone(address.latitude, address.longitude):
+                return {
+                    'id': zone.id,
+                    'name': zone.name,
+                    'city': zone.city,
+                    'delivery_fee': float(zone.delivery_fee) if zone.delivery_fee else 0.0,
+                    'min_order_amount': float(zone.min_order_amount) if zone.min_order_amount else None
+                }
+        return None
+
+class OrderAssignmentSerializer(serializers.ModelSerializer):
+    """Сериализатор для назначения заказов операторам"""
+    order_details = OrderForOperatorSerializer(source='order', read_only=True)
+    operator_info = serializers.SerializerMethodField()
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    
+    class Meta:
+        model = OrderAssignment
+        fields = [
+            'id', 'order', 'order_details', 'operator', 'operator_info',
+            'assigned_at', 'accepted_at', 'status', 'status_display',
+            'notes', 'rejection_reason'
+        ]
+    
+    def get_operator_info(self, obj):
+        operator = obj.operator
+        return {
+            'id': operator.id,
+            'username': operator.username,
+            'first_name': operator.first_name,
+            'last_name': operator.last_name,
+            'phone': operator.phone
+        }
+
+class OperatorDashboardSerializer(serializers.Serializer):
+    """Сериализатор для дашборда оператора"""
+    total_orders = serializers.IntegerField()
+    new_orders = serializers.IntegerField()
+    processing_orders = serializers.IntegerField()
+    confirmed_orders = serializers.IntegerField()
+    completed_orders = serializers.IntegerField()
+    cancelled_orders = serializers.IntegerField()
+    assigned_zones = serializers.ListField(child=serializers.CharField())
+    recent_orders = OrderForOperatorSerializer(many=True)
+    notifications = OperatorNotificationSerializer(many=True) 

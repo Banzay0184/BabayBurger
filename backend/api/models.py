@@ -285,6 +285,40 @@ class DeliveryZone(models.Model):
         except Exception as e:
             print(f"Ошибка проверки точки в полигоне: {e}")
             return False
+    
+    def get_distance_to_zone(self, latitude, longitude):
+        """Вычисляет расстояние от точки до зоны доставки"""
+        try:
+            # Если есть полигон, вычисляем расстояние до ближайшей точки полигона
+            if self.polygon_coordinates and len(self.polygon_coordinates) > 2:
+                min_distance = float('inf')
+                for point in self.polygon_coordinates:
+                    distance = calculate_distance(latitude, longitude, point[0], point[1])
+                    min_distance = min(min_distance, distance)
+                return min_distance
+            
+            # Если есть центр и радиус, вычисляем расстояние до центра
+            elif self.center_latitude and self.center_longitude:
+                return calculate_distance(
+                    latitude, longitude,
+                    self.center_latitude, self.center_longitude
+                )
+            
+            # Fallback для старых зон
+            elif self.name in ["Бухара", "Центр Бухары"]:
+                if self.name == "Бухара":
+                    # Расстояние до центра Бухары
+                    bukhara_center_lat, bukhara_center_lon = 39.7681, 64.4556
+                    return calculate_distance(latitude, longitude, bukhara_center_lat, bukhara_center_lon)
+                elif self.name == "Центр Бухары":
+                    bukhara_center_lat, bukhara_center_lon = 39.7681, 64.4556
+                    return calculate_distance(latitude, longitude, bukhara_center_lat, bukhara_center_lon)
+            
+            return None
+            
+        except Exception as e:
+            print(f"Ошибка вычисления расстояния до зоны: {e}")
+            return None
 
 
 class Restaurant(models.Model):
@@ -968,11 +1002,17 @@ class PromoCodeUsage(models.Model):
 # --- ДОРАБОТКА Order ---
 class Order(models.Model):
     STATUS_CHOICES = (
-        ('pending', 'Ожидает'),
+        ('pending', 'Ожидает обработки'),
+
+        ('assigned', 'Назначен оператору'),
+        ('operator_processing', 'Обрабатывается оператором'),
+        ('confirmed', 'Подтвержден клиентом'),
         ('preparing', 'Готовится'),
+        ('ready_for_delivery', 'Готов к доставке'),
         ('delivering', 'Доставляется'),
         ('completed', 'Выполнен'),
         ('cancelled', 'Отменен'),
+        ('rejected', 'Отклонен'),
     )
     
     SERVICE_TYPE_CHOICES = (
@@ -1026,6 +1066,51 @@ class Order(models.Model):
         verbose_name="Примечания к заказу",
         help_text="Комментарии клиента"
     )
+    
+    # Поля для работы с операторами
+    operator_notes = models.TextField(
+        blank=True,
+        verbose_name="Заметки оператора",
+        help_text="Внутренние заметки оператора"
+    )
+    
+    operator_called = models.BooleanField(
+        default=False,
+        verbose_name="Оператор звонил"
+    )
+    
+    operator_call_time = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Время звонка оператора"
+    )
+    
+    operator_call_result = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="Результат звонка",
+        choices=(
+            ('confirmed', 'Подтвержден'),
+            ('cancelled', 'Отменен'),
+            ('modified', 'Изменен'),
+            ('unreachable', 'Не дозвонился'),
+            ('wrong_number', 'Неверный номер'),
+        )
+    )
+    
+    assigned_operator = models.ForeignKey(
+        'app_operator.Operator',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name="Назначенный оператор"
+    )
+    
+    assigned_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Время назначения оператору"
+    )
 
     class Meta:
         verbose_name = "Заказ"
@@ -1057,10 +1142,11 @@ class Order(models.Model):
         return total
 
     def apply_promotion(self):
-        # Проверяем зону доставки
+        # Получаем информацию о зоне доставки (без блокировки)
         is_in_zone, message = self.address.is_in_delivery_zone()
         if not is_in_zone:
-            raise ValidationError(f"Адрес не в зоне доставки: {message}")
+            print(f"⚠️ Предупреждение: адрес не в зоне доставки: {message}")
+            print(f"⚠️ Оператор может принять решение о доставке самостоятельно")
         
         # Получаем базовую стоимость доставки из зоны (без учета min_order_amount зоны)
         base_delivery_fee = 0
@@ -1069,10 +1155,26 @@ class Order(models.Model):
             is_active=True
         )
         
+        # Сначала ищем зону, в которой находится адрес
         for zone in delivery_zones:
             if zone.is_address_in_zone(self.address.latitude, self.address.longitude):
                 base_delivery_fee = zone.delivery_fee
                 break
+        
+        # Если адрес не в зоне, используем стоимость доставки из ближайшей зоны
+        if base_delivery_fee == 0 and delivery_zones.exists():
+            closest_zone = None
+            min_distance = float('inf')
+            
+            for zone in delivery_zones:
+                distance = zone.get_distance_to_zone(self.address.latitude, self.address.longitude)
+                if distance and distance < min_distance:
+                    min_distance = distance
+                    closest_zone = zone
+            
+            if closest_zone:
+                base_delivery_fee = closest_zone.delivery_fee
+                print(f"⚠️ Адрес вне зоны, используем стоимость доставки из ближайшей зоны '{closest_zone.name}': {base_delivery_fee}")
         
         # Если акция не выбрана, автоматически применяем лучшую доступную
         if not self.promotion:
@@ -1151,11 +1253,30 @@ class Order(models.Model):
         self.delivery_fee = new_delivery_fee
         
         # Проверяем min_order_amount зоны после применения акции
+        # Сначала ищем зону, в которой находится адрес
+        zone_for_min_order = None
         for zone in delivery_zones:
             if zone.is_address_in_zone(self.address.latitude, self.address.longitude):
-                if zone.min_order_amount and self.calculate_total() >= zone.min_order_amount:
-                    self.delivery_fee = 0
+                zone_for_min_order = zone
                 break
+        
+        # Если адрес не в зоне, используем ближайшую зону
+        if not zone_for_min_order and delivery_zones.exists():
+            closest_zone = None
+            min_distance = float('inf')
+            
+            for zone in delivery_zones:
+                distance = zone.get_distance_to_zone(self.address.latitude, self.address.longitude)
+                if distance and distance < min_distance:
+                    min_distance = distance
+                    closest_zone = zone
+            
+            zone_for_min_order = closest_zone
+        
+        # Применяем min_order_amount зоны
+        if zone_for_min_order and zone_for_min_order.min_order_amount and self.calculate_total() >= zone_for_min_order.min_order_amount:
+            self.delivery_fee = 0
+            print(f"✅ Бесплатная доставка: сумма заказа {self.calculate_total()} >= {zone_for_min_order.min_order_amount}")
         
         self.discounted_total = order_total - discount_amount + self.delivery_fee
         if self.discounted_total < 0:
@@ -1185,10 +1306,25 @@ class Order(models.Model):
             is_active=True
         )
         
+        # Сначала ищем зону, в которой находится адрес
         for zone in delivery_zones:
             if zone.is_address_in_zone(self.address.latitude, self.address.longitude):
                 base_delivery_fee = zone.delivery_fee
                 break
+        
+        # Если адрес не в зоне, используем стоимость доставки из ближайшей зоны
+        if base_delivery_fee == 0 and delivery_zones.exists():
+            closest_zone = None
+            min_distance = float('inf')
+            
+            for zone in delivery_zones:
+                distance = zone.get_distance_to_zone(self.address.latitude, self.address.longitude)
+                if distance and distance < min_distance:
+                    min_distance = distance
+                    closest_zone = zone
+            
+            if closest_zone:
+                base_delivery_fee = closest_zone.delivery_fee
         
         # Отладочная информация
         print(f"🔍 Отладка get_best_available_promotion:")

@@ -394,13 +394,53 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
       console.log('🗺️ 🔍 Zone delivery check result:', isInZone);
       setAddressInZone(isInZone);
 
+      // Определяем город из адреса если locality пустой
+      let cityName = locality;
+      if (!cityName && address) {
+        // Парсим адрес для извлечения города
+        const addressParts = address.split(',').map(part => part.trim());
+        console.log('🗺️ 🔍 Parsing address for city:', addressParts);
+        
+        // Ищем город в частях адреса
+        for (const part of addressParts) {
+          if (part.toLowerCase().includes('каган')) {
+            cityName = 'Каган';
+            console.log('🗺️ ✅ City extracted from address: Каган');
+            break;
+          } else if (part.toLowerCase().includes('бухара')) {
+            cityName = 'Бухара';
+            console.log('🗺️ ✅ City extracted from address: Бухара');
+            break;
+          } else if (part.toLowerCase().includes('ташкент')) {
+            cityName = 'Ташкент';
+            console.log('🗺️ ✅ City extracted from address: Ташкент');
+            break;
+          }
+        }
+      }
+      
+      // Если все еще нет города, определяем по координатам
+      if (!cityName) {
+        const [lat, lon] = coords;
+        if (lat >= 39.72 && lat <= 39.74 && lon >= 64.54 && lon <= 64.56) {
+          cityName = 'Каган';
+          console.log('🗺️ ✅ City determined by coordinates: Каган');
+        } else if (lat >= 39.76 && lat <= 39.78 && lon >= 64.39 && lon <= 64.42) {
+          cityName = 'Бухара';
+          console.log('🗺️ ✅ City determined by coordinates: Бухара');
+        } else {
+          cityName = 'Бухара'; // Fallback
+          console.log('🗺️ ⚠️ Using fallback city: Бухара');
+        }
+      }
+
       // Создаем объект адреса
       const addressData: MapAddress = {
         coordinates: [coords[0], coords[1]], // [широта, долгота] для бэкэнда
         address: address,
         street: thoroughfare || 'Улица не определена',
         house: premise || createFallbackHouseNumber(coords), // Генерируем номер дома если не определен
-        city: locality || 'Бухара' // Fallback на Бухару если город не определен
+        city: cityName
       };
       
       console.log('🗺️ 📝 Final address data:', addressData);
