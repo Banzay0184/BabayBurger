@@ -44,8 +44,17 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
   // Определяем URL для WebSocket
   const getWebSocketUrl = useCallback(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // Используем порт бэкенда (8000) вместо фронтенда (5173)
-    const baseUrl = `${protocol}//localhost:8000`;
+    
+    // В продакшене используем тот же хост что и для API
+    let baseUrl: string;
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      // В режиме разработки используем localhost:8000
+      baseUrl = `${protocol}//localhost:8000`;
+    } else {
+      // В продакшене используем тот же хост что и фронтенд
+      const host = window.location.host;
+      baseUrl = `${protocol}//${host}`;
+    }
     
     if (telegramId) {
       return `${baseUrl}/ws/client/${telegramId}/`;

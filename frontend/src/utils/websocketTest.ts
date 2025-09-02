@@ -2,7 +2,7 @@
  * Простая утилита для тестирования WebSocket соединения
  */
 
-import { WEBSOCKET_URLS } from '../config/websocket';
+// import { WEBSOCKET_URLS } from '../config/websocket'; // Не используется
 
 export interface WebSocketTestResult {
   success: boolean;
@@ -13,7 +13,15 @@ export interface WebSocketTestResult {
 export const testWebSocketConnection = async (): Promise<WebSocketTestResult> => {
   return new Promise((resolve) => {
     try {
-      const wsUrl = WEBSOCKET_URLS.OPERATOR;
+      // Определяем URL для WebSocket в зависимости от окружения
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      let baseUrl: string;
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        baseUrl = `${protocol}//localhost:8000`;
+      } else {
+        baseUrl = `${protocol}//${window.location.host}`;
+      }
+      const wsUrl = `${baseUrl}/ws/operator/`;
 
       console.log('🔌 Тестирование WebSocket соединения:', wsUrl);
 
@@ -81,7 +89,15 @@ export const testWebSocketConnection = async (): Promise<WebSocketTestResult> =>
 export const testWebSocketWithPing = async (): Promise<WebSocketTestResult> => {
   return new Promise((resolve) => {
     try {
-      const wsUrl = WEBSOCKET_URLS.OPERATOR;
+      // Определяем URL для WebSocket в зависимости от окружения
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      let baseUrl: string;
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        baseUrl = `${protocol}//localhost:8000`;
+      } else {
+        baseUrl = `${protocol}//${window.location.host}`;
+      }
+      const wsUrl = `${baseUrl}/ws/operator/`;
 
       console.log('🔌 Тестирование WebSocket с ping:', wsUrl);
 
