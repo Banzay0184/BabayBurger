@@ -45,13 +45,13 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
   const getWebSocketUrl = useCallback(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     
-    // В продакшене используем ngrok URL для WebSocket (Vercel не поддерживает WebSocket)
+    // Всегда используем ngrok URL для WebSocket (бэкенд на ngrok)
     let baseUrl: string;
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       // В режиме разработки используем localhost:8000
       baseUrl = `${protocol}//localhost:8000`;
     } else {
-      // В продакшене используем ngrok URL для WebSocket (Vercel не поддерживает WebSocket)
+      // В продакшене используем ngrok URL для WebSocket (бэкенд на ngrok)
       const ngrokUrl = import.meta.env.VITE_WEBSOCKET_URL || '3e3f35c1758a.ngrok-free.app';
       baseUrl = `${protocol}//${ngrokUrl}`;
     }
@@ -107,9 +107,8 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
     console.error('❌ Client WebSocket error:', error);
   }, []);
 
-  // В продакшене отключаем WebSocket если это Vercel (не поддерживает WebSocket)
-  const isVercel = window.location.hostname.includes('vercel.app');
-  const shouldEnableWebSocket = enabled && !!authState.user && !isVercel;
+  // WebSocket всегда включен (бэкенд на ngrok поддерживает WebSocket)
+  const shouldEnableWebSocket = enabled && !!authState.user;
 
   // Инициализируем WebSocket
   const {

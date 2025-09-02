@@ -54,13 +54,13 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
   const getWebSocketUrl = useCallback(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     
-    // В продакшене используем ngrok URL для WebSocket (Vercel не поддерживает WebSocket)
+    // Всегда используем ngrok URL для WebSocket (бэкенд на ngrok)
     let baseUrl: string;
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       // В режиме разработки используем localhost:8000
       baseUrl = `${protocol}//localhost:8000`;
     } else {
-      // В продакшене используем ngrok URL для WebSocket (Vercel не поддерживает WebSocket)
+      // В продакшене используем ngrok URL для WebSocket (бэкенд на ngrok)
       const ngrokUrl = import.meta.env.VITE_WEBSOCKET_URL || '3e3f35c1758a.ngrok-free.app';
       baseUrl = `${protocol}//${ngrokUrl}`;
     }

@@ -28392,3 +28392,136 @@ Retrieved 18 orders for user: telegram_id=123456789
 Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "query_params": {"telegram_id": ["908758841"]}}
 Retrieved 4 orders for user: telegram_id=908758841
 Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.054, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 2565}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 18 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.04, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 10577}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 18 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.048, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 10577}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 18 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.039, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 10577}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 18 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.027, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 10577}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "query_params": {"telegram_id": ["908758841"]}}
+Retrieved 4 orders for user: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.026, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 2565}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/addresses/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/favorites/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Addresses retrieved for user: telegram_id=123456789, count=3
+Ответ: {"type": "response", "method": "GET", "path": "/api/addresses/", "status_code": 200, "duration": 0.065, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 1402}
+Retrieved 0 favorites for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/favorites/", "status_code": 200, "duration": 0.081, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 26}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/categories/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/menu/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Categories data served from cache
+Menu data served from cache
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/categories/", "status_code": 200, "duration": 0.057, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 734}
+Ответ: {"type": "response", "method": "GET", "path": "/api/menu/", "status_code": 200, "duration": 0.031, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 19105}
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.06, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 1727}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/promotions/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Retrieved 3 active promotions
+Ответ: {"type": "response", "method": "GET", "path": "/api/promotions/", "status_code": 200, "duration": 0.095, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 1727}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 18 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.068, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 10577}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "query_params": {"telegram_id": ["908758841"]}}
+Retrieved 4 orders for user: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.024, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 2565}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 18 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.042, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 10577}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/addresses/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Addresses retrieved for user: telegram_id=123456789, count=3
+Ответ: {"type": "response", "method": "GET", "path": "/api/addresses/", "status_code": 200, "duration": 0.058, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 1402}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/restaurants/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/restaurants/", "status_code": 200, "duration": 0.029, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 781}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/delivery-zones/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/delivery-zones/", "status_code": 200, "duration": 0.021, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 1748}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/orders/create/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Order address in delivery zone: Адрес в Бухаре - доставка разрешена (временное решение)
+Notification queued for chat_id=123456789, task_id=20cffe8f-122d-4df0-9aa9-164fcbba6d2b
+Order created: order_id=32, user_telegram_id=123456789, total=108000.00
+Ответ: {"type": "response", "method": "POST", "path": "/api/orders/create/", "status_code": 201, "duration": 1.444, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 1375}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 19 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.057, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 11099}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "query_params": {"telegram_id": ["908758841"]}}
+Retrieved 4 orders for user: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.03, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 2565}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/operator/operator-orders/32/confirm_order/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "POST", "path": "/api/operator/operator-orders/32/confirm_order/", "status_code": 200, "duration": 0.365, "user": " (без телефона)", "ip": "84.54.70.74", "response_size": 1117}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 19 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.159, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 11107}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "query_params": {"telegram_id": ["908758841"]}}
+Retrieved 4 orders for user: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.038, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 2565}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 19 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.165, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 11107}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "query_params": {"telegram_id": ["908758841"]}}
+Retrieved 4 orders for user: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.03, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 2565}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/api/user/", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/api/user/", "status_code": 200, "duration": 1.721, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 24578}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.202, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/favicon.ico", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/favicon.ico", "status_code": 404, "duration": 0.359, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 26046}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/admin/api/user/", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "post_data": {"csrfmiddlewaretoken": ["oVCfC4uOPLM7r7PSWTCiUfUV7SUSaxdsCN1lVnnptnqcdIlENKH7CFCkYag56rGu"], "action": ["delete_selected"], "select_across": ["0"], "index": ["0"], "_selected_action": ["2"]}}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 19 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.125, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 11107}
+Ответ: {"type": "response", "method": "POST", "path": "/admin/api/user/", "status_code": 200, "duration": 0.341, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 19320}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "query_params": {"telegram_id": ["908758841"]}}
+Retrieved 4 orders for user: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.043, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 2565}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/admin/api/user/", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "post_data": {"csrfmiddlewaretoken": ["M8NoErSKiWeg92fFP2lohWt26hYPx3Xq00cuXKLlWySlVDLrGTqdZmbrXzk2tXqs"], "_selected_action": ["2"], "action": ["delete_selected"], "post": ["yes"]}}
+Ответ: {"type": "response", "method": "POST", "path": "/admin/api/user/", "status_code": 302, "duration": 0.414, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 0}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/api/user/", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/api/user/", "status_code": 200, "duration": 0.193, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 24270}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/admin/jsi18n/", "user": " (без телефона)", "ip": "127.0.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/admin/jsi18n/", "status_code": 200, "duration": 0.017, "user": " (без телефона)", "ip": "127.0.0.1", "response_size": 16066}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 19 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.098, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 11107}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "query_params": {"telegram_id": ["908758841"]}}
+User not found for orders: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 404, "duration": 0.017, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 26}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 19 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.152, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 11107}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 19 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.222, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 11107}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/operator/operator-orders/dashboard/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/operator/operator-orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/operator/operator-orders/dashboard/", "status_code": 200, "duration": 1.224, "user": " (без телефона)", "ip": "84.54.70.74", "response_size": 13345}
+Ответ: {"type": "response", "method": "GET", "path": "/api/operator/operator-orders/", "status_code": 200, "duration": 1.559, "user": " (без телефона)", "ip": "84.54.70.74", "response_size": 22194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/operator/operator-orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/operator/operator-orders/", "status_code": 200, "duration": 0.239, "user": " (без телефона)", "ip": "84.54.70.74", "response_size": 22194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 19 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.075, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 11107}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)", "query_params": {"telegram_id": ["908758841"]}}
+User not found for orders: telegram_id=908758841
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 404, "duration": 0.018, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 26}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/operator/operator-orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/operator/operator-orders/dashboard/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/operator/operator-orders/dashboard/", "status_code": 200, "duration": 1.234, "user": " (без телефона)", "ip": "84.54.70.74", "response_size": 13345}
+Ответ: {"type": "response", "method": "GET", "path": "/api/operator/operator-orders/", "status_code": 200, "duration": 1.526, "user": " (без телефона)", "ip": "84.54.70.74", "response_size": 22194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/operator/operator-orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+Ответ: {"type": "response", "method": "GET", "path": "/api/operator/operator-orders/", "status_code": 200, "duration": 0.579, "user": " (без телефона)", "ip": "84.54.70.74", "response_size": 22194}
+Входящий запрос: {"type": "request", "method": "GET", "path": "/api/orders/", "user": "AnonymousUser", "ip": "84.54.70.74", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36", "query_params": {"telegram_id": ["123456789"]}}
+Retrieved 19 orders for user: telegram_id=123456789
+Ответ: {"type": "response", "method": "GET", "path": "/api/orders/", "status_code": 200, "duration": 0.121, "user": "AnonymousUser", "ip": "84.54.70.74", "response_size": 11107}
+Входящий запрос: {"type": "request", "method": "POST", "path": "/api/webhook/", "user": "AnonymousUser", "ip": "91.108.5.56", "user_agent": ""}
+Received message: /start from user 908758841 in chat 908758841
+Creating/updating user: 908758841 - Шахзод Абидов (@abidov_0184)
+Created new user: Шахзод Абидов (@abidov_0184)
+Start command processed successfully for chat 908758841
+Ответ: {"type": "response", "method": "POST", "path": "/api/webhook/", "status_code": 200, "duration": 0.68, "user": "AnonymousUser", "ip": "91.108.5.56", "response_size": 15}
