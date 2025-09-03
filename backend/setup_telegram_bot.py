@@ -29,11 +29,11 @@ def setup_telegram_bot():
     commands = [
         {
             "command": "start",
-            "description": "Запустить Babay Burger приложение"
+            "description": "Запустить Babay Food приложение"
         },
         {
             "command": "menu", 
-            "description": "Показать меню Babay Burger"
+            "description": "Показать меню Babay Food"
         },
         {
             "command": "help",
@@ -72,7 +72,7 @@ def setup_telegram_bot():
             json={
                 "menu_button": {
                     "type": "web_app",
-                    "text": "🍔 Открыть Babay Burger",
+                    "text": "🍔 Открыть Babay Food",
                     "web_app": {
                         "url": web_app_url
                     }
@@ -118,14 +118,14 @@ def create_test_message():
     
     # Тестовое сообщение
     message_text = (
-        "🍔 Добро пожаловать в Babay Burger!\n\n"
+        "🍔 Добро пожаловать в Babay Food!\n\n"
         "Доставка вкусных бургеров в Бухаре и Кагане.\n\n"
         "Нажмите кнопку ниже, чтобы открыть приложение и сделать заказ:"
     )
     
     # Создаем кнопку Web App
     web_app_button = {
-        "text": "🍔 Открыть Babay Burger",
+        "text": "🍔 Открыть Babay Food",
         "web_app": {"url": web_app_url}
     }
     
@@ -165,7 +165,7 @@ def create_test_message():
     return True
 
 if __name__ == "__main__":
-    print("🚀 Настройка Telegram бота для Babay Burger")
+    print("🚀 Настройка Telegram бота для Babay Food")
     print("=" * 50)
     
     if setup_telegram_bot():

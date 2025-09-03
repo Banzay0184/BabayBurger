@@ -122,7 +122,7 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({
           ">
             <img 
               src={logo} 
-              alt="Babay Burger" 
+              alt="Babay Food" 
               className="w-full h-full object-contain drop-shadow-2xl" 
             />
           </div>

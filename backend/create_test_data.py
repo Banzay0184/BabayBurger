@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Скрипт для создания тестовых данных в базе данных Babay Burger
+Скрипт для создания тестовых данных в базе данных Babay Food
 """
 import os
 import sys
@@ -386,7 +386,7 @@ def assign_size_options_to_menu_items(menu_items, size_options):
 
 def main():
     """Основная функция создания тестовых данных"""
-    print("🍔 Создание тестовых данных для Babay Burger...")
+    print("🍔 Создание тестовых данных для Babay Food...")
     print("=" * 50)
     
     try:

@@ -387,7 +387,7 @@ class WebhookView(APIView):
             
             # Создаем кнопку Web App
             web_app_button = {
-                "text": "🍔 Открыть Babay Burger",
+                "text": "🍔 Открыть Babay Food",
                 "web_app": {"url": web_app_url}
             }
             
@@ -398,7 +398,7 @@ class WebhookView(APIView):
             
             # Текст приветствия
             welcome_text = (
-                "🍔 Добро пожаловать в Babay Burger!\n\n"
+                "🍔 Добро пожаловать в Babay Food!\n\n"
                 "Доставка вкусных бургеров в Бухаре и Кагане.\n\n"
                 "Нажмите кнопку ниже, чтобы открыть приложение и сделать заказ:"
             )
@@ -429,7 +429,7 @@ class WebhookView(APIView):
         """Обработка команды /menu"""
         try:
             menu_text = (
-                "🍔 <b>Меню Babay Burger</b>\n\n"
+                "🍔 <b>Меню Babay Food</b>\n\n"
                 "• Бургеры\n"
                 "• Напитки\n"
                 "• Сайды\n"
@@ -470,7 +470,7 @@ class WebhookView(APIView):
         """Обработка команды /help"""
         try:
             help_text = (
-                "🤖 <b>Babay Burger Bot - Помощь</b>\n\n"
+                "🤖 <b>Babay Food Bot - Помощь</b>\n\n"
                 "<b>Доступные команды:</b>\n"
                 "/start - Запустить приложение\n"
                 "/menu - Показать меню\n"
@@ -504,7 +504,7 @@ class WebhookView(APIView):
             # Простой ответ на обычные сообщения
             response_text = (
                 "🍔 Спасибо за сообщение!\n\n"
-                "Используйте команду /start чтобы открыть приложение Babay Burger."
+                "Используйте команду /start чтобы открыть приложение Babay Food."
             )
             
             response = requests.post(

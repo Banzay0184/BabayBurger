@@ -262,7 +262,7 @@ export const OperatorLoginPage: React.FC = () => {
         {/* Дополнительная информация - планшетная версия */}
         <div className="text-center">
           <p className="text-gray-500 text-lg">
-            Система управления заказами для операторов Babay Burger
+            Система управления заказами для операторов Babay Food
           </p>
         </div>
       </div>

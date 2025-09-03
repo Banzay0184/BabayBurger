@@ -121,18 +121,7 @@ export const OperatorStatsPage: React.FC<OperatorStatsPageProps> = ({ onNavigate
 
             {/* Информация об операторе и действия */}
             <div className="flex items-center space-x-6">
-              {/* Кнопка "Назад" */}
-              <button
-                onClick={() => {
-                  if (onNavigate) {
-                    onNavigate('dashboard');
-                  }
-                }}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
-              >
-                <span>←</span>
-                <span>Назад</span>
-              </button>
+              
               <div className="text-right">
                 <p className="text-lg text-gray-300 font-medium">
                   {authState.operator?.first_name} {authState.operator?.last_name}
@@ -144,15 +133,18 @@ export const OperatorStatsPage: React.FC<OperatorStatsPageProps> = ({ onNavigate
               
               {/* Кнопки действий */}
               <div className="flex space-x-4">
-                <button
-                  onClick={() => {
-                    window.history.pushState({}, '', '/operator/dashboard');
-                    window.location.reload();
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors"
-                >
-                  ← Назад
-                </button>
+{/* Кнопка "Назад" */}
+<button
+                onClick={() => {
+                  if (onNavigate) {
+                    onNavigate('dashboard');
+                  }
+                }}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
+              >
+                <span>←</span>
+                <span>Назад</span>
+              </button>
                 <button
                   onClick={handleLogout}
                   className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors"

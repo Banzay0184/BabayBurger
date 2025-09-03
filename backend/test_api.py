@@ -55,7 +55,7 @@ def test_endpoint(endpoint, method="GET", data=None, description=""):
 
 def main():
     """Основная функция тестирования"""
-    print("🧪 Тестирование API Babay Burger")
+    print("🧪 Тестирование API Babay Food")
     print(f"Время: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     # Тестируем основные endpoints

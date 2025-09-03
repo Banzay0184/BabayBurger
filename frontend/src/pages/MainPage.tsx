@@ -326,13 +326,13 @@ export const MainPage: React.FC = () => {
             <div className="flex items-center space-x-3 sm:space-x-4">
               <div className="relative">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-dark-glow animate-dark-pulse">
-                  <img src="/public/logo.jpg" alt="Babay Burger" className="w-full h-full object-cover rounded-2xl" />
+                  <img src="/public/logo.jpg" alt="Babay Food" className="w-full h-full object-cover rounded-2xl" />
                 </div>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <h1 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text leading-tight">
-                  Babay Burger
+                  Babay Food
                 </h1>
                 </div>
                 <button

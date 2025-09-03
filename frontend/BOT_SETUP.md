@@ -14,7 +14,7 @@ https://t.me/BotFather
 ```
 
 ### 3. Укажите данные бота
-- **Имя бота**: `Babay Burger`
+- **Имя бота**: `Babay Food`
 - **Username бота**: `BabayBurgerBot` (должен заканчиваться на "bot")
 
 ### 4. Получите токен
@@ -46,7 +46,7 @@ cart - Корзина
 
 Выберите вашего бота и отправьте:
 ```
-Babay Burger
+Babay Food
 ```
 
 ### 3. Настройте URL для Web App
@@ -117,7 +117,7 @@ npm run dev
 ### 3. Протестируйте в Telegram
 1. Найдите вашего бота в Telegram
 2. Отправьте `/start`
-3. Нажмите на кнопку "Babay Burger"
+3. Нажмите на кнопку "Babay Food"
 4. Должно открыться приложение с авторизацией
 
 ## 🔧 Устранение проблем
@@ -143,7 +143,7 @@ npm run dev
 ### Создание бота:
 ```
 /newbot
-Babay Burger
+Babay Food
 BabayBurgerBot
 ```
 
@@ -160,7 +160,7 @@ cart - Корзина
 ```
 /setmenubutton
 @BabayBurgerBot
-Babay Burger
+Babay Food
 ```
 
 ### Настройка домена:

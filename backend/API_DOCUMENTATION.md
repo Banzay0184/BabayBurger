@@ -1,4 +1,4 @@
-# API Документация - Babay Burger
+# API Документация - Babay Food
 
 ## Базовый URL
 ```

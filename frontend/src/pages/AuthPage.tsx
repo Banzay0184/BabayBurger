@@ -57,7 +57,7 @@ export const AuthPage: React.FC = () => {
               </div>
             </div>
             <h1 className="text-3xl font-bold text-gray-100 mb-4 neon-text">
-              Babay Burger
+              Babay Food
             </h1>
             <p className="text-gray-400 text-lg leading-relaxed">
               Войдите в приложение для продолжения

@@ -367,7 +367,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
                 <span className="text-white text-3xl">👨‍💼</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Оператор Babay Burger</h1>
+                <h1 className="text-2xl font-bold text-white">Оператор Babay Food</h1>
                 <div className="flex items-center space-x-2">
                   <p className="text-gray-400 text-sm">
                     {authState.operator?.assigned_zones?.map(zone => zone.city).join(', ')}

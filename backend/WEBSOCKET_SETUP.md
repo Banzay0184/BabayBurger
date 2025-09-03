@@ -1,8 +1,8 @@
-# 🔌 WebSocket Setup - Babay Burger
+# 🔌 WebSocket Setup - Babay Food
 
 ## 📋 Обзор
 
-WebSocket интеграция для операторского интерфейса Babay Burger обеспечивает real-time обновления заказов, уведомлений и статистики.
+WebSocket интеграция для операторского интерфейса Babay Food обеспечивает real-time обновления заказов, уведомлений и статистики.
 
 ## 🚀 Установка зависимостей
 
