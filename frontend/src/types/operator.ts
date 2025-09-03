@@ -58,6 +58,8 @@ export interface OrderForOperator {
   status_display: string;
   service_type: 'delivery' | 'pickup';
   service_type_display: string;
+  payment_method: 'cash' | 'card' | 'online';
+  payment_method_display: string;
   total_price: number;
   final_price: number;
   delivery_fee: number;
@@ -72,6 +74,7 @@ export interface OrderForOperator {
   operator_call_result_display?: string;
   assigned_operator?: number;
   assigned_at?: string;
+  operator_order_number?: number;
   user_info: UserInfo;
   address_info: AddressInfo;
   items_details: OrderItemDetail[];
@@ -162,6 +165,7 @@ export interface OrderFilters {
   status?: OrderStatus;
   zone?: string;
   date?: string;
+  search?: string;
 }
 
 // Действия оператора

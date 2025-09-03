@@ -2,15 +2,23 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useOperatorAuth } from '../../context/OperatorAuthContext';
 import { operatorOrdersApi, operatorNotificationsApi } from '../../api/operatorApi';
 import type { OperatorDashboard, OrderForOperator, OrderStatus, OperatorNotification } from '../../types/operator';
+
+// Типы для страниц
+type OperatorPage = 'login' | 'dashboard' | 'stats';
+
+interface OperatorDashboardPageProps {
+  onNavigate?: (page: OperatorPage) => void;
+}
 import { OrderCard } from '../../components/operator/OrderCard';
 // import { DashboardStats } from '../../components/operator/DashboardStats';
 import { CompactOrderFilters } from '../../components/operator/CompactOrderFilters';
+import { OrderSearch } from '../../components/operator/OrderSearch';
 import { NotificationsPanel } from '../../components/operator/NotificationsPanel';
 import { WebSocketStatus } from '../../components/operator/WebSocketStatus';
 import { testWebSocketConnection, testWebSocketWithPing } from '../../utils/websocketTest';
 import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
 
-export const OperatorDashboardPage: React.FC = () => {
+export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ onNavigate }) => {
   const { state: authState, logout } = useOperatorAuth();
   const [dashboard, setDashboard] = useState<OperatorDashboard | null>(null);
   const [orders, setOrders] = useState<OrderForOperator[]>([]);
@@ -18,35 +26,95 @@ export const OperatorDashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | 'all'>('all');
   const [selectedZone, setSelectedZone] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [showNotifications, setShowNotifications] = useState(false);
 
   // WebSocket обработчики для real-time обновлений
   const handleNewOrder = useCallback((newOrder: OrderForOperator) => {
     console.log('🆕 Получен новый заказ через WebSocket:', newOrder);
-    setOrders(prev => {
-      // Проверяем, нет ли уже такого заказа
-      const exists = prev.some(order => order.id === newOrder.id);
-      if (exists) return prev;
-      
-      // Добавляем новый заказ в начало списка
-      return [newOrder, ...prev];
-    });
     
-    // Обновляем дашборд
-    setDashboard(prev => prev ? {
-      ...prev,
-      recent_orders: [newOrder, ...(prev.recent_orders || [])]
-    } : null);
+    // Проверяем, есть ли полные данные заказа
+    const hasCompleteData = newOrder.items_details && 
+                           newOrder.items_details.length > 0 && 
+                           newOrder.user_info && 
+                           newOrder.address_info;
+    
+    if (!hasCompleteData) {
+      console.log('⚠️ Данные заказа неполные, загружаем через API...');
+      // Загружаем полные данные заказа через API
+      operatorOrdersApi.getOrder(newOrder.id)
+        .then(fullOrder => {
+          console.log('✅ Полные данные заказа загружены:', fullOrder);
+          setOrders(prev => {
+            // Проверяем, нет ли уже такого заказа
+            const exists = prev.some(order => order.id === fullOrder.id);
+            if (exists) return prev;
+            
+            // Добавляем новый заказ в начало списка
+            return [fullOrder, ...prev];
+          });
+          
+          // Обновляем дашборд
+          setDashboard(prev => prev ? {
+            ...prev,
+            recent_orders: [fullOrder, ...(prev.recent_orders || [])]
+          } : null);
+        })
+        .catch(error => {
+          console.error('❌ Ошибка загрузки полных данных заказа:', error);
+          // В случае ошибки добавляем заказ как есть
+          setOrders(prev => {
+            const exists = prev.some(order => order.id === newOrder.id);
+            if (exists) return prev;
+            return [newOrder, ...prev];
+          });
+        });
+    } else {
+      // Данные полные, добавляем заказ
+      setOrders(prev => {
+        // Проверяем, нет ли уже такого заказа
+        const exists = prev.some(order => order.id === newOrder.id);
+        if (exists) return prev;
+        
+        // Добавляем новый заказ в начало списка
+        return [newOrder, ...prev];
+      });
+      
+      // Обновляем дашборд
+      setDashboard(prev => prev ? {
+        ...prev,
+        recent_orders: [newOrder, ...(prev.recent_orders || [])]
+      } : null);
+    }
   }, []);
 
   const handleOrderUpdated = useCallback((orderId: number, updatedOrder: OrderForOperator | undefined, status: string | undefined) => {
     console.log('🔄 Заказ обновлен через WebSocket:', orderId, status);
+    console.log('🔍 Текущий фильтр статуса:', selectedStatus);
     
     if (updatedOrder) {
+      // Проверяем, должен ли заказ оставаться в текущем фильтре
+      const shouldKeepInCurrentFilter = (order: OrderForOperator) => {
+        // Если фильтр "все заказы", показываем все
+        if (selectedStatus === 'all') return true;
+        
+        // Если фильтр по конкретному статусу, проверяем соответствие
+        const shouldKeep = order.status === selectedStatus;
+        console.log(`🔍 Заказ ${order.id}: статус ${order.status}, фильтр ${selectedStatus}, оставить: ${shouldKeep}`);
+        return shouldKeep;
+      };
+      
       // Обновляем заказ в списке
-      setOrders(prev => prev.map(order => 
-        order.id === orderId ? updatedOrder : order
-      ));
+      setOrders(prev => {
+        const updatedList = prev.map(order => 
+          order.id === orderId ? updatedOrder : order
+        );
+        
+        // Фильтруем заказы по текущему статусу
+        const filteredList = updatedList.filter(shouldKeepInCurrentFilter);
+        console.log(`📋 Заказов до фильтрации: ${updatedList.length}, после: ${filteredList.length}`);
+        return filteredList;
+      });
       
       // Обновляем дашборд
       setDashboard(prev => prev ? {
@@ -59,7 +127,7 @@ export const OperatorDashboardPage: React.FC = () => {
       // Если нет полных данных заказа, перезагружаем список
       loadOrders();
     }
-  }, []);
+  }, [selectedStatus]);
 
   const handleNotification = useCallback((notification: OperatorNotification) => {
     console.log('🔔 Получено уведомление через WebSocket:', notification);
@@ -114,6 +182,7 @@ export const OperatorDashboardPage: React.FC = () => {
       const filters: any = {};
       if (selectedStatus !== 'all') filters.status = selectedStatus;
       if (selectedZone !== 'all') filters.zone = selectedZone;
+      if (searchQuery.trim()) filters.search = searchQuery.trim();
       
       console.log('🔍 Загружаем заказы с фильтрами:', filters);
       const ordersData = await operatorOrdersApi.getOrders(filters);
@@ -134,11 +203,31 @@ export const OperatorDashboardPage: React.FC = () => {
 
   // Обновление заказа (после действий оператора)
   const updateOrder = useCallback((updatedOrder: OrderForOperator) => {
+    console.log('🔄 Обновление заказа после действия оператора:', updatedOrder.id, updatedOrder.status);
+    console.log('🔍 Текущий фильтр статуса:', selectedStatus);
+    
+    // Проверяем, должен ли заказ оставаться в текущем фильтре
+    const shouldKeepInCurrentFilter = (order: OrderForOperator) => {
+      // Если фильтр "все заказы", показываем все
+      if (selectedStatus === 'all') return true;
+      
+      // Если фильтр по конкретному статусу, проверяем соответствие
+      const shouldKeep = order.status === selectedStatus;
+      console.log(`🔍 Заказ ${order.id}: статус ${order.status}, фильтр ${selectedStatus}, оставить: ${shouldKeep}`);
+      return shouldKeep;
+    };
+    
     setOrders(prev => {
-      if (!prev) return [updatedOrder];
-      return prev.map(order => 
+      if (!prev) return shouldKeepInCurrentFilter(updatedOrder) ? [updatedOrder] : [];
+      
+      const updatedList = prev.map(order => 
         order.id === updatedOrder.id ? updatedOrder : order
       );
+      
+      // Фильтруем заказы по текущему статусу
+      const filteredList = updatedList.filter(shouldKeepInCurrentFilter);
+      console.log(`📋 Заказов до фильтрации: ${updatedList.length}, после: ${filteredList.length}`);
+      return filteredList;
     });
     
     // Обновляем дашборд
@@ -152,9 +241,18 @@ export const OperatorDashboardPage: React.FC = () => {
           : [updatedOrder]
       } : null);
     }
-  }, [dashboard]);
+  }, [dashboard, selectedStatus]);
 
+  // Обработчики поиска
+  const handleSearch = useCallback((query: string) => {
+    console.log('🔍 Поиск заказов:', query);
+    setSearchQuery(query);
+  }, []);
 
+  const handleClearSearch = useCallback(() => {
+    console.log('🧹 Очистка поиска');
+    setSearchQuery('');
+  }, []);
 
   // Загрузка данных при монтировании
   useEffect(() => {
@@ -165,7 +263,7 @@ export const OperatorDashboardPage: React.FC = () => {
   // Перезагрузка заказов при изменении фильтров
   useEffect(() => {
     loadOrders();
-  }, [selectedStatus, selectedZone]);
+  }, [selectedStatus, selectedZone, searchQuery]);
 
   // Автообновление каждые 60 секунд (fallback для WebSocket)
   useEffect(() => {
@@ -297,9 +395,9 @@ export const OperatorDashboardPage: React.FC = () => {
                 className="relative p-4 text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 rounded-xl"
               >
                 <span className="text-2xl">🔔</span>
-                {Array.isArray(dashboard?.notifications) && dashboard.notifications.filter(n => !n.is_read).length > 0 && (
+                {Array.isArray(dashboard?.notifications) && (dashboard?.notifications?.filter(n => !n.is_read).length || 0) > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-sm rounded-full h-6 w-6 flex items-center justify-center font-bold">
-                    {dashboard.notifications.filter(n => !n.is_read).length}
+                    {dashboard?.notifications?.filter(n => !n.is_read).length}
                   </span>
                 )}
               </button>
@@ -336,37 +434,51 @@ export const OperatorDashboardPage: React.FC = () => {
       </header>
 
       {/* Основной контент - компактная версия */}
-      <main className="max-w-full mx-auto px-6 py-8">
+      <main className="max-w-full mx-auto px-4 py-4">
+        {/* Поиск заказов */}
+        <OrderSearch
+          onSearch={handleSearch}
+          onClear={handleClearSearch}
+          isLoading={isLoading}
+          searchQuery={searchQuery}
+        />
+
         {/* Компактная панель фильтрации */}
         <CompactOrderFilters
           selectedStatus={selectedStatus}
           selectedZone={selectedZone}
-          zones={Array.isArray(dashboard?.assigned_zones) ? dashboard.assigned_zones : []}
+          zones={dashboard?.assigned_zones || []}
           onStatusChange={setSelectedStatus}
           onZoneChange={setSelectedZone}
         />
 
         {/* Заказы */}
         <div className="w-full">
-            <div className="bg-gray-800 rounded-xl p-8">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-semibold text-white">
+            <div className="bg-gray-800 rounded-lg p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-white">
                   Заказы {selectedStatus !== 'all' && `(${selectedStatus})`}
+                  {searchQuery && (
+                    <span className="ml-2 text-sm text-blue-400">
+                      - Поиск: "{searchQuery}"
+                    </span>
+                  )}
                 </h2>
-                <div className="flex space-x-4">
+                <div className="flex space-x-2">
                   <button
                     onClick={loadOrders}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                   >
-                    Обновить
+                    🔄 Обновить
                   </button>
                   <button
                     onClick={() => {
-                      // Переход на страницу статистики через изменение URL
-                      window.history.pushState({}, '', '/operator/stats');
-                      window.location.reload();
+                      // Переход на страницу статистики через внутреннюю навигацию
+                      if (onNavigate) {
+                        onNavigate('stats');
+                      }
                     }}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors"
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                   >
                     📊 Статистика
                   </button>
@@ -379,9 +491,11 @@ export const OperatorDashboardPage: React.FC = () => {
                   <div className="text-gray-400 text-8xl mb-6">📋</div>
                   <p className="text-gray-400 text-xl mb-2">Нет заказов</p>
                   <p className="text-gray-500 text-lg">
-                    {selectedStatus !== 'all' || selectedZone !== 'all' 
-                      ? 'Попробуйте изменить фильтры' 
-                      : 'Новые заказы появятся здесь автоматически'
+                    {searchQuery 
+                      ? `По запросу "${searchQuery}" ничего не найдено`
+                      : selectedStatus !== 'all' || selectedZone !== 'all' 
+                        ? 'Попробуйте изменить фильтры' 
+                        : 'Новые заказы появятся здесь автоматически'
                     }
                   </p>
                 </div>
@@ -403,7 +517,7 @@ export const OperatorDashboardPage: React.FC = () => {
       {/* Панель уведомлений */}
       {showNotifications && (
         <NotificationsPanel
-          notifications={Array.isArray(dashboard?.notifications) ? dashboard.notifications : []}
+          notifications={dashboard?.notifications || []}
           onClose={() => setShowNotifications(false)}
           onMarkAsRead={operatorNotificationsApi.markAsRead}
         />

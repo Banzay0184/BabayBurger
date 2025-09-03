@@ -63,6 +63,26 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
     return serviceType === 'delivery' ? 'Доставка' : 'Самовывоз';
   };
 
+  // Получение иконки способа оплаты
+  const getPaymentMethodIcon = (paymentMethod: string): string => {
+    switch (paymentMethod) {
+      case 'cash': return '💵';
+      case 'card': return '💳';
+      case 'online': return '🌐';
+      default: return '💰';
+    }
+  };
+
+  // Получение текста способа оплаты
+  const getPaymentMethodText = (paymentMethod: string): string => {
+    switch (paymentMethod) {
+      case 'cash': return 'Наличными';
+      case 'card': return 'Картой';
+      case 'online': return 'Онлайн';
+      default: return paymentMethod;
+    }
+  };
+
 
 
   // Звонить клиенту
@@ -80,12 +100,17 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
   };
 
   // Подтвердить заказ
-  const handleConfirmOrder = async (customerName?: string) => {
+  const handleConfirmOrder = async (customerName?: string, restaurantId?: number) => {
     try {
       setIsLoading(true);
-      const result = await operatorOrdersApi.confirmOrder(order.id, customerName);
+      const result = await operatorOrdersApi.confirmOrder(order.id, customerName, restaurantId);
+      
+      // Заказ сразу исчезает из списка (не ждем WebSocket)
       onUpdate(result.order);
       setShowConfirmModal(false);
+      
+      console.log('✅ Заказ подтвержден и передан на кухню');
+      
     } catch (error) {
       console.error('Ошибка подтверждения заказа:', error);
       alert('Ошибка подтверждения заказа');
@@ -151,9 +176,14 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
           <div className="flex items-center space-x-4">
             <span className="text-4xl">{getServiceTypeIcon(order.service_type)}</span>
             <div>
-              <h3 className="text-white font-bold text-xl">Заказ #{order.id}</h3>
+              <h3 className="text-white font-bold text-xl">
+                Заказ #{order.id}
+                {order.operator_order_number && (
+                  <span className="text-blue-400 ml-2">(№{order.operator_order_number})</span>
+                )}
+              </h3>
               <p className="text-gray-400 text-lg">
-                {getServiceTypeText(order.service_type)} • {formatDate(order.created_at)}
+                {getServiceTypeText(order.service_type)} • {getPaymentMethodIcon(order.payment_method)} {getPaymentMethodText(order.payment_method)} • {formatDate(order.created_at)}
               </p>
             </div>
           </div>
@@ -186,9 +216,23 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
           </div>
           
           <div className="space-y-3">
-            <p className="text-gray-300 text-lg">
-              <span className="font-semibold">Адрес:</span> {order.address_info.full_address}
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-gray-300 text-lg">
+                <span className="font-semibold">Адрес:</span> {order.address_info.full_address}
+              </p>
+              <button
+                onClick={() => {
+                  const { latitude, longitude } = order.address_info;
+                  const yandexMapUrl = `https://yandex.ru/maps/?pt=${longitude},${latitude}&z=16&l=map`;
+                  window.open(yandexMapUrl, '_blank');
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
+                title="Открыть на карте"
+              >
+                <span>🗺️</span>
+                <span>Карта</span>
+              </button>
+            </div>
             <p className="text-gray-400 text-lg">
               <span className="font-semibold">Город:</span> {order.address_info.city}
             </p>

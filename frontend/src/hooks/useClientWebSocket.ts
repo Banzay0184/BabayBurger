@@ -29,6 +29,8 @@ export interface UseClientWebSocketReturn {
   disconnect: () => void;
   subscribeToOrder: (orderId: number) => void;
   ping: () => void;
+  websocketFailed: boolean;
+  retryWebSocket: () => void;
 }
 
 export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): UseClientWebSocketReturn => {
@@ -105,10 +107,13 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
 
   const handleError = useCallback((error: Event) => {
     console.error('❌ Client WebSocket error:', error);
+    console.log('🔄 WebSocket не поддерживается, переключаемся на polling...');
+    setWebsocketFailed(true);
   }, []);
 
-  // WebSocket всегда включен (бэкенд на ngrok поддерживает WebSocket)
-  const shouldEnableWebSocket = enabled && !!authState.user;
+  // WebSocket включен, но с fallback на polling при ошибках
+  const [websocketFailed, setWebsocketFailed] = useState(false);
+  const shouldEnableWebSocket = enabled && !!authState.user && !websocketFailed;
 
   // Инициализируем WebSocket
   const {
@@ -171,6 +176,11 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
     }
   }, [isConnected, telegramId, sendMessage]);
 
+  const retryWebSocket = useCallback(() => {
+    console.log('🔄 Попытка переподключения WebSocket...');
+    setWebsocketFailed(false);
+  }, []);
+
   return {
     isConnected,
     isConnecting,
@@ -179,6 +189,8 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
     reconnect,
     disconnect,
     subscribeToOrder,
-    ping
+    ping,
+    websocketFailed,
+    retryWebSocket
   };
 };

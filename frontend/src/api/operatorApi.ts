@@ -132,6 +132,7 @@ export const operatorOrdersApi = {
     if (filters.status) params.append('status', filters.status);
     if (filters.zone) params.append('zone', filters.zone);
     if (filters.date) params.append('date', filters.date);
+    if (filters.search) params.append('search', filters.search);
 
     const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/?${params}`, {
       method: 'GET',
@@ -143,7 +144,14 @@ export const operatorOrdersApi = {
     }
 
     const data = await response.json();
-    // API возвращает объект с полем results, извлекаем массив заказов
+    console.log('🔍 API ответ для заказов:', data);
+    
+    // После отключения пагинации backend возвращает массив напрямую
+    if (Array.isArray(data)) {
+      return data;
+    }
+    
+    // Если вдруг вернулся объект с results (fallback), извлекаем массив
     return data.results || [];
   },
 
@@ -156,6 +164,25 @@ export const operatorOrdersApi = {
 
     if (!response.ok) {
       await handleApiError(response);
+    }
+
+    return response.json();
+  },
+
+  // Получение предложений для поиска
+  getSearchSuggestions: async (query: string): Promise<any[]> => {
+    if (!query.trim() || query.length < 2) {
+      return [];
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/operator/search-suggestions/?q=${encodeURIComponent(query)}`, {
+      method: 'GET',
+      headers: getHeaders()
+    });
+
+    if (!response.ok) {
+      console.warn('Ошибка получения предложений поиска:', response.status);
+      return [];
     }
 
     return response.json();
@@ -233,12 +260,33 @@ export const operatorOrdersApi = {
     return response.json();
   },
 
+  // Получить список ресторанов
+  getRestaurants: async (orderId?: number): Promise<{ restaurants: Array<{ id: number; name: string; city: string; address: string }> }> => {
+    const url = orderId 
+      ? `${API_BASE_URL}/api/operator/operator-orders/restaurants/?order_id=${orderId}`
+      : `${API_BASE_URL}/api/operator/operator-orders/restaurants/`;
+      
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getHeaders()
+    });
+
+    if (!response.ok) {
+      await handleApiError(response);
+    }
+
+    return response.json();
+  },
+
   // Подтвердить заказ
-  confirmOrder: async (orderId: number, customerName?: string): Promise<{ message: string; order: OrderForOperator }> => {
+  confirmOrder: async (orderId: number, customerName?: string, restaurantId?: number): Promise<{ message: string; order: OrderForOperator }> => {
     const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/${orderId}/confirm_order/`, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ customer_name: customerName })
+      body: JSON.stringify({ 
+        customer_name: customerName,
+        restaurant_id: restaurantId
+      })
     });
 
     if (!response.ok) {

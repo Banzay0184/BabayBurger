@@ -4,7 +4,14 @@ import { operatorOrdersApi } from '../../api/operatorApi';
 import type { OperatorDashboard } from '../../types/operator';
 import { DashboardStats } from '../../components/operator/DashboardStats';
 
-export const OperatorStatsPage: React.FC = () => {
+// Типы для страниц
+type OperatorPage = 'login' | 'dashboard' | 'stats';
+
+interface OperatorStatsPageProps {
+  onNavigate?: (page: OperatorPage) => void;
+}
+
+export const OperatorStatsPage: React.FC<OperatorStatsPageProps> = ({ onNavigate }) => {
   const { state: authState, logout } = useOperatorAuth();
   const [dashboard, setDashboard] = useState<OperatorDashboard | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -114,6 +121,18 @@ export const OperatorStatsPage: React.FC = () => {
 
             {/* Информация об операторе и действия */}
             <div className="flex items-center space-x-6">
+              {/* Кнопка "Назад" */}
+              <button
+                onClick={() => {
+                  if (onNavigate) {
+                    onNavigate('dashboard');
+                  }
+                }}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
+              >
+                <span>←</span>
+                <span>Назад</span>
+              </button>
               <div className="text-right">
                 <p className="text-lg text-gray-300 font-medium">
                   {authState.operator?.first_name} {authState.operator?.last_name}

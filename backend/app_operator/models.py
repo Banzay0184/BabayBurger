@@ -373,6 +373,65 @@ class OrderStatusHistory(models.Model):
     def __str__(self):
         return f"Заказ #{self.order.id}: {self.old_status} → {self.new_status}"
 
+
+class OperatorOrderNumber(models.Model):
+    """
+    Модель для отслеживания номеров заказов оператора
+    """
+    operator = models.ForeignKey(
+        Operator,
+        on_delete=models.CASCADE,
+        related_name='order_numbers',
+        verbose_name="Оператор"
+    )
+    
+    date = models.DateField(
+        verbose_name="Дата"
+    )
+    
+    last_number = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Последний номер заказа"
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Время создания"
+    )
+    
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Время обновления"
+    )
+
+    class Meta:
+        verbose_name = "Номер заказа оператора"
+        verbose_name_plural = "Номера заказов операторов"
+        unique_together = ['operator', 'date']
+        indexes = [
+            models.Index(fields=['operator', 'date']),
+        ]
+
+    def __str__(self):
+        return f"{self.operator.get_full_name()} - {self.date}: #{self.last_number}"
+    
+    @classmethod
+    def get_next_number(cls, operator, date=None):
+        """Получает следующий номер заказа для оператора"""
+        if date is None:
+            date = timezone.now().date()
+        
+        order_number, created = cls.objects.get_or_create(
+            operator=operator,
+            date=date,
+            defaults={'last_number': 0}
+        )
+        
+        order_number.last_number += 1
+        order_number.save()
+        
+        return order_number.last_number
+
 class OperatorNotification(models.Model):
     """
     Модель для уведомлений операторов

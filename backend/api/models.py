@@ -232,17 +232,31 @@ class DeliveryZone(models.Model):
     def is_address_in_zone(self, latitude, longitude):
         """Проверяет, находится ли адрес в зоне доставки"""
         try:
+            # Преобразуем координаты в float для избежания ошибок типов
+            latitude = float(latitude)
+            longitude = float(longitude)
+            
             # Если есть полигон, используем его для проверки
             if self.polygon_coordinates and len(self.polygon_coordinates) > 2:
-                return self._is_point_in_polygon(latitude, longitude)
+                polygon_result = self._is_point_in_polygon(latitude, longitude)
+                # Если полигон говорит "нет", но есть радиус, проверяем радиус как fallback
+                if not polygon_result and self.center_latitude and self.center_longitude and self.radius_km:
+                    distance = calculate_distance(
+                        latitude, longitude,
+                        float(self.center_latitude), float(self.center_longitude)
+                    )
+                    if distance <= float(self.radius_km):
+                        print(f"⚠️ Полигон не покрывает точку, но радиус покрывает (расстояние: {distance:.2f} км)")
+                        return True
+                return polygon_result
             
             # Если нет полигона, но есть центр и радиус, используем радиус
             elif self.center_latitude and self.center_longitude and self.radius_km:
                 distance = calculate_distance(
                     latitude, longitude,
-                    self.center_latitude, self.center_longitude
+                    float(self.center_latitude), float(self.center_longitude)
                 )
-                return distance <= self.radius_km
+                return distance <= float(self.radius_km)
             
             # Временное решение для существующих зон
             elif self.name in ["Бухара", "Центр Бухары"]:
@@ -266,7 +280,9 @@ class DeliveryZone(models.Model):
             if not self.polygon_coordinates or len(self.polygon_coordinates) < 3:
                 return False
             
-            # Преобразуем координаты в нужный формат
+            # Преобразуем координаты в float для избежания ошибок типов
+            lat = float(lat)
+            lon = float(lon)
             polygon = self.polygon_coordinates
             
             # Алгоритм ray casting
@@ -274,9 +290,15 @@ class DeliveryZone(models.Model):
             j = len(polygon) - 1
             
             for i in range(len(polygon)):
-                if ((polygon[i][1] > lat) != (polygon[j][1] > lat)) and \
-                   (lon < (polygon[j][0] - polygon[i][0]) * (lat - polygon[i][1]) / 
-                    (polygon[j][1] - polygon[i][1]) + polygon[i][0]):
+                # Преобразуем координаты полигона в float
+                pi_lat = float(polygon[i][1])
+                pi_lon = float(polygon[i][0])
+                pj_lat = float(polygon[j][1])
+                pj_lon = float(polygon[j][0])
+                
+                if ((pi_lat > lat) != (pj_lat > lat)) and \
+                   (lon < (pj_lon - pi_lon) * (lat - pi_lat) / 
+                    (pj_lat - pi_lat) + pi_lon):
                     inside = not inside
                 j = i
             
@@ -1003,7 +1025,7 @@ class PromoCodeUsage(models.Model):
 class Order(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Ожидает обработки'),
-
+        ('new', 'Новый'),
         ('assigned', 'Назначен оператору'),
         ('operator_processing', 'Обрабатывается оператором'),
         ('confirmed', 'Подтвержден клиентом'),
@@ -1020,12 +1042,19 @@ class Order(models.Model):
         ('pickup', 'Самовывоз'),
     )
     
+    PAYMENT_METHOD_CHOICES = (
+        ('cash', 'Наличными'),
+        ('card', 'Картой'),
+        ('online', 'Онлайн'),
+    )
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, verbose_name="Ресторан", null=True, blank=True)
     items = models.ManyToManyField(MenuItem, through='OrderItem')
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     service_type = models.CharField(max_length=20, choices=SERVICE_TYPE_CHOICES, default='delivery', verbose_name="Тип услуги")
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='cash', verbose_name="Способ оплаты")
     address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name="Адрес доставки")
     phone = models.CharField(max_length=20, verbose_name="Телефон")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1110,6 +1139,12 @@ class Order(models.Model):
         blank=True,
         null=True,
         verbose_name="Время назначения оператору"
+    )
+    
+    operator_order_number = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name="Номер заказа оператора"
     )
 
     class Meta:

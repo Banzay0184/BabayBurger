@@ -61,7 +61,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
   }, []);
 
   // Инициализируем WebSocket для клиента
-  const { isConnected } = useClientWebSocket({
+  const { isConnected, websocketFailed, retryWebSocket } = useClientWebSocket({
     onOrderStatusUpdate: handleOrderStatusUpdate,
     onOrderDetailsUpdate: handleOrderDetailsUpdate,
     enabled: true
@@ -121,8 +121,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
   // Автообновление каждые 60 секунд (fallback для WebSocket)
   useEffect(() => {
     const interval = setInterval(() => {
-      // Обновляем только если WebSocket не подключен
-      if (!isConnected) {
+      // Обновляем только если WebSocket не подключен или не работает
+      if (!isConnected || websocketFailed) {
         console.log('🔄 WebSocket не подключен, обновляем через API...');
         const loadOrders = async () => {
           try {
@@ -154,7 +154,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [isConnected, state.user]);
+  }, [isConnected, websocketFailed, state.user]);
 
   // Фильтрация заказов по статусу
   const filteredOrders = orders.filter(order => {
@@ -373,12 +373,24 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
             {t('order_history')}
             </div>
             {/* WebSocket статус */}
-            <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-              <span className="text-xs text-gray-400">
-                {isConnected ? 'Live' : 'Offline'}
-              </span>
-            </div>
+                          <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  isConnected ? 'bg-green-500' : 
+                  websocketFailed ? 'bg-yellow-500' : 'bg-red-500'
+                }`}></div>
+                <span className="text-xs text-gray-400">
+                  {isConnected ? 'Live' : 
+                   websocketFailed ? 'Polling' : 'Offline'}
+                </span>
+                {websocketFailed && (
+                  <button
+                    onClick={retryWebSocket}
+                    className="text-xs text-blue-400 hover:text-blue-300 underline"
+                  >
+                    Retry WebSocket
+                  </button>
+                )}
+              </div>
           </h3>
           
           {/* Фильтры по статусам */}

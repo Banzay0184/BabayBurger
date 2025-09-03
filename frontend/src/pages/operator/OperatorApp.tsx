@@ -103,7 +103,7 @@ const OperatorAppContent: React.FC = () => {
             isAuthenticated={state.isAuthenticated} 
             onNavigate={handleNavigate}
           >
-            <OperatorDashboardPage />
+            <OperatorDashboardPage onNavigate={handleNavigate} />
           </ProtectedRoute>
         );
       
@@ -113,7 +113,7 @@ const OperatorAppContent: React.FC = () => {
             isAuthenticated={state.isAuthenticated} 
             onNavigate={handleNavigate}
           >
-            <OperatorStatsPage />
+            <OperatorStatsPage onNavigate={handleNavigate} />
           </ProtectedRoute>
         );
       

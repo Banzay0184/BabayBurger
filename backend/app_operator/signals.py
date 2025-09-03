@@ -40,26 +40,25 @@ def notify_operators_new_order(sender, instance, created, **kwargs):
             if can_handle:
                 suitable_operators.append(operator)
         
-        # Отправляем WebSocket уведомление всем операторам
+        # Отправляем WebSocket уведомление только подходящим операторам
         try:
             channel_layer = get_channel_layer()
-            if channel_layer:
+            if channel_layer and suitable_operators:
+                # Загружаем заказ с полными данными для сериализации
+                order_with_details = Order.objects.select_related(
+                    'user', 'address', 'restaurant', 'promo_code'
+                ).prefetch_related(
+                    'orderitem_set__menu_item',
+                    'orderitem_set__size_option',
+                    'orderitem_set__add_ons'
+                ).get(id=instance.id)
+                
                 # Сериализуем заказ для WebSocket
-                order_data = OrderForOperatorSerializer(instance).data
+                order_data = OrderForOperatorSerializer(order_with_details).data
                 
-                # Отправляем всем операторам
-                logger.info(f"📡 Sending WebSocket notification to 'operators' group for order #{instance.id}")
-                async_to_sync(channel_layer.group_send)(
-                    'operators',
-                    {
-                        'type': 'order_created',
-                        'order': order_data,
-                        'timestamp': timezone.now().isoformat()
-                    }
-                )
-                
-                # Отправляем конкретным операторам
+                # Отправляем каждому подходящему оператору индивидуально
                 for operator in suitable_operators:
+                    logger.info(f"📡 Sending WebSocket notification to operator {operator.id} for order #{instance.id}")
                     async_to_sync(channel_layer.group_send)(
                         f'operator_{operator.id}',
                         {
@@ -69,7 +68,7 @@ def notify_operators_new_order(sender, instance, created, **kwargs):
                         }
                     )
                 
-                logger.info(f"WebSocket уведомление о новом заказе #{instance.id} отправлено")
+                logger.info(f"WebSocket уведомление о новом заказе #{instance.id} отправлено {len(suitable_operators)} операторам")
         except Exception as e:
             logger.error(f"Ошибка отправки WebSocket уведомления: {e}")
         
@@ -186,8 +185,17 @@ def notify_status_change(sender, instance, created, **kwargs):
             try:
                 channel_layer = get_channel_layer()
                 if channel_layer:
+                    # Загружаем заказ с полными данными для сериализации
+                    order_with_details = Order.objects.select_related(
+                        'user', 'address', 'restaurant', 'promo_code'
+                    ).prefetch_related(
+                        'orderitem_set__menu_item',
+                        'orderitem_set__size_option',
+                        'orderitem_set__add_ons'
+                    ).get(id=instance.order.id)
+                    
                     # Сериализуем заказ для WebSocket
-                    order_data = OrderForOperatorSerializer(instance.order).data
+                    order_data = OrderForOperatorSerializer(order_with_details).data
                     
                     # Отправляем всем операторам об обновлении заказа
                     async_to_sync(channel_layer.group_send)(

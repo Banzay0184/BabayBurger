@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+from rest_framework.views import APIView
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import update_last_login
@@ -23,7 +24,7 @@ from .serializers import (
     OrderListSerializer, OperatorNotificationSerializer, OperatorAnalyticsSerializer,
     DeliveryZoneSerializer, OrderMapLocationSerializer, OrderForOperatorSerializer
 )
-from api.models import Order, DeliveryZone
+from api.models import Order, DeliveryZone, User, Address
 
 logger = logging.getLogger(__name__)
 
@@ -581,37 +582,43 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
     """
     serializer_class = OrderForOperatorSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None  # Отключаем пагинацию для простоты
     
     def get_queryset(self):
         """Получение заказов для оператора"""
         operator = self.request.user
-        operator_zones = operator.assigned_zones.filter(is_active=True)
         
-        # Базовый queryset - заказы в зонах оператора
+        # Получаем зоны оператора
+        operator_zones = operator.assigned_zones.filter(is_active=True)
+        if not operator_zones.exists():
+            return Order.objects.none()
+        
+        # Создаем список городов из зон оператора
+        operator_cities = list(operator_zones.values_list('city', flat=True).distinct())
+        
+        # Базовый queryset - все заказы в зонах оператора
         queryset = Order.objects.filter(
-            address__city__in=operator_zones.values_list('city', flat=True)
+            address__city__in=operator_cities
         ).select_related(
             'user', 'address', 'restaurant', 'promo_code'
         ).prefetch_related(
             'orderitem_set__menu_item',
             'orderitem_set__size_option',
             'orderitem_set__add_ons'
-        )
+        ).order_by('-created_at')  # Сортировка по дате создания (новые сверху)
         
-        # Фильтрация по статусу
-        status_filter = self.request.query_params.get('status')
-        if status_filter:
+        # Фильтрация по статусу (если указан)
+        status_filter = getattr(self.request, 'query_params', {}).get('status') or self.request.GET.get('status')
+        if status_filter and status_filter != 'all':
             queryset = queryset.filter(status=status_filter)
         
-        # Фильтрация по зоне
-        zone_filter = self.request.query_params.get('zone')
-        if zone_filter:
-            queryset = queryset.filter(
-                address__city__iexact=zone_filter
-            )
+        # Фильтрация по зоне (если нужна)
+        zone_filter = getattr(self.request, 'query_params', {}).get('zone') or self.request.GET.get('zone')
+        if zone_filter and zone_filter != 'all':
+            queryset = queryset.filter(address__city__iexact=zone_filter)
         
-        # Фильтрация по дате
-        date_filter = self.request.query_params.get('date')
+        # Фильтрация по дате (если нужна)
+        date_filter = getattr(self.request, 'query_params', {}).get('date') or self.request.GET.get('date')
         if date_filter:
             try:
                 date = datetime.strptime(date_filter, '%Y-%m-%d').date()
@@ -619,7 +626,45 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             except ValueError:
                 pass
         
-        return queryset.order_by('-created_at')
+        # Поиск по номеру заказа, имени клиента или телефону
+        search_query = getattr(self.request, 'query_params', {}).get('search') or self.request.GET.get('search')
+        if search_query:
+            # Убираем лишние пробелы и приводим к нижнему регистру для поиска
+            search_terms = search_query.strip().lower()
+            
+            # Поиск по номеру заказа (точное совпадение)
+            if search_terms.isdigit():
+                queryset = queryset.filter(id=int(search_terms))
+            else:
+                # Поиск по имени клиента или телефону
+                queryset = queryset.filter(
+                    Q(user__first_name__icontains=search_terms) |
+                    Q(user__last_name__icontains=search_terms) |
+                    Q(user__username__icontains=search_terms) |
+                    Q(address__phone_number__icontains=search_terms) |
+                    Q(phone__icontains=search_terms)
+                )
+        
+        # Дополнительная фильтрация по точным координатам зон
+        # Оптимизированная версия - проверяем только если есть зоны с полигонами
+        filtered_orders = []
+        for order in queryset:
+            can_handle, _ = operator.can_handle_order(order)
+            if can_handle:
+                filtered_orders.append(order)
+        
+        # Возвращаем QuerySet для совместимости с ModelViewSet
+        if filtered_orders:
+            order_ids = [order.id for order in filtered_orders]
+            return Order.objects.filter(id__in=order_ids).select_related(
+                'user', 'address', 'restaurant', 'promo_code'
+            ).prefetch_related(
+                'orderitem_set__menu_item',
+                'orderitem_set__size_option',
+                'orderitem_set__add_ons'
+            ).order_by('-created_at')
+        else:
+            return Order.objects.none()
     
     @action(detail=False, methods=['get'])
     def dashboard(self, request):
@@ -627,19 +672,34 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         operator = request.user
         operator_zones = operator.assigned_zones.filter(is_active=True)
         
+        # Создаем список городов из зон оператора
+        operator_cities = list(operator_zones.values_list('city', flat=True).distinct())
+        
+        # Получаем все заказы в зонах оператора для статистики
+        all_orders = Order.objects.filter(
+            address__city__in=operator_cities
+        )
+        
         # Статистика по заказам
-        total_orders = self.get_queryset().count()
-        new_orders = self.get_queryset().filter(status='new').count()
-        processing_orders = self.get_queryset().filter(status='operator_processing').count()
-        confirmed_orders = self.get_queryset().filter(status='confirmed').count()
-        completed_orders = self.get_queryset().filter(status='completed').count()
-        cancelled_orders = self.get_queryset().filter(status='cancelled').count()
+        total_orders = all_orders.count()
+        pending_orders = all_orders.filter(status='pending').count()
+        new_orders = all_orders.filter(status='new').count()
+        processing_orders = all_orders.filter(status='operator_processing').count()
+        confirmed_orders = all_orders.filter(status='confirmed').count()
+        completed_orders = all_orders.filter(status='completed').count()
+        cancelled_orders = all_orders.filter(status='cancelled').count()
+        
+        # Получаем последние заказы (все статусы)
+        recent_orders = all_orders.select_related(
+            'user', 'address', 'restaurant', 'promo_code'
+        ).prefetch_related(
+            'orderitem_set__menu_item',
+            'orderitem_set__size_option',
+            'orderitem_set__add_ons'
+        ).order_by('-created_at')[:10]
         
         # Названия назначенных зон
         assigned_zones = [zone.name for zone in operator_zones]
-        
-        # Последние заказы
-        recent_orders = self.get_queryset()[:10]
         
         # Уведомления
         notifications = OperatorNotification.objects.filter(
@@ -649,6 +709,7 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         
         dashboard_data = {
             'total_orders': total_orders,
+            'pending_orders': pending_orders,
             'new_orders': new_orders,
             'processing_orders': processing_orders,
             'confirmed_orders': confirmed_orders,
@@ -873,14 +934,38 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             order.user.first_name = customer_name.strip()
             order.user.save()
         
+        # Получаем ресторан из запроса
+        restaurant_id = request.data.get('restaurant_id')
+        if not restaurant_id:
+            return Response(
+                {'error': 'Необходимо указать ресторан для доставки'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Проверяем, что ресторан существует и активен
+        from api.models import Restaurant
+        try:
+            restaurant = Restaurant.objects.get(id=restaurant_id, is_active=True)
+        except Restaurant.DoesNotExist:
+            return Response(
+                {'error': 'Ресторан не найден или неактивен'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         # Обновляем статус заказа
         old_status = order.status
-        order.status = 'confirmed'
+        order.status = 'preparing'  # Меняем на "готовится" вместо "подтвержден"
         order.assigned_operator = operator
         order.assigned_at = timezone.now()
         order.operator_call_result = 'confirmed'
         order.operator_called = True
         order.operator_call_time = timezone.now()
+        order.restaurant = restaurant  # Назначаем ресторан
+        
+        # Присваиваем номер заказа оператора
+        from .models import OperatorOrderNumber
+        order.operator_order_number = OperatorOrderNumber.get_next_number(operator)
+        
         order.save()
         
         # Создаем запись в истории статусов
@@ -888,14 +973,86 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             order=order,
             operator=operator,
             old_status=old_status,
-            new_status='confirmed',
-            reason='Заказ подтвержден оператором'
+            new_status='preparing',  # Меняем на "готовится"
+            reason='Заказ подтвержден оператором и передан на кухню'
         )
         
         return Response({
-            'message': 'Заказ подтвержден',
+            'message': f'Заказ подтвержден и передан в ресторан "{restaurant.name}"',
             'order': OrderForOperatorSerializer(order).data
         })
+
+    @action(detail=False, methods=['get'])
+    def restaurants(self, request):
+        """Получить список активных ресторанов"""
+        from api.models import Restaurant
+        
+        # Получаем параметр order_id для фильтрации по зоне доставки
+        order_id = request.query_params.get('order_id')
+        
+        if order_id:
+            try:
+                # Получаем заказ и его адрес
+                order = Order.objects.select_related('address').get(id=order_id)
+                order_city = order.address.city
+                order_latitude = order.address.latitude
+                order_longitude = order.address.longitude
+                
+                # Фильтруем рестораны по городу заказа
+                restaurants = Restaurant.objects.filter(
+                    is_active=True,
+                    city__iexact=order_city
+                )
+                
+                # Дополнительно проверяем зоны доставки для каждого ресторана
+                suitable_restaurants = []
+                for restaurant in restaurants:
+                    # Проверяем, есть ли зоны доставки в городе ресторана
+                    from api.models import DeliveryZone
+                    delivery_zones = DeliveryZone.objects.filter(
+                        city__iexact=restaurant.city,
+                        is_active=True
+                    )
+                    
+                    if delivery_zones.exists():
+                        # Проверяем, попадает ли адрес заказа в зоны доставки
+                        can_deliver = False
+                        for zone in delivery_zones:
+                            if zone.is_address_in_zone(order_latitude, order_longitude):
+                                can_deliver = True
+                                break
+                        
+                        if can_deliver:
+                            suitable_restaurants.append({
+                                'id': restaurant.id,
+                                'name': restaurant.name,
+                                'city': restaurant.city,
+                                'address': restaurant.address
+                            })
+                    else:
+                        # Если нет зон доставки, показываем все рестораны в городе
+                        suitable_restaurants.append({
+                            'id': restaurant.id,
+                            'name': restaurant.name,
+                            'city': restaurant.city,
+                            'address': restaurant.address
+                        })
+                
+                return Response({
+                    'restaurants': suitable_restaurants
+                })
+                
+            except Order.DoesNotExist:
+                return Response(
+                    {'error': 'Заказ не найден'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        else:
+            # Если order_id не указан, возвращаем все активные рестораны
+            restaurants = Restaurant.objects.filter(is_active=True).values('id', 'name', 'city', 'address')
+            return Response({
+                'restaurants': list(restaurants)
+            })
 
     @action(detail=True, methods=['post'])
     def reject_order(self, request, pk=None):
@@ -977,3 +1134,99 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             'message': 'Имя клиента обновлено',
             'order': OrderForOperatorSerializer(order).data
         })
+
+
+class SearchSuggestionsView(APIView):
+    """API для получения предложений поиска"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        query = request.GET.get('q', '').strip()
+        if len(query) < 2:
+            return Response([])
+        
+        operator = request.user
+        suggestions = []
+        
+        # Получаем зоны оператора
+        operator_zones = operator.assigned_zones.filter(is_active=True)
+        if not operator_zones.exists():
+            return Response([])
+        
+        operator_cities = list(operator_zones.values_list('city', flat=True).distinct())
+        
+        # Поиск по номеру заказа
+        if query.isdigit():
+            try:
+                order_id = int(query)
+                orders = Order.objects.filter(
+                    id=order_id,
+                    address__city__in=operator_cities
+                ).select_related('user', 'address')[:5]
+                
+                for order in orders:
+                    suggestions.append({
+                        'id': order.id,
+                        'type': 'order',
+                        'title': f'Заказ #{order.id}',
+                        'subtitle': f'{order.user.first_name} {order.user.last_name} - {order.address.phone_number if order.address else order.phone}',
+                        'search_value': str(order.id)
+                    })
+            except ValueError:
+                pass
+        
+        # Поиск по имени клиента
+        users = User.objects.filter(
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(username__icontains=query)
+        ).distinct()[:10]
+        
+        for user in users:
+            # Проверяем, есть ли заказы этого пользователя в зонах оператора
+            user_orders = Order.objects.filter(
+                user=user,
+                address__city__in=operator_cities
+            ).exists()
+            
+            if user_orders:
+                suggestions.append({
+                    'id': f'user_{user.id}',
+                    'type': 'customer',
+                    'title': f'{user.first_name} {user.last_name}',
+                    'subtitle': f'@{user.username}' if user.username else 'Пользователь',
+                    'search_value': user.first_name or user.username or user.last_name
+                })
+        
+        # Поиск по телефону
+        phone_query = query.replace('+', '').replace(' ', '').replace('-', '')
+        if phone_query.isdigit() and len(phone_query) >= 3:
+            # Поиск в заказах
+            orders_by_phone = Order.objects.filter(
+                Q(phone__icontains=phone_query) |
+                Q(address__phone_number__icontains=phone_query),
+                address__city__in=operator_cities
+            ).select_related('user', 'address')[:5]
+            
+            for order in orders_by_phone:
+                phone = order.phone or (order.address.phone_number if order.address else '')
+                suggestions.append({
+                    'id': f'phone_{order.id}',
+                    'type': 'phone',
+                    'title': phone,
+                    'subtitle': f'{order.user.first_name} {order.user.last_name} - Заказ #{order.id}',
+                    'search_value': phone
+                })
+        
+        # Убираем дубликаты и ограничиваем количество
+        seen = set()
+        unique_suggestions = []
+        for suggestion in suggestions:
+            key = (suggestion['type'], suggestion['title'])
+            if key not in seen:
+                seen.add(key)
+                unique_suggestions.append(suggestion)
+                if len(unique_suggestions) >= 10:
+                    break
+        
+        return Response(unique_suggestions)

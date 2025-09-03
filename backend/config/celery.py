@@ -27,11 +27,25 @@ app.conf.update(
             'exchange': 'notifications',
             'routing_key': 'notifications',
         },
+        'maintenance': {
+            'exchange': 'maintenance',
+            'routing_key': 'maintenance',
+        },
     },
     
     # Настройки маршрутизации
     task_routes={
         'api.tasks.send_telegram_notification': {'queue': 'notifications'},
+        'api.tasks.reset_operator_order_numbers': {'queue': 'maintenance'},
+    },
+    
+    # Настройки Celery Beat (периодические задачи)
+    beat_schedule={
+        'reset-operator-order-numbers': {
+            'task': 'api.tasks.reset_operator_order_numbers',
+            'schedule': 60.0 * 60.0 * 24.0,  # Каждые 24 часа
+            'options': {'queue': 'maintenance'},
+        },
     },
     
     # Настройки воркера

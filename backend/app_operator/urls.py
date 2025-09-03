@@ -73,6 +73,11 @@ urlpatterns = [
     path('api/operator/map/<int:pk>/route/', 
          views.OrderMapViewSet.as_view({'get': 'route'}), 
          name='map-route'),
+    
+    # Поиск и предложения
+    path('api/operator/search-suggestions/', 
+         views.SearchSuggestionsView.as_view(), 
+         name='search-suggestions'),
 ]
 
 # Добавляем маршруты роутера

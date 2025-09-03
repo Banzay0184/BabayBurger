@@ -59,58 +59,55 @@ export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
   ];
 
   return (
-    <div className="bg-gray-800 rounded-xl p-4 mb-6">
-      <div className="flex flex-wrap items-center gap-3">
-        {/* Заголовок */}
-        <span className="text-gray-300 text-lg font-semibold mr-4">Фильтры:</span>
-        
+    <div className="bg-gray-800 rounded-lg p-3 mb-4">
+      <div className="flex flex-wrap items-center gap-2">
         {/* Фильтр по статусам */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1">
           {allStatuses.map((status) => (
             <button
               key={status}
               onClick={() => onStatusChange(status)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
                 selectedStatus === status
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
-              <span className="text-lg">{getStatusIcon(status)}</span>
-              <span>{getStatusText(status)}</span>
+              <span className="text-sm">{getStatusIcon(status)}</span>
+              <span className="hidden sm:inline">{getStatusText(status)}</span>
             </button>
           ))}
         </div>
 
         {/* Разделитель */}
-        <div className="w-px h-8 bg-gray-600 mx-2"></div>
+        <div className="w-px h-6 bg-gray-600 mx-1"></div>
 
         {/* Фильтр по зонам */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1">
           <button
             onClick={() => onZoneChange('all')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex items-center space-x-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
               selectedZone === 'all'
                 ? 'bg-green-600 text-white'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
-            <span className="text-lg">🌍</span>
-            <span>Все зоны</span>
+            <span className="text-sm">🌍</span>
+            <span className="hidden sm:inline">Все</span>
           </button>
 
           {zones.map((zone) => (
             <button
               key={zone}
               onClick={() => onZoneChange(zone)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
                 selectedZone === zone
                   ? 'bg-green-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
-              <span className="text-lg">📍</span>
-              <span>{zone}</span>
+              <span className="text-sm">📍</span>
+              <span className="hidden sm:inline">{zone}</span>
             </button>
           ))}
         </div>
@@ -121,10 +118,10 @@ export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
             onStatusChange('all');
             onZoneChange('all');
           }}
-          className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-gray-600 hover:bg-gray-700 text-gray-300 transition-colors ml-auto"
+          className="flex items-center space-x-1 px-2 py-1 rounded text-xs font-medium bg-gray-600 hover:bg-gray-700 text-gray-300 transition-colors ml-auto"
         >
-          <span className="text-lg">🔄</span>
-          <span>Сбросить</span>
+          <span className="text-sm">🔄</span>
+          <span className="hidden sm:inline">Сбросить</span>
         </button>
       </div>
     </div>

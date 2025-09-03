@@ -82,6 +82,26 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     return serviceType === 'delivery' ? 'Доставка' : 'Самовывоз';
   };
 
+  // Получение иконки способа оплаты
+  const getPaymentMethodIcon = (paymentMethod: string): string => {
+    switch (paymentMethod) {
+      case 'cash': return '💵';
+      case 'card': return '💳';
+      case 'online': return '🌐';
+      default: return '💰';
+    }
+  };
+
+  // Получение текста способа оплаты
+  const getPaymentMethodText = (paymentMethod: string): string => {
+    switch (paymentMethod) {
+      case 'cash': return 'Наличными';
+      case 'card': return 'Картой';
+      case 'online': return 'Онлайн';
+      default: return paymentMethod;
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
@@ -90,7 +110,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <div className="flex items-center space-x-3">
             <span className="text-2xl">{getServiceTypeIcon(order.service_type)}</span>
             <h2 className="text-xl font-semibold text-white">
-              Заказ #{order.id} - {getServiceTypeText(order.service_type)}
+              Заказ #{order.id} - {getServiceTypeText(order.service_type)} • {getPaymentMethodIcon(order.payment_method)} {getPaymentMethodText(order.payment_method)}
             </h2>
           </div>
           <button
@@ -194,7 +214,20 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
               {/* Адрес доставки */}
               <div className="bg-gray-700 rounded-lg p-4">
-                <h3 className="text-white font-medium mb-3">Адрес доставки</h3>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-white font-medium">Адрес доставки</h3>
+                  <button
+                    onClick={() => {
+                      const { latitude, longitude } = order.address_info;
+                      const yandexMapUrl = `https://yandex.ru/maps/?pt=${longitude},${latitude}&z=16&l=map`;
+                      window.open(yandexMapUrl, '_blank');
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
+                  >
+                    <span>🗺️</span>
+                    <span>Карта</span>
+                  </button>
+                </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Адрес:</span>
@@ -268,6 +301,13 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   <div className="flex justify-between">
                     <span className="text-gray-400">Стоимость доставки:</span>
                     <span className="text-white">{formatPrice(order.delivery_fee)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Способ оплаты:</span>
+                    <span className="text-white flex items-center space-x-1">
+                      <span>{getPaymentMethodIcon(order.payment_method)}</span>
+                      <span>{getPaymentMethodText(order.payment_method)}</span>
+                    </span>
                   </div>
                   <div className="border-t border-gray-600 pt-2 mt-2">
                     <div className="flex justify-between">

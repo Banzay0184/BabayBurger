@@ -4,6 +4,8 @@ import logging
 from celery import shared_task
 from django.conf import settings
 from django.core.cache import cache
+from django.utils import timezone
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -236,6 +238,7 @@ def geocode_yandex(self, address=None, lat=None, lon=None):
         r = requests.get(url, params=params, timeout=10)
         if r.status_code != 200:
             return {'error': 'Yandex API error', 'details': r.text}
+        
         resp = r.json()
         try:
             feature = resp['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']
@@ -251,5 +254,40 @@ def geocode_yandex(self, address=None, lat=None, lon=None):
             return {'cached': False, 'result': result}
         except Exception as e:
             return {'error': 'Not found', 'details': str(e)}
+            
     except Exception as e:
-        return {'error': str(e)} 
+        return {'error': str(e)}
+
+
+@shared_task(
+    name='api.tasks.reset_operator_order_numbers',
+    queue='maintenance',
+)
+def reset_operator_order_numbers():
+    """
+    Задача для сброса номеров заказов операторов в полночь
+    Вызывается каждый день в 00:00
+    """
+    try:
+        from app_operator.models import OperatorOrderNumber
+        
+        # Получаем вчерашнюю дату
+        yesterday = timezone.now().date() - timedelta(days=1)
+        
+        # Удаляем записи за вчерашний день
+        deleted_count = OperatorOrderNumber.objects.filter(date=yesterday).delete()[0]
+        
+        logger.info(f"🔄 Сброс номеров заказов операторов: удалено {deleted_count} записей за {yesterday}")
+        
+        return {
+            'success': True,
+            'deleted_count': deleted_count,
+            'date': yesterday.isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Ошибка при сбросе номеров заказов операторов: {e}")
+        return {
+            'success': False,
+            'error': str(e)
+        } 

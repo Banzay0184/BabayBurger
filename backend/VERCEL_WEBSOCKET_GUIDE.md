@@ -11,24 +11,20 @@
 - ✅ Real-time обновления работают
 - ✅ Приложение полностью функционально
 
-### **2. Альтернативные решения:**
+### **2. Конфигурация:**
 
-#### **Вариант A: Использование ngrok (текущее решение)**
+#### **Текущая архитектура (рекомендуется):**
 ```typescript
 // WebSocket подключается к ngrok URL
 const ngrokUrl = '3e3f35c1758a.ngrok-free.app';
 baseUrl = `${protocol}//${ngrokUrl}`;
 ```
 
-#### **Вариант B: Переход на другой хостинг**
-- **Railway** - поддерживает WebSocket
-- **Render** - поддерживает WebSocket  
-- **DigitalOcean App Platform** - поддерживает WebSocket
-- **Heroku** - поддерживает WebSocket
-
-#### **Вариант C: Использование Vercel Edge Functions**
-- Создать Edge Function для WebSocket проксирования
-- Более сложная настройка
+#### **Альтернативные решения:**
+- **Railway** - фронтенд + бэкенд + WebSocket
+- **Render** - фронтенд + бэкенд + WebSocket  
+- **DigitalOcean App Platform** - фронтенд + бэкенд + WebSocket
+- **Heroku** - фронтенд + бэкенд + WebSocket
 
 ## 🚀 **Текущая конфигурация:**
 
@@ -36,14 +32,10 @@ baseUrl = `${protocol}//${ngrokUrl}`;
 - ✅ WebSocket работает: `ws://localhost:8000/ws/client/`
 - ✅ Real-time обновления
 
-### **На Vercel:**
-- ❌ WebSocket отключен (Vercel не поддерживает)
-- ✅ Fallback на polling каждые 60 секунд
-- ✅ Приложение работает, но без real-time
-
-### **С ngrok (если настроен):**
+### **В продакшене (Vercel + ngrok):**
 - ✅ WebSocket работает: `wss://3e3f35c1758a.ngrok-free.app/ws/client/`
 - ✅ Real-time обновления
+- ✅ Полная функциональность
 
 ## 🔧 **Настройка переменных окружения:**
 
@@ -65,14 +57,14 @@ VITE_API_BASE_URL=https://3e3f35c1758a.ngrok-free.app
 
 ## 🧪 **Тестирование:**
 
-### **1. На Vercel (без WebSocket):**
+### **1. В разработке:**
 ```javascript
 // В консоли должно быть:
-// ❌ WebSocket отключен (Vercel не поддерживает)
-// 🔄 Fallback на polling каждые 60 секунд
+// 🔌 Client WebSocket connected
+// 📨 Client WebSocket message: {type: "connection_established"}
 ```
 
-### **2. С ngrok (с WebSocket):**
+### **2. В продакшене (Vercel + ngrok):**
 ```javascript
 // В консоли должно быть:
 // 🔌 Client WebSocket connected
@@ -82,9 +74,8 @@ VITE_API_BASE_URL=https://3e3f35c1758a.ngrok-free.app
 ## 🎯 **Рекомендации:**
 
 ### **Для продакшена:**
-1. **Перейдите на хостинг с поддержкой WebSocket** (Railway, Render, DigitalOcean)
-2. **Или используйте ngrok** для WebSocket соединений
-3. **Или оставьте как есть** - приложение работает без real-time
+1. **Текущая архитектура (рекомендуется):** Vercel + ngrok
+2. **Альтернатива:** Перейти на хостинг с поддержкой WebSocket (Railway, Render, DigitalOcean)
 
 ### **Для разработки:**
 - ✅ Все работает как обычно
@@ -92,30 +83,31 @@ VITE_API_BASE_URL=https://3e3f35c1758a.ngrok-free.app
 
 ## 🚨 **Troubleshooting:**
 
-### **Проблема: WebSocket не работает на Vercel**
-**Решение:** Это нормально! Vercel не поддерживает WebSocket. Используйте fallback на polling.
-
-### **Проблема: Хотите real-time обновления**
+### **Проблема: WebSocket не подключается**
 **Решение:** 
-1. Перейдите на Railway/Render/DigitalOcean
-2. Или настройте ngrok для WebSocket
+1. Проверьте, что ngrok запущен: `ngrok http 8000`
+2. Обновите переменную `VITE_WEBSOCKET_URL` в Vercel
+3. Проверьте, что Django сервер запущен
 
 ### **Проблема: ngrok URL изменился**
 **Решение:** Обновите переменную `VITE_WEBSOCKET_URL` в Vercel
+
+### **Проблема: WebSocket подключается, но нет обновлений**
+**Решение:** 
+1. Проверьте логи Django сервера
+2. Проверьте, что WebSocket consumer работает
+3. Проверьте, что сигналы Django отправляют сообщения
 
 ## 🎉 **Текущий статус:**
 
 ### ✅ **Что работает:**
 - 🟢 Приложение загружается на Vercel
-- 🟢 API запросы работают
-- 🟢 Заказы загружаются
-- 🟢 Fallback на polling каждые 60 секунд
-
-### ❌ **Что не работает:**
-- 🔴 Real-time обновления (только на Vercel)
-- 🔴 Мгновенные уведомления (только на Vercel)
+- 🟢 API запросы работают через ngrok
+- 🟢 WebSocket соединения работают через ngrok
+- 🟢 Real-time обновления работают
+- 🟢 Мгновенные уведомления работают
 
 ### 🎯 **Итог:**
-Приложение **полностью функционально** на Vercel, но без real-time обновлений. Для real-time нужно использовать другой хостинг или ngrok.
+Приложение **полностью функционально** с real-time обновлениями через архитектуру Vercel + ngrok!
 
-**Выберите подходящий вариант для ваших нужд!** 🚀
+**Идеальная настройка для продакшена!** 🚀

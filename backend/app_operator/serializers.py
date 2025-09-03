@@ -501,17 +501,18 @@ class OrderForOperatorSerializer(serializers.ModelSerializer):
     delivery_zone_info = serializers.SerializerMethodField()
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     service_type_display = serializers.CharField(source='get_service_type_display', read_only=True)
+    payment_method_display = serializers.CharField(source='get_payment_method_display', read_only=True)
     operator_call_result_display = serializers.CharField(source='get_operator_call_result_display', read_only=True)
     
     class Meta:
         model = Order
         fields = [
             'id', 'status', 'status_display', 'service_type', 'service_type_display',
-            'total_price', 'final_price', 'delivery_fee', 'discount_amount',
-            'created_at', 'delivery_time', 'notes', 'operator_notes',
-            'operator_called', 'operator_call_time', 'operator_call_result',
+            'payment_method', 'payment_method_display', 'total_price', 'final_price', 
+            'delivery_fee', 'discount_amount', 'created_at', 'delivery_time', 'notes', 
+            'operator_notes', 'operator_called', 'operator_call_time', 'operator_call_result',
             'operator_call_result_display', 'assigned_operator', 'assigned_at',
-            'user_info', 'address_info', 'items_details', 'delivery_zone_info'
+            'operator_order_number', 'user_info', 'address_info', 'items_details', 'delivery_zone_info'
         ]
     
     def get_user_info(self, obj):
