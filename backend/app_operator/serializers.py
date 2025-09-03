@@ -497,6 +497,7 @@ class OrderForOperatorSerializer(serializers.ModelSerializer):
     """Заказ для оператора с деталями"""
     user_info = serializers.SerializerMethodField()
     address_info = serializers.SerializerMethodField()
+    restaurant_info = serializers.SerializerMethodField()
     items_details = serializers.SerializerMethodField()
     delivery_zone_info = serializers.SerializerMethodField()
     status_display = serializers.CharField(source='get_status_display', read_only=True)
@@ -512,7 +513,7 @@ class OrderForOperatorSerializer(serializers.ModelSerializer):
             'delivery_fee', 'discount_amount', 'created_at', 'delivery_time', 'notes', 
             'operator_notes', 'operator_called', 'operator_call_time', 'operator_call_result',
             'operator_call_result_display', 'assigned_operator', 'assigned_at',
-            'operator_order_number', 'user_info', 'address_info', 'items_details', 'delivery_zone_info'
+            'operator_order_number', 'user_info', 'address_info', 'restaurant_info', 'items_details', 'delivery_zone_info'
         ]
     
     def get_user_info(self, obj):
@@ -535,6 +536,17 @@ class OrderForOperatorSerializer(serializers.ModelSerializer):
             'longitude': float(address.longitude) if address.longitude else None,
             'phone_number': address.phone_number
         }
+    
+    def get_restaurant_info(self, obj):
+        if obj.restaurant:
+            return {
+                'id': obj.restaurant.id,
+                'name': obj.restaurant.name,
+                'city': obj.restaurant.city,
+                'address': obj.restaurant.address,
+                'phone': obj.restaurant.phone
+            }
+        return None
     
     def get_items_details(self, obj):
         items = obj.orderitem_set.all()

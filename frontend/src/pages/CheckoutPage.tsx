@@ -303,6 +303,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         telegram_id: telegramId,
         service_type: serviceType,
         address_id: finalAddressId, // Теперь у нас всегда есть реальный ID
+        restaurant: selectedRestaurant?.id || null, // Добавляем ID ресторана для самовывоза
         payment_method: paymentMethod,
         notes: notes,
         additional_phone: additionalPhone,

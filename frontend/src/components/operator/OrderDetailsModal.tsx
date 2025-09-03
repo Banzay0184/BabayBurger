@@ -102,6 +102,11 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
   };
 
+  // Получение иконки ресторана
+  const getRestaurantIcon = (): string => {
+    return '🏪';
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
@@ -245,6 +250,12 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     <div className="flex justify-between">
                       <span className="text-gray-400">Зона доставки:</span>
                       <span className="text-gray-300">{order.delivery_zone_info.name}</span>
+                    </div>
+                  )}
+                  {order.restaurant_info && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">{getRestaurantIcon()} Ресторан:</span>
+                      <span className="text-gray-300">{order.restaurant_info.name}</span>
                     </div>
                   )}
                 </div>

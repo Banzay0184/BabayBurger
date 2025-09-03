@@ -145,13 +145,33 @@ class Operator(AbstractUser):
         if not self.assigned_zones.exists():
             return False, "У оператора нет назначенных зон доставки"
         
-        # Проверяем, находится ли адрес заказа в зонах оператора
-        order_address = order.address
-        for zone in self.assigned_zones.filter(is_active=True):
-            if zone.is_address_in_zone(order_address.latitude, order_address.longitude):
-                return True, f"Заказ в зоне '{zone.name}'"
+        # Для заказов самовывоза проверяем город ресторана
+        if order.service_type == 'pickup':
+            if not order.restaurant:
+                return False, "У заказа самовывоза не указан ресторан"
+            
+            # Проверяем, есть ли у оператора зоны в городе ресторана
+            restaurant_city = order.restaurant.city
+            operator_cities = list(self.assigned_zones.filter(is_active=True).values_list('city', flat=True).distinct())
+            
+            if restaurant_city in operator_cities:
+                return True, f"Заказ самовывоза в городе '{restaurant_city}'"
+            else:
+                return False, f"Заказ самовывоза в городе '{restaurant_city}', а оператор работает в городах: {', '.join(operator_cities)}"
         
-        return False, "Адрес заказа не в зонах оператора"
+        # Для заказов доставки проверяем адрес клиента
+        elif order.service_type == 'delivery':
+            order_address = order.address
+            if not order_address:
+                return False, "У заказа доставки не указан адрес"
+            
+            for zone in self.assigned_zones.filter(is_active=True):
+                if zone.is_address_in_zone(order_address.latitude, order_address.longitude):
+                    return True, f"Заказ доставки в зоне '{zone.name}'"
+            
+            return False, "Адрес заказа доставки не в зонах оператора"
+        
+        return False, "Неизвестный тип услуги"
 
 class OperatorSession(models.Model):
     """

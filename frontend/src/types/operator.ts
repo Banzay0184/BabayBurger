@@ -77,6 +77,7 @@ export interface OrderForOperator {
   operator_order_number?: number;
   user_info: UserInfo;
   address_info: AddressInfo;
+  restaurant_info?: RestaurantInfo;
   items_details: OrderItemDetail[];
   delivery_zone_info?: DeliveryZoneInfo;
 }
@@ -87,6 +88,14 @@ export interface DeliveryZoneInfo {
   city: string;
   delivery_fee: number;
   min_order_amount?: number;
+}
+
+export interface RestaurantInfo {
+  id: number;
+  name: string;
+  city: string;
+  address: string;
+  phone: string;
 }
 
 export type OrderStatus = 

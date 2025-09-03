@@ -203,8 +203,12 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         operator_zones = operator.assigned_zones.filter(is_active=True)
         
         # Фильтруем заказы по зонам оператора
+        from django.db.models import Q
+        
+        operator_cities = list(operator_zones.values_list('city', flat=True).distinct())
         queryset = Order.objects.filter(
-            address__city__in=operator_zones.values_list('city', flat=True)
+            Q(service_type='delivery', address__city__in=operator_cities) |  # Доставка: только по адресу клиента
+            Q(service_type='pickup', restaurant__city__in=operator_cities)  # Самовывоз: только по городу ресторана
         )
         
         # Фильтрация по статусу
@@ -532,8 +536,12 @@ class OrderMapViewSet(viewsets.ReadOnlyModelViewSet):
         operator = self.request.user
         operator_zones = operator.assigned_zones.filter(is_active=True)
         
+        from django.db.models import Q
+        
+        operator_cities = list(operator_zones.values_list('city', flat=True).distinct())
         return Order.objects.filter(
-            address__city__in=operator_zones.values_list('city', flat=True),
+            Q(service_type='delivery', address__city__in=operator_cities) |  # Доставка: только по адресу клиента
+            Q(service_type='pickup', restaurant__city__in=operator_cities),  # Самовывоз: только по городу ресторана
             address__latitude__isnull=False,
             address__longitude__isnull=False
         )
@@ -596,9 +604,13 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         # Создаем список городов из зон оператора
         operator_cities = list(operator_zones.values_list('city', flat=True).distinct())
         
-        # Базовый queryset - все заказы в зонах оператора
+        # Базовый queryset - заказы в зонах оператора
+        # Для доставки: по адресу клиента, для самовывоза: по городу ресторана
+        from django.db.models import Q
+        
         queryset = Order.objects.filter(
-            address__city__in=operator_cities
+            Q(service_type='delivery', address__city__in=operator_cities) |  # Доставка: только по адресу клиента
+            Q(service_type='pickup', restaurant__city__in=operator_cities)  # Самовывоз: только по городу ресторана
         ).select_related(
             'user', 'address', 'restaurant', 'promo_code'
         ).prefetch_related(
@@ -676,8 +688,11 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         operator_cities = list(operator_zones.values_list('city', flat=True).distinct())
         
         # Получаем все заказы в зонах оператора для статистики
+        from django.db.models import Q
+        
         all_orders = Order.objects.filter(
-            address__city__in=operator_cities
+            Q(service_type='delivery', address__city__in=operator_cities) |  # Доставка: только по адресу клиента
+            Q(service_type='pickup', restaurant__city__in=operator_cities)  # Самовывоз: только по городу ресторана
         )
         
         # Статистика по заказам
@@ -1159,9 +1174,13 @@ class SearchSuggestionsView(APIView):
         if query.isdigit():
             try:
                 order_id = int(query)
+                from django.db.models import Q
+                
                 orders = Order.objects.filter(
-                    id=order_id,
-                    address__city__in=operator_cities
+                    Q(id=order_id) & (
+                        Q(service_type='delivery', address__city__in=operator_cities) |  # Доставка: только по адресу клиента
+                        Q(service_type='pickup', restaurant__city__in=operator_cities)  # Самовывоз: только по городу ресторана
+                    )
                 ).select_related('user', 'address')[:5]
                 
                 for order in orders:
@@ -1184,9 +1203,13 @@ class SearchSuggestionsView(APIView):
         
         for user in users:
             # Проверяем, есть ли заказы этого пользователя в зонах оператора
+            from django.db.models import Q
+            
             user_orders = Order.objects.filter(
-                user=user,
-                address__city__in=operator_cities
+                Q(user=user) & (
+                    Q(service_type='delivery', address__city__in=operator_cities) |  # Доставка: только по адресу клиента
+                    Q(service_type='pickup', restaurant__city__in=operator_cities)  # Самовывоз: только по городу ресторана
+                )
             ).exists()
             
             if user_orders:
@@ -1202,10 +1225,13 @@ class SearchSuggestionsView(APIView):
         phone_query = query.replace('+', '').replace(' ', '').replace('-', '')
         if phone_query.isdigit() and len(phone_query) >= 3:
             # Поиск в заказах
+            from django.db.models import Q
+            
             orders_by_phone = Order.objects.filter(
                 Q(phone__icontains=phone_query) |
                 Q(address__phone_number__icontains=phone_query),
-                address__city__in=operator_cities
+                Q(service_type='delivery', address__city__in=operator_cities) |  # Доставка: только по адресу клиента
+                Q(service_type='pickup', restaurant__city__in=operator_cities)  # Самовывоз: только по городу ресторана
             ).select_related('user', 'address')[:5]
             
             for order in orders_by_phone:

@@ -83,6 +83,11 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
     }
   };
 
+  // Получение иконки ресторана
+  const getRestaurantIcon = (): string => {
+    return '🏪';
+  };
+
 
 
   // Звонить клиенту
@@ -239,6 +244,11 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
             {order.delivery_zone_info && (
               <p className="text-gray-400 text-lg">
                 <span className="font-semibold">Зона:</span> {order.delivery_zone_info.name}
+              </p>
+            )}
+            {order.restaurant_info && (
+              <p className="text-gray-400 text-lg">
+                <span className="font-semibold">{getRestaurantIcon()} Ресторан:</span> {order.restaurant_info.name}
               </p>
             )}
           </div>
