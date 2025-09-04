@@ -777,6 +777,7 @@ class OrderView(APIView):
                     'id': order.id,
                     'total_price': str(order.total_price),
                     'service_type': order.service_type,
+                    'payment_method': order.payment_method,
                     'status': order.status,
                     'status_display': order.get_status_display(),
                     'address': order.address.full_address,
@@ -1269,7 +1270,8 @@ class OrderCreateView(APIView):
                 total_price=0,
                 notes=request.data.get('notes', ''),
                 delivery_fee=request.data.get('delivery_fee', 0),
-                service_type=request.data.get('service_type', 'delivery')  # По умолчанию доставка
+                service_type=request.data.get('service_type', 'delivery'),  # По умолчанию доставка
+                payment_method=request.data.get('payment_method', 'cash')  # По умолчанию наличные
             )
             
             total_price = 0

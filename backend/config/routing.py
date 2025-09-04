@@ -7,4 +7,5 @@ websocket_urlpatterns = [
     re_path(r'ws/order/(?P<order_id>\w+)/$', consumers.OrderConsumer.as_asgi()),
     re_path(r'ws/client/(?P<telegram_id>\w+)/$', consumers.ClientConsumer.as_asgi()),
     re_path(r'ws/cashier/$', consumers.CashierConsumer.as_asgi()),
+    re_path(r'ws/cashier/(?P<cashier_id>\w+)/$', consumers.CashierConsumer.as_asgi()),
 ]

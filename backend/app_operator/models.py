@@ -96,6 +96,24 @@ class Operator(AbstractUser):
         verbose_name="Количество выполненных заказов"
     )
     
+    # Переопределяем related_name для избежания конфликтов с Cashier
+    groups = models.ManyToManyField(
+        'auth.Group',
+        verbose_name='groups',
+        blank=True,
+        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        related_name="operator_set",
+        related_query_name="operator",
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        verbose_name='user permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_name="operator_set",
+        related_query_name="operator",
+    )
+    
     # Метаданные
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

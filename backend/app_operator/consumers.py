@@ -307,7 +307,8 @@ class CashierConsumer(AsyncWebsocketConsumer):
     
     async def connect(self):
         """Подключение к WebSocket для кассиров"""
-        self.cashier_group_name = 'cashiers'
+        self.cashier_id = self.scope['url_route']['kwargs'].get('cashier_id')
+        self.cashier_group_name = f'cashier_{self.cashier_id}' if self.cashier_id else 'cashiers'
         
         # Присоединяемся к группе кассиров
         await self.channel_layer.group_add(
@@ -315,18 +316,36 @@ class CashierConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         
+        # Также присоединяемся к общей группе всех кассиров
+        await self.channel_layer.group_add(
+            'cashiers',
+            self.channel_name
+        )
+        
         await self.accept()
         
-        logger.info("Cashier WebSocket connected")
+        logger.info(f"Cashier WebSocket connected: {self.cashier_group_name}")
+        
+        # Отправляем приветственное сообщение
+        await self.send(text_data=json.dumps({
+            'type': 'connection_established',
+            'message': 'WebSocket соединение установлено',
+            'cashier_group': self.cashier_group_name
+        }))
 
     async def disconnect(self, close_code):
         """Отключение от WebSocket"""
+        # Покидаем группы
         await self.channel_layer.group_discard(
             self.cashier_group_name,
             self.channel_name
         )
+        await self.channel_layer.group_discard(
+            'cashiers',
+            self.channel_name
+        )
         
-        logger.info("Cashier WebSocket disconnected")
+        logger.info(f"Cashier WebSocket disconnected: {self.cashier_group_name}")
 
     async def receive(self, text_data):
         """Получение сообщения от клиента"""
@@ -335,15 +354,64 @@ class CashierConsumer(AsyncWebsocketConsumer):
             message_type = text_data_json.get('type')
             
             if message_type == 'ping':
+                # Отвечаем на ping
                 await self.send(text_data=json.dumps({
                     'type': 'pong',
                     'timestamp': text_data_json.get('timestamp')
+                }))
+            elif message_type == 'subscribe_orders':
+                # Подписка на обновления заказов
+                await self.channel_layer.group_add(
+                    'cashier_order_updates',
+                    self.channel_name
+                )
+                await self.send(text_data=json.dumps({
+                    'type': 'subscribed',
+                    'message': 'Подписка на обновления заказов кассира активирована'
                 }))
                 
         except json.JSONDecodeError:
             logger.error("Invalid JSON received from WebSocket")
         except Exception as e:
             logger.error(f"Error processing WebSocket message: {str(e)}")
+
+    # Обработчики для различных типов сообщений
+    async def order_created(self, event):
+        """Новый заказ создан для кассира"""
+        logger.info(f"📨 Cashier WebSocket: sending order_created event for order #{event.get('order', {}).get('id', 'unknown')}")
+        await self.send(text_data=json.dumps({
+            'type': 'order_created',
+            'order': event['order'],
+            'timestamp': event.get('timestamp')
+        }, cls=DjangoJSONEncoder))
+
+    async def order_updated(self, event):
+        """Заказ обновлен"""
+        await self.send(text_data=json.dumps({
+            'type': 'order_updated',
+            'order_id': event['order_id'],
+            'order': event.get('order'),
+            'status': event.get('status'),
+            'updated_at': event.get('updated_at'),
+            'timestamp': event.get('timestamp')
+        }, cls=DjangoJSONEncoder))
+
+    async def order_status_changed(self, event):
+        """Статус заказа изменен"""
+        await self.send(text_data=json.dumps({
+            'type': 'order_status_changed',
+            'order_id': event['order_id'],
+            'status': event['status'],
+            'timestamp': event.get('timestamp')
+        }, cls=DjangoJSONEncoder))
+
+    async def dashboard_update(self, event):
+        """Обновление дашборда кассира"""
+        await self.send(text_data=json.dumps({
+            'type': 'dashboard_update',
+            'stats': event.get('stats'),
+            'timestamp': event.get('timestamp')
+        }, cls=DjangoJSONEncoder))
 
     async def order_confirmed(self, event):
         """Заказ подтвержден оператором и отправлен кассиру"""

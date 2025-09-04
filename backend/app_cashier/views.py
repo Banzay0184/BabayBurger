@@ -1,0 +1,214 @@
+from rest_framework import viewsets, status, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.contrib.auth import authenticate, logout
+from django.contrib.auth.models import update_last_login
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
+from datetime import datetime
+import logging
+
+from .models import Cashier, OrderProcessing, CashierNotification, CashierToken
+from .serializers import (
+    CashierRegistrationSerializer, CashierLoginSerializer, 
+    CashierProfileSerializer, OrderForCashierSerializer
+)
+from .authentication import CashierTokenAuthentication
+from api.models import Order
+
+logger = logging.getLogger(__name__)
+
+class CashierAuthViewSet(viewsets.ViewSet):
+    """ViewSet для аутентификации кассиров"""
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=False, methods=['post'])
+    def register(self, request):
+        """Регистрация нового кассира"""
+        serializer = CashierRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            cashier = serializer.save()
+            token, created = CashierToken.objects.get_or_create(cashier=cashier)
+            return Response({
+                'message': 'Кассир успешно зарегистрирован',
+                'token': token.key,
+                'cashier': CashierProfileSerializer(cashier).data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'])
+    def login(self, request):
+        """Вход кассира"""
+        serializer = CashierLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            cashier = serializer.validated_data['cashier']
+            token, created = CashierToken.objects.get_or_create(cashier=cashier)
+            update_last_login(None, cashier)
+            return Response({
+                'message': 'Успешный вход',
+                'token': token.key,
+                'cashier': CashierProfileSerializer(cashier).data
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CashierOrderViewSet(viewsets.ModelViewSet):
+    """ViewSet для работы кассиров с заказами"""
+    serializer_class = OrderForCashierSerializer
+    authentication_classes = [CashierTokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None
+    
+    def get_queryset(self):
+        """Получение заказов для кассира"""
+        cashier = self.request.user
+        return Order.objects.filter(
+            restaurant=cashier.restaurant
+        ).select_related(
+            'user', 'address', 'restaurant'
+        ).prefetch_related(
+            'orderitem_set__menu_item',
+            'cashier_processing'
+        ).order_by('-created_at')
+    
+    @action(detail=False, methods=['get'])
+    def dashboard(self, request):
+        """Дашборд кассира"""
+        cashier = request.user
+        restaurant_orders = Order.objects.filter(restaurant=cashier.restaurant)
+        
+        dashboard_data = {
+            'total_orders': restaurant_orders.count(),
+            'preparing_orders': restaurant_orders.filter(status='preparing').count(),
+            'ready_orders': restaurant_orders.filter(status='ready_for_delivery').count(),
+            'delivering_orders': restaurant_orders.filter(status='on_delivery').count(),
+            'completed_orders': restaurant_orders.filter(status='completed').count(),
+            'restaurant_name': cashier.restaurant.name,
+        }
+        return Response(dashboard_data)
+    
+    @action(detail=True, methods=['post'])
+    def start_processing(self, request, pk=None):
+        """Начать обработку заказа"""
+        order = get_object_or_404(Order, pk=pk)
+        cashier = request.user
+        
+        can_handle, message = cashier.can_handle_order(order)
+        if not can_handle:
+            return Response({'error': message}, status=status.HTTP_403_FORBIDDEN)
+        
+        processing, created = OrderProcessing.objects.get_or_create(
+            order=order,
+            defaults={'cashier': cashier, 'status': 'received'}
+        )
+        
+        processing.start_preparing()
+        order.status = 'preparing'
+        order.save()
+        
+        return Response({
+            'message': 'Обработка заказа начата',
+            'order': OrderForCashierSerializer(order).data
+        })
+    
+    @action(detail=True, methods=['post'])
+    def mark_ready(self, request, pk=None):
+        """Отметить заказ как готовый"""
+        order = get_object_or_404(Order, pk=pk)
+        cashier = request.user
+        
+        # Проверяем, может ли кассир обработать этот заказ
+        can_handle, message = cashier.can_handle_order(order)
+        if not can_handle:
+            return Response({'error': message}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Получаем или создаем OrderProcessing
+        processing, created = OrderProcessing.objects.get_or_create(
+            order=order,
+            cashier=cashier,
+            defaults={
+                'status': 'preparing',
+                'started_preparing_at': timezone.now(),
+                'notes': 'Автоматически создано при отметке готовности'
+            }
+        )
+        
+        # Если запись была создана, логируем это
+        if created:
+            logger.info(f"🆕 Created OrderProcessing for order #{order.id} and cashier {cashier.id}")
+        
+        # Отмечаем заказ как готовый
+        processing.mark_ready()
+        order.status = 'ready_for_delivery'
+        order.save()
+        
+        return Response({'message': 'Заказ отмечен как готовый'})
+    
+    @action(detail=True, methods=['post'])
+    def mark_delivering(self, request, pk=None):
+        """Отметить заказ как отправленный на доставку"""
+        order = get_object_or_404(Order, pk=pk)
+        cashier = request.user
+        
+        # Проверяем, может ли кассир обработать этот заказ
+        can_handle, message = cashier.can_handle_order(order)
+        if not can_handle:
+            return Response({'error': message}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Получаем или создаем OrderProcessing
+        processing, created = OrderProcessing.objects.get_or_create(
+            order=order,
+            cashier=cashier,
+            defaults={
+                'status': 'ready',
+                'ready_at': timezone.now(),
+                'notes': 'Автоматически создано при отправке на доставку'
+            }
+        )
+        
+        # Если запись была создана, логируем это
+        if created:
+            logger.info(f"🆕 Created OrderProcessing for order #{order.id} and cashier {cashier.id}")
+        
+        # Отмечаем заказ как отправленный на доставку
+        processing.mark_delivering()
+        order.status = 'delivering'
+        order.save()
+        
+        return Response({'message': 'Заказ отправлен на доставку'})
+    
+    @action(detail=True, methods=['post'])
+    def complete(self, request, pk=None):
+        """Завершить обработку заказа"""
+        order = get_object_or_404(Order, pk=pk)
+        cashier = request.user
+        
+        # Проверяем, может ли кассир обработать этот заказ
+        can_handle, message = cashier.can_handle_order(order)
+        if not can_handle:
+            return Response({'error': message}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Получаем или создаем OrderProcessing
+        processing, created = OrderProcessing.objects.get_or_create(
+            order=order,
+            cashier=cashier,
+            defaults={
+                'status': 'delivering',
+                'notes': 'Автоматически создано при завершении заказа'
+            }
+        )
+        
+        # Если запись была создана, логируем это
+        if created:
+            logger.info(f"🆕 Created OrderProcessing for order #{order.id} and cashier {cashier.id}")
+        
+        # Завершаем обработку заказа
+        processing.complete()
+        order.status = 'completed'
+        order.save()
+        cashier.processed_orders_count += 1
+        cashier.save()
+        
+        # Логируем завершение заказа
+        logger.info(f"✅ Order #{order.id} completed by cashier {cashier.id} (service_type: {order.service_type})")
+        
+        return Response({'message': 'Заказ завершен'})

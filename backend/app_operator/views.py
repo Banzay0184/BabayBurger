@@ -949,23 +949,35 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             order.user.first_name = customer_name.strip()
             order.user.save()
         
-        # Получаем ресторан из запроса
-        restaurant_id = request.data.get('restaurant_id')
-        if not restaurant_id:
-            return Response(
-                {'error': 'Необходимо указать ресторан для доставки'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Проверяем, что ресторан существует и активен
+        # Определяем ресторан в зависимости от типа заказа
         from api.models import Restaurant
-        try:
-            restaurant = Restaurant.objects.get(id=restaurant_id, is_active=True)
-        except Restaurant.DoesNotExist:
-            return Response(
-                {'error': 'Ресторан не найден или неактивен'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        restaurant = None
+        
+        if order.service_type == 'pickup':
+            # Для самовывоза ресторан уже должен быть указан
+            if order.restaurant:
+                restaurant = order.restaurant
+            else:
+                return Response(
+                    {'error': 'Для заказа на самовывоз ресторан должен быть указан при создании'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            # Для доставки ресторан выбирается оператором
+            restaurant_id = request.data.get('restaurant_id')
+            if not restaurant_id:
+                return Response(
+                    {'error': 'Необходимо указать ресторан для доставки'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            try:
+                restaurant = Restaurant.objects.get(id=restaurant_id, is_active=True)
+            except Restaurant.DoesNotExist:
+                return Response(
+                    {'error': 'Ресторан не найден или неактивен'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         
         # Обновляем статус заказа
         old_status = order.status
@@ -992,6 +1004,38 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             reason='Заказ подтвержден оператором и передан на кухню'
         )
         
+        # Создаем OrderProcessing для кассиров ресторана
+        from app_cashier.models import OrderProcessing, Cashier
+        from app_cashier.models import CashierNotification
+        
+        # Находим активных кассиров ресторана
+        restaurant_cashiers = Cashier.objects.filter(
+            restaurant=restaurant,
+            is_active_cashier=True
+        )
+        
+        # Создаем OrderProcessing для каждого кассира ресторана
+        for cashier in restaurant_cashiers:
+            # Создаем OrderProcessing, если его еще нет
+            order_processing, created = OrderProcessing.objects.get_or_create(
+                order=order,
+                cashier=cashier,
+                defaults={
+                    'status': 'received',
+                    'notes': 'Заказ подтвержден оператором и передан на кухню'
+                }
+            )
+            
+            # Создаем уведомление для кассира
+            if created:
+                CashierNotification.objects.create(
+                    cashier=cashier,
+                    notification_type='new_order',
+                    title='Новый заказ для приготовления',
+                    message=f'Заказ #{order.id} подтвержден оператором и передан на кухню. Сумма: {order.total_price} UZS',
+                    order=order
+                )
+        
         return Response({
             'message': f'Заказ подтвержден и передан в ресторан "{restaurant.name}"',
             'order': OrderForOperatorSerializer(order).data
@@ -1013,46 +1057,66 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
                 order_latitude = order.address.latitude
                 order_longitude = order.address.longitude
                 
-                # Фильтруем рестораны по городу заказа
-                restaurants = Restaurant.objects.filter(
-                    is_active=True,
-                    city__iexact=order_city
-                )
+                # Фильтруем рестораны в зависимости от типа заказа
+                if order.service_type == 'pickup':
+                    # Для самовывоза показываем все активные рестораны с самовывозом
+                    restaurants = Restaurant.objects.filter(
+                        is_active=True,
+                        pickup_available=True
+                    )
+                    logger.info(f"🍽️ Заказ #{order.id} на самовывоз: найдено {restaurants.count()} ресторанов с самовывозом")
+                else:
+                    # Для доставки фильтруем по городу заказа
+                    restaurants = Restaurant.objects.filter(
+                        is_active=True,
+                        city__iexact=order_city
+                    )
+                    logger.info(f"🚚 Заказ #{order.id} на доставку в {order_city}: найдено {restaurants.count()} ресторанов")
                 
-                # Дополнительно проверяем зоны доставки для каждого ресторана
+                # Формируем список подходящих ресторанов
                 suitable_restaurants = []
                 for restaurant in restaurants:
-                    # Проверяем, есть ли зоны доставки в городе ресторана
-                    from api.models import DeliveryZone
-                    delivery_zones = DeliveryZone.objects.filter(
-                        city__iexact=restaurant.city,
-                        is_active=True
-                    )
-                    
-                    if delivery_zones.exists():
-                        # Проверяем, попадает ли адрес заказа в зоны доставки
-                        can_deliver = False
-                        for zone in delivery_zones:
-                            if zone.is_address_in_zone(order_latitude, order_longitude):
-                                can_deliver = True
-                                break
-                        
-                        if can_deliver:
-                            suitable_restaurants.append({
-                                'id': restaurant.id,
-                                'name': restaurant.name,
-                                'city': restaurant.city,
-                                'address': restaurant.address
-                            })
-                    else:
-                        # Если нет зон доставки, показываем все рестораны в городе
+                    if order.service_type == 'pickup':
+                        # Для самовывоза добавляем все рестораны без проверки зон
                         suitable_restaurants.append({
                             'id': restaurant.id,
                             'name': restaurant.name,
                             'city': restaurant.city,
                             'address': restaurant.address
                         })
+                    else:
+                        # Для доставки проверяем зоны доставки
+                        from api.models import DeliveryZone
+                        delivery_zones = DeliveryZone.objects.filter(
+                            city__iexact=restaurant.city,
+                            is_active=True
+                        )
+                        
+                        if delivery_zones.exists():
+                            # Проверяем, попадает ли адрес заказа в зоны доставки
+                            can_deliver = False
+                            for zone in delivery_zones:
+                                if zone.is_address_in_zone(order_latitude, order_longitude):
+                                    can_deliver = True
+                                    break
+                            
+                            if can_deliver:
+                                suitable_restaurants.append({
+                                    'id': restaurant.id,
+                                    'name': restaurant.name,
+                                    'city': restaurant.city,
+                                    'address': restaurant.address
+                                })
+                        else:
+                            # Если нет зон доставки, показываем все рестораны в городе
+                            suitable_restaurants.append({
+                                'id': restaurant.id,
+                                'name': restaurant.name,
+                                'city': restaurant.city,
+                                'address': restaurant.address
+                            })
                 
+                logger.info(f"✅ Возвращаем {len(suitable_restaurants)} подходящих ресторанов для заказа #{order.id}")
                 return Response({
                     'restaurants': suitable_restaurants
                 })

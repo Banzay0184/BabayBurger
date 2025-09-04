@@ -137,7 +137,7 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            'id', 'user', 'restaurant', 'items', 'total_price', 'status', 'service_type', 'address',
+            'id', 'user', 'restaurant', 'items', 'total_price', 'status', 'service_type', 'payment_method', 'address',
             'phone', 'created_at', 'updated_at', 'promotion', 'delivery_fee', 
             'discounted_total', 'delivery_time', 'notes', 'promo_code',
             'discount_amount', 'final_price'
@@ -147,7 +147,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создания заказа"""
     class Meta:
         model = Order
-        fields = ['total_price', 'address', 'phone', 'delivery_time', 'notes', 'service_type', 'restaurant']
+        fields = ['total_price', 'address', 'phone', 'delivery_time', 'notes', 'service_type', 'payment_method', 'restaurant']
 
 class DeliveryZoneSerializer(serializers.ModelSerializer):
     """Сериализатор для зон доставки"""

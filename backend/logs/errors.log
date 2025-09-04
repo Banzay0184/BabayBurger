@@ -4038,3 +4038,437 @@ Traceback (most recent call last):
     ).exists()
     ^
 SyntaxError: positional argument follows keyword argument
+[2025-09-03 17:53:07,383] ERROR log log_response 241 - Internal Server Error: /static/admin/img/icon-changelink.svg
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-03 17:53:07,396] ERROR log log_response 241 - Internal Server Error: /static/admin/img/icon-viewlink.svg
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-03 18:02:04,256] ERROR log log_response 241 - Internal Server Error: /static/admin/img/icon-changelink.svg
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-03 18:02:04,310] ERROR log log_response 241 - Internal Server Error: /static/admin/img/icon-viewlink.svg
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-03 18:02:05,404] ERROR log log_response 241 - Internal Server Error: /static/admin/img/icon-changelink.svg
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-03 18:02:05,420] ERROR log log_response 241 - Internal Server Error: /static/admin/img/icon-viewlink.svg
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-03 22:05:26,908] ERROR log log_response 241 - Internal Server Error: /static/admin/img/icon-changelink.svg
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-03 22:05:26,919] ERROR log log_response 241 - Internal Server Error: /static/admin/img/icon-viewlink.svg
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-04 08:07:51,476] ERROR log log_response 241 - Internal Server Error: /static/admin/js/vendor/jquery/jquery.js
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-04 10:59:14,258] ERROR log log_response 241 - Internal Server Error: /static/admin/js/vendor/jquery/jquery.js
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-04 10:59:37,304] ERROR log log_response 241 - Internal Server Error: /static/admin/js/vendor/jquery/jquery.js
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-04 10:59:37,317] ERROR log log_response 241 - Internal Server Error: /static/admin/js/cancel.js
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-04 10:59:41,754] ERROR log log_response 241 - Internal Server Error: /static/admin/js/vendor/jquery/jquery.js
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+[2025-09-04 10:59:44,314] ERROR log log_response 241 - Internal Server Error: /static/admin/js/vendor/jquery/jquery.js
+Traceback (most recent call last):
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/asgiref/sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/views/static.py", line 34, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shakhzodabidov/Projects/BabayBurgerMiniApp/backend/venv/lib/python3.13/site-packages/django/utils/_os.py", line 17, in safe_join
+    final_path = abspath(join(base, *paths))
+                         ~~~~^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 77, in join
+TypeError: expected str, bytes or os.PathLike object, not NoneType
