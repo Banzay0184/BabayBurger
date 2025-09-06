@@ -17,7 +17,6 @@ export const CashierDashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<Order[]>([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
   const navigate = useNavigate();
@@ -119,9 +118,6 @@ export const CashierDashboardPage: React.FC = () => {
     setIsSearchMode(false);
   }, []);
 
-  const handleSearchingChange = useCallback((searching: boolean) => {
-    setIsSearching(searching);
-  }, []);
 
   const handleDashboardUpdate = useCallback((newStats: DashboardStats) => {
     console.log('📊 Dashboard stats updated via WebSocket:', newStats);
@@ -370,7 +366,6 @@ export const CashierDashboardPage: React.FC = () => {
         <OrderSearch
           onSearchResults={handleSearchResults}
           onClearSearch={handleClearSearch}
-          onSearchingChange={handleSearchingChange}
         />
       </div>
 

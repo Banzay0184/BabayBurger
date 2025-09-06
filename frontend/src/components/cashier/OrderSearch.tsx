@@ -4,7 +4,7 @@ import { cashierApi, type Order } from '../../api/cashierApi';
 interface OrderSearchProps {
   onSearchResults: (orders: Order[]) => void;
   onClearSearch: () => void;
-  onSearchingChange: (searching: boolean) => void;
+  onSearchingChange?: (searching: boolean) => void;
 }
 
 export const OrderSearch: React.FC<OrderSearchProps> = ({
@@ -28,7 +28,7 @@ export const OrderSearch: React.FC<OrderSearchProps> = ({
     }
 
     try {
-      onSearchingChange(true);
+      onSearchingChange?.(true);
       setError(null);
       
       const response = await cashierApi.searchOrders(searchQuery);
@@ -43,7 +43,7 @@ export const OrderSearch: React.FC<OrderSearchProps> = ({
       setSearchCount(0);
       setShowResults(false);
     } finally {
-      onSearchingChange(false);
+      onSearchingChange?.(false);
     }
   }, [onSearchingChange, onSearchResults, onClearSearch]);
 
