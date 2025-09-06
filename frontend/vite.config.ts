@@ -6,14 +6,16 @@ export default defineConfig({
   plugins: [react()],
   base: "/",
   build: {
+    outDir: 'dist',
     rollupOptions: {
       input: {
-        main: 'index.html',
-        operator: 'operator.html'
+        main: 'index.html'
       }
     }
   },
   server: {
+    port: 5173,
+    open: true,
     proxy: {
       '/api': {
         target: 'https://3e3f35c1758a.ngrok-free.app', 

@@ -93,27 +93,14 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
     console.log('🔍 Текущий фильтр статуса:', selectedStatus);
     
     if (updatedOrder) {
-      // Проверяем, должен ли заказ оставаться в текущем фильтре
-      const shouldKeepInCurrentFilter = (order: OrderForOperator) => {
-        // Если фильтр "все заказы", показываем все
-        if (selectedStatus === 'all') return true;
-        
-        // Если фильтр по конкретному статусу, проверяем соответствие
-        const shouldKeep = order.status === selectedStatus;
-        console.log(`🔍 Заказ ${order.id}: статус ${order.status}, фильтр ${selectedStatus}, оставить: ${shouldKeep}`);
-        return shouldKeep;
-      };
-      
-      // Обновляем заказ в списке
+      // Обновляем заказ в списке без фильтрации
       setOrders(prev => {
         const updatedList = prev.map(order => 
           order.id === orderId ? updatedOrder : order
         );
         
-        // Фильтруем заказы по текущему статусу
-        const filteredList = updatedList.filter(shouldKeepInCurrentFilter);
-        console.log(`📋 Заказов до фильтрации: ${updatedList.length}, после: ${filteredList.length}`);
-        return filteredList;
+        console.log(`📋 Заказ ${orderId} обновлен в списке, статус: ${updatedOrder.status}`);
+        return updatedList;
       });
       
       // Обновляем дашборд
@@ -127,7 +114,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
       // Если нет полных данных заказа, перезагружаем список
       loadOrders();
     }
-  }, [selectedStatus]);
+  }, []);
 
   const handleNotification = useCallback((notification: OperatorNotification) => {
     console.log('🔔 Получено уведомление через WebSocket:', notification);
@@ -204,30 +191,17 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
   // Обновление заказа (после действий оператора)
   const updateOrder = useCallback((updatedOrder: OrderForOperator) => {
     console.log('🔄 Обновление заказа после действия оператора:', updatedOrder.id, updatedOrder.status);
-    console.log('🔍 Текущий фильтр статуса:', selectedStatus);
     
-    // Проверяем, должен ли заказ оставаться в текущем фильтре
-    const shouldKeepInCurrentFilter = (order: OrderForOperator) => {
-      // Если фильтр "все заказы", показываем все
-      if (selectedStatus === 'all') return true;
-      
-      // Если фильтр по конкретному статусу, проверяем соответствие
-      const shouldKeep = order.status === selectedStatus;
-      console.log(`🔍 Заказ ${order.id}: статус ${order.status}, фильтр ${selectedStatus}, оставить: ${shouldKeep}`);
-      return shouldKeep;
-    };
-    
+    // Обновляем заказ в списке без фильтрации
     setOrders(prev => {
-      if (!prev) return shouldKeepInCurrentFilter(updatedOrder) ? [updatedOrder] : [];
+      if (!prev) return [updatedOrder];
       
       const updatedList = prev.map(order => 
         order.id === updatedOrder.id ? updatedOrder : order
       );
       
-      // Фильтруем заказы по текущему статусу
-      const filteredList = updatedList.filter(shouldKeepInCurrentFilter);
-      console.log(`📋 Заказов до фильтрации: ${updatedList.length}, после: ${filteredList.length}`);
-      return filteredList;
+      console.log(`📋 Заказ ${updatedOrder.id} обновлен в списке, статус: ${updatedOrder.status}`);
+      return updatedList;
     });
     
     // Обновляем дашборд
@@ -241,7 +215,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
           : [updatedOrder]
       } : null);
     }
-  }, [dashboard, selectedStatus]);
+  }, [dashboard]);
 
   // Обработчики поиска
   const handleSearch = useCallback((query: string) => {
@@ -278,6 +252,38 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
 
     return () => clearInterval(interval);
   }, [isConnected]);
+
+  // Фильтрация заказов для отображения
+  const filteredOrders = React.useMemo(() => {
+    if (!orders || orders.length === 0) return [];
+    
+    let filtered = orders;
+    
+    // Фильтр по статусу
+    if (selectedStatus !== 'all') {
+      filtered = filtered.filter(order => order.status === selectedStatus);
+    }
+    
+    // Фильтр по зоне
+    if (selectedZone !== 'all') {
+      filtered = filtered.filter(order => order.delivery_zone_info?.id === parseInt(selectedZone));
+    }
+    
+    // Фильтр по поиску
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(order => 
+        order.id.toString().includes(query) ||
+        order.user_info?.first_name?.toLowerCase().includes(query) ||
+        order.user_info?.last_name?.toLowerCase().includes(query) ||
+        order.address_info?.phone_number?.includes(query) ||
+        order.address_info?.full_address?.toLowerCase().includes(query)
+      );
+    }
+    
+    console.log(`🔍 Фильтрация: ${orders.length} → ${filtered.length} заказов`);
+    return filtered;
+  }, [orders, selectedStatus, selectedZone, searchQuery]);
 
   // Обработка выхода
   const handleLogout = async () => {
@@ -486,7 +492,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
               </div>
 
               {/* Список заказов */}
-              {!orders || orders.length === 0 ? (
+              {!filteredOrders || filteredOrders.length === 0 ? (
                 <div className="text-center py-16">
                   <div className="text-gray-400 text-8xl mb-6">📋</div>
                   <p className="text-gray-400 text-xl mb-2">Нет заказов</p>
@@ -501,7 +507,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {orders.map((order) => (
+                  {filteredOrders.map((order) => (
                     <OrderCard
                       key={order.id}
                       order={order}

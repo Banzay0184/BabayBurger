@@ -442,8 +442,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                   // Формируем координаты правильно: longitude,latitude
                   coordinates: `${addressData.coordinates[0]},${addressData.coordinates[1]}`,
                   // coordinates[0] - это longitude, coordinates[1] - это latitude
-                  latitude: addressData.coordinates[1],
-                  longitude: addressData.coordinates[0],
+                  latitude: addressData.coordinates[0],
+                  longitude: addressData.coordinates[1],
                   phone_number: state.user?.phone_number || '+9989041410184',
                   formatted_phone: state.user?.phone_number || '+9989041410184',
                   full_address: addressData.address || 'Выбрано на карте',

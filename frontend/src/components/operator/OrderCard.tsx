@@ -108,17 +108,32 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
   const handleConfirmOrder = async (customerName?: string, restaurantId?: number) => {
     try {
       setIsLoading(true);
+      
+      // Оптимистичное обновление - сразу обновляем статус заказа
+      const optimisticOrder = {
+        ...order,
+        status: 'preparing' as OrderStatus,
+        updated_at: new Date().toISOString()
+      };
+      onUpdate(optimisticOrder);
+      setShowConfirmModal(false);
+      
+      console.log('⚡ Optimistic update: order confirmed, status changed to preparing');
+      
+      // Выполняем API вызов
       const result = await operatorOrdersApi.confirmOrder(order.id, customerName, restaurantId);
       
-      // Заказ сразу исчезает из списка (не ждем WebSocket)
+      // Обновляем с реальными данными с сервера
       onUpdate(result.order);
-      setShowConfirmModal(false);
       
       console.log('✅ Заказ подтвержден и передан на кухню');
       
     } catch (error) {
       console.error('Ошибка подтверждения заказа:', error);
       alert('Ошибка подтверждения заказа');
+      
+      // В случае ошибки откатываем изменения
+      onUpdate(order);
     } finally {
       setIsLoading(false);
     }
@@ -128,12 +143,30 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
   const handleRejectOrder = async (reason: string, customerName?: string) => {
     try {
       setIsLoading(true);
-      const result = await operatorOrdersApi.rejectOrder(order.id, reason, customerName);
-      onUpdate(result.order);
+      
+      // Оптимистичное обновление - сразу обновляем статус заказа
+      const optimisticOrder = {
+        ...order,
+        status: 'rejected' as OrderStatus,
+        updated_at: new Date().toISOString()
+      };
+      onUpdate(optimisticOrder);
       setShowRejectModal(false);
+      
+      console.log('⚡ Optimistic update: order rejected, status changed to rejected');
+      
+      // Выполняем API вызов
+      const result = await operatorOrdersApi.rejectOrder(order.id, reason, customerName);
+      
+      // Обновляем с реальными данными с сервера
+      onUpdate(result.order);
+      
     } catch (error) {
       console.error('Ошибка отклонения заказа:', error);
       alert('Ошибка отклонения заказа');
+      
+      // В случае ошибки откатываем изменения
+      onUpdate(order);
     } finally {
       setIsLoading(false);
     }
@@ -188,8 +221,12 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
                 )}
               </h3>
               <p className="text-gray-400 text-lg">
-                {getServiceTypeText(order.service_type)} • {getPaymentMethodIcon(order.payment_method)} {getPaymentMethodText(order.payment_method)} • {formatDate(order.created_at)}
+                {getServiceTypeText(order.service_type)} • {formatDate(order.created_at)}
               </p>
+              <div className="flex items-center space-x-2 mt-1">
+                <span className="text-lg">{getPaymentMethodIcon(order.payment_method)}</span>
+                <span className="text-gray-300 font-medium">{getPaymentMethodText(order.payment_method)}</span>
+              </div>
             </div>
           </div>
           

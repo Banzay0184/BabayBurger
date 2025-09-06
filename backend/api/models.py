@@ -386,6 +386,15 @@ class Restaurant(models.Model):
     working_hours = models.CharField(max_length=100, blank=True, null=True, verbose_name="Часы работы")
     description = models.TextField(blank=True, null=True, verbose_name="Описание")
     
+    # Telegram группа ресторана
+    telegram_group_id = models.CharField(
+        max_length=50, 
+        blank=True, 
+        null=True, 
+        verbose_name="ID Telegram группы ресторана",
+        help_text="ID группы Telegram для уведомлений о заказах (например: -1001234567890)"
+    )
+    
     # Статус
     is_active = models.BooleanField(default=True, verbose_name="Активен")
     
@@ -1146,6 +1155,13 @@ class Order(models.Model):
         null=True,
         verbose_name="Номер заказа оператора"
     )
+    
+    telegram_message_id = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="ID сообщения в Telegram"
+    )
 
     class Meta:
         verbose_name = "Заказ"
@@ -1431,3 +1447,151 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} - {self.menu_item.name}"
+
+
+class DeliveryDriver(models.Model):
+    """Модель для курьеров доставки"""
+    STATUS_CHOICES = [
+        ('active', 'Активный'),
+        ('busy', 'Занят'),
+        ('offline', 'Не в сети'),
+        ('blocked', 'Заблокирован'),
+    ]
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='delivery_driver')
+    telegram_id = models.BigIntegerField(unique=True, verbose_name="Telegram ID")
+    phone = models.CharField(max_length=20, validators=[validate_uzbek_phone_number], verbose_name="Телефон")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='offline', verbose_name="Статус")
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    max_orders = models.PositiveIntegerField(default=3, verbose_name="Максимум заказов")
+    current_orders_count = models.PositiveIntegerField(default=0, verbose_name="Текущее количество заказов")
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=5.0, verbose_name="Рейтинг")
+    total_deliveries = models.PositiveIntegerField(default=0, verbose_name="Всего доставок")
+    # Связь с ресторанами - курьер может работать с несколькими ресторанами
+    restaurants = models.ManyToManyField('Restaurant', blank=True, verbose_name="Рестораны", help_text="Рестораны, с которыми работает курьер")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    
+    class Meta:
+        verbose_name = "Курьер доставки"
+        verbose_name_plural = "Курьеры доставки"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['is_active']),
+            models.Index(fields=['telegram_id']),
+            models.Index(fields=['rating']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name} ({self.phone})"
+    
+    def can_take_order(self):
+        """Проверяет, может ли курьер взять новый заказ"""
+        return (
+            self.is_active and 
+            self.status in ['active', 'busy'] and 
+            self.current_orders_count < self.max_orders
+        )
+    
+    def update_status(self, new_status):
+        """Обновляет статус курьера"""
+        self.status = new_status
+        self.save(update_fields=['status', 'updated_at'])
+    
+    def increment_orders_count(self):
+        """Увеличивает счетчик текущих заказов"""
+        self.current_orders_count += 1
+        self.save(update_fields=['current_orders_count', 'updated_at'])
+    
+    def decrement_orders_count(self):
+        """Уменьшает счетчик текущих заказов"""
+        if self.current_orders_count > 0:
+            self.current_orders_count -= 1
+            self.save(update_fields=['current_orders_count', 'updated_at'])
+
+
+class DeliveryAssignment(models.Model):
+    """Модель для назначений заказов курьерам"""
+    STATUS_CHOICES = [
+        ('assigned', 'Назначен'),
+        ('accepted', 'Принят'),
+        ('picked_up', 'Забран'),
+        ('delivering', 'Доставляется'),
+        ('delivered', 'Доставлен'),
+        ('cancelled', 'Отменен'),
+    ]
+    
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='delivery_assignments', verbose_name="Заказ")
+    driver = models.ForeignKey(DeliveryDriver, on_delete=models.CASCADE, related_name='assignments', verbose_name="Курьер")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='assigned', verbose_name="Статус")
+    assigned_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата назначения")
+    accepted_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата принятия")
+    picked_up_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата забора")
+    delivered_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата доставки")
+    notes = models.TextField(blank=True, verbose_name="Заметки")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    
+    class Meta:
+        verbose_name = "Назначение доставки"
+        verbose_name_plural = "Назначения доставки"
+        ordering = ['-assigned_at']
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['driver']),
+            models.Index(fields=['order']),
+            models.Index(fields=['assigned_at']),
+        ]
+    
+    def __str__(self):
+        return f"Заказ #{self.order.id} - {self.driver.user.first_name} ({self.get_status_display()})"
+    
+    def accept(self):
+        """Принимает заказ курьером"""
+        if self.status == 'assigned':
+            self.status = 'accepted'
+            self.accepted_at = timezone.now()
+            self.driver.increment_orders_count()
+            self.save(update_fields=['status', 'accepted_at', 'updated_at'])
+            return True
+        return False
+    
+    def pick_up(self):
+        """Отмечает заказ как забранный"""
+        if self.status == 'accepted':
+            self.status = 'picked_up'
+            self.picked_up_at = timezone.now()
+            self.save(update_fields=['status', 'picked_up_at', 'updated_at'])
+            return True
+        return False
+    
+    def start_delivery(self):
+        """Начинает доставку"""
+        if self.status == 'picked_up':
+            self.status = 'delivering'
+            self.save(update_fields=['status', 'updated_at'])
+            return True
+        return False
+    
+    def complete_delivery(self):
+        """Завершает доставку"""
+        if self.status == 'delivering':
+            self.status = 'delivered'
+            self.delivered_at = timezone.now()
+            self.driver.decrement_orders_count()
+            self.driver.total_deliveries += 1
+            self.driver.save(update_fields=['current_orders_count', 'total_deliveries', 'updated_at'])
+            self.save(update_fields=['status', 'delivered_at', 'updated_at'])
+            return True
+        return False
+    
+    def cancel(self):
+        """Отменяет назначение"""
+        if self.status in ['assigned', 'accepted']:
+            self.status = 'cancelled'
+            if self.status == 'accepted':
+                self.driver.decrement_orders_count()
+            self.save(update_fields=['status', 'updated_at'])
+            return True
+        return False

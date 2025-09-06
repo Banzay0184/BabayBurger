@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.db.models import Sum, Count
-from .models import User, MenuItem, Order, OrderItem, Category, Address, AddOn, SizeOption, Promotion, DeliveryZone, Favorite, Restaurant, PromoCode, PromoCodeUsage
+from .models import User, MenuItem, Order, OrderItem, Category, Address, AddOn, SizeOption, Promotion, DeliveryZone, Favorite, Restaurant, PromoCode, PromoCodeUsage, DeliveryDriver, DeliveryAssignment
 
 
 @admin.register(Category)
@@ -283,9 +283,9 @@ class DeliveryZoneAdmin(admin.ModelAdmin):
 
 @admin.register(Restaurant)
 class RestaurantAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city', 'address', 'pickup_available', 'min_order_amount', 'is_active')
+    list_display = ('name', 'city', 'address', 'pickup_available', 'min_order_amount', 'has_telegram_group', 'is_active')
     list_filter = ('is_active', 'pickup_available', 'city')
-    search_fields = ('name', 'address', 'city')
+    search_fields = ('name', 'address', 'city', 'telegram_group_id')
     ordering = ['city', 'name']
     list_editable = ['pickup_available', 'min_order_amount', 'is_active']
     
@@ -301,11 +301,20 @@ class RestaurantAdmin(admin.ModelAdmin):
             'fields': ('pickup_available', 'min_order_amount', 'pickup_time'),
             'description': 'Настройки для самовывоза'
         }),
+        ('Telegram уведомления', {
+            'fields': ('telegram_group_id',),
+            'description': 'ID группы Telegram для уведомлений о заказах (например: -1001234567890)'
+        }),
         ('Дополнительно', {
             'fields': ('phone', 'working_hours', 'description'),
             'description': 'Дополнительная информация о ресторане'
         }),
     )
+    
+    def has_telegram_group(self, obj):
+        return bool(obj.telegram_group_id)
+    has_telegram_group.boolean = True
+    has_telegram_group.short_description = 'Telegram группа'
 
 
 @admin.register(PromoCode)
@@ -339,6 +348,71 @@ class PromoCodeUsageAdmin(admin.ModelAdmin):
     search_fields = ['promo_code__code', 'user__first_name', 'user__telegram_id']
     readonly_fields = ['used_at']
     ordering = ['-used_at']
+
+
+@admin.register(DeliveryDriver)
+class DeliveryDriverAdmin(admin.ModelAdmin):
+    list_display = ['user_name', 'phone', 'status', 'is_active', 'current_orders_count', 'max_orders', 'rating', 'total_deliveries', 'created_at']
+    list_filter = ['status', 'is_active', 'created_at']
+    search_fields = ['user__first_name', 'user__last_name', 'phone', 'telegram_id']
+    list_editable = ['status', 'is_active', 'max_orders']
+    readonly_fields = ['current_orders_count', 'total_deliveries', 'created_at', 'updated_at']
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('user', 'telegram_id', 'phone')
+        }),
+        ('Статус и настройки', {
+            'fields': ('status', 'is_active', 'max_orders')
+        }),
+        ('Рестораны', {
+            'fields': ('restaurants',),
+            'description': 'Выберите рестораны, с которыми работает курьер. Если не выбрано ни одного ресторана, курьер может работать со всеми заказами.'
+        }),
+        ('Статистика', {
+            'fields': ('current_orders_count', 'total_deliveries', 'rating'),
+            'classes': ('collapse',)
+        }),
+        ('Временные метки', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def user_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}".strip()
+    user_name.short_description = 'Имя курьера'
+
+
+@admin.register(DeliveryAssignment)
+class DeliveryAssignmentAdmin(admin.ModelAdmin):
+    list_display = ['order_id', 'driver_name', 'status', 'assigned_at', 'accepted_at', 'delivered_at']
+    list_filter = ['status', 'assigned_at', 'accepted_at', 'delivered_at']
+    search_fields = ['order__id', 'driver__user__first_name', 'driver__user__last_name']
+    readonly_fields = ['assigned_at', 'accepted_at', 'picked_up_at', 'delivered_at', 'created_at', 'updated_at']
+    ordering = ['-assigned_at']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('order', 'driver', 'status')
+        }),
+        ('Временные метки', {
+            'fields': ('assigned_at', 'accepted_at', 'picked_up_at', 'delivered_at')
+        }),
+        ('Дополнительно', {
+            'fields': ('notes', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def order_id(self, obj):
+        return f"#{obj.order.id}"
+    order_id.short_description = 'Заказ'
+    
+    def driver_name(self, obj):
+        return f"{obj.driver.user.first_name} {obj.driver.user.last_name}".strip()
+    driver_name.short_description = 'Курьер'
 
 
 # Настройка админ-панели

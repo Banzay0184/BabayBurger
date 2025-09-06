@@ -5,9 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:operator": "vite --config vite.operator.config.ts",
     "build": "tsc -b && vite build",
-    "build:operator": "tsc -b && vite build --config vite.operator.config.ts",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -16,7 +14,8 @@
     "axios": "^1.7.9",
     "pinia": "^3.0.3",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.8.2"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",

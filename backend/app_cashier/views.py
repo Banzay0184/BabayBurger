@@ -86,6 +86,49 @@ class CashierOrderViewSet(viewsets.ModelViewSet):
         }
         return Response(dashboard_data)
     
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        """Поиск заказов по телефону, номеру заказа или номеру очереди"""
+        cashier = request.user
+        query = request.GET.get('q', '').strip()
+        
+        if not query:
+            return Response({'error': 'Параметр поиска не указан'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Базовый queryset для ресторана кассира
+        base_queryset = Order.objects.filter(restaurant=cashier.restaurant)
+        
+        from django.db.models import Q
+        
+        # Определяем тип поиска и выполняем соответствующий запрос
+        if query.isdigit():
+            # Если запрос состоит только из цифр, ищем точное совпадение по ID заказа
+            order_id = int(query)
+            all_orders = base_queryset.filter(id=order_id)
+        else:
+            # Если запрос не только цифры, ищем по телефону и номеру очереди
+            all_orders = base_queryset.filter(
+                Q(operator_order_number__icontains=query) |
+                Q(phone__icontains=query)
+            )
+        
+        # Применяем select_related и prefetch_related
+        all_orders = all_orders.select_related(
+            'user', 'address', 'restaurant'
+        ).prefetch_related(
+            'orderitem_set__menu_item',
+            'cashier_processing'
+        ).order_by('-created_at')
+        
+        # Сериализуем результаты
+        serializer = OrderForCashierSerializer(all_orders, many=True)
+        
+        return Response({
+            'orders': serializer.data,
+            'query': query,
+            'count': all_orders.count()
+        })
+    
     @action(detail=True, methods=['post'])
     def start_processing(self, request, pk=None):
         """Начать обработку заказа"""

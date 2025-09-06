@@ -31,26 +31,49 @@ export const ConfirmOrderModal: React.FC<ConfirmOrderModalProps> = ({
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<number | null>(null);
   const [loadingRestaurants, setLoadingRestaurants] = useState(false);
+  const [isChangingRestaurant, setIsChangingRestaurant] = useState(false);
+  const [restaurantsError, setRestaurantsError] = useState<string | null>(null);
 
   // Загружаем рестораны при открытии модального окна
   useEffect(() => {
-    if (isOpen && restaurants.length === 0) {
+    if (isOpen && restaurants.length === 0 && order.service_type === 'delivery') {
+      loadRestaurants();
+    } else if (isOpen && order.service_type === 'pickup' && order.restaurant_info && !isChangingRestaurant) {
+      // Для самовывоза используем ресторан из заказа
+      setSelectedRestaurantId(order.restaurant_info.id);
+    }
+  }, [isOpen, order.service_type, order.restaurant_info, isChangingRestaurant]);
+
+  // Загружаем рестораны для самовывоза при изменении ресторана
+  useEffect(() => {
+    if (isChangingRestaurant && restaurants.length === 0) {
       loadRestaurants();
     }
-  }, [isOpen]);
+  }, [isChangingRestaurant]);
 
   const loadRestaurants = async () => {
     try {
       setLoadingRestaurants(true);
+      setRestaurantsError(null);
+      console.log(`🔍 Загружаем рестораны для заказа #${order.id} (${order.service_type})`);
+      
       // Передаем ID заказа для фильтрации ресторанов по зоне доставки
       const response = await operatorOrdersApi.getRestaurants(order.id);
+      console.log('📦 Получены рестораны:', response.restaurants);
+      
       setRestaurants(response.restaurants);
+      
       // Автоматически выбираем первый ресторан
       if (response.restaurants.length > 0) {
         setSelectedRestaurantId(response.restaurants[0].id);
+        console.log(`✅ Автоматически выбран ресторан: ${response.restaurants[0].name}`);
+      } else {
+        console.warn('⚠️ Рестораны не найдены');
+        setRestaurantsError('Рестораны не найдены');
       }
     } catch (error) {
-      console.error('Ошибка загрузки ресторанов:', error);
+      console.error('❌ Ошибка загрузки ресторанов:', error);
+      setRestaurantsError('Ошибка загрузки ресторанов');
     } finally {
       setLoadingRestaurants(false);
     }
@@ -156,40 +179,134 @@ export const ConfirmOrderModal: React.FC<ConfirmOrderModalProps> = ({
           </div>
         </div>
 
-        {/* Выбор ресторана */}
+        {/* Информация о ресторане */}
         <div className="bg-gray-700 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
           <h4 className="text-white font-semibold mb-1 sm:mb-2 flex items-center text-xs sm:text-sm">
             <span className="mr-1 sm:mr-2">🍽️</span>
-            Выберите ресторан
+            {order.service_type === 'pickup' ? 'Ресторан для самовывоза' : 'Выберите ресторан'}
           </h4>
-          <p className="text-gray-400 text-xs mb-2 sm:mb-3">
-            Показаны только рестораны, которые могут доставить в зону заказа
-          </p>
           
-          {loadingRestaurants ? (
-            <div className="text-center py-4">
-              <div className="text-gray-400">Загрузка ресторанов...</div>
+          {order.service_type === 'pickup' ? (
+            // Для самовывоза показываем информацию о ресторане
+            <div className="space-y-2">
+              {!isChangingRestaurant ? (
+                // Показываем текущий ресторан
+                <div>
+                  {order.restaurant_info ? (
+                    <div className="bg-gray-600 rounded-lg p-3">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="text-white font-medium">{order.restaurant_info.name}</div>
+                          <div className="text-gray-300 text-sm">{order.restaurant_info.address}</div>
+                          <div className="text-gray-400 text-xs">{order.restaurant_info.city}</div>
+                          {order.restaurant_info.phone && (
+                            <div className="text-gray-400 text-xs">📞 {order.restaurant_info.phone}</div>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => setIsChangingRestaurant(true)}
+                          disabled={isLoading}
+                          className="text-blue-400 hover:text-blue-300 text-sm transition-colors disabled:opacity-50 ml-2"
+                        >
+                          ✏️ Изменить
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-red-400 text-sm">
+                      ⚠️ Ресторан не указан для заказа на самовывоз
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Показываем выбор ресторана
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-gray-400 text-xs">Выберите новый ресторан для самовывоза</p>
+                    <button
+                      onClick={() => {
+                        setIsChangingRestaurant(false);
+                        setSelectedRestaurantId(order.restaurant_info?.id || null);
+                      }}
+                      disabled={isLoading}
+                      className="text-gray-400 hover:text-gray-300 text-sm transition-colors disabled:opacity-50"
+                    >
+                      ✕ Отмена
+                    </button>
+                  </div>
+                  
+                  {loadingRestaurants ? (
+                    <div className="text-center py-4">
+                      <div className="text-gray-400">Загрузка ресторанов...</div>
+                    </div>
+                  ) : restaurantsError ? (
+                    <div className="text-center py-4">
+                      <div className="text-red-400 text-sm mb-2">{restaurantsError}</div>
+                      <button
+                        onClick={loadRestaurants}
+                        disabled={isLoading}
+                        className="text-blue-400 hover:text-blue-300 text-sm transition-colors disabled:opacity-50"
+                      >
+                        🔄 Попробовать снова
+                      </button>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedRestaurantId || ''}
+                      onChange={(e) => setSelectedRestaurantId(Number(e.target.value))}
+                      disabled={isLoading}
+                      className="w-full bg-gray-600 text-white px-3 py-2 rounded-lg border border-gray-500 focus:border-blue-500 focus:outline-none text-sm"
+                    >
+                      <option value="">Выберите ресторан</option>
+                      {restaurants.map((restaurant) => (
+                        <option key={restaurant.id} value={restaurant.id}>
+                          {restaurant.name} - {restaurant.city}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  
+                  {!selectedRestaurantId && !loadingRestaurants && !restaurantsError && (
+                    <p className="text-red-400 text-sm mt-2">
+                      ⚠️ Необходимо выбрать ресторан
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
-            <select
-              value={selectedRestaurantId || ''}
-              onChange={(e) => setSelectedRestaurantId(Number(e.target.value))}
-              disabled={isLoading}
-              className="w-full bg-gray-600 text-white px-3 py-2 rounded-lg border border-gray-500 focus:border-blue-500 focus:outline-none text-sm"
-            >
-              <option value="">Выберите ресторан</option>
-              {restaurants.map((restaurant) => (
-                <option key={restaurant.id} value={restaurant.id}>
-                  {restaurant.name} - {restaurant.city}
-                </option>
-              ))}
-            </select>
-          )}
-          
-          {!selectedRestaurantId && !loadingRestaurants && (
-            <p className="text-red-400 text-sm mt-2">
-              ⚠️ Необходимо выбрать ресторан для подтверждения заказа
-            </p>
+            // Для доставки показываем выбор ресторана
+            <div>
+              <p className="text-gray-400 text-xs mb-2 sm:mb-3">
+                Показаны только рестораны, которые могут доставить в зону заказа
+              </p>
+              
+              {loadingRestaurants ? (
+                <div className="text-center py-4">
+                  <div className="text-gray-400">Загрузка ресторанов...</div>
+                </div>
+              ) : (
+                <select
+                  value={selectedRestaurantId || ''}
+                  onChange={(e) => setSelectedRestaurantId(Number(e.target.value))}
+                  disabled={isLoading}
+                  className="w-full bg-gray-600 text-white px-3 py-2 rounded-lg border border-gray-500 focus:border-blue-500 focus:outline-none text-sm"
+                >
+                  <option value="">Выберите ресторан</option>
+                  {restaurants.map((restaurant) => (
+                    <option key={restaurant.id} value={restaurant.id}>
+                      {restaurant.name} - {restaurant.city}
+                    </option>
+                  ))}
+                </select>
+              )}
+              
+              {!selectedRestaurantId && !loadingRestaurants && (
+                <p className="text-red-400 text-sm mt-2">
+                  ⚠️ Необходимо выбрать ресторан для подтверждения заказа
+                </p>
+              )}
+            </div>
           )}
         </div>
 
@@ -214,8 +331,22 @@ export const ConfirmOrderModal: React.FC<ConfirmOrderModalProps> = ({
             Отмена
           </button>
           <button
-            onClick={() => onConfirm(customerName, selectedRestaurantId || undefined)}
-            disabled={isLoading || !selectedRestaurantId}
+            onClick={() => {
+              if (order.service_type === 'pickup') {
+                // Для самовывоза передаем ID ресторана (из заказа или выбранный)
+                const restaurantId = isChangingRestaurant ? selectedRestaurantId : order.restaurant_info?.id;
+                onConfirm(customerName, restaurantId || undefined);
+              } else {
+                // Для доставки передаем выбранный ресторан
+                onConfirm(customerName, selectedRestaurantId || undefined);
+              }
+            }}
+            disabled={
+              isLoading || 
+              (order.service_type === 'delivery' && !selectedRestaurantId) || 
+              (order.service_type === 'pickup' && !order.restaurant_info && !isChangingRestaurant) ||
+              (order.service_type === 'pickup' && isChangingRestaurant && !selectedRestaurantId)
+            }
             className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors disabled:opacity-50"
           >
             {isLoading ? 'Подтверждаем...' : '✅ Подтвердить'}

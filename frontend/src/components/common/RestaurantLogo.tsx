@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import logo from '/public/logobabay.png';
+import logo from '/logobabay.png';
 import { useLanguage } from '../../context/LanguageContext';
 
 
@@ -15,11 +15,13 @@ declare global {
 interface RestaurantLogoProps {
   onAnimationComplete?: () => void;
   showLogo?: boolean;
+  className?: string;
 }
 
 export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({ 
   onAnimationComplete,
-  showLogo = true 
+  showLogo = true,
+  className = ""
 }) => {
   const { t } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
@@ -123,7 +125,7 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({
             <img 
               src={logo} 
               alt="Babay Food" 
-              className="w-full h-full object-contain drop-shadow-2xl" 
+              className={`w-full h-full object-contain drop-shadow-2xl ${className}`}
             />
           </div>
         </div>

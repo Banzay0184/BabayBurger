@@ -8,3 +8,4 @@ class ApiConfig(AppConfig):
     def ready(self):
         """Импортируем сигналы при запуске приложения"""
         import api.signals
+        import api.delivery_signals
