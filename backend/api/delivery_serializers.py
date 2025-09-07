@@ -148,3 +148,5 @@ class OrderForDeliverySerializer(serializers.ModelSerializer):
     def get_items_count(self, obj):
         return obj.items_details.count() if hasattr(obj, 'items_details') else 0
 
+
+

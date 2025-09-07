@@ -62,8 +62,8 @@ export const useCashierWebSocket = (options: UseCashierWebSocketOptions = {}): U
       baseUrl = `${protocol}//localhost:8000`;
     } else {
       // В продакшене используем ngrok URL для WebSocket (бэкенд на ngrok)
-      const ngrokUrl = import.meta.env.VITE_WEBSOCKET_URL || '3e3f35c1758a.ngrok-free.app';
-      baseUrl = `${protocol}//${ngrokUrl}`;
+      const productionUrl = import.meta.env.VITE_WEBSOCKET_URL || 'api.babayfood.uz';
+      baseUrl = `${protocol}//${productionUrl}`;
     }
     
     if (cashierId) {

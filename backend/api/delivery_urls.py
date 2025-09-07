@@ -23,3 +23,5 @@ urlpatterns = [
     path('stats/', delivery_views.delivery_stats, name='delivery-stats'),
 ]
 
+
+

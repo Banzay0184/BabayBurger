@@ -18,7 +18,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'https://3e3f35c1758a.ngrok-free.app', 
+        target: 'https://api.babayfood.uz/', 
         changeOrigin: true,
         secure: false,
         headers: {
@@ -26,7 +26,7 @@ export default defineConfig({
         },
       },
       '/media': {
-        target: 'https://3e3f35c1758a.ngrok-free.app',
+        target: 'https://api.babayfood.uz/',
         changeOrigin: true,
         secure: false,
         headers: {

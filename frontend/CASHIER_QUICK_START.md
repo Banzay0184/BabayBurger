@@ -39,3 +39,4 @@ npm run build:cashier
 Интерфейс доступен по адресу: `/cashier.html`
 
 
+

@@ -20,7 +20,7 @@ export const testWebSocketConnection = async (): Promise<WebSocketTestResult> =>
         baseUrl = `${protocol}//localhost:8000`;
       } else {
         // В продакшене используем ngrok URL для WebSocket (бэкенд на ngrok)
-        const ngrokUrl = import.meta.env.VITE_WEBSOCKET_URL || '3e3f35c1758a.ngrok-free.app';
+        const ngrokUrl = import.meta.env.VITE_WEBSOCKET_URL || 'https://api.babayfood.uz/api';
         baseUrl = `${protocol}//${ngrokUrl}`;
       }
       const wsUrl = `${baseUrl}/ws/operator/`;
@@ -98,7 +98,7 @@ export const testWebSocketWithPing = async (): Promise<WebSocketTestResult> => {
         baseUrl = `${protocol}//localhost:8000`;
       } else {
         // В продакшене используем ngrok URL для WebSocket (бэкенд на ngrok)
-        const ngrokUrl = import.meta.env.VITE_WEBSOCKET_URL || '3e3f35c1758a.ngrok-free.app';
+        const ngrokUrl = import.meta.env.VITE_WEBSOCKET_URL || 'https://api.babayfood.uz/api';
         baseUrl = `${protocol}//${ngrokUrl}`;
       }
       const wsUrl = `${baseUrl}/ws/operator/`;

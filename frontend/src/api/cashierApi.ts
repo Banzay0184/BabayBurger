@@ -1,4 +1,6 @@
-const API_BASE_URL = '/api/cashier';
+import { cashierApi as unifiedCashierApi } from './unifiedClient';
+
+const API_BASE_URL = 'cashier';
 
 export interface CashierLoginData {
   username: string;
@@ -96,27 +98,37 @@ class CashierApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
+    // Используем унифицированный клиент для запросов
+    const method = options.method || 'GET';
     const url = `${API_BASE_URL}${endpoint}`;
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...(options.headers as Record<string, string>),
-    };
-
-    if (this.token) {
-      headers['Authorization'] = `Token ${this.token}`;
+    
+    try {
+      let response: T;
+      
+      switch (method.toUpperCase()) {
+        case 'GET':
+          response = await unifiedCashierApi.get<T>(url);
+          break;
+        case 'POST':
+          response = await unifiedCashierApi.post<T>(url, options.body ? JSON.parse(options.body as string) : undefined);
+          break;
+        case 'PUT':
+          response = await unifiedCashierApi.put<T>(url, options.body ? JSON.parse(options.body as string) : undefined);
+          break;
+        case 'PATCH':
+          response = await unifiedCashierApi.patch<T>(url, options.body ? JSON.parse(options.body as string) : undefined);
+          break;
+        case 'DELETE':
+          response = await unifiedCashierApi.delete<T>(url);
+          break;
+        default:
+          throw new Error(`Unsupported HTTP method: ${method}`);
+      }
+      
+      return response;
+    } catch (error: any) {
+      throw new Error(error.message || `HTTP error! status: ${error.code}`);
     }
-
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
   }
 
   async login(loginData: CashierLoginData): Promise<LoginResponse> {
@@ -126,6 +138,7 @@ class CashierApiClient {
     });
 
     this.token = response.token;
+    unifiedCashierApi.setToken(response.token);
     localStorage.setItem('cashier_token', response.token);
     localStorage.setItem('cashier_data', JSON.stringify(response.cashier));
 
@@ -134,6 +147,7 @@ class CashierApiClient {
 
   logout(): void {
     this.token = null;
+    unifiedCashierApi.removeToken();
     localStorage.removeItem('cashier_token');
     localStorage.removeItem('cashier_data');
   }
@@ -179,7 +193,7 @@ class CashierApiClient {
   }
 
   isAuthenticated(): boolean {
-    return !!this.token;
+    return !!this.token && unifiedCashierApi.isAuthenticated();
   }
 
   getCashierData(): CashierData | null {

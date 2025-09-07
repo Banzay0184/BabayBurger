@@ -1,5 +1,4 @@
-import apiClient from './client';
-import axios from 'axios';
+import { clientApi, publicApi } from './unifiedClient';
 import type { User } from './types';
 import { API_CONFIG } from '../config/api';
 
@@ -17,16 +16,8 @@ interface TelegramWidgetUser {
   allows_write_to_pm?: boolean;
 }
 
-// Специальный клиент для авторизации Telegram (без CSRF)
-const telegramAuthClient = axios.create({
-  baseURL: API_CONFIG.BASE_URL,
-  timeout: API_CONFIG.TIMEOUT,
-  headers: {
-    'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true', // Для обхода предупреждений ngrok
-  },
-  withCredentials: false, // Отключаем CSRF для авторизации
-});
+// Используем публичный API клиент для авторизации Telegram
+const telegramAuthClient = publicApi;
 
 // Функция для диагностики подключения к API
 export const diagnoseApiConnection = async () => {
@@ -45,8 +36,8 @@ export const diagnoseApiConnection = async () => {
     
     // Тестируем menu endpoint
     console.log('🍔 Тестируем menu endpoint...');
-    const menuResponse = await apiClient.get('menu/');
-    console.log('✅ Menu endpoint работает:', menuResponse.data);
+    const menuResponse = await clientApi.get('menu/');
+    console.log('✅ Menu endpoint работает:', menuResponse);
     
     // Тестируем CORS
     const corsTest = await fetch(`${API_CONFIG.BASE_URL}test/`, {
@@ -65,7 +56,7 @@ export const diagnoseApiConnection = async () => {
         baseUrl: API_CONFIG.BASE_URL,
         cors: corsTest.status === 200,
         testResponse,
-        menuResponse: menuResponse.data
+        menuResponse: menuResponse
       }
     };
   } catch (error: any) {
@@ -88,13 +79,9 @@ export const testApiConnection = async () => {
     console.log('🔍 Тестируем подключение к API...');
     console.log('🌐 URL:', `${API_CONFIG.BASE_URL}test/`);
     
-    const response = await telegramAuthClient.get('test/', {
-      headers: {
-        'ngrok-skip-browser-warning': 'true',
-      },
-    });
-    console.log('✅ API подключение успешно:', response.data);
-    return response.data;
+    const response = await telegramAuthClient.get('test/');
+    console.log('✅ API подключение успешно:', response);
+    return response;
   } catch (error: any) {
     console.error('❌ Ошибка подключения к API:', error);
     
@@ -165,15 +152,10 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
     });
     
     // Отправляем JSON запрос
-    const response = await telegramAuthClient.post(authUrl, authData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-      },
-    });
+    const response = await telegramAuthClient.post(authUrl, authData);
     
-    console.log('✅ Ответ авторизации:', response.data);
-    return response.data;
+    console.log('✅ Ответ авторизации:', response);
+    return response;
   } catch (error: any) {
     console.error('❌ Ошибка авторизации Telegram:', error);
     
@@ -242,15 +224,10 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
           console.log(`${key}: ${value}`);
         }
         
-        const formResponse = await telegramAuthClient.post('auth/telegram-widget/', formData, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'ngrok-skip-browser-warning': 'true',
-          },
-        });
+        const formResponse = await telegramAuthClient.post('auth/telegram-widget/', formData);
         
-        console.log('✅ Ответ авторизации (FormData):', formResponse.data);
-        return formResponse.data;
+        console.log('✅ Ответ авторизации (FormData):', formResponse);
+        return formResponse;
       } catch (formError: any) {
         console.error('❌ Ошибка авторизации Telegram (FormData):', formError);
         
@@ -286,8 +263,8 @@ export const telegramAuth = async (userData: TelegramWidgetUser) => {
 // Функция для проверки статуса авторизации
 export const checkAuthStatus = async () => {
   try {
-    const response = await apiClient.get('auth/status/');
-    return response.data;
+    const response = await clientApi.get('auth/status/');
+    return response;
   } catch (error: any) {
     console.error('Ошибка проверки статуса:', error);
     throw error;
@@ -297,12 +274,12 @@ export const checkAuthStatus = async () => {
 // Функция для выхода
 export const logout = async () => {
   try {
-    const response = await apiClient.post('auth/logout/');
-    localStorage.removeItem('auth_token');
-    return response.data;
+    const response = await clientApi.post('auth/logout/');
+    clientApi.removeToken();
+    return response;
   } catch (error: any) {
     console.error('Ошибка выхода:', error);
-    localStorage.removeItem('auth_token');
+    clientApi.removeToken();
     throw error;
   }
 };
@@ -310,14 +287,12 @@ export const logout = async () => {
 export const authApi = {
   async getCurrentUser(): Promise<User> {
     try {
-      const response = await apiClient.get('auth/user/');
-      return response.data;
+      const response = await clientApi.get<User>('auth/user/');
+      return response;
     } catch (error: any) {
       throw { message: error.message || 'Ошибка получения данных пользователя', code: error.code || 'USER_ERROR' };
     }
   },
-
-
 
   // Добавляем функции для совместимости
   async telegramAuth(authData: any): Promise<any> {
@@ -329,6 +304,6 @@ export const authApi = {
   },
 
   async logout(): Promise<void> {
-    return logout();
+    await logout();
   }
 }; 

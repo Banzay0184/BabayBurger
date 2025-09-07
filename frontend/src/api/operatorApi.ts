@@ -8,26 +8,23 @@ import type {
   OperatorNotification,
   DeliveryZone
 } from '../types/operator';
+import { operatorApi as unifiedOperatorApi } from './unifiedClient';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://3e3f35c1758a.ngrok-free.app';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api';
 
-// Получение токена из localStorage
-const getAuthToken = (): string | null => {
-  return localStorage.getItem('operator_token');
-};
+// Упрощенные функции для совместимости
+// const getAuthToken = (): string | null => {
+//   return unifiedOperatorApi.getToken();
+// };
 
-// Базовые заголовки для API запросов
 const getHeaders = (): HeadersInit => {
-  const token = getAuthToken();
   return {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'ngrok-skip-browser-warning': 'true',
-    ...(token && { 'Authorization': `Token ${token}` })
   };
 };
 
-// Обработка ошибок API
 const handleApiError = async (response: Response): Promise<never> => {
   try {
     const errorData = await response.json();
@@ -41,47 +38,41 @@ const handleApiError = async (response: Response): Promise<never> => {
 export const operatorAuthApi = {
   // Вход оператора
   login: async (username: string, password: string): Promise<{ token: string; operator: Operator }> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/auth/login/`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ username, password })
-    });
-
-    if (!response.ok) {
-      await handleApiError(response);
+    try {
+      const data = await unifiedOperatorApi.post<{ token: string; operator: Operator }>('operator/auth/login/', {
+        username,
+        password
+      });
+      
+      unifiedOperatorApi.setToken(data.token);
+      localStorage.setItem('operator_token', data.token);
+      return data;
+    } catch (error: any) {
+      throw new Error(error.message || 'Ошибка входа оператора');
     }
-
-    const data = await response.json();
-    localStorage.setItem('operator_token', data.token);
-    return data;
   },
 
-              // Выход оператора
-            logout: async (): Promise<void> => {
-              const response = await fetch(`${API_BASE_URL}/api/operator/auth/logout/`, {
-                method: 'POST',
-                headers: getHeaders()
-              });
+  // Выход оператора
+  logout: async (): Promise<void> => {
+    try {
+      await unifiedOperatorApi.post('operator/auth/logout/');
+    } catch (error) {
+      console.error('Ошибка при выходе:', error);
+    } finally {
+      unifiedOperatorApi.removeToken();
+      localStorage.removeItem('operator_token');
+    }
+  },
 
-              if (response.ok) {
-                localStorage.removeItem('operator_token');
-              }
-            },
-
-            // Проверка токена
-            verifyToken: async (): Promise<{ valid: boolean; operator?: Operator; error?: string }> => {
-              const response = await fetch(`${API_BASE_URL}/api/operator/auth/verify_token/`, {
-                method: 'GET',
-                headers: getHeaders()
-              });
-
-              if (response.ok) {
-                const data = await response.json();
-                return data;
-              } else {
-                return { valid: false, error: 'Токен недействителен' };
-              }
-            },
+  // Проверка токена
+  verifyToken: async (): Promise<{ valid: boolean; operator?: Operator; error?: string }> => {
+    try {
+      const data = await unifiedOperatorApi.get<{ valid: boolean; operator?: Operator; error?: string }>('operator/auth/verify_token/');
+      return data;
+    } catch (error: any) {
+      return { valid: false, error: 'Токен недействителен' };
+    }
+  },
 
   // Регистрация оператора
   register: async (operatorData: {
@@ -93,19 +84,15 @@ export const operatorAuthApi = {
     password: string;
     password_confirm: string;
   }): Promise<{ token: string; operator: Operator }> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/auth/register/`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify(operatorData)
-    });
-
-    if (!response.ok) {
-      await handleApiError(response);
+    try {
+      const data = await unifiedOperatorApi.post<{ token: string; operator: Operator }>('operator/auth/register/', operatorData);
+      
+      unifiedOperatorApi.setToken(data.token);
+      localStorage.setItem('operator_token', data.token);
+      return data;
+    } catch (error: any) {
+      throw new Error(error.message || 'Ошибка регистрации оператора');
     }
-
-    const data = await response.json();
-    localStorage.setItem('operator_token', data.token);
-    return data;
   }
 };
 
@@ -113,16 +100,11 @@ export const operatorAuthApi = {
 export const operatorOrdersApi = {
   // Получение дашборда оператора
   getDashboard: async (): Promise<OperatorDashboard> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/dashboard/`, {
-      method: 'GET',
-      headers: getHeaders()
-    });
-
-    if (!response.ok) {
-      await handleApiError(response);
+    try {
+      return await unifiedOperatorApi.get<OperatorDashboard>('operator/operator-orders/dashboard/');
+    } catch (error: any) {
+      throw new Error(error.message || 'Ошибка получения дашборда');
     }
-
-    return response.json();
   },
 
   // Получение списка заказов с фильтрами
@@ -134,7 +116,7 @@ export const operatorOrdersApi = {
     if (filters.date) params.append('date', filters.date);
     if (filters.search) params.append('search', filters.search);
 
-    const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/?${params}`, {
+    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/?${params}`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -157,7 +139,7 @@ export const operatorOrdersApi = {
 
   // Получение деталей заказа
   getOrder: async (orderId: number): Promise<OrderForOperator> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/${orderId}/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -175,7 +157,7 @@ export const operatorOrdersApi = {
       return [];
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/operator/search-suggestions/?q=${encodeURIComponent(query)}`, {
+    const response = await fetch(`${API_BASE_URL}/operator/search-suggestions/?q=${encodeURIComponent(query)}`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -190,7 +172,7 @@ export const operatorOrdersApi = {
 
   // Назначить заказ себе
   assignToMe: async (orderId: number): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/${orderId}/assign_to_me/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/assign_to_me/`, {
       method: 'POST',
       headers: getHeaders()
     });
@@ -204,7 +186,7 @@ export const operatorOrdersApi = {
 
   // Начать обработку заказа
   startProcessing: async (orderId: number): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/${orderId}/start_processing/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/start_processing/`, {
       method: 'POST',
       headers: getHeaders()
     });
@@ -218,7 +200,7 @@ export const operatorOrdersApi = {
 
   // Отметить звонок клиенту
   callCustomer: async (orderId: number): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/${orderId}/call_customer/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/call_customer/`, {
       method: 'POST',
       headers: getHeaders()
     });
@@ -232,7 +214,7 @@ export const operatorOrdersApi = {
 
   // Обновить результат звонка
   updateCallResult: async (orderId: number, callResult: CallResultUpdate): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/${orderId}/update_call_result/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/update_call_result/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(callResult)
@@ -247,7 +229,7 @@ export const operatorOrdersApi = {
 
   // Добавить заметки к заказу
   addNotes: async (orderId: number, notes: OperatorNotes): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/${orderId}/add_notes/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/add_notes/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(notes)
@@ -263,8 +245,8 @@ export const operatorOrdersApi = {
   // Получить список ресторанов
   getRestaurants: async (orderId?: number): Promise<{ restaurants: Array<{ id: number; name: string; city: string; address: string }> }> => {
     const url = orderId 
-      ? `${API_BASE_URL}/api/operator/operator-orders/restaurants/?order_id=${orderId}`
-      : `${API_BASE_URL}/api/operator/operator-orders/restaurants/`;
+      ? `${API_BASE_URL}/operator/operator-orders/restaurants/?order_id=${orderId}`
+      : `${API_BASE_URL}/operator/operator-orders/restaurants/`;
       
     const response = await fetch(url, {
       method: 'GET',
@@ -280,7 +262,7 @@ export const operatorOrdersApi = {
 
   // Подтвердить заказ
   confirmOrder: async (orderId: number, customerName?: string, restaurantId?: number): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/${orderId}/confirm_order/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/confirm_order/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ 
@@ -298,7 +280,7 @@ export const operatorOrdersApi = {
 
   // Отклонить заказ
   rejectOrder: async (orderId: number, reason?: string, customerName?: string): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/${orderId}/reject_order/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/reject_order/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ reason, customer_name: customerName })
@@ -313,7 +295,7 @@ export const operatorOrdersApi = {
 
   // Обновить имя клиента
   updateCustomerName: async (orderId: number, customerName: string): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/operator-orders/${orderId}/update_customer_name/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/update_customer_name/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ customer_name: customerName })
@@ -331,7 +313,7 @@ export const operatorOrdersApi = {
 export const operatorProfileApi = {
   // Получение профиля текущего оператора
   getProfile: async (): Promise<Operator> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/profile/me/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/profile/me/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -345,7 +327,7 @@ export const operatorProfileApi = {
 
   // Обновление профиля
   updateProfile: async (profileData: Partial<Operator>): Promise<Operator> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/profile/update_profile/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/profile/update_profile/`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify(profileData)
@@ -363,7 +345,7 @@ export const operatorProfileApi = {
 export const operatorNotificationsApi = {
   // Получение уведомлений
   getNotifications: async (): Promise<OperatorNotification[]> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/notifications/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/notifications/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -377,7 +359,7 @@ export const operatorNotificationsApi = {
 
   // Отметить уведомление как прочитанное
   markAsRead: async (notificationId: number): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/notifications/mark_read/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/notifications/mark_read/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ notification_id: notificationId })
@@ -390,7 +372,7 @@ export const operatorNotificationsApi = {
 
   // Получить количество непрочитанных уведомлений
   getUnreadCount: async (): Promise<{ count: number }> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/notifications/unread_count/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/notifications/unread_count/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -407,7 +389,7 @@ export const operatorNotificationsApi = {
 export const operatorAnalyticsApi = {
   // Получение дневной аналитики
   getDailyAnalytics: async (date: string): Promise<any> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/analytics/daily/?date=${date}`, {
+    const response = await fetch(`${API_BASE_URL}/operator/analytics/daily/?date=${date}`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -421,7 +403,7 @@ export const operatorAnalyticsApi = {
 
   // Получение сводной аналитики
   getSummary: async (): Promise<any> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/analytics/summary/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/analytics/summary/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -438,7 +420,7 @@ export const operatorAnalyticsApi = {
 export const operatorDeliveryZonesApi = {
   // Получение зон доставки оператора
   getZones: async (): Promise<DeliveryZone[]> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/delivery-zones/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/delivery-zones/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -455,7 +437,7 @@ export const operatorDeliveryZonesApi = {
 export const operatorMapApi = {
   // Получение заказов для карты
   getOrdersForMap: async (): Promise<OrderForOperator[]> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/map/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/map/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -469,7 +451,7 @@ export const operatorMapApi = {
 
   // Получение маршрута до заказа
   getRoute: async (orderId: number): Promise<any> => {
-    const response = await fetch(`${API_BASE_URL}/api/operator/map/${orderId}/route/`, {
+    const response = await fetch(`${API_BASE_URL}/operator/map/${orderId}/route/`, {
       method: 'GET',
       headers: getHeaders()
     });
