@@ -264,7 +264,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Создаем гостевого пользователя (используем тестовый telegram_id для API)
       const guestUser: User = {
         id: 5, // ID тестового пользователя
-        telegram_id: 123456789, // telegram_id тестового пользователя для API
+        telegram_id: 908758841, // telegram_id тестового пользователя для API
         first_name: 'Гость',
         last_name: '',
         username: 'guest',

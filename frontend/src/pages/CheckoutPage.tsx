@@ -50,7 +50,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
   useEffect(() => {
     const loadAddresses = async () => {
       try {
-        const telegramId = state.user?.telegram_id?.toString() || '123456789';
+        const telegramId = state.user?.telegram_id?.toString() || '908758841';
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api';
         const response = await fetch(`${apiBaseUrl}/addresses/?telegram_id=${telegramId}`, {
           headers: {
@@ -234,7 +234,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
     setError(null);
 
     try {
-      const telegramId = state.user?.telegram_id?.toString() || '123456789';
+      const telegramId = state.user?.telegram_id?.toString() || '908758841';
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api';
       
       let finalAddressId = selectedAddress?.id;
@@ -450,7 +450,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                   is_primary: false,
                   created_at: new Date().toISOString(),
                   updated_at: new Date().toISOString(),
-                  telegram_id: String(state.user?.telegram_id || '123456789')
+                  telegram_id: String(state.user?.telegram_id || '908758841')
                 };
                 
                 setSelectedAddress(tempAddress);

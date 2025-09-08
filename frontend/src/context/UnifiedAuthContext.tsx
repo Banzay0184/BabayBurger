@@ -249,7 +249,7 @@ export const UnifiedAuthProvider: React.FC<UnifiedAuthProviderProps> = ({
       
       const guestUser: User = {
         id: 5,
-        telegram_id: 123456789,
+        telegram_id: 908758841,
         first_name: 'Гость',
         last_name: '',
         username: 'guest',
