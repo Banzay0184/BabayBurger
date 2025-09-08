@@ -13,6 +13,27 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
+# Определяем интерпретатор Python и pip (предпочтительно из venv)
+VENV_DIR=""
+if [ -d "venv" ] && [ -x "venv/bin/python" ]; then
+    VENV_DIR="venv"
+elif [ -d ".venv" ] && [ -x ".venv/bin/python" ]; then
+    VENV_DIR=".venv"
+fi
+
+if [ -n "$VENV_DIR" ]; then
+    PY_BIN="$PWD/$VENV_DIR/bin/python"
+    PIP_BIN="$PWD/$VENV_DIR/bin/pip"
+else
+    PY_BIN="$(command -v python3 || command -v python)"
+    PIP_BIN="$(command -v pip3 || command -v pip)"
+fi
+
+if [ -z "$PY_BIN" ] || [ -z "$PIP_BIN" ]; then
+    echo "❌ Не найден python/pip. Установите Python 3 и pip или создайте venv"
+    exit 1
+fi
+
 # Безопасная загрузка только нужных переменных из .env
 echo "⚙️ Загружаю переменные из .env (DB_* и SECRET_KEY)"
 if [ -f .env ]; then
@@ -50,11 +71,11 @@ fi
 
 # Установка зависимостей
 echo "📦 Устанавливаем зависимости..."
-pip install -r requirements.txt
+"$PIP_BIN" install -r requirements.txt
 
 # Проверка подключения к PostgreSQL
 echo "🔍 Проверяем подключение к PostgreSQL..."
-python -c "
+"$PY_BIN" -c "
 import psycopg2
 import os
 try:
@@ -74,15 +95,15 @@ except Exception as e:
 
 # Применение миграций
 echo "🗄️ Применяем миграции базы данных..."
-python manage.py migrate
+"$PY_BIN" manage.py migrate
 
 # Сбор статических файлов
 echo "📁 Собираем статические файлы..."
-python manage.py collectstatic --noinput
+"$PY_BIN" manage.py collectstatic --noinput
 
 # Создание суперпользователя (если не существует)
 echo "👤 Проверяем суперпользователя..."
-python manage.py shell -c "
+"$PY_BIN" manage.py shell -c "
 from django.contrib.auth import get_user_model
 User = get_user_model()
 if not User.objects.filter(is_superuser=True).exists():
