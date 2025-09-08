@@ -39,6 +39,33 @@ echo "🧪 Быстрая проверка наличия ключевых ди�
 [ -d "$BACKEND_DIR" ] || { echo "❌ Нет директории backend"; exit 1; }
 [ -d "$FRONTEND_DIR" ] || { echo "❌ Нет директории frontend"; exit 1; }
 
+echo "⚙️ Загружаю переменные из backend/.env (DB_* и SECRET_KEY)"
+if [ -f "$BACKEND_DIR/.env" ]; then
+  while IFS= read -r _line; do
+    case "$_line" in
+      \#*|'' ) continue ;;
+    esac
+    case "$_line" in
+      DB_NAME=*|DB_USER=*|DB_PASSWORD=*|DB_HOST=*|DB_PORT=*|SECRET_KEY=* )
+        _key="${_line%%=*}"
+        _val="${_line#*=}"
+        _val="${_val%\r}"
+        _val="${_val%\n}"
+        _val="${_val%\r\n}"
+        _val="${_val%\"}"
+        _val="${_val#\"}"
+        _val="${_val%\'}"
+        _val="${_val#\'}"
+        export "${_key}=${_val}"
+        ;;
+      * ) : ;;
+    esac
+  done < "$BACKEND_DIR/.env"
+  echo "✅ Переменные окружения загружены"
+else
+  echo "ℹ️  Файл $BACKEND_DIR/.env не найден — пропускаю загрузку"
+fi
+
 echo "📦 Backend: установка зависимостей и миграции"
 cd "$BACKEND_DIR"
 
