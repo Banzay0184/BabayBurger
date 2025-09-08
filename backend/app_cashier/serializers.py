@@ -57,20 +57,21 @@ class CashierLoginSerializer(serializers.Serializer):
         
         if username and password:
             # Ищем кассира напрямую в модели Cashier
+            cleaned_username = str(username).strip()
             try:
-                cleaned_username = str(username).strip()
                 cashier = Cashier.objects.get(username__iexact=cleaned_username)
-                if not cashier.check_password(password):
-                    raise serializers.ValidationError('Неверные учетные данные')
-                if not cashier.is_active:
-                    raise serializers.ValidationError('Аккаунт кассира деактивирован')
-                if not cashier.is_active_cashier:
-                    raise serializers.ValidationError('Кассир неактивен')
-                
-                attrs['cashier'] = cashier
-                return attrs
             except Cashier.DoesNotExist:
-                raise serializers.ValidationError('Неверные учетные данные')
+                raise serializers.ValidationError({'username': ['Пользователь не найден']})
+
+            if not cashier.check_password(password):
+                raise serializers.ValidationError({'password': ['Неверный пароль']})
+            if not cashier.is_active:
+                raise serializers.ValidationError({'non_field_errors': ['Аккаунт кассира деактивирован']})
+            if not cashier.is_active_cashier:
+                raise serializers.ValidationError({'non_field_errors': ['Кассир неактивен']})
+
+            attrs['cashier'] = cashier
+            return attrs
         else:
             raise serializers.ValidationError('Необходимо указать имя пользователя и пароль')
 
