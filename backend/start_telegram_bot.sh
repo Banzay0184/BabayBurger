@@ -64,10 +64,15 @@ fi
 WEBSOCKET_PORT="${WEBSOCKET_PORT:-8001}"
 
 if [ -n "$UVICORN_BIN" ]; then
-  echo "🌐 Запуск WebSocket (uvicorn) на порту $WEBSOCKET_PORT..."
-  "$UVICORN_BIN" config.asgi:application --host 0.0.0.0 --port "$WEBSOCKET_PORT" --workers 1 --no-access-log &
-  UVICORN_PID=$!
-  echo "➡️  uvicorn PID: $UVICORN_PID"
+  # Проверяем, занят ли порт
+  if command -v lsof >/dev/null 2>&1 && lsof -i TCP:"$WEBSOCKET_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+    echo "⚠️ Порт $WEBSOCKET_PORT уже занят. Пропускаю запуск uvicorn."
+  else
+    echo "🌐 Запуск WebSocket (uvicorn) на порту $WEBSOCKET_PORT..."
+    "$UVICORN_BIN" config.asgi:application --host 0.0.0.0 --port "$WEBSOCKET_PORT" --workers 1 --no-access-log &
+    UVICORN_PID=$!
+    echo "➡️  uvicorn PID: $UVICORN_PID"
+  fi
 else
   echo "⚠️ uvicorn не найден. Установите его (pip install uvicorn) для запуска WebSocket."
 fi

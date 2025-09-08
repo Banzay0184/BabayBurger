@@ -75,9 +75,13 @@ do_start() {
     echo "⚠️ uvicorn не найден. Установите его: pip install uvicorn"
   else
     local WEBSOCKET_PORT="${WEBSOCKET_PORT:-8001}"
-    echo "➡️  Uvicorn: 0.0.0.0:${WEBSOCKET_PORT}"
-    "$UVICORN_BIN" config.asgi:application --host 0.0.0.0 --port "$WEBSOCKET_PORT" --workers 1 --no-access-log &
-    echo "✅ WebSocket запущен (PID $!)"
+    if command -v lsof >/dev/null 2>&1 && lsof -i TCP:"$WEBSOCKET_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+      echo "⚠️ Порт ${WEBSOCKET_PORT} уже занят. Пропускаю запуск uvicorn."
+    else
+      echo "➡️  Uvicorn: 0.0.0.0:${WEBSOCKET_PORT}"
+      "$UVICORN_BIN" config.asgi:application --host 0.0.0.0 --port "$WEBSOCKET_PORT" --workers 1 --no-access-log &
+      echo "✅ WebSocket запущен (PID $!)"
+    fi
   fi
 
   # Определяем celery
