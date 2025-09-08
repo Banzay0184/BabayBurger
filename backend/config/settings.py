@@ -30,6 +30,7 @@ ALLOWED_HOSTS = [
     '.ngrok-free.app',  # Все ngrok домены
     '.ngrok.io',  # Старые ngrok домены
     'api.babayfood.uz',
+    'www.babayfood.uz',
 ]
 
 # CSRF настройки для фронтенда и ngrok
@@ -43,6 +44,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.ngrok-free.app',
     'https://*.ngrok.io',
     'https://api.babayfood.uz',
+    'https://www.babayfood.uz',
 ]
 
 # CORS настройки для API
