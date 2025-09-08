@@ -11,10 +11,10 @@ import { MainPage } from './pages/MainPage';
 import { OperatorApp } from './pages/operator/OperatorApp';
 import { CashierApp } from './pages/cashier/CashierApp';
 import { TelegramWebAppOptimizer } from './components/common/TelegramWebAppOptimizer';
+import { AdminApp } from './pages/admin/AdminApp';
 import { LoadingScreen } from './components/common/LoadingScreen';
 import { initTelegramWebApp } from './utils/telegram';
 import './styles/telegram-optimization.css';
-import { AdminApp } from './pages/AdminApp';
 
 // Компонент для основного приложения (клиент)
 const ClientApp: React.FC = () => {
@@ -98,7 +98,7 @@ const App: React.FC = () => {
               path="/cashier/*" 
               element={<CashierInterface />} 
             />
-
+            
             {/* Админский интерфейс */}
             <Route 
               path="/admin/*" 

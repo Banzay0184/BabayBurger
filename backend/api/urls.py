@@ -4,7 +4,6 @@ from .views import (
     AddressView, AddressDetailView, OrderCreateView, GeocodeView, GeocodeResultView,
     DeliveryZoneView, AddressDeliveryZoneCheckView, AddressDeliveryZoneDetailView,
     MenuItemViewSet, AddOnViewSet, SizeOptionViewSet, PromotionViewSet, OrderViewSet,
-    CategoryViewSet,
     TelegramLoginWidgetView, TestUserCreationView, HitsView, NewItemsView, PromotionsView,
     MenuItemDetailView, CategoryItemsView, SearchView, FeaturedView, PriceRangeView,
     StatisticsView, CartView, TestConnectionView, FavoriteView, RestaurantView,
@@ -18,7 +17,6 @@ router.register(r'add-ons', AddOnViewSet)
 router.register(r'size-options', SizeOptionViewSet)
 router.register(r'promotions', PromotionViewSet)
 router.register(r'orders', OrderViewSet)
-router.register(r'categories-admin', CategoryViewSet, basename='categories-admin')
 
 urlpatterns = [
     # Тестовый endpoint

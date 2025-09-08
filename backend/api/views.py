@@ -1577,23 +1577,6 @@ class MenuItemViewSet(viewsets.ModelViewSet):
         
         return queryset
 
-class CategoryViewSet(viewsets.ModelViewSet):
-    """CRUD для категорий (админ-интерфейс).
-
-    Внимание: используется отдельный роутер-префикс в urls ("categories-admin"),
-    чтобы не ломать существующий публичный эндпоинт `CategoryView` (GET /categories/).
-    """
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    permission_classes = [AllowAny]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name', 'description']
-    ordering_fields = ['created_at', 'name']
-
-    def perform_destroy(self, instance):
-        # Безопасное удаление:Можно расширить проверками на связанные MenuItem
-        super().perform_destroy(instance)
-
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
