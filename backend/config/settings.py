@@ -50,6 +50,10 @@ CSRF_TRUSTED_ORIGINS = [
     'https://www.babayfood.uz',
 ]
 
+# Trust proxy headers (e.g., Nginx) for correct host and scheme detection
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # CORS настройки для API
 CORS_ALLOW_ALL_ORIGINS = False  # Отключаем автоматический CORS для нашего middleware
 CORS_ALLOW_CREDENTIALS = False  # Изменяем на False для совместимости
