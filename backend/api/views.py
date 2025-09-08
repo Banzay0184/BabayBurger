@@ -325,8 +325,8 @@ class WebhookView(APIView):
                 
                 logger.info(f"Received message: {text} from user {user.get('id')} in chat {chat_id}")
                 
-                # Обработка команды /start
-                if text == '/start':
+                # Обработка команды /start (включая deep-linking: /start <payload>)
+                if isinstance(text, str) and text.startswith('/start'):
                     return self.handle_start_command(chat_id, user)
                 
                 # Обработка других команд
