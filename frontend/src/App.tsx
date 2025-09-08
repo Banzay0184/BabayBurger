@@ -14,6 +14,7 @@ import { TelegramWebAppOptimizer } from './components/common/TelegramWebAppOptim
 import { LoadingScreen } from './components/common/LoadingScreen';
 import { initTelegramWebApp } from './utils/telegram';
 import './styles/telegram-optimization.css';
+import { AdminApp } from './pages/AdminApp';
 
 // Компонент для основного приложения (клиент)
 const ClientApp: React.FC = () => {
@@ -96,6 +97,12 @@ const App: React.FC = () => {
             <Route 
               path="/cashier/*" 
               element={<CashierInterface />} 
+            />
+
+            {/* Админский интерфейс */}
+            <Route 
+              path="/admin/*" 
+              element={<AdminApp />} 
             />
             
             {/* Редирект на главную для неизвестных маршрутов */}

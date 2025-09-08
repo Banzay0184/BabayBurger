@@ -164,3 +164,49 @@ export type {
   ApiPriceRange,
   ApiStatistics
 } from './menuTypes'; 
+
+// --- Admin: Categories CRUD (uses categories-admin endpoints) ---
+export interface AdminCategoryCreateInput {
+  name: string;
+  description?: string;
+}
+
+export interface AdminCategoryUpdateInput {
+  name?: string;
+  description?: string;
+}
+
+export const adminCategoriesApi = {
+  async list() {
+    try {
+      const data = await clientApi.get<ApiCategory[]>('categories-admin/');
+      return { data, success: true } as ApiResponse<ApiCategory[]>;
+    } catch (error: any) {
+      return { error, success: false } as ApiResponse<ApiCategory[]>;
+    }
+  },
+  async create(payload: AdminCategoryCreateInput) {
+    try {
+      const data = await clientApi.post<ApiCategory>('categories-admin/', payload);
+      return { data, success: true } as ApiResponse<ApiCategory>;
+    } catch (error: any) {
+      return { error, success: false } as ApiResponse<ApiCategory>;
+    }
+  },
+  async update(id: number, payload: AdminCategoryUpdateInput) {
+    try {
+      const data = await clientApi.patch<ApiCategory>(`categories-admin/${id}/`, payload);
+      return { data, success: true } as ApiResponse<ApiCategory>;
+    } catch (error: any) {
+      return { error, success: false } as ApiResponse<ApiCategory>;
+    }
+  },
+  async remove(id: number) {
+    try {
+      await clientApi.delete(`categories-admin/${id}/`);
+      return { success: true } as ApiResponse<null>;
+    } catch (error: any) {
+      return { error, success: false } as ApiResponse<null>;
+    }
+  },
+};
