@@ -4,7 +4,10 @@
 
 set -e
 
-echo "🚀 Начинаем деплой BabayBurger Backend..."
+MODE="${1:-deploy}"
+echo "🚀 BabayBurger Backend: режим=${MODE}"
+
+PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Проверка наличия .env файла
 if [ ! -f .env ]; then
@@ -33,6 +36,53 @@ if [ -z "$PY_BIN" ] || [ -z "$PIP_BIN" ]; then
     echo "❌ Не найден python/pip. Установите Python 3 и pip или создайте venv"
     exit 1
 fi
+
+# Загружаем переменные окружения из .env (аккуратно)
+if [ -f .env ]; then
+  export $(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' .env | sed 's/\r$//' | xargs)
+fi
+
+export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-config.settings}
+
+do_start() {
+  echo "🌐 Запуск WebSocket (uvicorn) и Celery..."
+
+  # Определяем uvicorn
+  local UVICORN_BIN=""
+  if [ -n "$VENV_DIR" ] && [ -x "$PROJECT_DIR/$VENV_DIR/bin/uvicorn" ]; then
+    UVICORN_BIN="$PROJECT_DIR/$VENV_DIR/bin/uvicorn"
+  else
+    UVICORN_BIN="$(command -v uvicorn || true)"
+  fi
+
+  if [ -z "$UVICORN_BIN" ]; then
+    echo "⚠️ uvicorn не найден. Установите его: pip install uvicorn"
+  else
+    local WEBSOCKET_PORT="${WEBSOCKET_PORT:-8001}"
+    echo "➡️  Uvicorn: 0.0.0.0:${WEBSOCKET_PORT}"
+    "$UVICORN_BIN" config.asgi:application --host 0.0.0.0 --port "$WEBSOCKET_PORT" --workers 1 --no-access-log &
+    echo "✅ WebSocket запущен (PID $!)"
+  fi
+
+  # Определяем celery
+  local CELERY_BIN=""
+  if [ -n "$VENV_DIR" ] && [ -x "$PROJECT_DIR/$VENV_DIR/bin/celery" ]; then
+    CELERY_BIN="$PROJECT_DIR/$VENV_DIR/bin/celery"
+  else
+    CELERY_BIN="$(command -v celery || true)"
+  fi
+
+  if [ -z "$CELERY_BIN" ]; then
+    echo "❌ celery не найден. Установите зависимости: pip install -r requirements.txt"
+    exit 1
+  fi
+
+  echo "🚀 Запуск Celery worker (очереди: notifications,default)"
+  exec "$CELERY_BIN" -A config.celery:app worker -l info -Q notifications,default --hostname telegram@%h
+}
+
+do_deploy() {
+  echo "🔧 Выполняется деплой..."
 
 # Безопасная загрузка только нужных переменных из .env (жёстко переопределяем)
 echo "⚙️ Загружаю переменные из .env (DB_* и SECRET_KEY)"
@@ -63,17 +113,17 @@ if [ -z "$DB_NAME" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ] || [ -z "$DB_
     exit 1
 fi
 
-# Установка зависимостей
-echo "📦 Устанавливаем зависимости..."
-"$PIP_BIN" install -r requirements.txt
+  # Установка зависимостей
+  echo "📦 Устанавливаем зависимости..."
+  "$PIP_BIN" install -r requirements.txt
 
-# Проверка подключения к PostgreSQL
-echo "🔍 Проверяем подключение к PostgreSQL..."
-echo "DB_NAME=$DB_NAME"
-echo "DB_USER=$DB_USER"
-echo "DB_HOST=$DB_HOST"
-echo "DB_PORT=$DB_PORT"
-"$PY_BIN" -c "
+  # Проверка подключения к PostgreSQL
+  echo "🔍 Проверяем подключение к PostgreSQL..."
+  echo "DB_NAME=$DB_NAME"
+  echo "DB_USER=$DB_USER"
+  echo "DB_HOST=$DB_HOST"
+  echo "DB_PORT=$DB_PORT"
+  "$PY_BIN" -c "
 import psycopg2
 import os
 from dotenv import dotenv_values
@@ -100,17 +150,17 @@ except Exception as e:
     exit(1)
 "
 
-# Применение миграций
-echo "🗄️ Применяем миграции базы данных..."
-"$PY_BIN" manage.py migrate
+  # Применение миграций
+  echo "🗄️ Применяем миграции базы данных..."
+  "$PY_BIN" manage.py migrate
 
-# Сбор статических файлов
-echo "📁 Собираем статические файлы..."
-"$PY_BIN" manage.py collectstatic --noinput
+  # Сбор статических файлов
+  echo "📁 Собираем статические файлы..."
+  "$PY_BIN" manage.py collectstatic --noinput
 
-# Создание суперпользователя (если не существует)
-echo "👤 Проверяем суперпользователя..."
-"$PY_BIN" manage.py shell -c "
+  # Создание суперпользователя (если не существует)
+  echo "👤 Проверяем суперпользователя..."
+  "$PY_BIN" manage.py shell -c "
 from django.contrib.auth import get_user_model
 User = get_user_model()
 if not User.objects.filter(is_superuser=True).exists():
@@ -119,11 +169,24 @@ else:
     print('Суперпользователь уже существует')
 "
 
-echo "✅ Деплой завершен успешно!"
-echo ""
-echo "Для запуска сервера используйте:"
-echo "  python manage.py runserver  # для разработки"
-echo "  gunicorn config.wsgi:application --bind 0.0.0.0:8000  # для продакшена"
-echo ""
-echo "Для запуска с Docker:"
-echo "  docker-compose up -d"
+  echo "✅ Деплой завершен успешно!"
+}
+
+case "$MODE" in
+  start)
+    do_start
+    ;;
+  up)
+    do_deploy
+    echo "🚀 Запускаю сервисы (WebSocket + Celery)"
+    do_start
+    ;;
+  deploy|*)
+    do_deploy
+    echo ""
+    echo "Для запуска фона (WebSocket+Celery):"
+    echo "  $0 start"
+    echo "Или всё сразу:"
+    echo "  $0 up"
+    ;;
+esac
