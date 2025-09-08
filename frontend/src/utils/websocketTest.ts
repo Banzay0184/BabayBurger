@@ -34,7 +34,7 @@ const buildWsBase = (override?: string): string => {
     return `${wsProtocol}//localhost:8000`;
   }
 
-  return `${wsProtocol}//www.babayfood.uz`;
+  return `${wsProtocol}//api.babayfood.uz`;
 };
 
 export const testWebSocketConnection = async (): Promise<WebSocketTestResult> => {

@@ -74,7 +74,7 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
       return `${wsProtocol}//localhost:8000`;
     }
 
-    return `${wsProtocol}//www.babayfood.uz`;
+    return `${wsProtocol}//api.babayfood.uz`;
   };
 
   // Определяем URL для WebSocket
