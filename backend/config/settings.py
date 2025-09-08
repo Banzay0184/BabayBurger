@@ -277,6 +277,7 @@ else:
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
+<<<<<<< Updated upstream
         'NAME': config('DB_NAME', default='babayburger'),
         'USER': config('DB_USER', default='babay'),
         'PASSWORD': config('DB_PASSWORD', default=''),
@@ -285,6 +286,13 @@ DATABASES = {
         'OPTIONS': {
             'connect_timeout': 10,
         },
+=======
+        'NAME': 'babay',
+        'USER': 'burger',
+        'PASSWORD': '16SkcP91',
+        'HOST': 'localhost',
+        'PORT': '5432',
+>>>>>>> Stashed changes
     }
 }
 
@@ -317,11 +325,11 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'static'
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+#STATICFILES_DIRS = [
+#    BASE_DIR / "static",
+#]
 
 # Настройки для медиа файлов (изображения)
 MEDIA_URL = '/media/'
@@ -395,3 +403,8 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+try:
+    from .settings_dev import *
+except ImportError:
+    pass
