@@ -31,7 +31,23 @@ fi
 
 # Загружаем переменные окружения из .env, если файл существует
 if [ -f .env ]; then
-  export $(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' .env | sed 's/\r$//' | xargs)
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      ''|'#'* ) continue;;
+      *'='* )
+        key="${line%%=*}"
+        val="${line#*=}"
+        key="${key%% }"; key="${key## }"
+        val="${val%$'\r'}"
+        val="${val%\n}"
+        val="${val%\r}"
+        case "$val" in
+          '"'*'"'|"'"*"'" ) val="${val:1:${#val}-2}";;
+        esac
+        export "$key=$val"
+      ;;
+    esac
+  done < .env
 fi
 
 # Устанавливаем переменную DJANGO_SETTINGS_MODULE, если не задана
