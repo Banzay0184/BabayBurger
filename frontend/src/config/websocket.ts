@@ -3,17 +3,37 @@
  */
 
 // Определяем URL бэкенда для WebSocket
-export const getWebSocketUrl = (path: string = ''): string => {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  
-  // В режиме разработки используем localhost:8000
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return `${protocol}//localhost:8000/ws${path}`;
+const buildWsBase = (override?: string): string => {
+  const isHttps = window.location.protocol === 'https:';
+  const wsProtocol = isHttps ? 'wss:' : 'ws:';
+
+  if (override && override.trim()) {
+    const raw = override.trim();
+    if (raw.startsWith('ws://') || raw.startsWith('wss://')) {
+      return raw.replace(/^http(s)?:/, wsProtocol);
+    }
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      try {
+        const u = new URL(raw);
+        return `${wsProtocol}//${u.host}`;
+      } catch {
+        return `${wsProtocol}//${raw.replace(/^\/*/, '')}`;
+      }
+    }
+    return `${wsProtocol}//${raw.replace(/^\/*/, '')}`;
   }
-  
-  // В продакшене используем тот же хост что и фронтенд
-  const host = window.location.host;
-  return `${protocol}//${host}/ws${path}`;
+
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return `${wsProtocol}//localhost:8000`;
+  }
+
+  return `${wsProtocol}//api.babayfood.uz`;
+};
+
+export const getWebSocketUrl = (path: string = ''): string => {
+  const envWs = (import.meta as any)?.env?.VITE_WEBSOCKET_URL as string | undefined;
+  const base = buildWsBase(envWs);
+  return `${base}/ws${path}`;
 };
 
 // Предопределенные пути WebSocket
