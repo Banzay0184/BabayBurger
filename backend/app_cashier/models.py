@@ -499,7 +499,10 @@ class CashierToken(models.Model):
         return super().save(*args, **kwargs)
 
     def generate_key(self):
-        return secrets.token_urlsafe(32)
+        # Генерируем ровно 40-символьный ключ в шестнадцатеричном формате,
+        # чтобы он гарантированно помещался в CharField(max_length=40)
+        # 20 байт -> 40 hex символов
+        return secrets.token_hex(20)
 
     def __str__(self):
         return f"Токен для {self.cashier.get_full_name()}"
