@@ -75,9 +75,22 @@ echo "📦 Устанавливаем зависимости..."
 
 # Проверка подключения к PostgreSQL
 echo "🔍 Проверяем подключение к PostgreSQL..."
+echo "DB_NAME=$DB_NAME"
+echo "DB_USER=$DB_USER"
+echo "DB_HOST=$DB_HOST"
+echo "DB_PORT=$DB_PORT"
 "$PY_BIN" -c "
 import psycopg2
 import os
+from dotenv import dotenv_values
+env_path = '.env'
+vals = {}
+try:
+    vals = dotenv_values(env_path) if os.path.exists(env_path) else {}
+except Exception:
+    vals = {}
+print('dotenv DB_NAME:', vals.get('DB_NAME'))
+print('os.getenv DB_NAME:', os.getenv('DB_NAME'))
 try:
     conn = psycopg2.connect(
         host=os.getenv('DB_HOST'),
