@@ -58,7 +58,8 @@ class CashierLoginSerializer(serializers.Serializer):
         if username and password:
             # Ищем кассира напрямую в модели Cashier
             try:
-                cashier = Cashier.objects.get(username=username)
+                cleaned_username = str(username).strip()
+                cashier = Cashier.objects.get(username__iexact=cleaned_username)
                 if not cashier.check_password(password):
                     raise serializers.ValidationError('Неверные учетные данные')
                 if not cashier.is_active:
