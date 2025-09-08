@@ -22,7 +22,7 @@ from app_operator.models import Operator
 from .serializers import (
     OrderSerializer, MenuItemSerializer, CategorySerializer, AddressSerializer, 
     AddressCreateSerializer, DeliveryZoneSerializer, AddressDeliveryZoneSerializer, AddOnSerializer, SizeOptionSerializer, PromotionSerializer,
-    FavoriteSerializer, FavoriteCreateSerializer, RestaurantSerializer, PromoCodeValidationSerializer, PromoCodeResponseSerializer
+    FavoriteSerializer, FavoriteCreateSerializer, RestaurantSerializer, PromoCodeValidationSerializer, PromoCodeResponseSerializer, PromoCodeSerializer
 )
 from .bot import send_notification
 from .tasks import send_order_status_notification, geocode_yandex
@@ -1580,6 +1580,12 @@ class MenuItemViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+class PromoCodeViewSet(viewsets.ModelViewSet):
+    queryset = PromoCode.objects.all().order_by('-created_at')
+    serializer_class = PromoCodeSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['code']
+
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at']
 

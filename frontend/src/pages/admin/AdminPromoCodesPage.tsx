@@ -20,8 +20,6 @@ export const AdminPromoCodesPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // Сейчас в urls нет CRUD для промокодов, используем запасной путь, если будет добавлен ViewSet: /promo-codes/
-      // Если нет, страница останется заглушкой до добавления эндпоинтов на бэке
       const data = await clientApi.get<PromoCode[]>('promo-codes/');
       setItems(data);
     } catch (e: any) {
@@ -40,11 +38,7 @@ export const AdminPromoCodesPage: React.FC = () => {
         <button className="px-3 py-2 bg-blue-600 text-white rounded">Создать промокод</button>
       </div>
       {loading && <div>Загрузка...</div>}
-      {error && (
-        <div className="text-red-600">
-          {error} — проверьте, что на бэке добавлены эндпоинты CRUD для промокодов
-        </div>
-      )}
+      {error && <div className="text-red-600">{error}</div>}
       <div className="grid grid-cols-1 gap-3">
         {items.map((pc) => (
           <div key={pc.id} className="bg-white border rounded p-3">

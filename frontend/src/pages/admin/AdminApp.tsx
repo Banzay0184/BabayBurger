@@ -3,6 +3,16 @@ import { Link, NavLink, Routes, Route, Navigate } from 'react-router-dom';
 import { AdminDashboard } from './AdminDashboard';
 import { AdminMenuPage } from './AdminMenuPage';
 import { AdminPromoCodesPage } from './AdminPromoCodesPage';
+import { AdminAuthProvider, useAdminAuth } from '../../context/AdminAuthContext';
+import { AdminLoginPage } from './AdminLoginPage';
+
+const AdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { state } = useAdminAuth();
+  if (!state.isAuthenticated) {
+    return <Navigate to="/admin/login" replace />;
+  }
+  return <>{children}</>;
+};
 
 export const AdminApp: React.FC = () => {
   return (
@@ -25,12 +35,36 @@ export const AdminApp: React.FC = () => {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6">
-        <Routes>
-          <Route path="" element={<AdminDashboard />} />
-          <Route path="menu" element={<AdminMenuPage />} />
-          <Route path="promocodes" element={<AdminPromoCodesPage />} />
-          <Route path="*" element={<Navigate to="/admin" replace />} />
-        </Routes>
+        <AdminAuthProvider>
+          <Routes>
+            <Route path="login" element={<AdminLoginPage />} />
+            <Route
+              path=""
+              element={(
+                <AdminGuard>
+                  <AdminDashboard />
+                </AdminGuard>
+              )}
+            />
+            <Route
+              path="menu"
+              element={(
+                <AdminGuard>
+                  <AdminMenuPage />
+                </AdminGuard>
+              )}
+            />
+            <Route
+              path="promocodes"
+              element={(
+                <AdminGuard>
+                  <AdminPromoCodesPage />
+                </AdminGuard>
+              )}
+            />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </Routes>
+        </AdminAuthProvider>
       </main>
     </div>
   );
