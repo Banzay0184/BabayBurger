@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from decouple import config
 from dotenv import load_dotenv
 import logging.config
 import importlib
@@ -277,7 +278,6 @@ else:
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-<<<<<<< Updated upstream
         'NAME': config('DB_NAME', default='babayburger'),
         'USER': config('DB_USER', default='babay'),
         'PASSWORD': config('DB_PASSWORD', default=''),
@@ -285,14 +285,7 @@ DATABASES = {
         'PORT': config('DB_PORT', default='5432'),
         'OPTIONS': {
             'connect_timeout': 10,
-        },
-=======
-        'NAME': 'babay',
-        'USER': 'burger',
-        'PASSWORD': '16SkcP91',
-        'HOST': 'localhost',
-        'PORT': '5432',
->>>>>>> Stashed changes
+       }
     }
 }
 
