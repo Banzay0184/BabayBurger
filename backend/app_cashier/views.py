@@ -49,7 +49,7 @@ class CashierAuthViewSet(viewsets.ViewSet):
                 'token': token.key,
                 'cashier': CashierProfileSerializer(cashier).data
             }, status=status.HTTP_200_OK)
-q        logger.warning("Cashier login failed: payload=%s errors=%s", dict(request.data), serializer.errors)
+        logger.warning("Cashier login failed: payload=%s errors=%s", dict(request.data), serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CashierOrderViewSet(viewsets.ModelViewSet):
