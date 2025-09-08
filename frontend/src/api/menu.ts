@@ -179,8 +179,15 @@ export interface AdminCategoryUpdateInput {
 export const adminCategoriesApi = {
   async list() {
     try {
-      const data = await clientApi.get<ApiCategory[]>('categories-admin/');
-      return { data, success: true } as ApiResponse<ApiCategory[]>;
+      const raw = await clientApi.get<any>('categories-admin/');
+      const list: ApiCategory[] = Array.isArray(raw)
+        ? raw
+        : Array.isArray(raw?.results)
+          ? raw.results
+          : Array.isArray(raw?.items)
+            ? raw.items
+            : [];
+      return { data: list, success: true } as ApiResponse<ApiCategory[]>;
     } catch (error: any) {
       return { error, success: false } as ApiResponse<ApiCategory[]>;
     }
