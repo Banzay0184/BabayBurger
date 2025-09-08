@@ -18,11 +18,16 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood
 // };
 
 const getHeaders = (): HeadersInit => {
-  return {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'ngrok-skip-browser-warning': 'true',
   };
+  const token = localStorage.getItem('operator_token');
+  if (token) {
+    headers['Authorization'] = `Token ${token}`;
+  }
+  return headers;
 };
 
 const handleApiError = async (response: Response): Promise<never> => {
