@@ -53,8 +53,8 @@ if [ -f .env ]; then
     export SECRET_KEY="$(_read_env SECRET_KEY)"
 fi
 
-# Исключаем переопределение через DATABASE_URL, чтобы использовать DB_*
-unset DATABASE_URL || true
+# Явно формируем DATABASE_URL из DB_* (исключаем рассинхрон)
+export DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 
 # Проверка переменных PostgreSQL
 if [ -z "$DB_NAME" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ] || [ -z "$DB_HOST" ]; then
