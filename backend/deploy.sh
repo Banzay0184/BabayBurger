@@ -13,6 +13,11 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
+# Загрузка переменных окружения из .env
+set -a
+source .env
+set +a
+
 # Проверка переменных PostgreSQL
 if [ -z "$DB_NAME" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ] || [ -z "$DB_HOST" ]; then
     echo "❌ Не настроены переменные PostgreSQL в .env файле!"
