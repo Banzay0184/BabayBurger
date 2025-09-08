@@ -50,21 +50,38 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
   const { state: authState } = useOperatorAuth();
   const [operatorId, setOperatorId] = useState<number | null>(null);
 
+  const buildWsBase = (override?: string): string => {
+    const isHttps = window.location.protocol === 'https:';
+    const wsProtocol = isHttps ? 'wss:' : 'ws:';
+
+    if (override && override.trim()) {
+      const raw = override.trim();
+      if (raw.startsWith('ws://') || raw.startsWith('wss://')) {
+        return raw.replace(/^http(s)?:/, wsProtocol);
+      }
+      if (raw.startsWith('http://') || raw.startsWith('https://')) {
+        try {
+          const u = new URL(raw);
+          return `${wsProtocol}//${u.host}`;
+        } catch {
+          return `${wsProtocol}//${raw.replace(/^\/*/, '')}`;
+        }
+      }
+      return `${wsProtocol}//${raw.replace(/^\/*/, '')}`;
+    }
+
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return `${wsProtocol}//localhost:8000`;
+    }
+
+    return `${wsProtocol}//www.babayfood.uz`;
+  };
+
   // Определяем URL для WebSocket
   const getWebSocketUrl = useCallback(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    
-    // Всегда используем ngrok URL для WebSocket (бэкенд на ngrok)
-    let baseUrl: string;
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      // В режиме разработки используем localhost:8000
-      baseUrl = `${protocol}//localhost:8000`;
-    } else {
-      // В продакшене используем ngrok URL для WebSocket (бэкенд на ngrok)
-      const productionUrl = import.meta.env.VITE_WEBSOCKET_URL || 'api.babayfood.uz';
-      baseUrl = `${protocol}//${productionUrl}`;
-    }
-    
+    const envWs = (import.meta as any)?.env?.VITE_WEBSOCKET_URL as string | undefined;
+    const baseUrl = buildWsBase(envWs);
+
     if (operatorId) {
       return `${baseUrl}/ws/operator/${operatorId}/`;
     }
@@ -185,12 +202,11 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
   // Автоматическая подписка на заказы при подключении
   useEffect(() => {
     if (isConnected) {
-      // Небольшая задержка для стабилизации соединения
       const timer = setTimeout(() => {
         subscribeToOrders();
       }, 1000);
 
-      return () => clearTimeout(timer);
+    return () => clearTimeout(timer);
     }
   }, [isConnected, subscribeToOrders]);
 

@@ -10,19 +10,38 @@ export interface WebSocketTestResult {
   error?: string;
 }
 
+const buildWsBase = (override?: string): string => {
+  const isHttps = window.location.protocol === 'https:';
+  const wsProtocol = isHttps ? 'wss:' : 'ws:';
+
+  if (override && override.trim()) {
+    const raw = override.trim();
+    if (raw.startsWith('ws://') || raw.startsWith('wss://')) {
+      return raw.replace(/^http(s)?:/, wsProtocol);
+    }
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      try {
+        const u = new URL(raw);
+        return `${wsProtocol}//${u.host}`;
+      } catch {
+        return `${wsProtocol}//${raw.replace(/^\/*/, '')}`;
+      }
+    }
+    return `${wsProtocol}//${raw.replace(/^\/*/, '')}`;
+  }
+
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return `${wsProtocol}//localhost:8000`;
+  }
+
+  return `${wsProtocol}//www.babayfood.uz`;
+};
+
 export const testWebSocketConnection = async (): Promise<WebSocketTestResult> => {
   return new Promise((resolve) => {
     try {
-      // Определяем URL для WebSocket в зависимости от окружения
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      let baseUrl: string;
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        baseUrl = `${protocol}//localhost:8000`;
-      } else {
-        // В продакшене используем ngrok URL для WebSocket (бэкенд на ngrok)
-        const ngrokUrl = import.meta.env.VITE_WEBSOCKET_URL || 'https://api.babayfood.uz/api';
-        baseUrl = `${protocol}//${ngrokUrl}`;
-      }
+      const envWs = (import.meta as any)?.env?.VITE_WEBSOCKET_URL as string | undefined;
+      const baseUrl = buildWsBase(envWs);
       const wsUrl = `${baseUrl}/ws/operator/`;
 
       console.log('🔌 Тестирование WebSocket соединения:', wsUrl);
@@ -61,7 +80,7 @@ export const testWebSocketConnection = async (): Promise<WebSocketTestResult> =>
           resolve({
             success: false,
             message: 'Ошибка WebSocket соединения',
-            error: error.toString()
+            error: (error as any)?.message || error.toString()
           });
         }
       };
@@ -91,23 +110,14 @@ export const testWebSocketConnection = async (): Promise<WebSocketTestResult> =>
 export const testWebSocketWithPing = async (): Promise<WebSocketTestResult> => {
   return new Promise((resolve) => {
     try {
-      // Определяем URL для WebSocket в зависимости от окружения
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      let baseUrl: string;
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        baseUrl = `${protocol}//localhost:8000`;
-      } else {
-        // В продакшене используем ngrok URL для WebSocket (бэкенд на ngrok)
-        const ngrokUrl = import.meta.env.VITE_WEBSOCKET_URL || 'https://api.babayfood.uz/api';
-        baseUrl = `${protocol}//${ngrokUrl}`;
-      }
+      const envWs = (import.meta as any)?.env?.VITE_WEBSOCKET_URL as string | undefined;
+      const baseUrl = buildWsBase(envWs);
       const wsUrl = `${baseUrl}/ws/operator/`;
 
       console.log('🔌 Тестирование WebSocket с ping:', wsUrl);
 
       const ws = new WebSocket(wsUrl);
       let resolved = false;
-      // let pingSent = false;
 
       const timeout = setTimeout(() => {
         if (!resolved) {
@@ -123,20 +133,17 @@ export const testWebSocketWithPing = async (): Promise<WebSocketTestResult> => {
 
       ws.onopen = () => {
         console.log('✅ WebSocket подключен, отправляем ping...');
-        
-        // Отправляем ping
         ws.send(JSON.stringify({
           type: 'ping',
           timestamp: Date.now()
         }));
-        // pingSent = true;
       };
 
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           console.log('📨 Получено сообщение:', data);
-          
+
           if (data.type === 'pong') {
             if (!resolved) {
               resolved = true;
@@ -160,7 +167,7 @@ export const testWebSocketWithPing = async (): Promise<WebSocketTestResult> => {
           resolve({
             success: false,
             message: 'Ошибка WebSocket соединения',
-            error: error.toString()
+            error: (error as any)?.message || error.toString()
           });
         }
       };
