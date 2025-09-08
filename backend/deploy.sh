@@ -53,6 +53,9 @@ if [ -f .env ]; then
     export SECRET_KEY="$(_read_env SECRET_KEY)"
 fi
 
+# Исключаем переопределение через DATABASE_URL, чтобы использовать DB_*
+unset DATABASE_URL || true
+
 # Проверка переменных PostgreSQL
 if [ -z "$DB_NAME" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ] || [ -z "$DB_HOST" ]; then
     echo "❌ Не настроены переменные PostgreSQL в .env файле!"
