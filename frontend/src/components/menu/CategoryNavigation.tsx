@@ -19,7 +19,7 @@ export const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
     if (!imagePath) return '/placeholder-category.jpg';
     
     // Если путь уже полный (начинается с http)
-    if (imagePath.startsWith('http')) {
+    if (imagePath.startsWith('https')) {
       return imagePath;
     }
     

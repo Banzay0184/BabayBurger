@@ -336,8 +336,9 @@ STATIC_ROOT = BASE_DIR / 'static'
 #]
 
 # Настройки для медиа файлов (изображения)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "https://api.babayfood.uz/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

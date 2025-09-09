@@ -23,8 +23,9 @@ USE_X_FORWARDED_HOST = True
 
 
 # settings_prod.py
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "https://api.babayfood.uz/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static'
