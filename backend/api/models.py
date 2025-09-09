@@ -286,15 +286,17 @@ class DeliveryZone(models.Model):
             polygon = self.polygon_coordinates
             
             # Алгоритм ray casting
+            # ВАЖНО: В полигоне координаты хранятся как [долгота, широта]
             inside = False
             j = len(polygon) - 1
             
             for i in range(len(polygon)):
                 # Преобразуем координаты полигона в float
-                pi_lat = float(polygon[i][1])
-                pi_lon = float(polygon[i][0])
-                pj_lat = float(polygon[j][1])
-                pj_lon = float(polygon[j][0])
+                # polygon[i][0] = долгота, polygon[i][1] = широта
+                pi_lon = float(polygon[i][0])  # долгота
+                pi_lat = float(polygon[i][1])  # широта
+                pj_lon = float(polygon[j][0])  # долгота
+                pj_lat = float(polygon[j][1])  # широта
                 
                 if ((pi_lat > lat) != (pj_lat > lat)) and \
                    (lon < (pj_lon - pi_lon) * (lat - pi_lat) / 
