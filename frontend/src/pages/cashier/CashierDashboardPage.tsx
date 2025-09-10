@@ -331,9 +331,9 @@ export const CashierDashboardPage: React.FC = () => {
       )}
 
       {/* Ошибки и статус WebSocket */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 space-y-2">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-2 sm:pt-4 space-y-2">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg shadow-sm">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg shadow-sm text-sm sm:text-base">
             {error}
           </div>
         )}
@@ -341,19 +341,19 @@ export const CashierDashboardPage: React.FC = () => {
         {/* Статус WebSocket */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
-            <span className="text-sm text-gray-600">
+            <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
+            <span className="text-xs sm:text-sm text-gray-600">
               {isConnected ? 'Подключено' : isConnecting ? 'Подключение...' : 'Отключено'}
             </span>
             {wsError && (
-              <span className="text-sm text-red-600">({wsError})</span>
+              <span className="text-xs sm:text-sm text-red-600">({wsError})</span>
             )}
           </div>
           
           {!isConnected && !isConnecting && (
             <button
               onClick={wsReconnect}
-              className="text-sm text-blue-600 hover:text-blue-800 underline"
+              className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 underline"
             >
               Переподключиться
             </button>
@@ -362,7 +362,7 @@ export const CashierDashboardPage: React.FC = () => {
       </div>
 
       {/* Поиск заказов */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6">
         <OrderSearch
           onSearchResults={handleSearchResults}
           onClearSearch={handleClearSearch}
@@ -370,19 +370,19 @@ export const CashierDashboardPage: React.FC = () => {
       </div>
 
       {/* Три колонки с заказами или результаты поиска */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pb-4 sm:pb-6">
         {isSearchMode ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Результаты поиска</h2>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Результаты поиска</h2>
               <button
                 onClick={handleClearSearch}
-                className="text-sm text-gray-500 hover:text-gray-700 underline"
+                className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 underline"
               >
                 Показать все заказы
               </button>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
               <OrderColumn
                 title="Готовятся"
                 orders={searchResults.filter(order => order.status === 'preparing')}
@@ -390,7 +390,7 @@ export const CashierDashboardPage: React.FC = () => {
                 onShowDetails={handleShowDetails}
                 color="#3b82f6"
                 icon={
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 }
@@ -405,7 +405,7 @@ export const CashierDashboardPage: React.FC = () => {
                 onShowDetails={handleShowDetails}
                 color="#f59e0b"
                 icon={
-                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                   </svg>
                 }
@@ -420,7 +420,7 @@ export const CashierDashboardPage: React.FC = () => {
                 onShowDetails={handleShowDetails}
                 color="#10b981"
                 icon={
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 }
@@ -428,7 +428,7 @@ export const CashierDashboardPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-280px)]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 h-[calc(100vh-200px)] sm:h-[calc(100vh-240px)] md:h-[calc(100vh-280px)]">
           {/* Колонка 1: Готовятся */}
           <OrderColumn
             title="Готовятся"
@@ -437,7 +437,7 @@ export const CashierDashboardPage: React.FC = () => {
             onShowDetails={handleShowDetails}
             color="#3b82f6"
             icon={
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
             }
@@ -451,7 +451,7 @@ export const CashierDashboardPage: React.FC = () => {
             onShowDetails={handleShowDetails}
             color="#f59e0b"
             icon={
-                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                   </svg>
             }
@@ -465,7 +465,7 @@ export const CashierDashboardPage: React.FC = () => {
             onShowDetails={handleShowDetails}
             color="#6b7280"
             icon={
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
             }
