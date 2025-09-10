@@ -219,17 +219,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
     return iconMap[status] || '❓';
   };
 
-  // Получение цвета для статуса
-  const getStatusColor = (status: string) => {
-    const colorMap: Record<string, string> = {
-      'pending': 'text-yellow-400',
-      'preparing': 'text-blue-400',
-      'delivering': 'text-purple-400',
-      'completed': 'text-green-400',
-      'cancelled': 'text-red-400'
-    };
-    return colorMap[status] || 'text-gray-400';
-  };
 
   // Форматирование даты
   const formatDate = (dateString: string) => {
@@ -461,60 +450,30 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
                     </div>
                   </div>
 
-                  {/* Путь заказа - прогресс бар */}
+                  {/* Упрощенный путь заказа */}
                   <div className="mb-4">
-                    <div className="flex items-center justify-between text-xs text-gray-400 mb-2 px-1">
-                      <span className="hidden sm:block">Ожидание</span>
-                      <span className="hidden sm:block">Готовится</span>
-                      <span className="hidden sm:block">Доставляется</span>
-                      <span className="hidden sm:block">Выполнен</span>
-                      {/* Мобильные подписи */}
-                      <div className="sm:hidden text-center w-full">
-                        <span className="text-xs">Путь заказа</span>
-                      </div>
-                    </div>
-                    <div className="relative">
-                      <div className="w-full bg-gray-600/30 rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full transition-all duration-1000 ease-out ${
-                            order.status === 'pending' ? 'w-1/4 bg-yellow-500' :
-                            order.status === 'preparing' ? 'w-2/4 bg-blue-500' :
-                            order.status === 'delivering' ? 'w-3/4 bg-purple-500' :
-                            order.status === 'completed' ? 'w-full bg-green-500' :
-                            'w-0 bg-gray-500'
-                          }`}
-                        />
-                      </div>
-                      {/* Точки прогресса */}
-                      <div className="absolute top-0 left-0 w-full h-2 flex justify-between">
-                        <div className={`w-3 h-3 rounded-full -mt-0.5 transition-all duration-500 ${
+                    <div className="flex items-center justify-center">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${
                           order.status === 'pending' || order.status === 'preparing' || order.status === 'delivering' || order.status === 'completed'
-                            ? 'bg-yellow-500 shadow-lg shadow-yellow-500/50'
-                            : 'bg-gray-400'
+                            ? 'bg-yellow-500' : 'bg-gray-400'
                         }`} />
-                        <div className={`w-3 h-3 rounded-full -mt-0.5 transition-all duration-500 ${
+                        <div className="w-8 h-0.5 bg-gray-600"></div>
+                        <div className={`w-2 h-2 rounded-full ${
                           order.status === 'preparing' || order.status === 'delivering' || order.status === 'completed'
-                            ? 'bg-blue-500 shadow-lg shadow-blue-500/50'
-                            : 'bg-gray-400'
+                            ? 'bg-blue-500' : 'bg-gray-400'
                         }`} />
-                        <div className={`w-3 h-3 rounded-full -mt-0.5 transition-all duration-500 ${
+                        <div className="w-8 h-0.5 bg-gray-600"></div>
+                        <div className={`w-2 h-2 rounded-full ${
                           order.status === 'delivering' || order.status === 'completed'
-                            ? 'bg-purple-500 shadow-lg shadow-purple-500/50'
-                            : 'bg-gray-400'
+                            ? 'bg-purple-500' : 'bg-gray-400'
                         }`} />
-                        <div className={`w-3 h-3 rounded-full -mt-0.5 transition-all duration-500 ${
+                        <div className="w-8 h-0.5 bg-gray-600"></div>
+                        <div className={`w-2 h-2 rounded-full ${
                           order.status === 'completed'
-                            ? 'bg-green-500 shadow-lg shadow-green-500/50'
-                            : 'bg-gray-400'
+                            ? 'bg-green-500' : 'bg-gray-400'
                         }`} />
                       </div>
-                    </div>
-                    
-                    {/* Мобильный статус */}
-                    <div className="sm:hidden mt-2 text-center">
-                      <span className={`text-sm font-medium ${getStatusColor(order.status)}`}>
-                        {getStatusIcon(order.status)} {getStatusText(order.status)}
-                    </span>
                     </div>
                   </div>
 

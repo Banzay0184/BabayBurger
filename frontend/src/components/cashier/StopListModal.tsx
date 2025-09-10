@@ -12,11 +12,17 @@ export const StopListModal: React.FC<StopListModalProps> = ({ isOpen, onClose })
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'inactive'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [processingItems, setProcessingItems] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (isOpen) {
       fetchMenuData();
+    } else {
+      // Сбрасываем фильтры при закрытии
+      setSearchQuery('');
+      setSelectedCategory('all');
+      setActiveTab('all');
     }
   }, [isOpen]);
 
@@ -64,20 +70,24 @@ export const StopListModal: React.FC<StopListModalProps> = ({ isOpen, onClose })
     }
   };
 
-  const filteredCategories = menuData?.categories.map(category => ({
-    ...category,
-    items: category.items.filter(item => 
+  const filteredCategories = menuData?.categories
+    .filter(category => selectedCategory === 'all' || category.id.toString() === selectedCategory)
+    .map(category => ({
+      ...category,
+      items: category.items.filter(item => 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    })).filter(category => category.items.length > 0) || [];
+
+  const inactiveItems = menuData?.categories
+    .filter(category => selectedCategory === 'all' || category.id.toString() === selectedCategory)
+    .flatMap(category => 
+      category.items.filter(item => !item.is_active)
+    ).filter(item => 
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  })).filter(category => category.items.length > 0) || [];
-
-  const inactiveItems = menuData?.categories.flatMap(category => 
-    category.items.filter(item => !item.is_active)
-  ).filter(item => 
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.description.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+    ) || [];
 
   if (!isOpen) return null;
 
@@ -104,22 +114,41 @@ export const StopListModal: React.FC<StopListModalProps> = ({ isOpen, onClose })
           </button>
         </div>
 
-        {/* Search and Tabs */}
+        {/* Search, Category Filter and Tabs */}
         <div className="p-4 sm:p-6 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Поиск блюд..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                />
-                <svg className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+          <div className="flex flex-col gap-4">
+            {/* Search and Category Filter */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Поиск блюд..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                  <svg className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Category Filter */}
+              <div className="sm:w-64">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white"
+                >
+                  <option value="all">Все категории</option>
+                  {menuData?.categories.map(category => (
+                    <option key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
