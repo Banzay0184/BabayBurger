@@ -114,8 +114,14 @@ export const useWebSocket = (options: UseWebSocketOptions): UseWebSocketReturn =
         
         onClose?.();
         
-        // Автоматическое переподключение
-        if (enabled && reconnectAttempts.current < maxReconnectAttempts) {
+        // Автоматическое переподключение только для определенных кодов ошибок
+        const shouldReconnect = enabled && 
+          reconnectAttempts.current < maxReconnectAttempts &&
+          event.code !== 1000 && // Нормальное закрытие
+          event.code !== 1001 && // Уход со страницы
+          event.code !== 1005;   // Нет кода статуса
+        
+        if (shouldReconnect) {
           reconnectAttempts.current++;
           console.log(`🔄 Attempting to reconnect (${reconnectAttempts.current}/${maxReconnectAttempts})...`);
           
@@ -124,12 +130,22 @@ export const useWebSocket = (options: UseWebSocketOptions): UseWebSocketReturn =
           }, reconnectInterval);
         } else if (reconnectAttempts.current >= maxReconnectAttempts) {
           setError('Не удалось подключиться к серверу после нескольких попыток');
+        } else if (event.code === 1000) {
+          console.log('✅ WebSocket закрыт нормально');
         }
       };
 
       ws.onerror = (event) => {
         console.error('❌ WebSocket error:', event);
-        setError('Ошибка WebSocket соединения');
+        
+        // Проверяем тип ошибки
+        const ws = event.target as WebSocket;
+        if (ws && ws.readyState === WebSocket.CLOSED) {
+          setError('WebSocket соединение закрыто');
+        } else {
+          setError('Ошибка WebSocket соединения');
+        }
+        
         setIsConnecting(false);
         onError?.(event);
       };

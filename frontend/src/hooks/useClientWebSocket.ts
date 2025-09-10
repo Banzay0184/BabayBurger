@@ -117,6 +117,8 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
   // Обработчики событий WebSocket
   const handleOpen = useCallback(() => {
     console.log('🔌 Client WebSocket connected');
+    // Сбрасываем счетчик ошибок при успешном подключении
+    setErrorCount(0);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -125,12 +127,24 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
 
   const handleError = useCallback((error: Event) => {
     console.error('❌ Client WebSocket error:', error);
-    console.log('🔄 WebSocket не поддерживается, переключаемся на polling...');
-    setWebsocketFailed(true);
+    
+    // Увеличиваем счетчик ошибок
+    setErrorCount(prev => {
+      const newCount = prev + 1;
+      
+      // Если слишком много ошибок подряд, отключаем WebSocket
+      if (newCount >= 3) {
+        console.log('🔄 Слишком много ошибок WebSocket, переключаемся на polling...');
+        setWebsocketFailed(true);
+      }
+      
+      return newCount;
+    });
   }, []);
 
   // WebSocket включен, но с fallback на polling при ошибках
   const [websocketFailed, setWebsocketFailed] = useState(false);
+  const [errorCount, setErrorCount] = useState(0);
   const shouldEnableWebSocket = enabled && !!authState.user && !websocketFailed;
 
   // Инициализируем WebSocket
@@ -148,8 +162,8 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
     onClose: handleClose,
     onError: handleError,
     enabled: shouldEnableWebSocket,
-    reconnectInterval: 3000,
-    maxReconnectAttempts: 10
+    reconnectInterval: 5000, // Увеличиваем интервал до 5 секунд
+    maxReconnectAttempts: 5 // Уменьшаем количество попыток
   });
 
   // Получаем telegram_id из контекста авторизации
@@ -197,6 +211,7 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
   const retryWebSocket = useCallback(() => {
     console.log('🔄 Попытка переподключения WebSocket...');
     setWebsocketFailed(false);
+    setErrorCount(0); // Сбрасываем счетчик ошибок
   }, []);
 
   return {

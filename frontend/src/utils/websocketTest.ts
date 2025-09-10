@@ -193,3 +193,73 @@ export const testWebSocketWithPing = async (): Promise<WebSocketTestResult> => {
     }
   });
 };
+
+export const testClientWebSocketConnection = async (telegramId: number): Promise<WebSocketTestResult> => {
+  return new Promise((resolve) => {
+    try {
+      const envWs = (import.meta as any)?.env?.VITE_WEBSOCKET_URL as string | undefined;
+      const baseUrl = buildWsBase(envWs);
+      const wsUrl = `${baseUrl}/ws/client/${telegramId}/`;
+
+      console.log('🔌 Тестирование клиентского WebSocket соединения:', wsUrl);
+
+      const ws = new WebSocket(wsUrl);
+      let resolved = false;
+
+      const timeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          ws.close();
+          resolve({
+            success: false,
+            message: 'Таймаут подключения',
+            error: 'Клиентский WebSocket не подключился в течение 5 секунд'
+          });
+        }
+      }, 5000);
+
+      ws.onopen = () => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          ws.close();
+          resolve({
+            success: true,
+            message: 'Клиентский WebSocket подключен успешно'
+          });
+        }
+      };
+
+      ws.onerror = (error) => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          resolve({
+            success: false,
+            message: 'Ошибка клиентского WebSocket соединения',
+            error: (error as any)?.message || error.toString()
+          });
+        }
+      };
+
+      ws.onclose = (event) => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          resolve({
+            success: false,
+            message: 'Клиентский WebSocket соединение закрыто',
+            error: `Код: ${event.code}, Причина: ${event.reason}`
+          });
+        }
+      };
+
+    } catch (error) {
+      resolve({
+        success: false,
+        message: 'Ошибка создания клиентского WebSocket',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+};
