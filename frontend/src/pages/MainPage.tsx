@@ -17,6 +17,7 @@ import { PageTransition } from '../components/common/PageTransition';
 import { OptionsPage } from './OptionsPage';
 import { ProfilePage } from './ProfilePage';
 import { CheckoutPage } from './CheckoutPage';
+import { WebSocketDebugger } from '../components/debug/WebSocketDebugger';
 import type { MenuItem, Promotion } from '../types/menu';
 import type { Address } from '../types/address';
 const logoUrl = '/logo.jpg';
@@ -295,6 +296,10 @@ export const MainPage: React.FC = () => {
       
       <div className="tg-webapp bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800 pt-5">
       <div className="max-w-4xl mx-auto p-4 tg-safe-top tg-safe-bottom">
+        {/* WebSocket Debugger - только в режиме разработки */}
+        {import.meta.env.DEV && (
+          <WebSocketDebugger className="mb-4" />
+        )}
         {/* Современный хедер с темной темой */}
         
 

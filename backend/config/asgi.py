@@ -33,9 +33,21 @@ websocket_origin_validator.allowed_hosts = [
     'babayfood.uz',
     'api.babayfood.uz',
     'www.babayfood.uz',
+    'babay-burger.vercel.app',  # Дублируем для надежности
 ]
+
+# Также добавляем поддержку всех поддоменов Vercel
+websocket_origin_validator.allowed_hosts.extend([
+    '*.vercel.app',
+    '*.ngrok-free.app',
+    '*.ngrok.io',
+])
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    "websocket": websocket_origin_validator,
+    "websocket": AuthMiddlewareStack(
+        URLRouter(
+            websocket_urlpatterns
+        )
+    ),
 })

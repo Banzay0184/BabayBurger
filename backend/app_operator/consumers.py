@@ -217,7 +217,14 @@ class ClientConsumer(AsyncWebsocketConsumer):
     
     async def connect(self):
         """Подключение к WebSocket для клиента"""
-        self.telegram_id = self.scope['url_route']['kwargs']['telegram_id']
+        self.telegram_id = self.scope['url_route']['kwargs'].get('telegram_id')
+        
+        # Проверяем, что telegram_id предоставлен
+        if not self.telegram_id:
+            logger.error("Client WebSocket connection rejected: no telegram_id provided")
+            await self.close()
+            return
+            
         self.client_group_name = f'client_{self.telegram_id}'
         
         # Присоединяемся к группе клиента
@@ -235,6 +242,13 @@ class ClientConsumer(AsyncWebsocketConsumer):
         await self.accept()
         
         logger.info(f"Client WebSocket connected: {self.client_group_name}")
+        
+        # Отправляем подтверждение подключения
+        await self.send(text_data=json.dumps({
+            'type': 'connection_established',
+            'message': 'WebSocket соединение установлено',
+            'client_group': self.client_group_name
+        }))
 
     async def disconnect(self, close_code):
         """Отключение от WebSocket"""
