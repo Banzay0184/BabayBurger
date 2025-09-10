@@ -331,29 +331,29 @@ export const CashierDashboardPage: React.FC = () => {
       )}
 
       {/* Ошибки и статус WebSocket */}
-      <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-2 sm:pt-4 space-y-2">
+      <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 pt-1 sm:pt-2 space-y-1 sm:space-y-2">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg shadow-sm text-sm sm:text-base">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-2 py-1.5 sm:px-3 sm:py-2 rounded-md sm:rounded-lg shadow-sm text-xs sm:text-sm">
             {error}
           </div>
         )}
         
         {/* Статус WebSocket */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2">
             <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
-            <span className="text-xs sm:text-sm text-gray-600">
+            <span className="text-xs text-gray-600">
               {isConnected ? 'Подключено' : isConnecting ? 'Подключение...' : 'Отключено'}
             </span>
             {wsError && (
-              <span className="text-xs sm:text-sm text-red-600">({wsError})</span>
+              <span className="text-xs text-red-600">({wsError})</span>
             )}
           </div>
           
           {!isConnected && !isConnecting && (
             <button
               onClick={wsReconnect}
-              className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 underline"
+              className="text-xs text-blue-600 hover:text-blue-800 underline"
             >
               Переподключиться
             </button>
@@ -362,7 +362,7 @@ export const CashierDashboardPage: React.FC = () => {
       </div>
 
       {/* Поиск заказов */}
-      <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6">
+      <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-3">
         <OrderSearch
           onSearchResults={handleSearchResults}
           onClearSearch={handleClearSearch}
@@ -370,7 +370,7 @@ export const CashierDashboardPage: React.FC = () => {
       </div>
 
       {/* Три колонки с заказами или результаты поиска */}
-      <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pb-4 sm:pb-6">
+      <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 pb-2 sm:pb-4">
         {isSearchMode ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
@@ -428,7 +428,7 @@ export const CashierDashboardPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 h-[calc(100vh-200px)] sm:h-[calc(100vh-240px)] md:h-[calc(100vh-280px)]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4 h-[calc(100vh-180px)] sm:h-[calc(100vh-200px)] md:h-[calc(100vh-220px)]">
           {/* Колонка 1: Готовятся */}
           <OrderColumn
             title="Готовятся"

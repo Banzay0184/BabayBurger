@@ -43,7 +43,13 @@ class CashierRegistrationSerializer(serializers.ModelSerializer):
         validated_data.pop('password_confirm')
         validated_data.pop('restaurant_id')
         
-        cashier = Cashier.objects.create_user(**validated_data)
+        # Убеждаемся, что пароль будет хеширован
+        password = validated_data.pop('password', None)
+        if password:
+            cashier = Cashier.objects.create_user(password=password, **validated_data)
+        else:
+            cashier = Cashier.objects.create_user(**validated_data)
+        
         return cashier
 
 class CashierLoginSerializer(serializers.Serializer):
