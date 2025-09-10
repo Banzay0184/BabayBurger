@@ -126,17 +126,24 @@ export const CartDisplay: React.FC<CartDisplayProps> = ({ onCheckout }) => {
                   
                   {/* Опции товара - всегда показываем если есть */}
                   <div className="text-xs sm:text-sm text-gray-400 space-y-1 mb-2">
-                    {/* Размер блюда */}
-                    {item.sizeOption && (
+                    {/* Размер блюда - показываем всегда если у товара есть размеры */}
+                    {item.menuItem.size_options && item.menuItem.size_options.length > 0 && (
                       <div className="bg-gray-700/50 px-2 py-1 rounded">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center min-w-0 flex-1">
                             <span className="mr-2 text-primary-400 flex-shrink-0">📏</span>
-                            <span className="text-gray-300 truncate">Р: {item.sizeOption.name}</span>
+                            <span className="text-gray-300 truncate">
+                              Р: {item.sizeOption ? item.sizeOption.name : 'Стандартный'}
+                            </span>
                           </div>
-                          {Number(item.sizeOption.price_modifier) !== 0 && (
+                          {item.sizeOption && Number(item.sizeOption.price_modifier) !== 0 && (
                             <span className="ml-2 text-primary-400 font-medium flex-shrink-0">
                               ({Number(item.sizeOption.price_modifier) > 0 ? '+' : ''}{formatCurrency(Number(item.sizeOption.price_modifier) || 0)})
+                            </span>
+                          )}
+                          {!item.sizeOption && (
+                            <span className="ml-2 text-gray-500 font-medium flex-shrink-0">
+                              (без доплаты)
                             </span>
                           )}
                         </div>
@@ -161,7 +168,7 @@ export const CartDisplay: React.FC<CartDisplayProps> = ({ onCheckout }) => {
                     )}
                     
                     {/* Показываем сообщение если нет опций */}
-                    {!item.sizeOption && item.addOns.length === 0 && (
+                    {(!item.menuItem.size_options || item.menuItem.size_options.length === 0) && item.addOns.length === 0 && (
                       <div className="text-gray-500 text-xs italic">
                         Без доп. опций
                       </div>

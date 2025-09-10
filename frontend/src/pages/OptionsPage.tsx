@@ -38,8 +38,13 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
     setTotalPrice(roundedTotal);
   }, [selectedSize, selectedAddOns, item]);
 
-  const handleSizeSelect = (size: SizeOption) => {
-    console.log('📏 OptionsPage - Выбран размер:', size.name, 'модификатор цены:', size.price_modifier);
+  const handleSizeSelect = (size: SizeOption | undefined) => {
+    if (size) {
+      console.log('📏 OptionsPage - Выбран размер:', size.name, 'модификатор цены:', size.price_modifier);
+    } else {
+      console.log('📏 OptionsPage - Выбран стандартный размер (безразмерный)');
+    }
+    console.log('📏 OptionsPage - Устанавливаем selectedSize:', size);
     setSelectedSize(size);
   };
 
@@ -168,6 +173,32 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
               {t('select_size')}:
             </h3>
             <div className="grid grid-cols-2 gap-3">
+              {/* Стандартный размер (безразмерный) */}
+              <button
+                onClick={() => {
+                  console.log('🖱️ OptionsPage - Клик по кнопке "Стандартный"');
+                  handleSizeSelect(undefined);
+                }}
+                className={`
+                  relative p-4 text-sm rounded-lg border-2 transition-all duration-300 font-medium text-center
+                  ${!selectedSize
+                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white border-primary-500 shadow-dark-glow scale-105'
+                    : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-primary-500/50 hover:shadow-dark-card hover:scale-102'
+                  }
+                `}
+              >
+                <div className="font-semibold mb-2">Стандартный</div>
+                <div className={`text-sm ${!selectedSize ? 'text-primary-100' : 'text-gray-400'}`}>
+                  Без доплаты
+                </div>
+                {!selectedSize && (
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-accent-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
+                  </div>
+                )}
+              </button>
+              
+              {/* Доступные размеры */}
               {availableSizes.map((size) => (
                 <button
                   key={size.id}
@@ -254,7 +285,7 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
             </button>
             <button
               onClick={handleConfirm}
-              disabled={availableSizes.length > 0 && !selectedSize}
+              disabled={false}
               className="flex-1 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg font-semibold hover:from-primary-600 hover:to-primary-700 transition-all duration-300 hover:scale-105 shadow-dark-card disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <span className="flex items-center justify-center">

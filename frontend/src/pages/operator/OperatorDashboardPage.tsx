@@ -134,6 +134,15 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
     enabled: true
   });
 
+  // Принудительное обновление при подключении WebSocket
+  useEffect(() => {
+    if (isConnected) {
+      console.log('🔌 WebSocket подключен, принудительно обновляем данные...');
+      loadDashboard();
+      loadOrders();
+    }
+  }, [isConnected]);
+
 
   // Загрузка дашборда
   const loadDashboard = async () => {
@@ -239,7 +248,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
     loadOrders();
   }, [selectedStatus, selectedZone, searchQuery]);
 
-  // Автообновление каждые 60 секунд (fallback для WebSocket)
+  // Автообновление каждые 30 секунд (fallback для WebSocket)
   useEffect(() => {
     const interval = setInterval(() => {
       // Обновляем только если WebSocket не подключен
@@ -247,8 +256,12 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
         console.log('🔄 WebSocket не подключен, обновляем через API...');
         loadDashboard();
         loadOrders();
+      } else {
+        // Если WebSocket подключен, обновляем только дашборд (заказы приходят через WebSocket)
+        console.log('🔄 WebSocket подключен, обновляем только дашборд...');
+        loadDashboard();
       }
-    }, 60000);
+    }, 30000); // Уменьшено с 60 до 30 секунд
 
     return () => clearInterval(interval);
   }, [isConnected]);
@@ -462,17 +475,31 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
         <div className="w-full">
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-white">
-                  Заказы {selectedStatus !== 'all' && `(${selectedStatus})`}
-                  {searchQuery && (
-                    <span className="ml-2 text-sm text-blue-400">
-                      - Поиск: "{searchQuery}"
+                <div className="flex items-center space-x-4">
+                  <h2 className="text-xl font-semibold text-white">
+                    Заказы {selectedStatus !== 'all' && `(${selectedStatus})`}
+                    {searchQuery && (
+                      <span className="ml-2 text-sm text-blue-400">
+                        - Поиск: "{searchQuery}"
+                      </span>
+                    )}
+                  </h2>
+                  
+                  {/* Статус WebSocket */}
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <span className="text-sm text-gray-400">
+                      {isConnected ? 'WebSocket подключен' : 'WebSocket отключен'}
                     </span>
-                  )}
-                </h2>
+                  </div>
+                </div>
                 <div className="flex space-x-2">
                   <button
-                    onClick={loadOrders}
+                    onClick={() => {
+                      console.log('🔄 Принудительное обновление всех данных...');
+                      loadDashboard();
+                      loadOrders();
+                    }}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                   >
                     🔄 Обновить

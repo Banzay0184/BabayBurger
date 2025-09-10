@@ -30,7 +30,12 @@ export const AddMoreModal: React.FC<AddMoreModalProps> = ({
   const [selectedAddOns, setSelectedAddOns] = useState<AddOn[]>([]);
   const [totalPrice, setTotalPrice] = useState<number>(Number(item.menuItem.price) || 0);
 
-  const handleSizeSelect = (size: SizeOption) => {
+  const handleSizeSelect = (size: SizeOption | undefined) => {
+    if (size) {
+      console.log('📏 AddMoreModal - Выбран размер:', size.name, 'модификатор цены:', size.price_modifier);
+    } else {
+      console.log('📏 AddMoreModal - Выбран стандартный размер (безразмерный)');
+    }
     setSelectedSize(size);
   };
 
@@ -111,6 +116,29 @@ export const AddMoreModal: React.FC<AddMoreModalProps> = ({
               {t('select_size')}:
             </h4>
             <div className="grid grid-cols-2 gap-2">
+              {/* Стандартный размер (безразмерный) */}
+              <button
+                onClick={() => handleSizeSelect(undefined)}
+                className={`
+                  relative p-3 text-sm rounded-lg border-2 transition-all duration-300 font-medium text-center
+                  ${!selectedSize
+                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white border-primary-500 shadow-dark-glow scale-105'
+                    : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-primary-500/50 hover:shadow-dark-card hover:scale-102'
+                  }
+                `}
+              >
+                <div className="font-semibold mb-1">Стандартный</div>
+                <div className={`text-xs ${!selectedSize ? 'text-primary-100' : 'text-gray-400'}`}>
+                  Без доплаты
+                </div>
+                {!selectedSize && (
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
+                  </div>
+                )}
+              </button>
+              
+              {/* Доступные размеры */}
               {availableSizes.map((size) => (
                 <button
                   key={size.id}

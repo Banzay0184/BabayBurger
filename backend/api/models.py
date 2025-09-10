@@ -81,7 +81,7 @@ def validate_uzbek_phone_number(value):
     
     # Проверяем код оператора (первые 2 цифры)
     operator_code = cleaned[:2]
-    valid_operators = ['90', '91', '93', '94', '95', '97', '98', '99', '88', '77']
+    valid_operators = ['90', '91', '93', '94', '95', '97', '98', '99', '88', '77', '50']
     
     if operator_code not in valid_operators:
         raise ValidationError(
