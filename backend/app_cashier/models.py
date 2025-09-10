@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -48,7 +48,7 @@ def validate_uzbek_phone_number(value):
             'Номер не может состоять из повторяющихся цифр'
         )
 
-class CashierManager(models.Manager):
+class CashierManager(BaseUserManager):
     """Менеджер для модели Cashier"""
     
     def create_user(self, username, email=None, password=None, **extra_fields):

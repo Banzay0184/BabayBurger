@@ -9,7 +9,6 @@ export const PWAStatus: React.FC<PWAStatusProps> = ({ className = '' }) => {
   const [canInstall, setCanInstall] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'online' | 'offline' | 'slow'>('online');
-  const [isInstalling, setIsInstalling] = useState(false);
 
   useEffect(() => {
     // Проверяем статус установки
@@ -46,7 +45,6 @@ export const PWAStatus: React.FC<PWAStatusProps> = ({ className = '' }) => {
   }, []);
 
   const handleInstall = async () => {
-    setIsInstalling(true);
     try {
       const success = await pwaManager.installPWA();
       if (success) {
@@ -55,8 +53,6 @@ export const PWAStatus: React.FC<PWAStatusProps> = ({ className = '' }) => {
       }
     } catch (error) {
       console.error('Installation failed:', error);
-    } finally {
-      setIsInstalling(false);
     }
   };
 
@@ -135,22 +131,12 @@ export const PWAStatus: React.FC<PWAStatusProps> = ({ className = '' }) => {
       ) : canInstall ? (
         <button
           onClick={handleInstall}
-          disabled={isInstalling}
-          className="flex items-center space-x-1 px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs transition-colors disabled:opacity-50"
+          className="flex items-center space-x-1 px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs transition-colors"
         >
-          {isInstalling ? (
-            <>
-              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Установка...</span>
-            </>
-          ) : (
-            <>
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span>Установить</span>
-            </>
-          )}
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          <span>Установить</span>
         </button>
       ) : (
         <div className="flex items-center space-x-1 text-gray-500">

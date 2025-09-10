@@ -161,42 +161,6 @@ export class PWAManager {
     window.dispatchEvent(event);
   }
 
-  // Получение информации о кэше
-  public async getCacheInfo(): Promise<{ name: string; size: number }[]> {
-    if ('caches' in window) {
-      const cacheNames = await caches.keys();
-      const cacheInfo = await Promise.all(
-        cacheNames.map(async (name) => {
-          const cache = await caches.open(name);
-          const keys = await cache.keys();
-          return {
-            name,
-            size: keys.length
-          };
-        })
-      );
-      return cacheInfo;
-    }
-    return [];
-  }
-
-  // Очистка кэша
-  public async clearCache(): Promise<void> {
-    if ('caches' in window) {
-      const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames.map(name => caches.delete(name))
-      );
-      console.log('🗑️ Cache cleared');
-    }
-  }
-
-  // Обновление кэша
-  public async updateCache(): Promise<void> {
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ action: 'updateCache' });
-    }
-  }
 }
 
 // Экспорт экземпляра для использования в приложении
