@@ -1,4 +1,5 @@
 import { cashierApi as unifiedCashierApi } from './unifiedClient';
+import { universalStorage } from '../utils/storage';
 
 const API_BASE_URL = 'cashier';
 
@@ -93,7 +94,7 @@ class CashierApiClient {
   private token: string | null = null; // Используется в конструкторе, login и logout
 
   constructor() {
-    this.token = localStorage.getItem('cashier_token');
+    this.token = universalStorage.getItem('cashier_token');
   }
 
   private async request<T>(
@@ -142,8 +143,8 @@ class CashierApiClient {
     // Обновляем токен в экземпляре класса
     this.token = response.token;
     unifiedCashierApi.setToken(response.token);
-    localStorage.setItem('cashier_token', response.token);
-    localStorage.setItem('cashier_data', JSON.stringify(response.cashier));
+    universalStorage.setItem('cashier_token', response.token);
+    universalStorage.setItem('cashier_data', JSON.stringify(response.cashier));
 
     return response;
   }
@@ -151,8 +152,8 @@ class CashierApiClient {
   logout(): void {
     this.token = null;
     unifiedCashierApi.removeToken();
-    localStorage.removeItem('cashier_token');
-    localStorage.removeItem('cashier_data');
+    universalStorage.removeItem('cashier_token');
+    universalStorage.removeItem('cashier_data');
   }
 
   async getDashboardStats(): Promise<DashboardStats> {
@@ -196,8 +197,8 @@ class CashierApiClient {
   }
 
   isAuthenticated(): boolean {
-    // Проверяем токен из localStorage, так как this.token может быть устаревшим
-    const token = localStorage.getItem('cashier_token');
+    // Проверяем токен из универсального хранилища
+    const token = universalStorage.getItem('cashier_token');
     // Также проверяем this.token для совместимости
     const hasToken = !!token || !!this.token;
     const unifiedAuth = unifiedCashierApi.isAuthenticated();
@@ -207,14 +208,15 @@ class CashierApiClient {
       thisToken: !!this.token,
       hasToken,
       unifiedAuth,
-      result: hasToken && unifiedAuth
+      result: hasToken && unifiedAuth,
+      storageType: universalStorage.getStorageInfo().type
     });
     
     return hasToken && unifiedAuth;
   }
 
   getCashierData(): CashierData | null {
-    const cashierDataStr = localStorage.getItem('cashier_data');
+    const cashierDataStr = universalStorage.getItem('cashier_data');
     if (!cashierDataStr) return null;
     
     try {

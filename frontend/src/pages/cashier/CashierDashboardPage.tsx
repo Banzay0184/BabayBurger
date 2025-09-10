@@ -180,15 +180,17 @@ export const CashierDashboardPage: React.FC = () => {
       console.log('🔙 Back button pressed in PWA');
       event.preventDefault();
       
-      // Проверяем, является ли это PWA
-      const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
-                    (window.navigator as any).standalone === true ||
-                    document.referrer.includes('android-app://') ||
-                    window.location.protocol === 'https:' && window.location.hostname !== 'localhost';
+      // Проверяем, является ли это PWA или планшет
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      const isIOSStandalone = (window.navigator as any).standalone === true;
+      const isTablet = /Android|iPad|Tablet/i.test(navigator.userAgent);
+      const isPWA = isStandalone || isIOSStandalone || isTablet;
       
-      console.log('📱 PWA detection:', {
-        standalone: window.matchMedia('(display-mode: standalone)').matches,
-        navigatorStandalone: (window.navigator as any).standalone,
+      console.log('📱 PWA/Tablet detection:', {
+        standalone: isStandalone,
+        navigatorStandalone: isIOSStandalone,
+        isTablet,
+        userAgent: navigator.userAgent,
         referrer: document.referrer,
         protocol: window.location.protocol,
         hostname: window.location.hostname,
@@ -196,22 +198,41 @@ export const CashierDashboardPage: React.FC = () => {
       });
       
       if (isPWA) {
-        console.log('📱 Closing PWA app...');
-        // Попробуем разные способы закрытия PWA
+        console.log('📱 Closing PWA/Tablet app...');
+        
+        // Для планшетов и PWA пробуем разные способы закрытия
         try {
-          // Для iOS Safari
-          if ((window.navigator as any).standalone === true) {
+          // Способ 1: window.close()
+          if (window.close) {
             window.close();
-          } else {
-            // Для Android Chrome и других браузеров
-            window.close();
+            return;
           }
         } catch (error) {
-          console.log('❌ Cannot close PWA, trying history back');
-          window.history.back();
+          console.log('❌ window.close() failed:', error);
         }
+        
+        try {
+          // Способ 2: Для Android Chrome
+          if (window.history.length <= 1) {
+            // Если это первая страница в истории, попробуем закрыть
+            window.close();
+          } else {
+            // Иначе идем назад
+            window.history.back();
+          }
+        } catch (error) {
+          console.log('❌ History navigation failed:', error);
+        }
+        
+        try {
+          // Способ 3: Попробуем открыть пустую страницу
+          window.location.href = 'about:blank';
+        } catch (error) {
+          console.log('❌ about:blank failed:', error);
+        }
+        
       } else {
-        console.log('🌐 Not PWA, normal back navigation');
+        console.log('🌐 Not PWA/Tablet, normal back navigation');
         window.history.back();
       }
     };
@@ -556,3 +577,4 @@ export const CashierDashboardPage: React.FC = () => {
 };
 
 export default CashierDashboardPage;
+

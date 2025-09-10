@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios';
 import type { ApiResponse, ApiError } from './types';
 import { API_CONFIG } from '../config/api';
+import { universalStorage } from '../utils/storage';
 
 // Типы для различных типов авторизации
 export type AuthType = 'bearer' | 'token' | 'none';
@@ -101,7 +102,7 @@ export class UnifiedApiClient {
   }
 
   private addAuthHeader(config: any): void {
-    const token = localStorage.getItem(this.tokenKey);
+    const token = universalStorage.getItem(this.tokenKey);
     if (token) {
       switch (this.authType) {
         case 'bearer':
@@ -162,7 +163,7 @@ export class UnifiedApiClient {
         break;
       case 401: 
         message = 'Необходима авторизация'; 
-        localStorage.removeItem(this.tokenKey); 
+        universalStorage.removeItem(this.tokenKey); 
         console.error('401 Unauthorized:', error.response.data);
         break;
       case 403: 
@@ -241,17 +242,17 @@ export class UnifiedApiClient {
 
   // Метод для установки токена
   setToken(token: string): void {
-    localStorage.setItem(this.tokenKey, token);
+    universalStorage.setItem(this.tokenKey, token);
   }
 
   // Метод для получения токена
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    return universalStorage.getItem(this.tokenKey);
   }
 
   // Метод для удаления токена
   removeToken(): void {
-    localStorage.removeItem(this.tokenKey);
+    universalStorage.removeItem(this.tokenKey);
   }
 
   // Метод для проверки авторизации

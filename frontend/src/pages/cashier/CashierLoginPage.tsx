@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 
 import { cashierApi, type CashierLoginData } from '../../api/cashierApi';
+import { universalStorage } from '../../utils/storage';
 
 
 
@@ -34,10 +35,11 @@ export const CashierLoginPage: React.FC = () => {
       console.log('✅ Login successful:', response);
       
       // Проверяем, что токен действительно сохранен
-      const token = localStorage.getItem('cashier_token');
-      const cashierData = localStorage.getItem('cashier_data');
+      const token = universalStorage.getItem('cashier_token');
+      const cashierData = universalStorage.getItem('cashier_data');
       console.log('🔑 Token saved:', !!token);
       console.log('👤 Cashier data saved:', !!cashierData);
+      console.log('💾 Storage type:', universalStorage.getStorageInfo().type);
       
       // Небольшая задержка для гарантии сохранения
       setTimeout(() => {
@@ -58,15 +60,17 @@ export const CashierLoginPage: React.FC = () => {
       console.log('🔙 Back button pressed on login page');
       event.preventDefault();
       
-      // Проверяем, является ли это PWA
-      const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
-                    (window.navigator as any).standalone === true ||
-                    document.referrer.includes('android-app://') ||
-                    window.location.protocol === 'https:' && window.location.hostname !== 'localhost';
+      // Проверяем, является ли это PWA или планшет
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      const isIOSStandalone = (window.navigator as any).standalone === true;
+      const isTablet = /Android|iPad|Tablet/i.test(navigator.userAgent);
+      const isPWA = isStandalone || isIOSStandalone || isTablet;
       
-      console.log('📱 PWA detection on login:', {
-        standalone: window.matchMedia('(display-mode: standalone)').matches,
-        navigatorStandalone: (window.navigator as any).standalone,
+      console.log('📱 PWA/Tablet detection on login:', {
+        standalone: isStandalone,
+        navigatorStandalone: isIOSStandalone,
+        isTablet,
+        userAgent: navigator.userAgent,
         referrer: document.referrer,
         protocol: window.location.protocol,
         hostname: window.location.hostname,
@@ -74,14 +78,39 @@ export const CashierLoginPage: React.FC = () => {
       });
       
       if (isPWA) {
-        console.log('📱 Closing PWA app from login...');
+        console.log('📱 Closing PWA/Tablet app from login...');
+        
+        // Для планшетов и PWA пробуем разные способы закрытия
         try {
-          window.close();
+          // Способ 1: window.close()
+          if (window.close) {
+            window.close();
+            return;
+          }
         } catch (error) {
-          console.log('❌ Cannot close PWA from login');
+          console.log('❌ window.close() failed from login:', error);
         }
+        
+        try {
+          // Способ 2: Для Android Chrome
+          if (window.history.length <= 1) {
+            window.close();
+          } else {
+            window.history.back();
+          }
+        } catch (error) {
+          console.log('❌ History navigation failed from login:', error);
+        }
+        
+        try {
+          // Способ 3: Попробуем открыть пустую страницу
+          window.location.href = 'about:blank';
+        } catch (error) {
+          console.log('❌ about:blank failed from login:', error);
+        }
+        
       } else {
-        console.log('🌐 Not PWA, normal back navigation from login');
+        console.log('🌐 Not PWA/Tablet, normal back navigation from login');
         window.history.back();
       }
     };
