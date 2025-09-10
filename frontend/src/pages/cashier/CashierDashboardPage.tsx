@@ -174,11 +174,14 @@ export const CashierDashboardPage: React.FC = () => {
     fetchDashboardData();
   }, [navigate]);
 
-  // Обработчик кнопки "Назад" для PWA
+  // Обработчик кнопки "Назад" для PWA - улучшенная версия
   useEffect(() => {
+    let backButtonPressed = false;
+    
     const handleBackButton = (event: PopStateEvent) => {
       console.log('🔙 Back button pressed in PWA');
       event.preventDefault();
+      backButtonPressed = true;
       
       // Проверяем, является ли это PWA или планшет
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
@@ -194,42 +197,56 @@ export const CashierDashboardPage: React.FC = () => {
         referrer: document.referrer,
         protocol: window.location.protocol,
         hostname: window.location.hostname,
-        isPWA
+        isPWA,
+        historyLength: window.history.length
       });
       
       if (isPWA) {
-        console.log('📱 Closing PWA/Tablet app...');
+        console.log('📱 Attempting to close PWA/Tablet app...');
         
-        // Для планшетов и PWA пробуем разные способы закрытия
-        try {
-          // Способ 1: window.close()
-          if (window.close) {
+        // Способ 1: Попробуем закрыть окно
+        const tryCloseWindow = () => {
+          try {
             window.close();
-            return;
+            console.log('✅ window.close() executed');
+          } catch (error) {
+            console.log('❌ window.close() failed:', error);
           }
-        } catch (error) {
-          console.log('❌ window.close() failed:', error);
-        }
+        };
         
-        try {
-          // Способ 2: Для Android Chrome
-          if (window.history.length <= 1) {
-            // Если это первая страница в истории, попробуем закрыть
-            window.close();
-          } else {
-            // Иначе идем назад
-            window.history.back();
+        // Способ 2: Попробуем открыть пустую страницу
+        const tryBlankPage = () => {
+          try {
+            window.location.replace('about:blank');
+            console.log('✅ Redirected to about:blank');
+          } catch (error) {
+            console.log('❌ about:blank failed:', error);
           }
-        } catch (error) {
-          console.log('❌ History navigation failed:', error);
-        }
+        };
         
-        try {
-          // Способ 3: Попробуем открыть пустую страницу
-          window.location.href = 'about:blank';
-        } catch (error) {
-          console.log('❌ about:blank failed:', error);
-        }
+        // Способ 3: Попробуем открыть внешнюю ссылку
+        const tryExternalLink = () => {
+          try {
+            window.location.href = 'https://www.google.com';
+            console.log('✅ Redirected to external site');
+          } catch (error) {
+            console.log('❌ External redirect failed:', error);
+          }
+        };
+        
+        // Выполняем все способы последовательно
+        tryCloseWindow();
+        
+        // Если через 100ms не закрылось, пробуем другие способы
+        setTimeout(() => {
+          if (!backButtonPressed) return;
+          tryBlankPage();
+        }, 100);
+        
+        setTimeout(() => {
+          if (!backButtonPressed) return;
+          tryExternalLink();
+        }, 200);
         
       } else {
         console.log('🌐 Not PWA/Tablet, normal back navigation');
@@ -237,14 +254,77 @@ export const CashierDashboardPage: React.FC = () => {
       }
     };
 
-    // Добавляем обработчик события popstate
+    // Обработчик изменения видимости страницы
+    const handleVisibilityChange = () => {
+      if (document.hidden && backButtonPressed) {
+        console.log('📱 Page became hidden, PWA might be closing');
+        backButtonPressed = false;
+      }
+    };
+
+    // Обработчик фокуса/блура окна
+    const handleWindowBlur = () => {
+      if (backButtonPressed) {
+        console.log('📱 Window lost focus, PWA might be closing');
+        backButtonPressed = false;
+      }
+    };
+
+    // Обработчик для Android back button через keydown
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Android back button обычно имеет keyCode 4 или key 'Backspace'
+      if (event.key === 'Backspace' || event.keyCode === 4) {
+        console.log('🔙 Android back button detected via keydown');
+        event.preventDefault();
+        backButtonPressed = true;
+        
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        const isIOSStandalone = (window.navigator as any).standalone === true;
+        const isTablet = /Android|iPad|Tablet/i.test(navigator.userAgent);
+        const isPWA = isStandalone || isIOSStandalone || isTablet;
+        
+        if (isPWA) {
+          console.log('📱 Closing PWA via Android back button...');
+          try {
+            window.close();
+          } catch (error) {
+            console.log('❌ Android back button close failed:', error);
+          }
+        }
+      }
+    };
+
+    // Обработчик beforeunload для PWA
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      const isIOSStandalone = (window.navigator as any).standalone === true;
+      const isTablet = /Android|iPad|Tablet/i.test(navigator.userAgent);
+      const isPWA = isStandalone || isIOSStandalone || isTablet;
+      
+      if (isPWA && backButtonPressed) {
+        console.log('📱 beforeunload triggered for PWA');
+        // Не показываем диалог подтверждения для PWA
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    };
+
+    // Добавляем все обработчики
     window.addEventListener('popstate', handleBackButton);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleWindowBlur);
+    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     // Добавляем запись в историю для перехвата кнопки "Назад"
     window.history.pushState({ page: 'cashier-dashboard' }, '', window.location.href);
 
     return () => {
       window.removeEventListener('popstate', handleBackButton);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleWindowBlur);
+      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 
@@ -413,6 +493,30 @@ export const CashierDashboardPage: React.FC = () => {
                   {isConnected ? 'Онлайн' : isConnecting ? 'Подключение...' : 'Офлайн'}
                 </span>
               </div>
+              
+              {/* Кнопка закрытия PWA (только для PWA) */}
+              {(window.matchMedia('(display-mode: standalone)').matches || 
+                (window.navigator as any).standalone === true ||
+                /Android|iPad|Tablet/i.test(navigator.userAgent)) && (
+                <button
+                  onClick={() => {
+                    console.log('📱 Manual PWA close button pressed');
+                    try {
+                      window.close();
+                    } catch (error) {
+                      console.log('❌ Manual close failed:', error);
+                      // Fallback: попробуем открыть внешнюю ссылку
+                      window.location.href = 'https://www.google.com';
+                    }
+                  }}
+                  className="flex items-center space-x-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors text-xs sm:text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span className="hidden sm:inline">Закрыть</span>
+                </button>
+              )}
               
               {/* Кнопка выхода */}
               <button
