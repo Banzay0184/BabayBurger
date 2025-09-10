@@ -226,6 +226,12 @@ class ClientConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         
+        # Также присоединяемся к группе обновлений меню
+        await self.channel_layer.group_add(
+            'menu_updates',
+            self.channel_name
+        )
+        
         await self.accept()
         
         logger.info(f"Client WebSocket connected: {self.client_group_name}")
@@ -234,6 +240,10 @@ class ClientConsumer(AsyncWebsocketConsumer):
         """Отключение от WebSocket"""
         await self.channel_layer.group_discard(
             self.client_group_name,
+            self.channel_name
+        )
+        await self.channel_layer.group_discard(
+            'menu_updates',
             self.channel_name
         )
         
@@ -298,6 +308,18 @@ class ClientConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'type': 'order_details_update',
             'order': event['order'],
+            'timestamp': event.get('timestamp')
+        }, cls=DjangoJSONEncoder))
+
+    async def menu_item_updated(self, event):
+        """Обновление элемента меню"""
+        logger.info(f"📨 Client WebSocket: sending menu_item_updated for item #{event.get('item_id', 'unknown')}")
+        await self.send(text_data=json.dumps({
+            'type': 'menu_item_updated',
+            'item_id': event['item_id'],
+            'item_name': event['item_name'],
+            'is_active': event['is_active'],
+            'action': event['action'],
             'timestamp': event.get('timestamp')
         }, cls=DjangoJSONEncoder))
 

@@ -5,18 +5,23 @@ import { useAuth } from '../context/AuthContext';
 import type { Order } from '../types/menu';
 
 export interface ClientWebSocketMessage extends WebSocketMessage {
-  type: 'order_status_update' | 'order_details_update' | 'connection_established' | 'subscribed';
+  type: 'order_status_update' | 'order_details_update' | 'menu_item_updated' | 'connection_established' | 'subscribed';
   order_id?: number;
   status?: string;
   status_display?: string;
   updated_at?: string;
   order?: Order;
+  item_id?: number;
+  item_name?: string;
+  is_active?: boolean;
+  action?: string;
   timestamp?: string;
 }
 
 export interface UseClientWebSocketOptions {
   onOrderStatusUpdate?: (orderId: number, status: string, statusDisplay: string, updatedAt: string) => void;
   onOrderDetailsUpdate?: (order: Order) => void;
+  onMenuUpdate?: (itemId: number, itemName: string, isActive: boolean, action: string) => void;
   enabled?: boolean;
 }
 
@@ -37,6 +42,7 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
   const {
     onOrderStatusUpdate,
     onOrderDetailsUpdate,
+    onMenuUpdate,
     enabled = true
   } = options;
 
@@ -83,6 +89,18 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
         }
         break;
 
+      case 'menu_item_updated':
+        if ((message as any).item_id && (message as any).item_name && onMenuUpdate) {
+          console.log('🍽️ Menu item updated:', (message as any).item_name, (message as any).action);
+          onMenuUpdate(
+            (message as any).item_id,
+            (message as any).item_name,
+            (message as any).is_active,
+            (message as any).action
+          );
+        }
+        break;
+
       case 'connection_established':
         console.log('✅ Client WebSocket connection established');
         break;
@@ -94,7 +112,7 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
       default:
         console.log('❓ Unknown message type:', message.type);
     }
-  }, [onOrderStatusUpdate, onOrderDetailsUpdate]);
+  }, [onOrderStatusUpdate, onOrderDetailsUpdate, onMenuUpdate]);
 
   // Обработчики событий WebSocket
   const handleOpen = useCallback(() => {

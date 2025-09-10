@@ -15,8 +15,30 @@ from .serializers import (
 )
 from .authentication import CashierTokenAuthentication
 from api.models import Order, MenuItem, Category
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 logger = logging.getLogger(__name__)
+
+def send_menu_update_notification(menu_item, action):
+    """Отправляет WebSocket уведомление об изменении меню"""
+    try:
+        channel_layer = get_channel_layer()
+        if channel_layer:
+            async_to_sync(channel_layer.group_send)(
+                'menu_updates',
+                {
+                    'type': 'menu_item_updated',
+                    'item_id': menu_item.id,
+                    'item_name': menu_item.name,
+                    'is_active': menu_item.is_active,
+                    'action': action,
+                    'timestamp': timezone.now().isoformat()
+                }
+            )
+            logger.info(f"📡 Menu update notification sent: {menu_item.name} - {action}")
+    except Exception as e:
+        logger.error(f"Error sending menu update notification: {str(e)}")
 
 class CashierAuthViewSet(viewsets.ViewSet):
     """ViewSet для аутентификации кассиров"""
@@ -317,6 +339,9 @@ class CashierStopListViewSet(viewsets.ViewSet):
             
             action = "деактивирован" if not menu_item.is_active else "активирован"
             logger.info(f"🍽️ Menu item '{menu_item.name}' {action} by cashier {cashier.id}")
+            
+            # Отправляем WebSocket уведомление клиентам
+            send_menu_update_notification(menu_item, action)
             
             return Response({
                 'message': f'Товар "{menu_item.name}" {action}',

@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useReducer } from 'react';
+import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type { MenuItem, MenuCategory, MenuFilters, Promotion } from '../types/menu';
 import { menuApi } from '../api/menu';
+import { useClientWebSocket } from '../hooks/useClientWebSocket';
 
 interface MenuState {
   categories: MenuCategory[];
@@ -12,13 +13,14 @@ interface MenuState {
   error: string | null;
 }
 
-type MenuAction =
+type MenuAction = 
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_MENU_DATA'; payload: { categories: MenuCategory[]; items: MenuItem[]; promotions: Promotion[] } }
   | { type: 'SET_PROMOTIONS'; payload: Promotion[] }
   | { type: 'SET_FILTERS'; payload: Partial<MenuFilters> }
-  | { type: 'RESET_FILTERS' };
+  | { type: 'RESET_FILTERS' }
+  | { type: 'UPDATE_MENU_ITEM'; payload: { itemId: number; isActive: boolean } };
 
 const initialState: MenuState = {
   categories: [],
@@ -55,6 +57,23 @@ function menuReducer(state: MenuState, action: MenuAction): MenuState {
       return { ...state, filters: { ...state.filters, ...action.payload } };
     case 'RESET_FILTERS':
       return { ...state, filters: initialState.filters };
+    case 'UPDATE_MENU_ITEM':
+      return {
+        ...state,
+        items: state.items.map(item => 
+          item.id === action.payload.itemId 
+            ? { ...item, is_active: action.payload.isActive }
+            : item
+        ),
+        categories: state.categories.map(category => ({
+          ...category,
+          items: category.items.map(item =>
+            item.id === action.payload.itemId
+              ? { ...item, is_active: action.payload.isActive }
+              : item
+          )
+        }))
+      };
     default:
       return state;
   }
@@ -92,6 +111,33 @@ interface MenuProviderProps {
 
 export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(menuReducer, initialState);
+
+  // Обработчик WebSocket уведомлений о меню
+  const handleMenuUpdate = useCallback((itemId: number, itemName: string, isActive: boolean, action: string) => {
+    console.log('🍽️ Menu item updated via WebSocket:', { itemId, itemName, isActive, action });
+    
+    // Обновляем локальное состояние меню
+    dispatch({
+      type: 'UPDATE_MENU_ITEM',
+      payload: {
+        itemId,
+        isActive
+      }
+    });
+    
+    // Если товар был деактивирован, показываем уведомление
+    if (!isActive) {
+      console.log(`🚫 Товар "${itemName}" деактивирован кассиром`);
+    } else {
+      console.log(`✅ Товар "${itemName}" активирован кассиром`);
+    }
+  }, []);
+
+  // WebSocket для получения обновлений меню в реальном времени
+  useClientWebSocket({
+    onMenuUpdate: handleMenuUpdate,
+    enabled: true
+  });
 
   const fetchMenu = async () => {
     console.log('🚀 Loading menu data...');
