@@ -14,9 +14,7 @@ interface OrdersPageProps {
 
 export const OrdersPage: React.FC<OrdersPageProps> = ({
   orders,
-  title,
   color,
-  icon,
   onOrderAction,
   onShowDetails,
   emptyMessage,
@@ -25,24 +23,10 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
   return (
     <div className="h-full">
       {/* Заголовок страницы */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-        <div className="flex items-center space-x-3">
-          <div className={`p-2 rounded-lg ${color === '#3b82f6' ? 'bg-blue-100' : color === '#f59e0b' ? 'bg-orange-100' : 'bg-gray-100'}`}>
-            <div className={`${color === '#3b82f6' ? 'text-blue-600' : color === '#f59e0b' ? 'text-orange-600' : 'text-gray-600'}`}>
-              {icon}
-            </div>
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">{title}</h1>
-            <p className="text-sm text-gray-500">
-              {orders.length} заказ{orders.length === 1 ? '' : orders.length < 5 ? 'а' : 'ов'}
-            </p>
-          </div>
-        </div>
-      </div>
+
 
       {/* Список заказов */}
-      <div className="h-[calc(100vh-200px)] overflow-y-auto">
+      <div className="h-[calc(100vh-280px)] overflow-y-auto mt-8">
         {orders.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
             <div className="text-6xl mb-4 opacity-50">{emptyIcon}</div>

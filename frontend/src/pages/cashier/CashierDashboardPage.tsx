@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { cashierApi, type CashierData, type DashboardStats, type Order } from '../../api/cashierApi';
-import { CashierStats } from '../../components/cashier/CashierStats';
+import { cashierApi, type CashierData, type Order } from '../../api/cashierApi';
 import { OrderColumn } from '../../components/cashier/OrderColumn';
 import { OrderDetailsModal } from '../../components/cashier/OrderDetailsModal';
 import { OrderSearch } from '../../components/cashier/OrderSearch';
@@ -13,7 +12,6 @@ import { useCashierWebSocket } from '../../hooks/useCashierWebSocket';
 
 export const CashierDashboardPage: React.FC = () => {
   const [cashierData, setCashierData] = useState<CashierData | null>(null);
-  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -127,9 +125,9 @@ export const CashierDashboardPage: React.FC = () => {
   }, []);
 
 
-  const handleDashboardUpdate = useCallback((newStats: DashboardStats) => {
+  const handleDashboardUpdate = useCallback((newStats: any) => {
     console.log('📊 Dashboard stats updated via WebSocket:', newStats);
-    setStats(newStats);
+    // Статистика больше не отображается, но логируем для отладки
   }, []);
 
   // Инициализируем WebSocket
@@ -169,12 +167,7 @@ export const CashierDashboardPage: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [statsData, ordersData] = await Promise.all([
-        cashierApi.getDashboardStats(),
-        cashierApi.getOrders()
-      ]);
-      
-      setStats(statsData);
+      const ordersData = await cashierApi.getOrders();
       setOrders(ordersData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка загрузки данных');
@@ -242,31 +235,8 @@ export const CashierDashboardPage: React.FC = () => {
         });
       });
       
-      // Также обновляем статистику дашборда оптимистично
-      setStats(prevStats => {
-        if (!prevStats) return prevStats;
-        
-        const newStats = { ...prevStats };
-        switch (action) {
-          case 'start_processing':
-            newStats.preparing_orders = (newStats.preparing_orders || 0) + 1;
-            break;
-          case 'mark_ready':
-            newStats.ready_orders = (newStats.ready_orders || 0) + 1;
-            newStats.preparing_orders = Math.max(0, (newStats.preparing_orders || 0) - 1);
-            break;
-          case 'mark_delivering':
-            newStats.delivering_orders = (newStats.delivering_orders || 0) + 1;
-            newStats.ready_orders = Math.max(0, (newStats.ready_orders || 0) - 1);
-            break;
-          case 'complete':
-            newStats.completed_orders = (newStats.completed_orders || 0) + 1;
-            newStats.delivering_orders = Math.max(0, (newStats.delivering_orders || 0) - 1);
-            break;
-        }
-        console.log(`⚡ Optimistic stats update:`, newStats);
-        return newStats;
-      });
+      // Статистика больше не отображается, но логируем действие
+      console.log(`⚡ Order action completed: ${action} for order ${orderId}`);
       
       // Fallback: если WebSocket не подключен, обновляем данные вручную (без задержки)
       if (!isConnected) {
@@ -344,54 +314,92 @@ export const CashierDashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Статистика в верхней части */}
-      {stats && cashierData && (
-        <CashierStats
-          stats={stats}
-          cashierName={`${cashierData.first_name} ${cashierData.last_name}`}
-          restaurantName={cashierData.restaurant.name}
-          onLogout={handleLogout}
-        />
-      )}
+      {/* Фиксированная верхняя панель */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-3">
+          {/* Информация о кассире и кнопка выхода */}
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center space-x-3">
+              <div className="p-1.5 sm:p-2 bg-orange-100 rounded-md">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 truncate max-w-[200px] sm:max-w-none">
+                  {cashierData?.restaurant?.name || 'Ресторан'}
+                </h1>
+                <p className="text-xs text-gray-500 truncate">
+                  {cashierData?.first_name} {cashierData?.last_name}
+                </p>
+              </div>
+            </div>
+            
+            {/* Статус WebSocket и кнопка выхода */}
+            <div className="flex items-center space-x-3">
+              {/* Статус WebSocket */}
+              <div className="flex items-center space-x-1.5 sm:space-x-2">
+                <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
+                <span className="text-xs text-gray-600">
+                  {isConnected ? 'Подключено' : isConnecting ? 'Подключение...' : 'Отключено'}
+                </span>
+                {wsError && (
+                  <span className="text-xs text-red-600">({wsError})</span>
+                )}
+              </div>
+              
+              {!isConnected && !isConnecting && (
+                <button
+                  onClick={wsReconnect}
+                  className="text-xs text-blue-600 hover:text-blue-800 underline"
+                >
+                  Переподключиться
+                </button>
+              )}
+              
+              {/* Кнопка выхода */}
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors text-xs sm:text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span className="hidden sm:inline">Выйти</span>
+              </button>
+            </div>
+          </div>
 
-      {/* Ошибки и статус WebSocket */}
-      <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 pt-1 sm:pt-2 space-y-1 sm:space-y-2">
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-2 py-1.5 sm:px-3 sm:py-2 rounded-md sm:rounded-lg shadow-sm text-xs sm:text-sm">
-            {error}
+          {/* Ошибки */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-2 py-1.5 sm:px-3 sm:py-2 rounded-md sm:rounded-lg shadow-sm text-xs sm:text-sm mb-3">
+              {error}
+            </div>
+          )}
+
+          {/* Поиск заказов */}
+          <div className="mb-3">
+            <OrderSearch
+              onSearchResults={handleSearchResults}
+              onClearSearch={handleClearSearch}
+            />
           </div>
-        )}
-        
-        {/* Статус WebSocket */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-1.5 sm:space-x-2">
-            <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
-            <span className="text-xs text-gray-600">
-              {isConnected ? 'Подключено' : isConnecting ? 'Подключение...' : 'Отключено'}
-            </span>
-            {wsError && (
-              <span className="text-xs text-red-600">({wsError})</span>
-            )}
-          </div>
-          
-          {!isConnected && !isConnecting && (
-            <button
-              onClick={wsReconnect}
-              className="text-xs text-blue-600 hover:text-blue-800 underline"
-            >
-              Переподключиться
-            </button>
+
+          {/* Навигация */}
+          {!isSearchMode && (
+            <CashierNavigation
+              activeView={activeView}
+              onViewChange={handleViewChange}
+              preparingCount={preparingOrders.length}
+              readyCount={readyOrders.length}
+              completedCount={completedOrders.length}
+            />
           )}
         </div>
       </div>
 
-      {/* Поиск заказов */}
-      <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-3">
-        <OrderSearch
-          onSearchResults={handleSearchResults}
-          onClearSearch={handleClearSearch}
-        />
-      </div>
+      {/* Отступ для фиксированной панели */}
+      <div className="h-[200px] sm:h-[220px] md:h-[240px]"></div>
 
       {/* Навигация и контент */}
       <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 pb-2 sm:pb-4">
@@ -454,13 +462,7 @@ export const CashierDashboardPage: React.FC = () => {
         ) : (
           <>
             {/* Навигация */}
-            <CashierNavigation
-              activeView={activeView}
-              onViewChange={handleViewChange}
-              preparingCount={preparingOrders.length}
-              readyCount={readyOrders.length}
-              completedCount={completedOrders.length}
-            />
+          
 
             {/* Контент страницы */}
             <OrdersPage
