@@ -128,7 +128,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
       }
       
       // Проверяем, находится ли адрес в зоне по координатам
-      if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
+      if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2 && 
+          selectedAddress.latitude != null && selectedAddress.longitude != null) {
         const isInZone = isPointInPolygon(
           [selectedAddress.latitude, selectedAddress.longitude], 
           zone.polygon_coordinates
@@ -138,7 +139,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
       }
       
       // Если нет полигона, но есть центр и радиус
-      if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+      if (zone.center_latitude && zone.center_longitude && zone.radius_km &&
+          selectedAddress.latitude != null && selectedAddress.longitude != null) {
         const distance = Math.sqrt(
           Math.pow(selectedAddress.latitude - zone.center_latitude, 2) + 
           Math.pow(selectedAddress.longitude - zone.center_longitude, 2)
@@ -196,7 +198,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         }
         
         // Проверяем, находится ли адрес в зоне по координатам
-        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
+        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2 &&
+            selectedAddress.latitude != null && selectedAddress.longitude != null) {
           return isPointInPolygon(
             [selectedAddress.latitude, selectedAddress.longitude], 
             zone.polygon_coordinates
@@ -204,7 +207,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         }
         
         // Если нет полигона, но есть центр и радиус
-        if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+        if (zone.center_latitude && zone.center_longitude && zone.radius_km &&
+            selectedAddress.latitude != null && selectedAddress.longitude != null) {
           const distance = Math.sqrt(
             Math.pow(selectedAddress.latitude - zone.center_latitude, 2) + 
             Math.pow(selectedAddress.longitude - zone.center_longitude, 2)
@@ -239,7 +243,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         }
         
         // Проверяем, находится ли адрес в зоне по координатам
-        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
+        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2 &&
+            selectedAddress.latitude != null && selectedAddress.longitude != null) {
           return isPointInPolygon(
             [selectedAddress.latitude, selectedAddress.longitude], 
             zone.polygon_coordinates
@@ -247,7 +252,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         }
         
         // Если нет полигона, но есть центр и радиус
-        if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+        if (zone.center_latitude && zone.center_longitude && zone.radius_km &&
+            selectedAddress.latitude != null && selectedAddress.longitude != null) {
           const distance = Math.sqrt(
             Math.pow(selectedAddress.latitude - zone.center_latitude, 2) + 
             Math.pow(selectedAddress.longitude - zone.center_longitude, 2)
@@ -293,7 +299,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         }
         
         // Проверяем, находится ли адрес в зоне по координатам
-        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
+        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2 &&
+            selectedAddress.latitude != null && selectedAddress.longitude != null) {
           return isPointInPolygon(
             [selectedAddress.latitude, selectedAddress.longitude], 
             zone.polygon_coordinates
@@ -301,7 +308,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         }
         
         // Если нет полигона, но есть центр и радиус
-        if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+        if (zone.center_latitude && zone.center_longitude && zone.radius_km &&
+            selectedAddress.latitude != null && selectedAddress.longitude != null) {
           const distance = Math.sqrt(
             Math.pow(selectedAddress.latitude - zone.center_latitude, 2) + 
             Math.pow(selectedAddress.longitude - zone.center_longitude, 2)
@@ -1013,7 +1021,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                         }
                         
                         // Проверяем, находится ли адрес в зоне по координатам
-                        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
+                        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2 &&
+                            selectedAddress.latitude != null && selectedAddress.longitude != null) {
                           return isPointInPolygon(
                             [selectedAddress.latitude, selectedAddress.longitude], 
                             zone.polygon_coordinates
@@ -1021,7 +1030,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                         }
                         
                         // Если нет полигона, но есть центр и радиус
-                        if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+                        if (zone.center_latitude && zone.center_longitude && zone.radius_km &&
+                            selectedAddress.latitude != null && selectedAddress.longitude != null) {
                           const distance = Math.sqrt(
                             Math.pow(selectedAddress.latitude - zone.center_latitude, 2) + 
                             Math.pow(selectedAddress.longitude - zone.center_longitude, 2)
