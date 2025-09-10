@@ -269,13 +269,13 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   const getCategoriesWithItems = (): MenuCategory[] => {
     return (state.categories || []).map(category => ({
       ...category,
-      items: (state.items || []).filter(item => item.category === category.id)
+      items: (state.items || []).filter(item => item.category === category.id && item.is_active)
     }));
   };
 
   const getAvailableCategories = (): MenuCategory[] => {
     return (state.categories || []).filter(category => 
-      (state.items || []).some(item => item.category === category.id)
+      (state.items || []).some(item => item.category === category.id && item.is_active)
     );
   };
 
@@ -292,11 +292,11 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   };
 
   const getHits = (): MenuItem[] => {
-    return (state.items || []).filter(item => item.is_hit).sort((a, b) => a.priority - b.priority);
+    return (state.items || []).filter(item => item.is_hit && item.is_active).sort((a, b) => a.priority - b.priority);
   };
 
   const getNewItems = (): MenuItem[] => {
-    return (state.items || []).filter(item => item.is_new).sort((a, b) => a.priority - b.priority);
+    return (state.items || []).filter(item => item.is_new && item.is_active).sort((a, b) => a.priority - b.priority);
   };
 
   const value: MenuContextType = {
