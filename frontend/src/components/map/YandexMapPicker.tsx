@@ -63,14 +63,15 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
 
   // Функция проверки "точка внутри полигона" (алгоритм ray casting)
   const isPointInPolygon = (point: [number, number], polygon: [number, number][]): boolean => {
-    const [x, y] = point;
+    const [lat, lon] = point; // lat = широта, lon = долгота
     let inside = false;
     
     for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-      const [xi, yi] = polygon[i];
-      const [xj, yj] = polygon[j];
+      // В полигоне координаты хранятся как [широта, долгота] (перепутаны!)
+      const [pi_lat, pi_lon] = polygon[i]; // широта, долгота
+      const [pj_lat, pj_lon] = polygon[j]; // широта, долгота
       
-      if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+      if (((pi_lat > lat) !== (pj_lat > lat)) && (lon < (pj_lon - pi_lon) * (lat - pi_lat) / (pj_lat - pi_lat) + pi_lon)) {
         inside = !inside;
       }
     }

@@ -98,18 +98,59 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
     }
   }, [state.user]);
 
+  // Функция проверки "точка внутри полигона" (алгоритм ray casting)
+  const isPointInPolygon = (point: [number, number], polygon: [number, number][]): boolean => {
+    const [lat, lon] = point; // lat = широта, lon = долгота
+    let inside = false;
+    
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      // В полигоне координаты хранятся как [широта, долгота] (перепутаны!)
+      const [pi_lat, pi_lon] = polygon[i]; // широта, долгота
+      const [pj_lat, pj_lon] = polygon[j]; // широта, долгота
+      
+      if (((pi_lat > lat) !== (pj_lat > lat)) && (lon < (pj_lon - pi_lon) * (lat - pi_lat) / (pj_lat - pi_lat) + pi_lon)) {
+        inside = !inside;
+      }
+    }
+    
+    return inside;
+  };
+
   // Расчет стоимости доставки
   const getDeliveryFee = useMemo(() => {
     if (serviceType === 'pickup') return 0;
     if (!selectedAddress) return 0;
     
-    // Ищем зону доставки для выбранного адреса
-    const addressZone = deliveryZones.find(zone => 
-      zone.city === selectedAddress.city && zone.is_active
-    );
+    // Ищем зону доставки для выбранного адреса по точным координатам
+    const addressZone = deliveryZones.find(zone => {
+      if (zone.city !== selectedAddress.city || !zone.is_active) {
+        return false;
+      }
+      
+      // Проверяем, находится ли адрес в зоне по координатам
+      if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
+        const isInZone = isPointInPolygon(
+          [selectedAddress.latitude, selectedAddress.longitude], 
+          zone.polygon_coordinates
+        );
+        console.log(`🔍 Проверка зоны ${zone.name}: ${isInZone}`);
+        return isInZone;
+      }
+      
+      // Если нет полигона, но есть центр и радиус
+      if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+        const distance = Math.sqrt(
+          Math.pow(selectedAddress.latitude - zone.center_latitude, 2) + 
+          Math.pow(selectedAddress.longitude - zone.center_longitude, 2)
+        );
+        return distance <= zone.radius_km / 111; // Примерное расстояние в градусах
+      }
+      
+      return false;
+    });
     
     if (!addressZone) {
-      console.log('🔍 Зона доставки не найдена для города:', selectedAddress.city);
+      console.log('🔍 Зона доставки не найдена для адреса:', selectedAddress.full_address);
       return 0; // Если зона не найдена, доставка бесплатная
     }
     
@@ -149,9 +190,31 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
   // Проверка минимальной суммы заказа для зоны доставки
   const isOrderBelowMinAmount = () => {
     if (serviceType === 'delivery' && selectedAddress) {
-      const addressZone = deliveryZones.find(zone => 
-        zone.city === selectedAddress.city && zone.is_active
-      );
+      const addressZone = deliveryZones.find(zone => {
+        if (zone.city !== selectedAddress.city || !zone.is_active) {
+          return false;
+        }
+        
+        // Проверяем, находится ли адрес в зоне по координатам
+        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
+          return isPointInPolygon(
+            [selectedAddress.latitude, selectedAddress.longitude], 
+            zone.polygon_coordinates
+          );
+        }
+        
+        // Если нет полигона, но есть центр и радиус
+        if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+          const distance = Math.sqrt(
+            Math.pow(selectedAddress.latitude - zone.center_latitude, 2) + 
+            Math.pow(selectedAddress.longitude - zone.center_longitude, 2)
+          );
+          return distance <= zone.radius_km / 111; // Примерное расстояние в градусах
+        }
+        
+        return false;
+      });
+      
       if (addressZone && addressZone.min_order_amount) {
         return cartState.total < Number(addressZone.min_order_amount);
       }
@@ -170,9 +233,31 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
   // Получение оставшейся суммы для минимального заказа
   const getRemainingAmount = () => {
     if (serviceType === 'delivery' && selectedAddress) {
-      const addressZone = deliveryZones.find(zone => 
-        zone.city === selectedAddress.city && zone.is_active
-      );
+      const addressZone = deliveryZones.find(zone => {
+        if (zone.city !== selectedAddress.city || !zone.is_active) {
+          return false;
+        }
+        
+        // Проверяем, находится ли адрес в зоне по координатам
+        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
+          return isPointInPolygon(
+            [selectedAddress.latitude, selectedAddress.longitude], 
+            zone.polygon_coordinates
+          );
+        }
+        
+        // Если нет полигона, но есть центр и радиус
+        if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+          const distance = Math.sqrt(
+            Math.pow(selectedAddress.latitude - zone.center_latitude, 2) + 
+            Math.pow(selectedAddress.longitude - zone.center_longitude, 2)
+          );
+          return distance <= zone.radius_km / 111; // Примерное расстояние в градусах
+        }
+        
+        return false;
+      });
+      
       if (addressZone && addressZone.min_order_amount) {
         return Math.max(0, Number(addressZone.min_order_amount) - cartState.total);
       }
@@ -202,9 +287,30 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
 
     // Проверка минимальной суммы заказа для зоны доставки
     if (serviceType === 'delivery' && selectedAddress) {
-      const addressZone = deliveryZones.find(zone => 
-        zone.city === selectedAddress.city && zone.is_active
-      );
+      const addressZone = deliveryZones.find(zone => {
+        if (zone.city !== selectedAddress.city || !zone.is_active) {
+          return false;
+        }
+        
+        // Проверяем, находится ли адрес в зоне по координатам
+        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
+          return isPointInPolygon(
+            [selectedAddress.latitude, selectedAddress.longitude], 
+            zone.polygon_coordinates
+          );
+        }
+        
+        // Если нет полигона, но есть центр и радиус
+        if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+          const distance = Math.sqrt(
+            Math.pow(selectedAddress.latitude - zone.center_latitude, 2) + 
+            Math.pow(selectedAddress.longitude - zone.center_longitude, 2)
+          );
+          return distance <= zone.radius_km / 111; // Примерное расстояние в градусах
+        }
+        
+        return false;
+      });
       
       if (addressZone && addressZone.min_order_amount) {
         const minAmount = Number(addressZone.min_order_amount);
@@ -901,9 +1007,30 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                   {/* Информация о зоне доставки */}
                   {selectedAddress && deliveryZones.length > 0 && (
                     (() => {
-                      const addressZone = deliveryZones.find(zone => 
-                        zone.city === selectedAddress.city && zone.is_active
-                      );
+                      const addressZone = deliveryZones.find(zone => {
+                        if (zone.city !== selectedAddress.city || !zone.is_active) {
+                          return false;
+                        }
+                        
+                        // Проверяем, находится ли адрес в зоне по координатам
+                        if (zone.polygon_coordinates && zone.polygon_coordinates.length > 2) {
+                          return isPointInPolygon(
+                            [selectedAddress.latitude, selectedAddress.longitude], 
+                            zone.polygon_coordinates
+                          );
+                        }
+                        
+                        // Если нет полигона, но есть центр и радиус
+                        if (zone.center_latitude && zone.center_longitude && zone.radius_km) {
+                          const distance = Math.sqrt(
+                            Math.pow(selectedAddress.latitude - zone.center_latitude, 2) + 
+                            Math.pow(selectedAddress.longitude - zone.center_longitude, 2)
+                          );
+                          return distance <= zone.radius_km / 111; // Примерное расстояние в градусах
+                        }
+                        
+                        return false;
+                      });
                       
                       if (addressZone) {
                         const isFreeDelivery = addressZone.min_order_amount && 
