@@ -5,6 +5,8 @@ import { CashierStats } from '../../components/cashier/CashierStats';
 import { OrderColumn } from '../../components/cashier/OrderColumn';
 import { OrderDetailsModal } from '../../components/cashier/OrderDetailsModal';
 import { OrderSearch } from '../../components/cashier/OrderSearch';
+import { CashierNavigation, type CashierViewType } from '../../components/cashier/CashierNavigation';
+import { OrdersPage } from '../../components/cashier/OrdersPage';
 import { useCashierWebSocket } from '../../hooks/useCashierWebSocket';
 
 
@@ -19,6 +21,7 @@ export const CashierDashboardPage: React.FC = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<Order[]>([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
+  const [activeView, setActiveView] = useState<CashierViewType>('preparing');
   const navigate = useNavigate();
 
   // WebSocket обработчики
@@ -116,6 +119,11 @@ export const CashierDashboardPage: React.FC = () => {
   const handleClearSearch = useCallback(() => {
     setSearchResults([]);
     setIsSearchMode(false);
+  }, []);
+
+  const handleViewChange = useCallback((view: CashierViewType) => {
+    setActiveView(view);
+    setIsSearchMode(false); // Выходим из режима поиска при смене вида
   }, []);
 
 
@@ -298,7 +306,7 @@ export const CashierDashboardPage: React.FC = () => {
 
   // Группируем заказы по статусам
   const preparingOrders = orders.filter(order => order.status === 'preparing');
-  const deliveringOrders = orders.filter(order => 
+  const readyOrders = orders.filter(order => 
     order.status === 'delivering' || 
     (order.status === 'ready_for_delivery' && order.service_type === 'delivery')
   );
@@ -306,6 +314,22 @@ export const CashierDashboardPage: React.FC = () => {
     order.status === 'completed' || 
     (order.status === 'ready_for_delivery' && order.service_type === 'pickup')
   );
+
+  // Получаем заказы для текущего вида
+  const getCurrentOrders = () => {
+    switch (activeView) {
+      case 'preparing':
+        return preparingOrders;
+      case 'ready':
+        return readyOrders;
+      case 'completed':
+        return completedOrders;
+      default:
+        return preparingOrders;
+    }
+  };
+
+  const currentOrders = getCurrentOrders();
 
   if (loading) {
     return (
@@ -369,7 +393,7 @@ export const CashierDashboardPage: React.FC = () => {
         />
       </div>
 
-      {/* Три колонки с заказами или результаты поиска */}
+      {/* Навигация и контент */}
       <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 pb-2 sm:pb-4">
         {isSearchMode ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6">
@@ -428,49 +452,58 @@ export const CashierDashboardPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4 h-[calc(100vh-180px)] sm:h-[calc(100vh-200px)] md:h-[calc(100vh-220px)]">
-          {/* Колонка 1: Готовятся */}
-          <OrderColumn
-            title="Готовятся"
-            orders={preparingOrders}
-            onOrderAction={handleOrderAction}
-            onShowDetails={handleShowDetails}
-            color="#3b82f6"
-            icon={
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <>
+            {/* Навигация */}
+            <CashierNavigation
+              activeView={activeView}
+              onViewChange={handleViewChange}
+              preparingCount={preparingOrders.length}
+              readyCount={readyOrders.length}
+              completedCount={completedOrders.length}
+            />
+
+            {/* Контент страницы */}
+            <OrdersPage
+              orders={currentOrders}
+              title={
+                activeView === 'preparing' ? 'Готовятся' :
+                activeView === 'ready' ? 'Готовы к выдаче' :
+                'Завершенные'
+              }
+              color={
+                activeView === 'preparing' ? '#3b82f6' :
+                activeView === 'ready' ? '#f59e0b' :
+                '#6b7280'
+              }
+              icon={
+                activeView === 'preparing' ? (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-            }
-          />
-
-          {/* Колонка 2: Готовы к выдаче */}
-          <OrderColumn
-            title="Готовы к выдаче"
-            orders={deliveringOrders}
-            onOrderAction={handleOrderAction}
-            onShowDetails={handleShowDetails}
-            color="#f59e0b"
-            icon={
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                ) : activeView === 'ready' ? (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                   </svg>
-            }
-          />
-
-          {/* Колонка 3: Завершенные */}
-          <OrderColumn
-            title="Завершенные"
-            orders={completedOrders}
-            onOrderAction={handleOrderAction}
-            onShowDetails={handleShowDetails}
-            color="#6b7280"
-            icon={
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                ) : (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-            }
-          />
-          </div>
+                )
+              }
+              onOrderAction={handleOrderAction}
+              onShowDetails={handleShowDetails}
+              emptyMessage={
+                activeView === 'preparing' ? 'Нет заказов в приготовлении' :
+                activeView === 'ready' ? 'Нет готовых заказов' :
+                'Нет завершенных заказов'
+              }
+              emptyIcon={
+                activeView === 'preparing' ? '🍳' :
+                activeView === 'ready' ? '📦' :
+                '✅'
+              }
+            />
+          </>
         )}
       </div>
 

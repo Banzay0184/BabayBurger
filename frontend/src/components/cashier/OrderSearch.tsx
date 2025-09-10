@@ -134,7 +134,7 @@ export const OrderSearch: React.FC<OrderSearchProps> = ({
             value={query}
             onChange={handleInputChange}
             placeholder="Поиск по телефону, номеру заказа..."
-            className="w-full pl-8 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 border border-gray-300 rounded-md sm:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base"
+            className="w-full pl-8 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 border border-gray-300 text-gray-900 rounded-md sm:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base"
           />
           {query && (
             <button
