@@ -256,7 +256,13 @@ export class UnifiedApiClient {
 
   // Метод для проверки авторизации
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    console.log('🔍 UnifiedClient auth check:', {
+      tokenKey: this.tokenKey,
+      token: !!token,
+      tokenValue: token ? token.substring(0, 10) + '...' : null
+    });
+    return !!token;
   }
 }
 

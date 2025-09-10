@@ -29,9 +29,23 @@ export const CashierLoginPage: React.FC = () => {
     setError(null);
 
     try {
-      await cashierApi.login(loginData);
-      navigate('/cashier/dashboard');
+      console.log('🔐 Starting login process...');
+      const response = await cashierApi.login(loginData);
+      console.log('✅ Login successful:', response);
+      
+      // Проверяем, что токен действительно сохранен
+      const token = localStorage.getItem('cashier_token');
+      const cashierData = localStorage.getItem('cashier_data');
+      console.log('🔑 Token saved:', !!token);
+      console.log('👤 Cashier data saved:', !!cashierData);
+      
+      // Небольшая задержка для гарантии сохранения
+      setTimeout(() => {
+        console.log('🚀 Navigating to dashboard...');
+        navigate('/cashier/dashboard');
+      }, 100);
     } catch (err) {
+      console.error('❌ Login failed:', err);
       setError(err instanceof Error ? err.message : 'Ошибка входа');
     } finally {
       setLoading(false);
@@ -41,21 +55,33 @@ export const CashierLoginPage: React.FC = () => {
   // Обработчик кнопки "Назад" для PWA на странице логина
   useEffect(() => {
     const handleBackButton = (event: PopStateEvent) => {
-      // Предотвращаем переход на предыдущую страницу
+      console.log('🔙 Back button pressed on login page');
       event.preventDefault();
       
-      // Если это PWA, закрываем приложение
-      if (window.matchMedia('(display-mode: standalone)').matches || 
-          (window.navigator as any).standalone === true) {
-        // Для iOS Safari
-        if ((window.navigator as any).standalone === true) {
+      // Проверяем, является ли это PWA
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                    (window.navigator as any).standalone === true ||
+                    document.referrer.includes('android-app://') ||
+                    window.location.protocol === 'https:' && window.location.hostname !== 'localhost';
+      
+      console.log('📱 PWA detection on login:', {
+        standalone: window.matchMedia('(display-mode: standalone)').matches,
+        navigatorStandalone: (window.navigator as any).standalone,
+        referrer: document.referrer,
+        protocol: window.location.protocol,
+        hostname: window.location.hostname,
+        isPWA
+      });
+      
+      if (isPWA) {
+        console.log('📱 Closing PWA app from login...');
+        try {
           window.close();
-        } else {
-          // Для Android Chrome
-          window.history.back();
+        } catch (error) {
+          console.log('❌ Cannot close PWA from login');
         }
       } else {
-        // Если не PWA, просто переходим назад
+        console.log('🌐 Not PWA, normal back navigation from login');
         window.history.back();
       }
     };

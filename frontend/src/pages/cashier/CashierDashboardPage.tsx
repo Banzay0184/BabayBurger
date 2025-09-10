@@ -150,17 +150,26 @@ export const CashierDashboardPage: React.FC = () => {
   }, [isConnected, isConnecting, wsError]);
 
   useEffect(() => {
-    if (!cashierApi.isAuthenticated()) {
+    console.log('🔍 Checking authentication...');
+    const isAuth = cashierApi.isAuthenticated();
+    console.log('🔐 Is authenticated:', isAuth);
+    
+    if (!isAuth) {
+      console.log('❌ Not authenticated, redirecting to login...');
       navigate('/cashier/login');
       return;
     }
 
     const cashierData = cashierApi.getCashierData();
+    console.log('👤 Cashier data:', cashierData);
+    
     if (!cashierData) {
+      console.log('❌ No cashier data, redirecting to login...');
       navigate('/cashier/login');
       return;
     }
 
+    console.log('✅ Authentication successful, setting cashier data...');
     setCashierData(cashierData);
     fetchDashboardData();
   }, [navigate]);
@@ -168,21 +177,41 @@ export const CashierDashboardPage: React.FC = () => {
   // Обработчик кнопки "Назад" для PWA
   useEffect(() => {
     const handleBackButton = (event: PopStateEvent) => {
-      // Предотвращаем переход на страницу логина при нажатии "Назад"
+      console.log('🔙 Back button pressed in PWA');
       event.preventDefault();
       
-      // Если это PWA, закрываем приложение
-      if (window.matchMedia('(display-mode: standalone)').matches || 
-          (window.navigator as any).standalone === true) {
-        // Для iOS Safari
-        if ((window.navigator as any).standalone === true) {
-          window.close();
-        } else {
-          // Для Android Chrome
+      // Проверяем, является ли это PWA
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                    (window.navigator as any).standalone === true ||
+                    document.referrer.includes('android-app://') ||
+                    window.location.protocol === 'https:' && window.location.hostname !== 'localhost';
+      
+      console.log('📱 PWA detection:', {
+        standalone: window.matchMedia('(display-mode: standalone)').matches,
+        navigatorStandalone: (window.navigator as any).standalone,
+        referrer: document.referrer,
+        protocol: window.location.protocol,
+        hostname: window.location.hostname,
+        isPWA
+      });
+      
+      if (isPWA) {
+        console.log('📱 Closing PWA app...');
+        // Попробуем разные способы закрытия PWA
+        try {
+          // Для iOS Safari
+          if ((window.navigator as any).standalone === true) {
+            window.close();
+          } else {
+            // Для Android Chrome и других браузеров
+            window.close();
+          }
+        } catch (error) {
+          console.log('❌ Cannot close PWA, trying history back');
           window.history.back();
         }
       } else {
-        // Если не PWA, просто переходим назад
+        console.log('🌐 Not PWA, normal back navigation');
         window.history.back();
       }
     };

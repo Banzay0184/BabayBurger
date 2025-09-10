@@ -200,7 +200,17 @@ class CashierApiClient {
     const token = localStorage.getItem('cashier_token');
     // Также проверяем this.token для совместимости
     const hasToken = !!token || !!this.token;
-    return hasToken && unifiedCashierApi.isAuthenticated();
+    const unifiedAuth = unifiedCashierApi.isAuthenticated();
+    
+    console.log('🔍 Auth check:', {
+      token: !!token,
+      thisToken: !!this.token,
+      hasToken,
+      unifiedAuth,
+      result: hasToken && unifiedAuth
+    });
+    
+    return hasToken && unifiedAuth;
   }
 
   getCashierData(): CashierData | null {
