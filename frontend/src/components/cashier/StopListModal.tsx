@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { cashierApi, type StopListMenuResponse, type MenuItem, type Category } from '../../api/cashierApi';
+import { cashierApi, type StopListMenuResponse, type MenuItem } from '../../api/cashierApi';
 
 interface StopListModalProps {
   isOpen: boolean;
