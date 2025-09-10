@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 
@@ -54,77 +54,6 @@ export const CashierLoginPage: React.FC = () => {
     }
   };
 
-  // Обработчик кнопки "Назад" для PWA на странице логина
-  useEffect(() => {
-    const handleBackButton = (event: PopStateEvent) => {
-      console.log('🔙 Back button pressed on login page');
-      event.preventDefault();
-      
-      // Проверяем, является ли это PWA или планшет
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      const isIOSStandalone = (window.navigator as any).standalone === true;
-      const isTablet = /Android|iPad|Tablet/i.test(navigator.userAgent);
-      const isPWA = isStandalone || isIOSStandalone || isTablet;
-      
-      console.log('📱 PWA/Tablet detection on login:', {
-        standalone: isStandalone,
-        navigatorStandalone: isIOSStandalone,
-        isTablet,
-        userAgent: navigator.userAgent,
-        referrer: document.referrer,
-        protocol: window.location.protocol,
-        hostname: window.location.hostname,
-        isPWA
-      });
-      
-      if (isPWA) {
-        console.log('📱 Closing PWA/Tablet app from login...');
-        
-        // Для планшетов и PWA пробуем разные способы закрытия
-        try {
-          // Способ 1: window.close()
-          if (window.close) {
-            window.close();
-            return;
-          }
-        } catch (error) {
-          console.log('❌ window.close() failed from login:', error);
-        }
-        
-        try {
-          // Способ 2: Для Android Chrome
-          if (window.history.length <= 1) {
-            window.close();
-          } else {
-            window.history.back();
-          }
-        } catch (error) {
-          console.log('❌ History navigation failed from login:', error);
-        }
-        
-        try {
-          // Способ 3: Попробуем открыть пустую страницу
-          window.location.href = 'about:blank';
-        } catch (error) {
-          console.log('❌ about:blank failed from login:', error);
-        }
-        
-      } else {
-        console.log('🌐 Not PWA/Tablet, normal back navigation from login');
-        window.history.back();
-      }
-    };
-
-    // Добавляем обработчик события popstate
-    window.addEventListener('popstate', handleBackButton);
-
-    // Добавляем запись в историю для перехвата кнопки "Назад"
-    window.history.pushState({ page: 'cashier-login' }, '', window.location.href);
-
-    return () => {
-      window.removeEventListener('popstate', handleBackButton);
-    };
-  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">

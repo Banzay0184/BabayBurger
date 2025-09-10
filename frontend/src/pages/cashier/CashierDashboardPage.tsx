@@ -174,159 +174,6 @@ export const CashierDashboardPage: React.FC = () => {
     fetchDashboardData();
   }, [navigate]);
 
-  // Обработчик кнопки "Назад" для PWA - улучшенная версия
-  useEffect(() => {
-    let backButtonPressed = false;
-    
-    const handleBackButton = (event: PopStateEvent) => {
-      console.log('🔙 Back button pressed in PWA');
-      event.preventDefault();
-      backButtonPressed = true;
-      
-      // Проверяем, является ли это PWA или планшет
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      const isIOSStandalone = (window.navigator as any).standalone === true;
-      const isTablet = /Android|iPad|Tablet/i.test(navigator.userAgent);
-      const isPWA = isStandalone || isIOSStandalone || isTablet;
-      
-      console.log('📱 PWA/Tablet detection:', {
-        standalone: isStandalone,
-        navigatorStandalone: isIOSStandalone,
-        isTablet,
-        userAgent: navigator.userAgent,
-        referrer: document.referrer,
-        protocol: window.location.protocol,
-        hostname: window.location.hostname,
-        isPWA,
-        historyLength: window.history.length
-      });
-      
-      if (isPWA) {
-        console.log('📱 Attempting to close PWA/Tablet app...');
-        
-        // Способ 1: Попробуем закрыть окно
-        const tryCloseWindow = () => {
-          try {
-            window.close();
-            console.log('✅ window.close() executed');
-          } catch (error) {
-            console.log('❌ window.close() failed:', error);
-          }
-        };
-        
-        // Способ 2: Попробуем открыть пустую страницу
-        const tryBlankPage = () => {
-          try {
-            window.location.replace('about:blank');
-            console.log('✅ Redirected to about:blank');
-          } catch (error) {
-            console.log('❌ about:blank failed:', error);
-          }
-        };
-        
-        // Способ 3: Попробуем открыть внешнюю ссылку
-        const tryExternalLink = () => {
-          try {
-            window.location.href = 'https://www.google.com';
-            console.log('✅ Redirected to external site');
-          } catch (error) {
-            console.log('❌ External redirect failed:', error);
-          }
-        };
-        
-        // Выполняем все способы последовательно
-        tryCloseWindow();
-        
-        // Если через 100ms не закрылось, пробуем другие способы
-        setTimeout(() => {
-          if (!backButtonPressed) return;
-          tryBlankPage();
-        }, 100);
-        
-        setTimeout(() => {
-          if (!backButtonPressed) return;
-          tryExternalLink();
-        }, 200);
-        
-      } else {
-        console.log('🌐 Not PWA/Tablet, normal back navigation');
-        window.history.back();
-      }
-    };
-
-    // Обработчик изменения видимости страницы
-    const handleVisibilityChange = () => {
-      if (document.hidden && backButtonPressed) {
-        console.log('📱 Page became hidden, PWA might be closing');
-        backButtonPressed = false;
-      }
-    };
-
-    // Обработчик фокуса/блура окна
-    const handleWindowBlur = () => {
-      if (backButtonPressed) {
-        console.log('📱 Window lost focus, PWA might be closing');
-        backButtonPressed = false;
-      }
-    };
-
-    // Обработчик для Android back button через keydown
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Android back button обычно имеет keyCode 4 или key 'Backspace'
-      if (event.key === 'Backspace' || event.keyCode === 4) {
-        console.log('🔙 Android back button detected via keydown');
-        event.preventDefault();
-        backButtonPressed = true;
-        
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-        const isIOSStandalone = (window.navigator as any).standalone === true;
-        const isTablet = /Android|iPad|Tablet/i.test(navigator.userAgent);
-        const isPWA = isStandalone || isIOSStandalone || isTablet;
-        
-        if (isPWA) {
-          console.log('📱 Closing PWA via Android back button...');
-          try {
-            window.close();
-          } catch (error) {
-            console.log('❌ Android back button close failed:', error);
-          }
-        }
-      }
-    };
-
-    // Обработчик beforeunload для PWA
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      const isIOSStandalone = (window.navigator as any).standalone === true;
-      const isTablet = /Android|iPad|Tablet/i.test(navigator.userAgent);
-      const isPWA = isStandalone || isIOSStandalone || isTablet;
-      
-      if (isPWA && backButtonPressed) {
-        console.log('📱 beforeunload triggered for PWA');
-        // Не показываем диалог подтверждения для PWA
-        event.preventDefault();
-        event.returnValue = '';
-      }
-    };
-
-    // Добавляем все обработчики
-    window.addEventListener('popstate', handleBackButton);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', handleWindowBlur);
-    document.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    // Добавляем запись в историю для перехвата кнопки "Назад"
-    window.history.pushState({ page: 'cashier-dashboard' }, '', window.location.href);
-
-    return () => {
-      window.removeEventListener('popstate', handleBackButton);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('blur', handleWindowBlur);
-      document.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
 
   const fetchDashboardData = async () => {
     try {
@@ -494,29 +341,42 @@ export const CashierDashboardPage: React.FC = () => {
                 </span>
               </div>
               
-              {/* Кнопка закрытия PWA (только для PWA) */}
-              {(window.matchMedia('(display-mode: standalone)').matches || 
-                (window.navigator as any).standalone === true ||
-                /Android|iPad|Tablet/i.test(navigator.userAgent)) && (
-                <button
-                  onClick={() => {
-                    console.log('📱 Manual PWA close button pressed');
+              {/* Кнопка закрытия PWA - всегда видна для планшетов */}
+              <button
+                onClick={() => {
+                  console.log('📱 Close button pressed');
+                  console.log('📱 PWA detection:', {
+                    standalone: window.matchMedia('(display-mode: standalone)').matches,
+                    navigatorStandalone: (window.navigator as any).standalone,
+                    userAgent: navigator.userAgent,
+                    isTablet: /Android|iPad|Tablet/i.test(navigator.userAgent)
+                  });
+                  
+                  // Попробуем разные способы закрытия
+                  try {
+                    console.log('📱 Trying window.close()...');
+                    window.close();
+                  } catch (error) {
+                    console.log('❌ window.close() failed:', error);
+                  }
+                  
+                  // Если не закрылось, попробуем редирект
+                  setTimeout(() => {
                     try {
-                      window.close();
+                      console.log('📱 Trying redirect to about:blank...');
+                      window.location.href = 'about:blank';
                     } catch (error) {
-                      console.log('❌ Manual close failed:', error);
-                      // Fallback: попробуем открыть внешнюю ссылку
-                      window.location.href = 'https://www.google.com';
+                      console.log('❌ about:blank failed:', error);
                     }
-                  }}
-                  className="flex items-center space-x-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors text-xs sm:text-sm"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  <span className="hidden sm:inline">Закрыть</span>
-                </button>
-              )}
+                  }, 500);
+                }}
+                className="flex items-center space-x-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors text-xs sm:text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span className="hidden sm:inline">Закрыть</span>
+              </button>
               
               {/* Кнопка выхода */}
               <button
