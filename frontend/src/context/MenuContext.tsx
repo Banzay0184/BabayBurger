@@ -167,6 +167,18 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
         promotions: promotions.length
       });
 
+      // Отладочная информация о статусе товаров
+      const activeItems = items.filter((item: any) => item.is_active);
+      const inactiveItems = items.filter((item: any) => !item.is_active);
+      
+      console.log('🔍 Items status:', {
+        total: items.length,
+        active: activeItems.length,
+        inactive: inactiveItems.length,
+        activeItems: activeItems.map((item: any) => ({ id: item.id, name: item.name, is_active: item.is_active })),
+        inactiveItems: inactiveItems.map((item: any) => ({ id: item.id, name: item.name, is_active: item.is_active }))
+      });
+
       // Создаем категории с товарами
       let categoriesWithItems: MenuCategory[];
       
@@ -274,9 +286,17 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   };
 
   const getAvailableCategories = (): MenuCategory[] => {
-    return (state.categories || []).filter(category => 
+    const categories = (state.categories || []).filter(category => 
       (state.items || []).some(item => item.category === category.id && item.is_active)
     );
+    
+    console.log('🔍 getAvailableCategories:', {
+      totalCategories: state.categories?.length || 0,
+      availableCategories: categories.length,
+      categories: categories.map(cat => ({ id: cat.id, name: cat.name }))
+    });
+    
+    return categories;
   };
 
   const getActivePromotions = (): Promotion[] => {
@@ -292,11 +312,27 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   };
 
   const getHits = (): MenuItem[] => {
-    return (state.items || []).filter(item => item.is_hit && item.is_active).sort((a, b) => a.priority - b.priority);
+    const hits = (state.items || []).filter(item => item.is_hit && item.is_active).sort((a, b) => a.priority - b.priority);
+    
+    console.log('🔍 getHits:', {
+      totalItems: state.items?.length || 0,
+      hitItems: hits.length,
+      hits: hits.map(item => ({ id: item.id, name: item.name, is_hit: item.is_hit, is_active: item.is_active }))
+    });
+    
+    return hits;
   };
 
   const getNewItems = (): MenuItem[] => {
-    return (state.items || []).filter(item => item.is_new && item.is_active).sort((a, b) => a.priority - b.priority);
+    const newItems = (state.items || []).filter(item => item.is_new && item.is_active).sort((a, b) => a.priority - b.priority);
+    
+    console.log('🔍 getNewItems:', {
+      totalItems: state.items?.length || 0,
+      newItemsCount: newItems.length,
+      newItems: newItems.map(item => ({ id: item.id, name: item.name, is_new: item.is_new, is_active: item.is_active }))
+    });
+    
+    return newItems;
   };
 
   const value: MenuContextType = {
