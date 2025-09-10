@@ -12,10 +12,12 @@ export interface CashierData {
   username: string;
   first_name: string;
   last_name: string;
+  processed_orders_count?: number;
   restaurant: {
     id: number;
     name: string;
     city: string;
+    address?: string;
   };
 }
 
@@ -88,7 +90,7 @@ export interface Order {
 }
 
 class CashierApiClient {
-  private token: string | null = null;
+  private token: string | null = null; // Используется в конструкторе, login и logout
 
   constructor() {
     this.token = localStorage.getItem('cashier_token');
@@ -137,6 +139,7 @@ class CashierApiClient {
       body: JSON.stringify(loginData),
     });
 
+    // Обновляем токен в экземпляре класса
     this.token = response.token;
     unifiedCashierApi.setToken(response.token);
     localStorage.setItem('cashier_token', response.token);
@@ -193,7 +196,11 @@ class CashierApiClient {
   }
 
   isAuthenticated(): boolean {
-    return !!this.token && unifiedCashierApi.isAuthenticated();
+    // Проверяем токен из localStorage, так как this.token может быть устаревшим
+    const token = localStorage.getItem('cashier_token');
+    // Также проверяем this.token для совместимости
+    const hasToken = !!token || !!this.token;
+    return hasToken && unifiedCashierApi.isAuthenticated();
   }
 
   getCashierData(): CashierData | null {

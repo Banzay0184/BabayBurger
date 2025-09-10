@@ -6,9 +6,8 @@ import { OrderDetailsModal } from '../../components/cashier/OrderDetailsModal';
 import { OrderSearch } from '../../components/cashier/OrderSearch';
 import { CashierNavigation, type CashierViewType } from '../../components/cashier/CashierNavigation';
 import { OrdersPage } from '../../components/cashier/OrdersPage';
-import { PWAStatus } from '../../components/cashier/PWAStatus';
+import { CashierInfo } from '../../components/cashier/CashierInfo';
 import { useCashierWebSocket } from '../../hooks/useCashierWebSocket';
-import { pwaManager } from '../../utils/pwa';
 
 
 
@@ -136,8 +135,7 @@ export const CashierDashboardPage: React.FC = () => {
   const {
     isConnected,
     isConnecting,
-    error: wsError,
-    reconnect: wsReconnect
+    error: wsError
   } = useCashierWebSocket({
     onOrderCreated: handleOrderCreated,
     onOrderUpdated: handleOrderUpdated,
@@ -165,16 +163,40 @@ export const CashierDashboardPage: React.FC = () => {
 
     setCashierData(cashierData);
     fetchDashboardData();
-    
-    // Инициализация PWA
-    pwaManager.registerServiceWorker().then((success) => {
-      if (success) {
-        console.log('✅ PWA initialized successfully');
-      } else {
-        console.log('⚠️ PWA initialization failed');
-      }
-    });
   }, [navigate]);
+
+  // Обработчик кнопки "Назад" для PWA
+  useEffect(() => {
+    const handleBackButton = (event: PopStateEvent) => {
+      // Предотвращаем переход на страницу логина при нажатии "Назад"
+      event.preventDefault();
+      
+      // Если это PWA, закрываем приложение
+      if (window.matchMedia('(display-mode: standalone)').matches || 
+          (window.navigator as any).standalone === true) {
+        // Для iOS Safari
+        if ((window.navigator as any).standalone === true) {
+          window.close();
+        } else {
+          // Для Android Chrome
+          window.history.back();
+        }
+      } else {
+        // Если не PWA, просто переходим назад
+        window.history.back();
+      }
+    };
+
+    // Добавляем обработчик события popstate
+    window.addEventListener('popstate', handleBackButton);
+
+    // Добавляем запись в историю для перехвата кнопки "Назад"
+    window.history.pushState({ page: 'cashier-dashboard' }, '', window.location.href);
+
+    return () => {
+      window.removeEventListener('popstate', handleBackButton);
+    };
+  }, []);
 
   const fetchDashboardData = async () => {
     try {
@@ -328,48 +350,19 @@ export const CashierDashboardPage: React.FC = () => {
       {/* Фиксированная верхняя панель */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-3">
-          {/* Информация о кассире и кнопка выхода */}
+          {/* Информация о кассире и ресторане */}
           <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center space-x-3">
-              <div className="p-1.5 sm:p-2 bg-orange-100 rounded-md">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 truncate max-w-[200px] sm:max-w-none">
-                  {cashierData?.restaurant?.name || 'Ресторан'}
-                </h1>
-                <p className="text-xs text-gray-500 truncate">
-                  {cashierData?.first_name} {cashierData?.last_name}
-                </p>
-              </div>
-            </div>
+            <CashierInfo cashierData={cashierData} />
             
-            {/* Статус WebSocket, PWA и кнопка выхода */}
+            {/* Статус соединения и кнопка выхода */}
             <div className="flex items-center space-x-3">
-              {/* Статус WebSocket */}
-              <div className="flex items-center space-x-1.5 sm:space-x-2">
-                <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
+              {/* Статус WebSocket - упрощенный */}
+              <div className="flex items-center space-x-1">
+                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
                 <span className="text-xs text-gray-600">
-                  {isConnected ? 'WebSocket' : isConnecting ? 'Подключение...' : 'WebSocket'}
+                  {isConnected ? 'Онлайн' : isConnecting ? 'Подключение...' : 'Офлайн'}
                 </span>
-                {wsError && (
-                  <span className="text-xs text-red-600">({wsError})</span>
-                )}
               </div>
-              
-              {!isConnected && !isConnecting && (
-                <button
-                  onClick={wsReconnect}
-                  className="text-xs text-blue-600 hover:text-blue-800 underline"
-                >
-                  Переподключиться
-                </button>
-              )}
-              
-              {/* PWA статус */}
-              <PWAStatus />
               
               {/* Кнопка выхода */}
               <button

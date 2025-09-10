@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 
@@ -37,6 +37,39 @@ export const CashierLoginPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Обработчик кнопки "Назад" для PWA на странице логина
+  useEffect(() => {
+    const handleBackButton = (event: PopStateEvent) => {
+      // Предотвращаем переход на предыдущую страницу
+      event.preventDefault();
+      
+      // Если это PWA, закрываем приложение
+      if (window.matchMedia('(display-mode: standalone)').matches || 
+          (window.navigator as any).standalone === true) {
+        // Для iOS Safari
+        if ((window.navigator as any).standalone === true) {
+          window.close();
+        } else {
+          // Для Android Chrome
+          window.history.back();
+        }
+      } else {
+        // Если не PWA, просто переходим назад
+        window.history.back();
+      }
+    };
+
+    // Добавляем обработчик события popstate
+    window.addEventListener('popstate', handleBackButton);
+
+    // Добавляем запись в историю для перехвата кнопки "Назад"
+    window.history.pushState({ page: 'cashier-login' }, '', window.location.href);
+
+    return () => {
+      window.removeEventListener('popstate', handleBackButton);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
