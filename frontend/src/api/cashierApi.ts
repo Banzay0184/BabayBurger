@@ -90,6 +90,46 @@ export interface Order {
   };
 }
 
+export interface MenuItem {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  image?: string;
+  is_active: boolean;
+  is_hit: boolean;
+  is_new: boolean;
+  priority: number;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  description: string;
+  image?: string;
+  items: MenuItem[];
+  item_count: number;
+}
+
+export interface StopListMenuResponse {
+  categories: Category[];
+  restaurant_name: string;
+}
+
+export interface ToggleStatusResponse {
+  message: string;
+  item: {
+    id: number;
+    name: string;
+    is_active: boolean;
+  };
+}
+
+export interface InactiveItemsResponse {
+  inactive_items: MenuItem[];
+  count: number;
+}
+
 class CashierApiClient {
   private token: string | null = null; // Используется в конструкторе, login и logout
 
@@ -224,6 +264,21 @@ class CashierApiClient {
     } catch {
       return null;
     }
+  }
+
+  // Методы для работы со стоп-листом
+  async getStopListMenu(): Promise<StopListMenuResponse> {
+    return this.request<StopListMenuResponse>('/stoplist/menu/');
+  }
+
+  async toggleMenuItemStatus(itemId: number): Promise<ToggleStatusResponse> {
+    return this.request<ToggleStatusResponse>(`/stoplist/${itemId}/toggle_status/`, {
+      method: 'POST',
+    });
+  }
+
+  async getInactiveItems(): Promise<InactiveItemsResponse> {
+    return this.request<InactiveItemsResponse>('/stoplist/inactive_items/');
   }
 }
 

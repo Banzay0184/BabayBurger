@@ -14,7 +14,7 @@ from .serializers import (
     CashierProfileSerializer, OrderForCashierSerializer
 )
 from .authentication import CashierTokenAuthentication
-from api.models import Order
+from api.models import Order, MenuItem, Category
 
 logger = logging.getLogger(__name__)
 
@@ -256,3 +256,106 @@ class CashierOrderViewSet(viewsets.ModelViewSet):
         logger.info(f"✅ Order #{order.id} completed by cashier {cashier.id} (service_type: {order.service_type})")
         
         return Response({'message': 'Заказ завершен'})
+
+
+class CashierStopListViewSet(viewsets.ViewSet):
+    """ViewSet для управления стоп-листом кассиром"""
+    authentication_classes = [CashierTokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def menu(self, request):
+        """Получение меню ресторана для стоп-листа"""
+        cashier = request.user
+        restaurant = cashier.restaurant
+        
+        # Получаем все категории с товарами
+        categories = Category.objects.all()
+        categories_data = []
+        
+        for category in categories:
+            items = MenuItem.objects.filter(category=category).order_by('priority', '-created_at')
+            items_data = []
+            
+            for item in items:
+                items_data.append({
+                    'id': item.id,
+                    'name': item.name,
+                    'description': item.description,
+                    'price': float(item.price),
+                    'image': item.image.url if item.image else None,
+                    'is_active': item.is_active,
+                    'is_hit': item.is_hit,
+                    'is_new': item.is_new,
+                    'priority': item.priority
+                })
+            
+            categories_data.append({
+                'id': category.id,
+                'name': category.name,
+                'description': category.description,
+                'image': category.image.url if category.image else None,
+                'items': items_data,
+                'item_count': len(items)
+            })
+        
+        return Response({
+            'categories': categories_data,
+            'restaurant_name': restaurant.name
+        })
+    
+    @action(detail=True, methods=['post'])
+    def toggle_status(self, request, pk=None):
+        """Переключение статуса товара (активен/неактивен)"""
+        try:
+            menu_item = get_object_or_404(MenuItem, pk=pk)
+            cashier = request.user
+            
+            # Переключаем статус
+            menu_item.is_active = not menu_item.is_active
+            menu_item.save()
+            
+            action = "деактивирован" if not menu_item.is_active else "активирован"
+            logger.info(f"🍽️ Menu item '{menu_item.name}' {action} by cashier {cashier.id}")
+            
+            return Response({
+                'message': f'Товар "{menu_item.name}" {action}',
+                'item': {
+                    'id': menu_item.id,
+                    'name': menu_item.name,
+                    'is_active': menu_item.is_active
+                }
+            })
+            
+        except Exception as e:
+            logger.error(f"Error toggling menu item status: {str(e)}")
+            return Response(
+                {'error': 'Ошибка при изменении статуса товара'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=['get'])
+    def inactive_items(self, request):
+        """Получение списка деактивированных товаров"""
+        cashier = request.user
+        
+        inactive_items = MenuItem.objects.filter(is_active=False).select_related('category')
+        items_data = []
+        
+        for item in inactive_items:
+            items_data.append({
+                'id': item.id,
+                'name': item.name,
+                'description': item.description,
+                'price': float(item.price),
+                'image': item.image.url if item.image else None,
+                'category_name': item.category.name,
+                'is_hit': item.is_hit,
+                'is_new': item.is_new,
+                'priority': item.priority
+            })
+        
+        return Response({
+            'inactive_items': items_data,
+            'count': len(items_data)
+        })

@@ -7,6 +7,7 @@ import { OrderSearch } from '../../components/cashier/OrderSearch';
 import { CashierNavigation, type CashierViewType } from '../../components/cashier/CashierNavigation';
 import { OrdersPage } from '../../components/cashier/OrdersPage';
 import { CashierInfo } from '../../components/cashier/CashierInfo';
+import { StopListModal } from '../../components/cashier/StopListModal';
 import { useCashierWebSocket } from '../../hooks/useCashierWebSocket';
 
 
@@ -21,6 +22,7 @@ export const CashierDashboardPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<Order[]>([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [activeView, setActiveView] = useState<CashierViewType>('preparing');
+  const [isStopListModalOpen, setIsStopListModalOpen] = useState(false);
   const navigate = useNavigate();
 
   // WebSocket обработчики
@@ -341,41 +343,16 @@ export const CashierDashboardPage: React.FC = () => {
                 </span>
               </div>
               
-              {/* Кнопка закрытия PWA - всегда видна для планшетов */}
+              {/* Кнопка Стоп лист */}
               <button
-                onClick={() => {
-                  console.log('📱 Close button pressed');
-                  console.log('📱 PWA detection:', {
-                    standalone: window.matchMedia('(display-mode: standalone)').matches,
-                    navigatorStandalone: (window.navigator as any).standalone,
-                    userAgent: navigator.userAgent,
-                    isTablet: /Android|iPad|Tablet/i.test(navigator.userAgent)
-                  });
-                  
-                  // Попробуем разные способы закрытия
-                  try {
-                    console.log('📱 Trying window.close()...');
-                    window.close();
-                  } catch (error) {
-                    console.log('❌ window.close() failed:', error);
-                  }
-                  
-                  // Если не закрылось, попробуем редирект
-                  setTimeout(() => {
-                    try {
-                      console.log('📱 Trying redirect to about:blank...');
-                      window.location.href = 'about:blank';
-                    } catch (error) {
-                      console.log('❌ about:blank failed:', error);
-                    }
-                  }, 500);
-                }}
-                className="flex items-center space-x-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors text-xs sm:text-sm"
+                onClick={() => setIsStopListModalOpen(true)}
+                className="flex items-center space-x-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition-colors text-xs sm:text-sm"
+                title="Управление стоп-листом"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="hidden sm:inline">Закрыть</span>
+                <span className="hidden sm:inline">Стоп лист</span>
               </button>
               
               {/* Кнопка выхода */}
@@ -535,6 +512,12 @@ export const CashierDashboardPage: React.FC = () => {
         order={selectedOrder}
         isOpen={isDetailsModalOpen}
         onClose={handleCloseDetails}
+      />
+
+      {/* Модальное окно стоп-листа */}
+      <StopListModal
+        isOpen={isStopListModalOpen}
+        onClose={() => setIsStopListModalOpen(false)}
       />
     </div>
   );
