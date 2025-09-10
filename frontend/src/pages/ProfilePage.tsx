@@ -170,6 +170,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
     const statusMap: Record<string, string> = {
       'pending': 'Ожидание',
       'preparing': 'Готовится',
+      'ready_for_delivery': 'Готов к доставке',
       'delivering': 'Доставляется',
       'completed': 'Выполнен',
       'cancelled': 'Отменен'
@@ -200,6 +201,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
     const styleMap: Record<string, string> = {
       'pending': 'bg-yellow-600/20 text-yellow-400 border-yellow-600/50',
       'preparing': 'bg-blue-600/20 text-blue-400 border-blue-600/50',
+      'ready_for_delivery': 'bg-orange-600/20 text-orange-400 border-orange-600/50',
       'delivering': 'bg-purple-600/20 text-purple-400 border-purple-600/50',
       'completed': 'bg-green-600/20 text-green-400 border-green-600/50',
       'cancelled': 'bg-red-600/20 text-red-400 border-red-600/50'
@@ -212,6 +214,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
     const iconMap: Record<string, string> = {
       'pending': '⏳',
       'preparing': '👨‍🍳',
+      'ready_for_delivery': '📦',
       'delivering': '🚚',
       'completed': '✅',
       'cancelled': '❌'
@@ -460,7 +463,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
                         }`} />
                         <div className="w-8 h-0.5 bg-gray-600"></div>
                         <div className={`w-2 h-2 rounded-full ${
-                          order.status === 'preparing' || order.status === 'delivering' || order.status === 'completed'
+                          order.status === 'preparing' || order.status === 'ready_for_delivery' || order.status === 'delivering' || order.status === 'completed'
                             ? 'bg-blue-500' : 'bg-gray-400'
                         }`} />
                         <div className="w-8 h-0.5 bg-gray-600"></div>

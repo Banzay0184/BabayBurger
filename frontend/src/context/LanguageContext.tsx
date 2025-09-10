@@ -22,6 +22,7 @@ const translations: Record<Language, Record<string, string>> = {
     'edit': 'Редактировать',
     'save': 'Сохранить',
     'close': 'Закрыть',
+    'ready_for_delivery': 'Готово для доставки',
     
     // Навигация
     'menu': 'Меню',
