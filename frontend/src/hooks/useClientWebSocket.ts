@@ -146,6 +146,9 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
   const [websocketFailed, setWebsocketFailed] = useState(false);
   const [errorCount, setErrorCount] = useState(0);
   const shouldEnableWebSocket = enabled && !!authState.user && !websocketFailed;
+  
+  // Логируем текущий счетчик ошибок для отладки
+  console.log('🔍 WebSocket error count:', errorCount);
 
   // Инициализируем WebSocket
   const {
