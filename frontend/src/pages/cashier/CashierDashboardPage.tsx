@@ -6,7 +6,9 @@ import { OrderDetailsModal } from '../../components/cashier/OrderDetailsModal';
 import { OrderSearch } from '../../components/cashier/OrderSearch';
 import { CashierNavigation, type CashierViewType } from '../../components/cashier/CashierNavigation';
 import { OrdersPage } from '../../components/cashier/OrdersPage';
+import { PWAStatus } from '../../components/cashier/PWAStatus';
 import { useCashierWebSocket } from '../../hooks/useCashierWebSocket';
+import { pwaManager } from '../../utils/pwa';
 
 
 
@@ -163,6 +165,15 @@ export const CashierDashboardPage: React.FC = () => {
 
     setCashierData(cashierData);
     fetchDashboardData();
+    
+    // Инициализация PWA
+    pwaManager.registerServiceWorker().then((success) => {
+      if (success) {
+        console.log('✅ PWA initialized successfully');
+      } else {
+        console.log('⚠️ PWA initialization failed');
+      }
+    });
   }, [navigate]);
 
   const fetchDashboardData = async () => {
@@ -335,13 +346,13 @@ export const CashierDashboardPage: React.FC = () => {
               </div>
             </div>
             
-            {/* Статус WebSocket и кнопка выхода */}
+            {/* Статус WebSocket, PWA и кнопка выхода */}
             <div className="flex items-center space-x-3">
               {/* Статус WebSocket */}
               <div className="flex items-center space-x-1.5 sm:space-x-2">
                 <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
                 <span className="text-xs text-gray-600">
-                  {isConnected ? 'Подключено' : isConnecting ? 'Подключение...' : 'Отключено'}
+                  {isConnected ? 'WebSocket' : isConnecting ? 'Подключение...' : 'WebSocket'}
                 </span>
                 {wsError && (
                   <span className="text-xs text-red-600">({wsError})</span>
@@ -356,6 +367,9 @@ export const CashierDashboardPage: React.FC = () => {
                   Переподключиться
                 </button>
               )}
+              
+              {/* PWA статус */}
+              <PWAStatus />
               
               {/* Кнопка выхода */}
               <button

@@ -1,0 +1,73 @@
+{
+  "name": "Babay Burger - Кассир",
+  "short_name": "Babay Кассир",
+  "description": "Интерфейс кассира для ресторана Babay Burger",
+  "start_url": "/cashier",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "orientation": "portrait-primary",
+  "scope": "/cashier",
+  "lang": "ru",
+  "categories": ["food", "business", "productivity"],
+  "icons": [
+    {
+      "src": "/logobabay.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logobabay.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/logobabay.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Готовятся",
+      "short_name": "Готовятся",
+      "description": "Просмотр заказов в приготовлении",
+      "url": "/cashier?view=preparing",
+      "icons": [
+        {
+          "src": "/logobabay.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Готовы к выдаче",
+      "short_name": "Готовы",
+      "description": "Просмотр готовых заказов",
+      "url": "/cashier?view=ready",
+      "icons": [
+        {
+          "src": "/logobabay.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Завершенные",
+      "short_name": "Завершенные",
+      "description": "Просмотр завершенных заказов",
+      "url": "/cashier?view=completed",
+      "icons": [
+        {
+          "src": "/logobabay.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
