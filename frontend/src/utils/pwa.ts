@@ -29,7 +29,7 @@ export class PWAManager {
         console.log('🔧 Registering Service Worker...');
         
         const registration = await navigator.serviceWorker.register('/sw.js', {
-          scope: '/cashier'
+          scope: '/'
         });
 
         console.log('✅ Service Worker registered successfully:', registration);

@@ -7,6 +7,7 @@ import { OrderSearch } from '../../components/cashier/OrderSearch';
 import { CashierNavigation, type CashierViewType } from '../../components/cashier/CashierNavigation';
 import { OrdersPage } from '../../components/cashier/OrdersPage';
 import { PWAStatus } from '../../components/cashier/PWAStatus';
+import { PWADebug } from '../../components/cashier/PWADebug';
 import { useCashierWebSocket } from '../../hooks/useCashierWebSocket';
 import { pwaManager } from '../../utils/pwa';
 
@@ -414,6 +415,11 @@ export const CashierDashboardPage: React.FC = () => {
 
       {/* Отступ для фиксированной панели */}
       <div className="h-[200px] sm:h-[220px] md:h-[240px]"></div>
+
+      {/* PWA Отладка */}
+      <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 pb-2 sm:pb-4">
+        <PWADebug />
+      </div>
 
       {/* Навигация и контент */}
       <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 pb-2 sm:pb-4">
