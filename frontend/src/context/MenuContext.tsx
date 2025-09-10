@@ -281,13 +281,13 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   const getCategoriesWithItems = (): MenuCategory[] => {
     return (state.categories || []).map(category => ({
       ...category,
-      items: (state.items || []).filter(item => item.category === category.id && item.is_active)
+      items: (state.items || []).filter(item => item.category === category.id && item.is_active !== false)
     }));
   };
 
   const getAvailableCategories = (): MenuCategory[] => {
     const categories = (state.categories || []).filter(category => 
-      (state.items || []).some(item => item.category === category.id && item.is_active)
+      (state.items || []).some(item => item.category === category.id && item.is_active !== false)
     );
     
     console.log('🔍 getAvailableCategories:', {
@@ -312,7 +312,7 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   };
 
   const getHits = (): MenuItem[] => {
-    const hits = (state.items || []).filter(item => item.is_hit && item.is_active).sort((a, b) => a.priority - b.priority);
+    const hits = (state.items || []).filter(item => item.is_hit && item.is_active !== false).sort((a, b) => a.priority - b.priority);
     
     console.log('🔍 getHits:', {
       totalItems: state.items?.length || 0,
@@ -324,7 +324,7 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   };
 
   const getNewItems = (): MenuItem[] => {
-    const newItems = (state.items || []).filter(item => item.is_new && item.is_active).sort((a, b) => a.priority - b.priority);
+    const newItems = (state.items || []).filter(item => item.is_new && item.is_active !== false).sort((a, b) => a.priority - b.priority);
     
     console.log('🔍 getNewItems:', {
       totalItems: state.items?.length || 0,

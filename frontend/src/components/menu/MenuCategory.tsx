@@ -80,7 +80,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({ category, onItemSele
       {/* Сетка блюд с современным дизайном для темной темы */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {category.items
-          .filter((item: MenuItemType) => item.is_active) // Возвращаем фильтрацию
+          .filter((item: MenuItemType) => item.is_active !== false) // Показываем товары, если is_active не false
           .map((item: MenuItemType, index: number) => (
             <div key={item.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
               <MenuItem 
