@@ -27,6 +27,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '158.220.117.109',  # IP адрес сервера
+    'ip-api.com',  # Внешний сервис для проверки IP
     '3e3f35c1758a.ngrok-free.app',    # Ваш ngrok домен
     '.ngrok-free.app',  # Все ngrok домены
     '.ngrok.io',  # Старые ngrok домены
