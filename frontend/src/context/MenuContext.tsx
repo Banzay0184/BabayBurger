@@ -91,6 +91,7 @@ interface MenuContextType {
   getActivePromotions: () => Promotion[];
   getHits: () => MenuItem[];
   getNewItems: () => MenuItem[];
+  refreshMenu: () => Promise<void>;
 }
 
 const MenuContext = createContext<MenuContextType | undefined>(undefined);
@@ -112,11 +113,90 @@ interface MenuProviderProps {
 export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(menuReducer, initialState);
 
+  // Функция принудительного обновления меню (с очисткой кэша)
+  const refreshMenu = useCallback(async () => {
+    console.log('🔄 Принудительное обновление меню...');
+    dispatch({ type: 'SET_LOADING', payload: true });
+    dispatch({ type: 'SET_ERROR', payload: null });
+    
+    try {
+      // Получаем свежие данные без использования кэша
+      const [menuResponse, categoriesResponse, promotionsResponse] = await Promise.all([
+        menuApi.getMenu(),
+        menuApi.getCategories(),
+        menuApi.getPromotions()
+      ]);
+
+      if (!menuResponse.success || !categoriesResponse.success || !promotionsResponse.success) {
+        throw new Error('Ошибка загрузки данных меню');
+      }
+
+      const categories = categoriesResponse.data || [];
+      const items = menuResponse.data?.all_items || menuResponse.data?.items || [];
+      const promotions = promotionsResponse.data || [];
+
+      console.log('📊 Menu refreshed:', {
+        categories: categories.length,
+        items: items.length,
+        promotions: promotions.length
+      });
+
+      // Создаем категории с товарами
+      let categoriesWithItems: MenuCategory[];
+      
+      if (items.length > 0) {
+        // Группируем товары по категориям
+        const itemsByCategory = items.reduce((acc: any, item: any) => {
+          const categoryId = item.category;
+          if (!acc[categoryId]) {
+            acc[categoryId] = [];
+          }
+          acc[categoryId].push(item);
+          return acc;
+        }, {});
+
+        // Создаем категории с товарами
+        categoriesWithItems = categories.map(category => ({
+          ...category,
+          items: itemsByCategory[category.id] || []
+        }));
+      } else {
+        categoriesWithItems = categories.map(category => ({
+          ...category,
+          items: []
+        }));
+      }
+
+      dispatch({
+        type: 'SET_MENU_DATA',
+        payload: {
+          categories: categoriesWithItems,
+          items,
+          promotions
+        }
+      });
+
+      console.log('✅ Menu refreshed successfully');
+    } catch (error: any) {
+      console.error('❌ Error refreshing menu:', error);
+      dispatch({ type: 'SET_ERROR', payload: error.message || 'Ошибка обновления меню' });
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  }, []);
+
   // Обработчик WebSocket уведомлений о меню
   const handleMenuUpdate = useCallback((itemId: number, itemName: string, isActive: boolean, action: string) => {
     console.log('🍽️ Menu item updated via WebSocket:', { itemId, itemName, isActive, action });
     
-    // Обновляем локальное состояние меню
+    // Если товар был создан или удален, принудительно обновляем все данные меню
+    if (action === 'created' || action === 'deleted') {
+      console.log('🔄 Принудительное обновление меню из-за создания/удаления товара');
+      refreshMenu();
+      return;
+    }
+    
+    // Для обновлений существующих товаров обновляем только локальное состояние
     dispatch({
       type: 'UPDATE_MENU_ITEM',
       payload: {
@@ -125,13 +205,15 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
       }
     });
     
-    // Если товар был деактивирован, показываем уведомление
-    if (!isActive) {
-      console.log(`🚫 Товар "${itemName}" деактивирован кассиром`);
-    } else {
-      console.log(`✅ Товар "${itemName}" активирован кассиром`);
+    // Показываем уведомления
+    if (action === 'updated') {
+      if (!isActive) {
+        console.log(`🚫 Товар "${itemName}" деактивирован`);
+      } else {
+        console.log(`✅ Товар "${itemName}" активирован`);
+      }
     }
-  }, []);
+  }, [refreshMenu]);
 
   // WebSocket для получения обновлений меню в реальном времени
   useClientWebSocket({
@@ -346,7 +428,8 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
     getAvailableCategories,
     getActivePromotions,
     getHits,
-    getNewItems
+    getNewItems,
+    refreshMenu
   };
 
   return (

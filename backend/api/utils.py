@@ -21,7 +21,10 @@ def clear_menu_cache():
     """Очищает кэш меню"""
     try:
         if is_redis_available():
+            # Очищаем все ключи кэша меню
+            cache.delete('menu_data')
             cache.delete('menu_items')
+            cache.delete('categories')
             logger.info("Menu cache cleared successfully")
         else:
             logger.warning("Redis not available, skipping menu cache clear")

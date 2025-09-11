@@ -32,7 +32,8 @@ export const MainPage: React.FC = () => {
     getAvailableCategories,
     getActivePromotions,
     getHits,
-    getNewItems
+    getNewItems,
+    refreshMenu
   } = useMenu();
 
   const { t, language, setLanguage } = useLanguage();
@@ -543,9 +544,24 @@ export const MainPage: React.FC = () => {
                           <>
                             {!activeCategory && (
                               <div className="mb-4 sm:mb-6">
-                                <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text mb-2">
-                                  {t('full_menu')}
-                                </h2>
+                                <div className="flex items-center justify-between mb-2">
+                                  <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text">
+                                    {t('full_menu')}
+                                  </h2>
+                                  <button
+                                    onClick={refreshMenu}
+                                    disabled={menuState.isLoading}
+                                    className="px-3 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm flex items-center space-x-2"
+                                    title="Обновить меню"
+                                  >
+                                    <span className={menuState.isLoading ? 'animate-spin' : ''}>
+                                      {menuState.isLoading ? '⏳' : '🔄'}
+                                    </span>
+                                    <span className="hidden sm:inline">
+                                      {menuState.isLoading ? 'Обновление...' : 'Обновить'}
+                                    </span>
+                                  </button>
+                                </div>
                                 <p className="text-gray-400 text-sm">
                                   {t('select_category_or_view_all')}
                                 </p>
@@ -597,12 +613,24 @@ export const MainPage: React.FC = () => {
                             <p className="text-gray-500 text-sm mb-6">
                               {t('try_later')}
                             </p>
-                            <Button onClick={() => fetchMenu()} variant="primary">
-                              <span className="flex items-center">
-                                <span className="mr-2">🔄</span>
-                                {t('refresh_menu')}
-                              </span>
-                            </Button>
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                              <Button onClick={() => fetchMenu()} variant="primary" disabled={menuState.isLoading}>
+                                <span className="flex items-center">
+                                  <span className={`mr-2 ${menuState.isLoading ? 'animate-spin' : ''}`}>
+                                    {menuState.isLoading ? '⏳' : '🔄'}
+                                  </span>
+                                  {t('refresh_menu')}
+                                </span>
+                              </Button>
+                              <Button onClick={refreshMenu} variant="accent" disabled={menuState.isLoading}>
+                                <span className="flex items-center">
+                                  <span className={`mr-2 ${menuState.isLoading ? 'animate-spin' : ''}`}>
+                                    {menuState.isLoading ? '⏳' : '⚡'}
+                                  </span>
+                                  Принудительное обновление
+                                </span>
+                              </Button>
+                            </div>
                           </div>
                         )}
                       </div>
