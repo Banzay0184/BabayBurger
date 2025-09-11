@@ -9,6 +9,10 @@ import logging
 
 logger = logging.getLogger('api')
 
+# Отладочная информация о загрузке сигналов
+print("🔥 API signals module loaded successfully!")
+logger.info("🔥 API signals module loaded successfully!")
+
 def send_menu_update_notification(menu_item, action):
     """Отправляет WebSocket уведомление об изменении меню"""
     try:
@@ -79,8 +83,9 @@ def clear_categories_cache_on_category_delete(sender, instance, **kwargs):
 @receiver(post_save, sender=AddOn)
 def clear_menu_cache_on_addon_change(sender, instance, created, **kwargs):
     """Очищает кэш меню при изменении дополнения и отправляет WebSocket уведомление"""
+    print(f"🔥 AddOn signal triggered: {instance.name} - created={created}, active={instance.is_active}")
+    logger.info(f"🔥 AddOn signal triggered: {instance.name} - created={created}, active={instance.is_active}")
     try:
-        logger.info(f"🔥 AddOn signal triggered: {instance.name} - created={created}, active={instance.is_active}")
         clear_menu_cache()
         
         # Определяем действие
