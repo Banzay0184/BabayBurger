@@ -28,10 +28,28 @@ class MenuItemAdmin(admin.ModelAdmin):
 
 @admin.register(AddOn)
 class AddOnAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'is_active')
+    list_display = ('name', 'price', 'get_categories', 'is_active')
     list_filter = ('is_active', 'available_for_categories')
     search_fields = ('name',)
     filter_horizontal = ('available_for_categories',)
+    readonly_fields = ('get_categories_display',)
+    fields = ('name', 'price', 'available_for_categories', 'get_categories_display', 'is_active')
+    
+    def get_categories(self, obj):
+        """Отображает категории дополнения в админке"""
+        categories = obj.available_for_categories.all()
+        if categories:
+            return ', '.join([cat.name for cat in categories])
+        return 'Не привязано к категориям'
+    get_categories.short_description = 'Категории'
+    
+    def get_categories_display(self, obj):
+        """Отображает категории в детальном виде"""
+        categories = obj.available_for_categories.all()
+        if categories:
+            return ', '.join([f"{cat.name} (ID: {cat.id})" for cat in categories])
+        return 'Не привязано к категориям'
+    get_categories_display.short_description = 'Привязанные категории'
 
 @admin.register(SizeOption)
 class SizeOptionAdmin(admin.ModelAdmin):
