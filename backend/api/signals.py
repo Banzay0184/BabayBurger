@@ -80,6 +80,7 @@ def clear_categories_cache_on_category_delete(sender, instance, **kwargs):
 def clear_menu_cache_on_addon_change(sender, instance, created, **kwargs):
     """Очищает кэш меню при изменении дополнения и отправляет WebSocket уведомление"""
     try:
+        logger.info(f"🔥 AddOn signal triggered: {instance.name} - created={created}, active={instance.is_active}")
         clear_menu_cache()
         
         # Определяем действие
@@ -101,6 +102,8 @@ def clear_menu_cache_on_addon_change(sender, instance, created, **kwargs):
                     }
                 )
                 logger.info(f"📡 AddOn update notification sent: {instance.name} - {action}")
+            else:
+                logger.warning("Channel layer not available for AddOn notification")
         except Exception as ws_error:
             logger.error(f"Error sending AddOn WebSocket notification: {str(ws_error)}")
         
@@ -119,6 +122,8 @@ def clear_menu_cache_on_addon_change(sender, instance, created, **kwargs):
                         }
                     )
                     logger.info(f"📡 Menu refresh required notification sent: new addon {instance.name}")
+                else:
+                    logger.warning("Channel layer not available for menu refresh notification")
             except Exception as ws_error:
                 logger.error(f"Error sending menu refresh notification: {str(ws_error)}")
         

@@ -337,6 +337,41 @@ class ClientConsumer(AsyncWebsocketConsumer):
             'timestamp': event.get('timestamp')
         }, cls=DjangoJSONEncoder))
 
+    async def addon_updated(self, event):
+        """Обновление дополнения"""
+        logger.info(f"📨 Client WebSocket: sending addon_updated for addon #{event.get('addon_id', 'unknown')}")
+        await self.send(text_data=json.dumps({
+            'type': 'addon_updated',
+            'addon_id': event['addon_id'],
+            'addon_name': event['addon_name'],
+            'is_active': event['is_active'],
+            'action': event['action'],
+            'timestamp': event.get('timestamp')
+        }, cls=DjangoJSONEncoder))
+
+    async def size_updated(self, event):
+        """Обновление размера"""
+        logger.info(f"📨 Client WebSocket: sending size_updated for size #{event.get('size_id', 'unknown')}")
+        await self.send(text_data=json.dumps({
+            'type': 'size_updated',
+            'size_id': event['size_id'],
+            'size_name': event['size_name'],
+            'is_active': event['is_active'],
+            'action': event['action'],
+            'timestamp': event.get('timestamp')
+        }, cls=DjangoJSONEncoder))
+
+    async def menu_refresh_required(self, event):
+        """Требуется обновление меню"""
+        logger.info(f"📨 Client WebSocket: sending menu_refresh_required - {event.get('reason', 'unknown')}")
+        await self.send(text_data=json.dumps({
+            'type': 'menu_refresh_required',
+            'reason': event['reason'],
+            'addon_name': event.get('addon_name'),
+            'size_name': event.get('size_name'),
+            'timestamp': event.get('timestamp')
+        }, cls=DjangoJSONEncoder))
+
 
 class CashierConsumer(AsyncWebsocketConsumer):
     """WebSocket consumer для кассиров"""
