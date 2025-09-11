@@ -645,7 +645,9 @@ class MenuView(APIView):
             categories_data = []
             
             for category in categories:
-                items = MenuItem.objects.filter(category=category, is_active=True).order_by('priority', '-created_at')
+                items = MenuItem.objects.filter(category=category, is_active=True).prefetch_related(
+                    'size_options', 'add_on_options'
+                ).order_by('priority', '-created_at')
                 items_serializer = MenuItemSerializer(items, many=True)
                 
                 categories_data.append({
@@ -657,8 +659,10 @@ class MenuView(APIView):
                     'item_count': len(items)
                 })
             
-            # Получаем все активные товары
-            all_items = MenuItem.objects.filter(is_active=True).select_related('category').order_by('priority', '-created_at')
+            # Получаем все активные товары с дополнениями и размерами
+            all_items = MenuItem.objects.filter(is_active=True).select_related('category').prefetch_related(
+                'size_options', 'add_on_options'
+            ).order_by('priority', '-created_at')
             all_items_serializer = MenuItemSerializer(all_items, many=True)
             
             # Формируем структурированный ответ

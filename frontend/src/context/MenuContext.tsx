@@ -215,9 +215,29 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
     }
   }, [refreshMenu]);
 
+  // Обработчик WebSocket уведомлений о дополнениях
+  const handleAddonUpdate = useCallback((addonId: number, addonName: string, isActive: boolean, action: string) => {
+    console.log('➕ AddOn updated via WebSocket:', { addonId, addonName, isActive, action });
+    
+    // При любом изменении дополнений принудительно обновляем меню
+    console.log('🔄 Принудительное обновление меню из-за изменения дополнения');
+    refreshMenu();
+  }, [refreshMenu]);
+
+  // Обработчик WebSocket уведомлений о размерах
+  const handleSizeUpdate = useCallback((sizeId: number, sizeName: string, isActive: boolean, action: string) => {
+    console.log('📏 Size updated via WebSocket:', { sizeId, sizeName, isActive, action });
+    
+    // При любом изменении размеров принудительно обновляем меню
+    console.log('🔄 Принудительное обновление меню из-за изменения размера');
+    refreshMenu();
+  }, [refreshMenu]);
+
   // WebSocket для получения обновлений меню в реальном времени
   useClientWebSocket({
     onMenuUpdate: handleMenuUpdate,
+    onAddonUpdate: handleAddonUpdate,
+    onSizeUpdate: handleSizeUpdate,
     enabled: true
   });
 
