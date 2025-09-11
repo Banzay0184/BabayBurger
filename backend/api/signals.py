@@ -91,6 +91,21 @@ def clear_menu_cache_on_addon_change(sender, instance, created, **kwargs):
         # Определяем действие
         action = 'created' if created else 'updated'
         
+        # Если дополнение было создано и у него есть категория, автоматически добавляем его к товарам этой категории
+        if created and instance.category:
+            try:
+                # Получаем все товары этой категории
+                menu_items = MenuItem.objects.filter(category=instance.category, is_active=True)
+                for menu_item in menu_items:
+                    # Добавляем дополнение к товару, если его там еще нет
+                    if not menu_item.add_on_options.filter(id=instance.id).exists():
+                        menu_item.add_on_options.add(instance)
+                        logger.info(f"➕ Автоматически добавлено дополнение '{instance.name}' к товару '{menu_item.name}'")
+                
+                logger.info(f"✅ Дополнение '{instance.name}' автоматически добавлено к {menu_items.count()} товарам категории '{instance.category.name}'")
+            except Exception as auto_add_error:
+                logger.error(f"Error auto-adding addon to menu items: {str(auto_add_error)}")
+        
         # Отправляем WebSocket уведомление о дополнении
         try:
             channel_layer = get_channel_layer()
