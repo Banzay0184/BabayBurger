@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
+import { useMenu } from '../context/MenuContext';
 import type { MenuItem, SizeOption, AddOn } from '../types/menu';
 
 interface OptionsPageProps {
@@ -11,16 +12,29 @@ interface OptionsPageProps {
 export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
   const { t, formatCurrency } = useLanguage();
   const { addItem } = useCart();
+  const { getMenuItemById } = useMenu();
   
   const [selectedSize, setSelectedSize] = useState<SizeOption | undefined>();
   const [selectedAddOns, setSelectedAddOns] = useState<AddOn[]>([]);
   const [totalPrice, setTotalPrice] = useState<number>(Number(item?.price) || 0);
+  const [currentItem, setCurrentItem] = useState<MenuItem>(item);
+
+  // Обновляем данные товара при изменении в контексте
+  useEffect(() => {
+    if (!item?.id) return;
+    
+    const updatedItem = getMenuItemById(item.id);
+    if (updatedItem) {
+      console.log('🔄 OptionsPage - Обновление данных товара:', updatedItem.name);
+      setCurrentItem(updatedItem);
+    }
+  }, [item.id, getMenuItemById]);
 
   // Пересчитываем общую сумму при изменении выбора
   useEffect(() => {
-    if (!item) return;
+    if (!currentItem) return;
     
-    const basePrice = Number(item.price) || 0;
+    const basePrice = Number(currentItem.price) || 0;
     const sizeModifier = selectedSize ? Number(selectedSize.price_modifier) || 0 : 0;
     const addOnsSum = selectedAddOns.reduce((sum, addOn) => sum + (Number(addOn.price) || 0), 0);
     const total = basePrice + sizeModifier + addOnsSum;
@@ -36,7 +50,7 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
     });
     
     setTotalPrice(roundedTotal);
-  }, [selectedSize, selectedAddOns, item]);
+  }, [selectedSize, selectedAddOns, currentItem]);
 
   const handleSizeSelect = (size: SizeOption | undefined) => {
     if (size) {
@@ -59,9 +73,9 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
   };
 
   const handleConfirm = () => {
-    if (!item) return;
+    if (!currentItem) return;
     
-    addItem(item, selectedSize, selectedAddOns);
+    addItem(currentItem, selectedSize, selectedAddOns);
     
     const optionsText = [];
     if (selectedSize) optionsText.push(`${t('size')}: ${selectedSize.name}`);
@@ -70,8 +84,8 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
     }
     
     const message = optionsText.length > 0 
-      ? `${item.name} ${t('with_options')} ${optionsText.join(', ')} ${t('added_to_cart')}`
-      : `${item.name} ${t('added_to_cart')}`;
+      ? `${currentItem.name} ${t('with_options')} ${optionsText.join(', ')} ${t('added_to_cart')}`
+      : `${currentItem.name} ${t('added_to_cart')}`;
     
     console.log('✅ OptionsPage - Добавлено в корзину:', message);
     
@@ -79,12 +93,12 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
     onClose();
   };
 
-  if (!item) {
+  if (!currentItem) {
     return null;
   }
 
-  const availableSizes = item.size_options?.filter((size: SizeOption) => size.is_active) || [];
-  const availableAddOns = item.add_on_options?.filter((addOn: AddOn) => addOn.is_active) || [];
+  const availableSizes = currentItem.size_options?.filter((size: SizeOption) => size.is_active) || [];
+  const availableAddOns = currentItem.add_on_options?.filter((addOn: AddOn) => addOn.is_active) || [];
 
   // Функция для получения URL изображения
   const getImageUrl = (imagePath: string | null): string => {
@@ -117,10 +131,10 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
           <div className="flex items-start space-x-4">
             {/* Изображение блюда */}
             <div className="w-24 h-24 bg-gradient-to-br from-gray-800 to-gray-700 rounded-lg flex items-center justify-center border border-gray-600/50 overflow-hidden flex-shrink-0">
-              {item.image ? (
+              {currentItem.image ? (
                 <img 
-                  src={getImageUrl(item.image)} 
-                  alt={item.name}
+                  src={getImageUrl(currentItem.image)} 
+                  alt={currentItem.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -141,20 +155,20 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
             
             {/* Детали блюда */}
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold text-gray-100 mb-2">{item.name}</h2>
-              <p className="text-gray-400 text-sm leading-relaxed mb-3">{item.description}</p>
+              <h2 className="text-xl font-bold text-gray-100 mb-2">{currentItem.name}</h2>
+              <p className="text-gray-400 text-sm leading-relaxed mb-3">{currentItem.description}</p>
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold text-primary-400">
-                  {formatCurrency(item.price)}
+                  {formatCurrency(currentItem.price)}
                 </span>
                 {/* Теги */}
                 <div className="flex space-x-2">
-                  {item.is_hit && (
+                  {currentItem.is_hit && (
                     <span className="px-2 py-1 text-xs rounded-full bg-white/20 text-white border border-white/30">
                       🔥 {t('hit')}
                     </span>
                   )}
-                  {item.is_new && (
+                  {currentItem.is_new && (
                     <span className="px-2 py-1 text-xs rounded-full bg-white/20 text-white border border-white/30">
                       ✨ {t('new')}
                     </span>

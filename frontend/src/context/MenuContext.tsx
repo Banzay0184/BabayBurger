@@ -91,6 +91,7 @@ interface MenuContextType {
   getActivePromotions: () => Promotion[];
   getHits: () => MenuItem[];
   getNewItems: () => MenuItem[];
+  getMenuItemById: (id: number) => MenuItem | undefined;
   refreshMenu: () => Promise<void>;
 }
 
@@ -447,6 +448,10 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
     return newItems;
   };
 
+  const getMenuItemById = (id: number): MenuItem | undefined => {
+    return (state.items || []).find(item => item.id === id);
+  };
+
   const value: MenuContextType = {
     state,
     fetchMenu,
@@ -459,6 +464,7 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
     getActivePromotions,
     getHits,
     getNewItems,
+    getMenuItemById,
     refreshMenu
   };
 
