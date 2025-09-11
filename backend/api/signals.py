@@ -97,10 +97,6 @@ def clear_menu_cache_on_addon_change(sender, instance, created, **kwargs):
                 # Получаем категории, для которых доступно это дополнение
                 target_categories = []
                 
-                # Если указана основная категория дополнения
-                if instance.category:
-                    target_categories.append(instance.category)
-                
                 # Добавляем категории из available_for_categories
                 if instance.available_for_categories.exists():
                     target_categories.extend(instance.available_for_categories.all())

@@ -783,14 +783,13 @@ class AddOn(models.Model):
     """Модель для дополнительных опций (соусы, дополнения)"""
     name = models.CharField(max_length=255, verbose_name="Название")
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Цена")
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True, verbose_name="Категория")
     
     # Категории, для которых доступно это дополнение
     available_for_categories = models.ManyToManyField(
         Category, 
         blank=True, 
         related_name='available_addons',
-        verbose_name="Доступно для категорий"
+        verbose_name="Категории"
     )
     
     is_active = models.BooleanField(default=True, verbose_name="Активно")
@@ -799,12 +798,10 @@ class AddOn(models.Model):
     class Meta:
         verbose_name = "Дополнение"
         verbose_name_plural = "Дополнения"
-        ordering = ['category', 'name']
+        ordering = ['name']
         indexes = [
-            models.Index(fields=['category']),
             models.Index(fields=['is_active']),
             models.Index(fields=['price']),
-            models.Index(fields=['category', 'is_active']),
         ]
 
     def __str__(self):

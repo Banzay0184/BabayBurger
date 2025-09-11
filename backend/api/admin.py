@@ -28,8 +28,8 @@ class MenuItemAdmin(admin.ModelAdmin):
 
 @admin.register(AddOn)
 class AddOnAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'category', 'is_active')
-    list_filter = ('is_active', 'category')
+    list_display = ('name', 'price', 'is_active')
+    list_filter = ('is_active', 'available_for_categories')
     search_fields = ('name',)
     filter_horizontal = ('available_for_categories',)
 

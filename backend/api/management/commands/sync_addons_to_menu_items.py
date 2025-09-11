@@ -41,9 +41,6 @@ class Command(BaseCommand):
                 # Получаем целевые категории
                 target_categories = []
                 
-                if addon.category:
-                    target_categories.append(addon.category)
-                
                 if addon.available_for_categories.exists():
                     target_categories.extend(addon.available_for_categories.all())
                 
@@ -68,7 +65,6 @@ class Command(BaseCommand):
                 for menu_item in menu_items:
                     # Проверяем, должно ли это дополнение быть у товара
                     should_have_addon = (
-                        menu_item.category == addon.category or
                         menu_item.category in addon.available_for_categories.all()
                     )
                     

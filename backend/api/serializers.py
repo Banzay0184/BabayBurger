@@ -89,7 +89,7 @@ class AddOnSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = AddOn
-        fields = ['id', 'name', 'price', 'category', 'available_for_categories', 'is_active']
+        fields = ['id', 'name', 'price', 'available_for_categories', 'is_active']
 
 class SizeOptionSerializer(serializers.ModelSerializer):
     class Meta:
