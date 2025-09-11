@@ -414,7 +414,7 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
 
   const getActivePromotions = (): Promotion[] => {
     const now = new Date();
-    const promotions = state.promotions || [];
+    const promotions = Array.isArray(state.promotions) ? state.promotions : [];
     
     return promotions.filter(promotion => 
       promotion.is_active && 
