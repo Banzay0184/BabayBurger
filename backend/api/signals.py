@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, m2m_changed
 from django.dispatch import receiver
 from .models import MenuItem, Category, AddOn, SizeOption
 from .utils import clear_menu_cache, clear_categories_cache
@@ -257,4 +257,136 @@ def clear_menu_cache_on_size_delete(sender, instance, **kwargs):
         
         logger.info(f"Menu cache cleared after SizeOption deletion: id={instance.id}, name={instance.name}")
     except Exception as e:
-        logger.error(f"Error clearing menu cache: {str(e)}") 
+        logger.error(f"Error clearing menu cache: {str(e)}")
+
+@receiver(m2m_changed, sender=MenuItem.add_on_options.through)
+def menu_item_addons_changed(sender, instance, action, pk_set, **kwargs):
+    """Отслеживает изменения в дополнениях товара и отправляет WebSocket уведомления"""
+    print(f"🔥 MenuItem addons changed: {instance.name} - action={action}, pk_set={pk_set}")
+    logger.info(f"🔥 MenuItem addons changed: {instance.name} - action={action}, pk_set={pk_set}")
+    
+    try:
+        # Очищаем кэш меню
+        clear_menu_cache()
+        
+        # Отправляем WebSocket уведомление об обновлении товара
+        send_menu_update_notification(instance, 'updated')
+        
+        # Если есть конкретные дополнения, отправляем уведомления о них
+        if pk_set and action in ['post_add', 'post_remove', 'post_clear']:
+            try:
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    # Получаем информацию о дополнениях
+                    if action == 'post_remove' and pk_set:
+                        # Дополнения были удалены
+                        for addon_id in pk_set:
+                            try:
+                                addon = AddOn.objects.get(id=addon_id)
+                                async_to_sync(channel_layer.group_send)(
+                                    'menu_updates',
+                                    {
+                                        'type': 'addon_updated',
+                                        'addon_id': addon.id,
+                                        'addon_name': addon.name,
+                                        'is_active': addon.is_active,
+                                        'action': 'removed_from_item',
+                                        'item_name': instance.name,
+                                        'timestamp': timezone.now().isoformat()
+                                    }
+                                )
+                                logger.info(f"📡 AddOn removal notification sent: {addon.name} removed from {instance.name}")
+                            except AddOn.DoesNotExist:
+                                pass
+                    elif action == 'post_add' and pk_set:
+                        # Дополнения были добавлены
+                        for addon_id in pk_set:
+                            try:
+                                addon = AddOn.objects.get(id=addon_id)
+                                async_to_sync(channel_layer.group_send)(
+                                    'menu_updates',
+                                    {
+                                        'type': 'addon_updated',
+                                        'addon_id': addon.id,
+                                        'addon_name': addon.name,
+                                        'is_active': addon.is_active,
+                                        'action': 'added_to_item',
+                                        'item_name': instance.name,
+                                        'timestamp': timezone.now().isoformat()
+                                    }
+                                )
+                                logger.info(f"📡 AddOn addition notification sent: {addon.name} added to {instance.name}")
+                            except AddOn.DoesNotExist:
+                                pass
+            except Exception as ws_error:
+                logger.error(f"Error sending AddOn change WebSocket notification: {str(ws_error)}")
+        
+        logger.info(f"Menu cache cleared after MenuItem addons change: {instance.name} - {action}")
+    except Exception as e:
+        logger.error(f"Error handling MenuItem addons change: {str(e)}")
+
+@receiver(m2m_changed, sender=MenuItem.size_options.through)
+def menu_item_sizes_changed(sender, instance, action, pk_set, **kwargs):
+    """Отслеживает изменения в размерах товара и отправляет WebSocket уведомления"""
+    print(f"🔥 MenuItem sizes changed: {instance.name} - action={action}, pk_set={pk_set}")
+    logger.info(f"🔥 MenuItem sizes changed: {instance.name} - action={action}, pk_set={pk_set}")
+    
+    try:
+        # Очищаем кэш меню
+        clear_menu_cache()
+        
+        # Отправляем WebSocket уведомление об обновлении товара
+        send_menu_update_notification(instance, 'updated')
+        
+        # Если есть конкретные размеры, отправляем уведомления о них
+        if pk_set and action in ['post_add', 'post_remove', 'post_clear']:
+            try:
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    # Получаем информацию о размерах
+                    if action == 'post_remove' and pk_set:
+                        # Размеры были удалены
+                        for size_id in pk_set:
+                            try:
+                                size = SizeOption.objects.get(id=size_id)
+                                async_to_sync(channel_layer.group_send)(
+                                    'menu_updates',
+                                    {
+                                        'type': 'size_updated',
+                                        'size_id': size.id,
+                                        'size_name': size.name,
+                                        'is_active': size.is_active,
+                                        'action': 'removed_from_item',
+                                        'item_name': instance.name,
+                                        'timestamp': timezone.now().isoformat()
+                                    }
+                                )
+                                logger.info(f"📡 SizeOption removal notification sent: {size.name} removed from {instance.name}")
+                            except SizeOption.DoesNotExist:
+                                pass
+                    elif action == 'post_add' and pk_set:
+                        # Размеры были добавлены
+                        for size_id in pk_set:
+                            try:
+                                size = SizeOption.objects.get(id=size_id)
+                                async_to_sync(channel_layer.group_send)(
+                                    'menu_updates',
+                                    {
+                                        'type': 'size_updated',
+                                        'size_id': size.id,
+                                        'size_name': size.name,
+                                        'is_active': size.is_active,
+                                        'action': 'added_to_item',
+                                        'item_name': instance.name,
+                                        'timestamp': timezone.now().isoformat()
+                                    }
+                                )
+                                logger.info(f"📡 SizeOption addition notification sent: {size.name} added to {instance.name}")
+                            except SizeOption.DoesNotExist:
+                                pass
+            except Exception as ws_error:
+                logger.error(f"Error sending SizeOption change WebSocket notification: {str(ws_error)}")
+        
+        logger.info(f"Menu cache cleared after MenuItem sizes change: {instance.name} - {action}")
+    except Exception as e:
+        logger.error(f"Error handling MenuItem sizes change: {str(e)}") 

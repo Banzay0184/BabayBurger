@@ -31,12 +31,12 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
       setCurrentItem(updatedItem);
     }
     
-    // Если дополнение было удалено или деактивировано, убираем его из выбранных
-    if (!isActive || action === 'deleted') {
+    // Если дополнение было удалено, деактивировано или убрано из товара, убираем его из выбранных
+    if (!isActive || action === 'deleted' || action === 'removed_from_item') {
       setSelectedAddOns(prev => {
         const filtered = prev.filter(addon => addon.id !== addonId);
         if (filtered.length !== prev.length) {
-          console.log('🔄 OptionsPage - Удаляем деактивированное дополнение из выбранных:', addonName);
+          console.log('🔄 OptionsPage - Удаляем дополнение из выбранных:', addonName, 'действие:', action);
         }
         return filtered;
       });
@@ -53,10 +53,10 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
       setCurrentItem(updatedItem);
     }
     
-    // Если размер был удален или деактивирован, сбрасываем выбор
-    if (!isActive || action === 'deleted') {
+    // Если размер был удален, деактивирован или убран из товара, сбрасываем выбор
+    if (!isActive || action === 'deleted' || action === 'removed_from_item') {
       if (selectedSize?.id === sizeId) {
-        console.log('🔄 OptionsPage - Сбрасываем выбор деактивированного размера:', sizeName);
+        console.log('🔄 OptionsPage - Сбрасываем выбор размера:', sizeName, 'действие:', action);
         setSelectedSize(undefined);
       }
     }
