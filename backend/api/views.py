@@ -646,7 +646,7 @@ class MenuView(APIView):
             
             for category in categories:
                 items = MenuItem.objects.filter(category=category, is_active=True).prefetch_related(
-                    'size_options__is_active', 'add_on_options__is_active'
+                    'size_options', 'add_on_options'
                 ).order_by('priority', '-created_at')
                 items_serializer = MenuItemSerializer(items, many=True)
                 
@@ -661,7 +661,7 @@ class MenuView(APIView):
             
             # Получаем все активные товары с дополнениями и размерами
             all_items = MenuItem.objects.filter(is_active=True).select_related('category').prefetch_related(
-                'size_options__is_active', 'add_on_options__is_active'
+                'size_options', 'add_on_options'
             ).order_by('priority', '-created_at')
             all_items_serializer = MenuItemSerializer(all_items, many=True)
             
@@ -1678,7 +1678,7 @@ class MenuItemDetailView(APIView):
             # Получаем товар с категорией, дополнениями и размерами
             try:
                 item = MenuItem.objects.select_related('category').prefetch_related(
-                    'add_on_options__is_active', 'size_options__is_active'
+                    'add_on_options', 'size_options'
                 ).get(id=item_id, is_active=True)
             except MenuItem.DoesNotExist:
                 return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)

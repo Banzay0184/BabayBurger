@@ -129,7 +129,6 @@ class MenuItemSerializer(serializers.ModelSerializer):
     def get_add_on_options(self, obj):
         # Фильтруем только активные дополнения
         active_addons = obj.add_on_options.filter(is_active=True)
-        print(f"🔍 MenuItem '{obj.name}' - Всего дополнений: {obj.add_on_options.count()}, Активных: {active_addons.count()}")
         return AddOnSerializer(active_addons, many=True).data
 
 class OrderItemSerializer(serializers.ModelSerializer):
