@@ -4,13 +4,21 @@ import type { WebSocketMessage } from './useWebSocket';
 import { cashierApi, type Order, type DashboardStats } from '../api/cashierApi';
 
 export interface CashierWebSocketMessage extends WebSocketMessage {
-  type: 'order_created' | 'order_updated' | 'order_status_changed' | 'dashboard_update' | 'connection_established' | 'subscribed';
+  type: 'order_created' | 'order_updated' | 'order_status_changed' | 'dashboard_update' | 'connection_established' | 'subscribed' | 'addon_updated' | 'size_updated';
   order?: Order;
   order_id?: number;
   status?: string;
   updated_at?: string;
   stats?: DashboardStats;
   timestamp?: string;
+  addon_id?: number;
+  addon_name?: string;
+  addon_is_active?: boolean;
+  addon_action?: string;
+  size_id?: number;
+  size_name?: string;
+  size_is_active?: boolean;
+  size_action?: string;
 }
 
 export interface UseCashierWebSocketOptions {
@@ -18,6 +26,8 @@ export interface UseCashierWebSocketOptions {
   onOrderUpdated?: (orderId: number, order: Order | undefined, status: string | undefined) => void;
   onOrderStatusChanged?: (orderId: number, newStatus: string, orderData?: Order) => void;
   onDashboardUpdate?: (stats: DashboardStats) => void;
+  onAddonUpdated?: (addonId: number, addonName: string, isActive: boolean, action: string) => void;
+  onSizeUpdated?: (sizeId: number, sizeName: string, isActive: boolean, action: string) => void;
   enabled?: boolean;
 }
 
@@ -38,6 +48,8 @@ export const useCashierWebSocket = (options: UseCashierWebSocketOptions = {}): U
     onOrderUpdated,
     onOrderStatusChanged,
     onDashboardUpdate,
+    onAddonUpdated,
+    onSizeUpdated,
     enabled = true
   } = options;
 
@@ -126,10 +138,34 @@ export const useCashierWebSocket = (options: UseCashierWebSocketOptions = {}): U
         console.log('✅ Subscribed to cashier order updates');
         break;
 
+      case 'addon_updated':
+        if ((message as any).addon_id && (message as any).addon_name && onAddonUpdated) {
+          console.log('➕ Addon updated:', (message as any).addon_id, (message as any).addon_name, (message as any).addon_is_active, (message as any).addon_action);
+          onAddonUpdated(
+            (message as any).addon_id,
+            (message as any).addon_name,
+            (message as any).addon_is_active,
+            (message as any).addon_action || 'updated'
+          );
+        }
+        break;
+
+      case 'size_updated':
+        if ((message as any).size_id && (message as any).size_name && onSizeUpdated) {
+          console.log('📏 Size updated:', (message as any).size_id, (message as any).size_name, (message as any).size_is_active, (message as any).size_action);
+          onSizeUpdated(
+            (message as any).size_id,
+            (message as any).size_name,
+            (message as any).size_is_active,
+            (message as any).size_action || 'updated'
+          );
+        }
+        break;
+
       default:
         console.log('❓ Unknown message type:', message.type);
     }
-  }, [onOrderCreated, onOrderUpdated, onOrderStatusChanged, onDashboardUpdate]);
+  }, [onOrderCreated, onOrderUpdated, onOrderStatusChanged, onDashboardUpdate, onAddonUpdated, onSizeUpdated]);
 
   // Обработчики событий WebSocket
   const handleOpen = useCallback(() => {

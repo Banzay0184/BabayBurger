@@ -130,6 +130,56 @@ export interface InactiveItemsResponse {
   count: number;
 }
 
+export interface AddOn {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+  category_id: number | null;
+  is_active: boolean;
+  available_for_categories: Array<{
+    id: number;
+    name: string;
+  }>;
+  created_at: string;
+}
+
+export interface SizeOption {
+  id: number;
+  name: string;
+  price_modifier: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AddOnsResponse {
+  addons: AddOn[];
+  restaurant_name: string;
+}
+
+export interface SizesResponse {
+  sizes: SizeOption[];
+  restaurant_name: string;
+}
+
+export interface ToggleAddOnResponse {
+  message: string;
+  addon: {
+    id: number;
+    name: string;
+    is_active: boolean;
+  };
+}
+
+export interface ToggleSizeResponse {
+  message: string;
+  size: {
+    id: number;
+    name: string;
+    is_active: boolean;
+  };
+}
+
 class CashierApiClient {
   private token: string | null = null; // Используется в конструкторе, login и logout
 
@@ -279,6 +329,32 @@ class CashierApiClient {
 
   async getInactiveItems(): Promise<InactiveItemsResponse> {
     return this.request<InactiveItemsResponse>('/stoplist/inactive_items/');
+  }
+
+  // Методы для работы с дополнениями
+  async getAddons(): Promise<AddOnsResponse> {
+    return this.request<AddOnsResponse>('/stoplist/addons/');
+  }
+
+  async toggleAddonStatus(addonId: number): Promise<ToggleAddOnResponse> {
+    return this.request<ToggleAddOnResponse>(`/stoplist/${addonId}/toggle_addon_status/`, {
+      method: 'POST',
+    });
+  }
+
+  async getInactiveAddons(): Promise<{ inactive_addons: AddOn[]; count: number }> {
+    return this.request<{ inactive_addons: AddOn[]; count: number }>('/stoplist/inactive_addons/');
+  }
+
+  // Методы для работы с размерами
+  async getSizes(): Promise<SizesResponse> {
+    return this.request<SizesResponse>('/stoplist/sizes/');
+  }
+
+  async toggleSizeStatus(sizeId: number): Promise<ToggleSizeResponse> {
+    return this.request<ToggleSizeResponse>(`/stoplist/${sizeId}/toggle_size_status/`, {
+      method: 'POST',
+    });
   }
 }
 

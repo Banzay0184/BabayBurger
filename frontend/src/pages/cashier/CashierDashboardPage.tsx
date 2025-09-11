@@ -8,6 +8,7 @@ import { CashierNavigation, type CashierViewType } from '../../components/cashie
 import { OrdersPage } from '../../components/cashier/OrdersPage';
 import { CashierInfo } from '../../components/cashier/CashierInfo';
 import { StopListModal } from '../../components/cashier/StopListModal';
+import { AddOnManagementModal } from '../../components/cashier/AddOnManagementModal';
 import { useCashierWebSocket } from '../../hooks/useCashierWebSocket';
 
 
@@ -23,6 +24,7 @@ export const CashierDashboardPage: React.FC = () => {
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [activeView, setActiveView] = useState<CashierViewType>('preparing');
   const [isStopListModalOpen, setIsStopListModalOpen] = useState(false);
+  const [isAddOnManagementModalOpen, setIsAddOnManagementModalOpen] = useState(false);
   const navigate = useNavigate();
 
   // WebSocket обработчики
@@ -355,6 +357,18 @@ export const CashierDashboardPage: React.FC = () => {
                 <span className="hidden sm:inline">Стоп лист</span>
               </button>
               
+              {/* Кнопка Управление дополнениями */}
+              <button
+                onClick={() => setIsAddOnManagementModalOpen(true)}
+                className="flex items-center space-x-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors text-xs sm:text-sm"
+                title="Управление дополнениями и размерами"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                </svg>
+                <span className="hidden sm:inline">Дополнения</span>
+              </button>
+              
               {/* Кнопка выхода */}
               <button
                 onClick={handleLogout}
@@ -518,6 +532,12 @@ export const CashierDashboardPage: React.FC = () => {
       <StopListModal
         isOpen={isStopListModalOpen}
         onClose={() => setIsStopListModalOpen(false)}
+      />
+
+      {/* Модальное окно управления дополнениями */}
+      <AddOnManagementModal
+        isOpen={isAddOnManagementModalOpen}
+        onClose={() => setIsAddOnManagementModalOpen(false)}
       />
     </div>
   );

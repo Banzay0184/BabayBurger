@@ -111,8 +111,8 @@ class PromotionSerializer(serializers.ModelSerializer):
         ]
 
 class MenuItemSerializer(serializers.ModelSerializer):
-    size_options = SizeOptionSerializer(many=True, read_only=True)
-    add_on_options = AddOnSerializer(many=True, read_only=True)
+    size_options = serializers.SerializerMethodField()
+    add_on_options = serializers.SerializerMethodField()
     
     class Meta:
         model = MenuItem
@@ -120,6 +120,17 @@ class MenuItemSerializer(serializers.ModelSerializer):
             'id', 'name', 'description', 'price', 'category', 'image', 'created_at',
             'is_hit', 'is_new', 'priority', 'size_options', 'add_on_options'
         ]
+    
+    def get_size_options(self, obj):
+        # Фильтруем только активные размеры
+        active_sizes = obj.size_options.filter(is_active=True)
+        return SizeOptionSerializer(active_sizes, many=True).data
+    
+    def get_add_on_options(self, obj):
+        # Фильтруем только активные дополнения
+        active_addons = obj.add_on_options.filter(is_active=True)
+        print(f"🔍 MenuItem '{obj.name}' - Всего дополнений: {obj.add_on_options.count()}, Активных: {active_addons.count()}")
+        return AddOnSerializer(active_addons, many=True).data
 
 class OrderItemSerializer(serializers.ModelSerializer):
     menu_item = MenuItemSerializer(read_only=True)

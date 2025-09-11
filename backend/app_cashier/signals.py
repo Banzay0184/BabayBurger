@@ -6,7 +6,7 @@ from asgiref.sync import async_to_sync
 import logging
 
 from .models import Cashier, OrderProcessing, CashierNotification
-from api.models import Order
+from api.models import Order, AddOn, SizeOption
 from .serializers import OrderForCashierSerializer
 
 logger = logging.getLogger(__name__)
@@ -215,4 +215,60 @@ def notify_cashier_notification(sender, instance, created, **kwargs):
                 logger.info(f"WebSocket уведомление отправлено кассиру {instance.cashier.id}")
         except Exception as e:
             logger.error(f"Ошибка отправки WebSocket уведомления кассиру: {e}")
+
+@receiver(post_save, sender=AddOn)
+def notify_cashiers_addon_update(sender, instance, created, **kwargs):
+    """
+    Уведомляет кассиров об обновлении дополнения через WebSocket
+    """
+    logger.info(f"➕ Cashier Signal triggered: AddOn #{instance.id}, created={created}, is_active={instance.is_active}")
+    
+    try:
+        channel_layer = get_channel_layer()
+        if channel_layer:
+            action = 'created' if created else 'updated'
+            
+            async_to_sync(channel_layer.group_send)(
+                'cashiers',
+                {
+                    'type': 'addon_updated',
+                    'addon_id': instance.id,
+                    'addon_name': instance.name,
+                    'addon_is_active': instance.is_active,
+                    'addon_action': action,
+                    'timestamp': timezone.now().isoformat()
+                }
+            )
+            
+            logger.info(f"WebSocket уведомление о дополнении отправлено кассирам: {instance.name}")
+    except Exception as e:
+        logger.error(f"Ошибка отправки WebSocket уведомления о дополнении: {e}")
+
+@receiver(post_save, sender=SizeOption)
+def notify_cashiers_size_update(sender, instance, created, **kwargs):
+    """
+    Уведомляет кассиров об обновлении размера через WebSocket
+    """
+    logger.info(f"📏 Cashier Signal triggered: Size #{instance.id}, created={created}, is_active={instance.is_active}")
+    
+    try:
+        channel_layer = get_channel_layer()
+        if channel_layer:
+            action = 'created' if created else 'updated'
+            
+            async_to_sync(channel_layer.group_send)(
+                'cashiers',
+                {
+                    'type': 'size_updated',
+                    'size_id': instance.id,
+                    'size_name': instance.name,
+                    'size_is_active': instance.is_active,
+                    'size_action': action,
+                    'timestamp': timezone.now().isoformat()
+                }
+            )
+            
+            logger.info(f"WebSocket уведомление о размере отправлено кассирам: {instance.name}")
+    except Exception as e:
+        logger.error(f"Ошибка отправки WebSocket уведомления о размере: {e}")
 

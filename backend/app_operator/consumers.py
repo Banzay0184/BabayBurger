@@ -509,3 +509,27 @@ class CashierConsumer(AsyncWebsocketConsumer):
             'order_id': event['order_id'],
             'timestamp': event.get('timestamp')
         }, cls=DjangoJSONEncoder))
+
+    async def addon_updated(self, event):
+        """Дополнение обновлено"""
+        logger.info(f"➕ Cashier WebSocket: sending addon_updated event for addon #{event.get('addon_id', 'unknown')}")
+        await self.send(text_data=json.dumps({
+            'type': 'addon_updated',
+            'addon_id': event.get('addon_id'),
+            'addon_name': event.get('addon_name'),
+            'addon_is_active': event.get('addon_is_active'),
+            'addon_action': event.get('addon_action'),
+            'timestamp': event.get('timestamp')
+        }, cls=DjangoJSONEncoder))
+
+    async def size_updated(self, event):
+        """Размер обновлен"""
+        logger.info(f"📏 Cashier WebSocket: sending size_updated event for size #{event.get('size_id', 'unknown')}")
+        await self.send(text_data=json.dumps({
+            'type': 'size_updated',
+            'size_id': event.get('size_id'),
+            'size_name': event.get('size_name'),
+            'size_is_active': event.get('size_is_active'),
+            'size_action': event.get('size_action'),
+            'timestamp': event.get('timestamp')
+        }, cls=DjangoJSONEncoder))

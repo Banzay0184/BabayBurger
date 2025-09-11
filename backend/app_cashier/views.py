@@ -14,7 +14,7 @@ from .serializers import (
     CashierProfileSerializer, OrderForCashierSerializer
 )
 from .authentication import CashierTokenAuthentication
-from api.models import Order, MenuItem, Category
+from api.models import Order, MenuItem, Category, AddOn, SizeOption
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
@@ -384,3 +384,138 @@ class CashierStopListViewSet(viewsets.ViewSet):
             'inactive_items': items_data,
             'count': len(items_data)
         })
+    
+    @action(detail=False, methods=['get'])
+    def addons(self, request):
+        """Получение всех дополнений для управления"""
+        cashier = request.user
+        restaurant = cashier.restaurant
+        
+        # Получаем все дополнения
+        addons = AddOn.objects.all().order_by('category__name', 'name')
+        addons_data = []
+        
+        for addon in addons:
+            addons_data.append({
+                'id': addon.id,
+                'name': addon.name,
+                'price': float(addon.price),
+                'category': addon.category.name if addon.category else 'Без категории',
+                'category_id': addon.category.id if addon.category else None,
+                'is_active': addon.is_active,
+                'available_for_categories': [
+                    {'id': cat.id, 'name': cat.name} 
+                    for cat in addon.available_for_categories.all()
+                ],
+                'created_at': addon.created_at
+            })
+        
+        return Response({
+            'addons': addons_data,
+            'restaurant_name': restaurant.name
+        })
+    
+    @action(detail=True, methods=['post'])
+    def toggle_addon_status(self, request, pk=None):
+        """Переключение статуса дополнения"""
+        try:
+            addon = AddOn.objects.get(id=pk)
+            addon.is_active = not addon.is_active
+            addon.save()
+            
+            return Response({
+                'message': f'Дополнение "{addon.name}" {"активировано" if addon.is_active else "деактивировано"}',
+                'addon': {
+                    'id': addon.id,
+                    'name': addon.name,
+                    'is_active': addon.is_active
+                }
+            })
+        except AddOn.DoesNotExist:
+            return Response(
+                {'error': 'Дополнение не найдено'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Ошибка изменения статуса: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=['get'])
+    def inactive_addons(self, request):
+        """Получение списка деактивированных дополнений"""
+        cashier = request.user
+        
+        inactive_addons = AddOn.objects.filter(is_active=False).select_related('category')
+        addons_data = []
+        
+        for addon in inactive_addons:
+            addons_data.append({
+                'id': addon.id,
+                'name': addon.name,
+                'price': float(addon.price),
+                'category': addon.category.name if addon.category else 'Без категории',
+                'category_id': addon.category.id if addon.category else None,
+                'available_for_categories': [
+                    {'id': cat.id, 'name': cat.name} 
+                    for cat in addon.available_for_categories.all()
+                ],
+                'created_at': addon.created_at
+            })
+        
+        return Response({
+            'inactive_addons': addons_data,
+            'count': len(addons_data)
+        })
+    
+    @action(detail=False, methods=['get'])
+    def sizes(self, request):
+        """Получение всех размеров для управления"""
+        cashier = request.user
+        restaurant = cashier.restaurant
+        
+        # Получаем все размеры
+        sizes = SizeOption.objects.all().order_by('name')
+        sizes_data = []
+        
+        for size in sizes:
+            sizes_data.append({
+                'id': size.id,
+                'name': size.name,
+                'price_modifier': float(size.price_modifier),
+                'is_active': size.is_active,
+                'created_at': size.created_at
+            })
+        
+        return Response({
+            'sizes': sizes_data,
+            'restaurant_name': restaurant.name
+        })
+    
+    @action(detail=True, methods=['post'])
+    def toggle_size_status(self, request, pk=None):
+        """Переключение статуса размера"""
+        try:
+            size = SizeOption.objects.get(id=pk)
+            size.is_active = not size.is_active
+            size.save()
+            
+            return Response({
+                'message': f'Размер "{size.name}" {"активирован" if size.is_active else "деактивирован"}',
+                'size': {
+                    'id': size.id,
+                    'name': size.name,
+                    'is_active': size.is_active
+                }
+            })
+        except SizeOption.DoesNotExist:
+            return Response(
+                {'error': 'Размер не найден'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Ошибка изменения статуса: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
