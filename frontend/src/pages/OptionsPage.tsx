@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import { useMenu } from '../context/MenuContext';
+import { useClientWebSocket } from '../hooks/useClientWebSocket';
 import type { MenuItem, SizeOption, AddOn } from '../types/menu';
 
 interface OptionsPageProps {
@@ -18,6 +19,69 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
   const [selectedAddOns, setSelectedAddOns] = useState<AddOn[]>([]);
   const [totalPrice, setTotalPrice] = useState<number>(Number(item?.price) || 0);
   const [currentItem, setCurrentItem] = useState<MenuItem>(item);
+
+  // WebSocket обработчики для real-time обновлений
+  const handleAddonUpdate = useCallback((addonId: number, addonName: string, isActive: boolean, action: string) => {
+    console.log('➕ OptionsPage - AddOn updated via WebSocket:', { addonId, addonName, isActive, action });
+    
+    // Обновляем данные товара из контекста для получения актуального списка дополнений
+    const updatedItem = getMenuItemById(item.id);
+    if (updatedItem) {
+      console.log('🔄 OptionsPage - Обновляем данные товара после изменения дополнения');
+      setCurrentItem(updatedItem);
+    }
+    
+    // Если дополнение было удалено или деактивировано, убираем его из выбранных
+    if (!isActive || action === 'deleted') {
+      setSelectedAddOns(prev => {
+        const filtered = prev.filter(addon => addon.id !== addonId);
+        if (filtered.length !== prev.length) {
+          console.log('🔄 OptionsPage - Удаляем деактивированное дополнение из выбранных:', addonName);
+        }
+        return filtered;
+      });
+    }
+  }, [item.id, getMenuItemById]);
+
+  const handleSizeUpdate = useCallback((sizeId: number, sizeName: string, isActive: boolean, action: string) => {
+    console.log('📏 OptionsPage - Size updated via WebSocket:', { sizeId, sizeName, isActive, action });
+    
+    // Обновляем данные товара из контекста для получения актуального списка размеров
+    const updatedItem = getMenuItemById(item.id);
+    if (updatedItem) {
+      console.log('🔄 OptionsPage - Обновляем данные товара после изменения размера');
+      setCurrentItem(updatedItem);
+    }
+    
+    // Если размер был удален или деактивирован, сбрасываем выбор
+    if (!isActive || action === 'deleted') {
+      if (selectedSize?.id === sizeId) {
+        console.log('🔄 OptionsPage - Сбрасываем выбор деактивированного размера:', sizeName);
+        setSelectedSize(undefined);
+      }
+    }
+  }, [item.id, getMenuItemById, selectedSize]);
+
+  const handleMenuUpdate = useCallback((itemId: number, itemName: string, isActive: boolean, action: string) => {
+    console.log('🍽️ OptionsPage - Menu item updated via WebSocket:', { itemId, itemName, isActive, action });
+    
+    // Если это наш товар, обновляем его данные
+    if (itemId === item.id) {
+      const updatedItem = getMenuItemById(item.id);
+      if (updatedItem) {
+        console.log('🔄 OptionsPage - Обновляем данные товара после изменения меню');
+        setCurrentItem(updatedItem);
+      }
+    }
+  }, [item.id, getMenuItemById]);
+
+  // Инициализируем WebSocket для получения обновлений
+  useClientWebSocket({
+    onMenuUpdate: handleMenuUpdate,
+    onAddonUpdate: handleAddonUpdate,
+    onSizeUpdate: handleSizeUpdate,
+    enabled: true
+  });
 
   // Обновляем данные товара при изменении в контексте
   useEffect(() => {
@@ -51,6 +115,24 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
     
     setTotalPrice(roundedTotal);
   }, [selectedSize, selectedAddOns, currentItem]);
+
+  // Дополнительный эффект для обновления цены при изменении currentItem
+  useEffect(() => {
+    if (!currentItem) return;
+    
+    const basePrice = Number(currentItem.price) || 0;
+    const sizeModifier = selectedSize ? Number(selectedSize.price_modifier) || 0 : 0;
+    const addOnsSum = selectedAddOns.reduce((sum, addOn) => sum + (Number(addOn.price) || 0), 0);
+    const total = basePrice + sizeModifier + addOnsSum;
+    const roundedTotal = Math.round(total);
+    
+    console.log('🔄 OptionsPage - Обновление цены после изменения товара:', {
+      basePrice,
+      total: roundedTotal
+    });
+    
+    setTotalPrice(roundedTotal);
+  }, [currentItem]);
 
   const handleSizeSelect = (size: SizeOption | undefined) => {
     if (size) {
