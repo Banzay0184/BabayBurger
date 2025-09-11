@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import type { Order } from '../types/menu';
 
 export interface ClientWebSocketMessage extends WebSocketMessage {
-  type: 'order_status_update' | 'order_details_update' | 'menu_item_updated' | 'addon_updated' | 'size_updated' | 'connection_established' | 'subscribed';
+  type: 'order_status_update' | 'order_details_update' | 'menu_item_updated' | 'addon_updated' | 'size_updated' | 'menu_refresh_required' | 'connection_established' | 'subscribed';
   order_id?: number;
   status?: string;
   status_display?: string;
@@ -20,6 +20,7 @@ export interface ClientWebSocketMessage extends WebSocketMessage {
   addon_name?: string;
   size_id?: number;
   size_name?: string;
+  reason?: string;
 }
 
 export interface UseClientWebSocketOptions {
@@ -28,6 +29,7 @@ export interface UseClientWebSocketOptions {
   onMenuUpdate?: (itemId: number, itemName: string, isActive: boolean, action: string) => void;
   onAddonUpdate?: (addonId: number, addonName: string, isActive: boolean, action: string) => void;
   onSizeUpdate?: (sizeId: number, sizeName: string, isActive: boolean, action: string) => void;
+  onMenuRefreshRequired?: (reason: string) => void;
   enabled?: boolean;
 }
 
@@ -51,6 +53,7 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
     onMenuUpdate,
     onAddonUpdate,
     onSizeUpdate,
+    onMenuRefreshRequired,
     enabled = true
   } = options;
 
@@ -133,6 +136,13 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
         }
         break;
 
+      case 'menu_refresh_required':
+        if ((message as any).reason && onMenuRefreshRequired) {
+          console.log('🔄 Menu refresh required:', (message as any).reason);
+          onMenuRefreshRequired((message as any).reason);
+        }
+        break;
+
       case 'connection_established':
         console.log('✅ Client WebSocket connection established');
         break;
@@ -144,7 +154,7 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
       default:
         console.log('❓ Unknown message type:', message.type);
     }
-  }, [onOrderStatusUpdate, onOrderDetailsUpdate, onMenuUpdate, onAddonUpdate, onSizeUpdate]);
+  }, [onOrderStatusUpdate, onOrderDetailsUpdate, onMenuUpdate, onAddonUpdate, onSizeUpdate, onMenuRefreshRequired]);
 
   // Обработчики событий WebSocket
   const handleOpen = useCallback(() => {

@@ -104,6 +104,24 @@ def clear_menu_cache_on_addon_change(sender, instance, created, **kwargs):
         except Exception as ws_error:
             logger.error(f"Error sending AddOn WebSocket notification: {str(ws_error)}")
         
+        # Если дополнение было создано, отправляем дополнительное уведомление о принудительном обновлении меню
+        if created:
+            try:
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        'menu_updates',
+                        {
+                            'type': 'menu_refresh_required',
+                            'reason': 'new_addon_created',
+                            'addon_name': instance.name,
+                            'timestamp': timezone.now().isoformat()
+                        }
+                    )
+                    logger.info(f"📡 Menu refresh required notification sent: new addon {instance.name}")
+            except Exception as ws_error:
+                logger.error(f"Error sending menu refresh notification: {str(ws_error)}")
+        
         logger.info(f"Menu cache cleared after AddOn {action}: id={instance.id}, name={instance.name}")
     except Exception as e:
         logger.error(f"Error clearing menu cache: {str(e)}")
@@ -164,6 +182,24 @@ def clear_menu_cache_on_size_change(sender, instance, created, **kwargs):
                 logger.info(f"📡 SizeOption update notification sent: {instance.name} - {action}")
         except Exception as ws_error:
             logger.error(f"Error sending SizeOption WebSocket notification: {str(ws_error)}")
+        
+        # Если размер был создан, отправляем дополнительное уведомление о принудительном обновлении меню
+        if created:
+            try:
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        'menu_updates',
+                        {
+                            'type': 'menu_refresh_required',
+                            'reason': 'new_size_created',
+                            'size_name': instance.name,
+                            'timestamp': timezone.now().isoformat()
+                        }
+                    )
+                    logger.info(f"📡 Menu refresh required notification sent: new size {instance.name}")
+            except Exception as ws_error:
+                logger.error(f"Error sending menu refresh notification: {str(ws_error)}")
         
         logger.info(f"Menu cache cleared after SizeOption {action}: id={instance.id}, name={instance.name}")
     except Exception as e:

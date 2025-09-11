@@ -233,11 +233,21 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
     refreshMenu();
   }, [refreshMenu]);
 
+  // Обработчик WebSocket уведомлений о необходимости обновления меню
+  const handleMenuRefreshRequired = useCallback((reason: string) => {
+    console.log('🔄 Menu refresh required via WebSocket:', reason);
+    
+    // Принудительно обновляем меню
+    console.log('🔄 Принудительное обновление меню из-за:', reason);
+    refreshMenu();
+  }, [refreshMenu]);
+
   // WebSocket для получения обновлений меню в реальном времени
   useClientWebSocket({
     onMenuUpdate: handleMenuUpdate,
     onAddonUpdate: handleAddonUpdate,
     onSizeUpdate: handleSizeUpdate,
+    onMenuRefreshRequired: handleMenuRefreshRequired,
     enabled: true
   });
 
