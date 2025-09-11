@@ -11,13 +11,11 @@ interface AddOn {
   id: number;
   name: string;
   price: number;
-  category: string;
-  category_id: number | null;
-  is_active: boolean;
-  available_for_categories: Array<{
+  categories: Array<{
     id: number;
     name: string;
   }>;
+  is_active: boolean;
   created_at: string;
 }
 
@@ -161,7 +159,7 @@ export const AddOnManagementModal: React.FC<AddOnManagementModalProps> = ({ isOp
 
   const filteredAddons = addonsData?.addons.filter(addon => {
     const matchesSearch = addon.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || addon.category_id?.toString() === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || addon.categories.some(cat => cat.id.toString() === selectedCategory);
     return matchesSearch && matchesCategory;
   }) || [];
 
@@ -170,9 +168,11 @@ export const AddOnManagementModal: React.FC<AddOnManagementModalProps> = ({ isOp
   ) || [];
 
   const categories = addonsData?.addons.reduce((acc, addon) => {
-    if (addon.category_id && !acc.find(cat => cat.id === addon.category_id)) {
-      acc.push({ id: addon.category_id, name: addon.category });
-    }
+    addon.categories.forEach(cat => {
+      if (!acc.find(existingCat => existingCat.id === cat.id)) {
+        acc.push(cat);
+      }
+    });
     return acc;
   }, [] as Array<{ id: number; name: string }>) || [];
 
@@ -361,13 +361,8 @@ const AddOnCard: React.FC<AddOnCardProps> = ({ addon, onToggle, isProcessing }) 
               {addon.name}
             </h4>
             <p className="text-gray-600 text-xs sm:text-sm mt-1">
-              {addon.category}
+              {addon.categories.map(cat => cat.name).join(', ') || 'Без категорий'}
             </p>
-            {addon.available_for_categories.length > 0 && (
-              <p className="text-gray-500 text-xs mt-1">
-                Доступно для: {addon.available_for_categories.map(cat => cat.name).join(', ')}
-              </p>
-            )}
           </div>
         </div>
 

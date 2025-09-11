@@ -392,7 +392,7 @@ class CashierStopListViewSet(viewsets.ViewSet):
         restaurant = cashier.restaurant
         
         # Получаем все дополнения
-        addons = AddOn.objects.all().order_by('category__name', 'name')
+        addons = AddOn.objects.all().order_by('name')
         addons_data = []
         
         for addon in addons:
@@ -400,13 +400,11 @@ class CashierStopListViewSet(viewsets.ViewSet):
                 'id': addon.id,
                 'name': addon.name,
                 'price': float(addon.price),
-                'category': addon.category.name if addon.category else 'Без категории',
-                'category_id': addon.category.id if addon.category else None,
-                'is_active': addon.is_active,
-                'available_for_categories': [
+                'categories': [
                     {'id': cat.id, 'name': cat.name} 
                     for cat in addon.available_for_categories.all()
                 ],
+                'is_active': addon.is_active,
                 'created_at': addon.created_at
             })
         

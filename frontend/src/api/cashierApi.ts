@@ -134,13 +134,11 @@ export interface AddOn {
   id: number;
   name: string;
   price: number;
-  category: string;
-  category_id: number | null;
-  is_active: boolean;
-  available_for_categories: Array<{
+  categories: Array<{
     id: number;
     name: string;
   }>;
+  is_active: boolean;
   created_at: string;
 }
 
