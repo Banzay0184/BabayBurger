@@ -9,6 +9,7 @@ ALLOWED_HOSTS = list(set((ALLOWED_HOSTS or []) + [
     'www.babayfood.uz',
     'babayfood.uz',
     '.babayfood.uz',
+    '158.220.117.109',  # IP адрес сервера
 ]))
 
 # Ensure CSRF trusted origins include production domains
@@ -16,6 +17,8 @@ CSRF_TRUSTED_ORIGINS = list(set((CSRF_TRUSTED_ORIGINS or []) + [
     'https://api.babayfood.uz',
     'https://www.babayfood.uz',
     'https://babayfood.uz',
+    'http://158.220.117.109:8000',  # IP адрес сервера
+    'https://158.220.117.109:8000',  # IP адрес сервера с HTTPS
 ]))
 
 # If behind a proxy/Load Balancer (e.g., Nginx), trust forwarded host headers
