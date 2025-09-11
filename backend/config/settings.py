@@ -26,6 +26,7 @@ MINI_APP_URL = os.environ.get('MINI_APP_URL', '')  # URL вашего Mini App
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
+    '158.220.117.109',  # IP адрес сервера
     '3e3f35c1758a.ngrok-free.app',    # Ваш ngrok домен
     '.ngrok-free.app',  # Все ngrok домены
     '.ngrok.io',  # Старые ngrok домены
@@ -42,6 +43,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',  # React dev server
     'http://127.0.0.1:5173',
     'http://127.0.0.1:3000',
+    'http://158.220.117.109:8000',  # IP адрес сервера
+    'https://158.220.117.109:8000',  # IP адрес сервера с HTTPS
     os.getenv('WEBHOOK_URL'),
     'https://*.ngrok-free.app',
     'https://*.ngrok.io',
@@ -63,6 +66,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:3000',
+    'http://158.220.117.109:8000',  # IP адрес сервера
+    'https://158.220.117.109:8000',  # IP адрес сервера с HTTPS
     'https://babay-burger.vercel.app',  # Vercel домен
     'https://*.vercel.app',  # Все Vercel домены
     'https://*.ngrok-free.app',  # Ngrok домены
