@@ -28,6 +28,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '158.220.117.109',  # IP адрес сервера
     'ip-api.com',  # Внешний сервис для проверки IP
+    'gamvibe.live',  # Внешний сервис
     '3e3f35c1758a.ngrok-free.app',    # Ваш ngrok домен
     '.ngrok-free.app',  # Все ngrok домены
     '.ngrok.io',  # Старые ngrok домены
@@ -36,6 +37,10 @@ ALLOWED_HOSTS = [
     'api.babayfood.uz',
     'www.babayfood.uz',
 ]
+
+# В режиме разработки разрешаем все хосты для тестирования
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
 
 # CSRF настройки для фронтенда и ngrok
 CSRF_TRUSTED_ORIGINS = [
