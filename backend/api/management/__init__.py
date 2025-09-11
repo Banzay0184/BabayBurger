@@ -1,1 +1,1 @@
-# Management package 
+# Management commands for API app

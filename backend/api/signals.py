@@ -91,18 +91,43 @@ def clear_menu_cache_on_addon_change(sender, instance, created, **kwargs):
         # Определяем действие
         action = 'created' if created else 'updated'
         
-        # Если дополнение было создано и у него есть категория, автоматически добавляем его к товарам этой категории
-        if created and instance.category:
+        # Если дополнение было создано, автоматически добавляем его к товарам соответствующих категорий
+        if created:
             try:
-                # Получаем все товары этой категории
-                menu_items = MenuItem.objects.filter(category=instance.category, is_active=True)
-                for menu_item in menu_items:
-                    # Добавляем дополнение к товару, если его там еще нет
-                    if not menu_item.add_on_options.filter(id=instance.id).exists():
-                        menu_item.add_on_options.add(instance)
-                        logger.info(f"➕ Автоматически добавлено дополнение '{instance.name}' к товару '{menu_item.name}'")
+                # Получаем категории, для которых доступно это дополнение
+                target_categories = []
                 
-                logger.info(f"✅ Дополнение '{instance.name}' автоматически добавлено к {menu_items.count()} товарам категории '{instance.category.name}'")
+                # Если указана основная категория дополнения
+                if instance.category:
+                    target_categories.append(instance.category)
+                
+                # Добавляем категории из available_for_categories
+                if instance.available_for_categories.exists():
+                    target_categories.extend(instance.available_for_categories.all())
+                
+                # Убираем дубликаты
+                target_categories = list(set(target_categories))
+                
+                if target_categories:
+                    # Получаем все товары из целевых категорий
+                    menu_items = MenuItem.objects.filter(
+                        category__in=target_categories, 
+                        is_active=True
+                    )
+                    
+                    added_count = 0
+                    for menu_item in menu_items:
+                        # Добавляем дополнение к товару, если его там еще нет
+                        if not menu_item.add_on_options.filter(id=instance.id).exists():
+                            menu_item.add_on_options.add(instance)
+                            added_count += 1
+                            logger.info(f"➕ Автоматически добавлено дополнение '{instance.name}' к товару '{menu_item.name}' (категория: {menu_item.category.name})")
+                    
+                    category_names = [cat.name for cat in target_categories]
+                    logger.info(f"✅ Дополнение '{instance.name}' автоматически добавлено к {added_count} товарам категорий: {', '.join(category_names)}")
+                else:
+                    logger.info(f"ℹ️ Дополнение '{instance.name}' не привязано ни к одной категории")
+                    
             except Exception as auto_add_error:
                 logger.error(f"Error auto-adding addon to menu items: {str(auto_add_error)}")
         
@@ -389,4 +414,78 @@ def menu_item_sizes_changed(sender, instance, action, pk_set, **kwargs):
         
         logger.info(f"Menu cache cleared after MenuItem sizes change: {instance.name} - {action}")
     except Exception as e:
-        logger.error(f"Error handling MenuItem sizes change: {str(e)}") 
+        logger.error(f"Error handling MenuItem sizes change: {str(e)}")
+
+@receiver(m2m_changed, sender=AddOn.available_for_categories.through)
+def handle_addon_categories_changed(sender, instance, action, pk_set, **kwargs):
+    """Обрабатывает изменения в поле available_for_categories дополнения"""
+    logger.info(f"🔄 AddOn categories changed: {instance.name} - action: {action}")
+    
+    try:
+        clear_menu_cache()
+        
+        if action == 'post_add' and pk_set:
+            # Категории были добавлены к дополнению
+            try:
+                # Получаем добавленные категории
+                added_categories = Category.objects.filter(id__in=pk_set)
+                
+                # Добавляем дополнение ко всем товарам этих категорий
+                for category in added_categories:
+                    menu_items = MenuItem.objects.filter(category=category, is_active=True)
+                    added_count = 0
+                    
+                    for menu_item in menu_items:
+                        if not menu_item.add_on_options.filter(id=instance.id).exists():
+                            menu_item.add_on_options.add(instance)
+                            added_count += 1
+                            logger.info(f"➕ Добавлено дополнение '{instance.name}' к товару '{menu_item.name}' (категория: {category.name})")
+                    
+                    logger.info(f"✅ Дополнение '{instance.name}' добавлено к {added_count} товарам категории '{category.name}'")
+                    
+            except Exception as e:
+                logger.error(f"Error adding addon to new categories: {str(e)}")
+        
+        elif action == 'post_remove' and pk_set:
+            # Категории были удалены из дополнения
+            try:
+                # Получаем удаленные категории
+                removed_categories = Category.objects.filter(id__in=pk_set)
+                
+                # Удаляем дополнение из всех товаров этих категорий
+                for category in removed_categories:
+                    menu_items = MenuItem.objects.filter(category=category, is_active=True)
+                    removed_count = 0
+                    
+                    for menu_item in menu_items:
+                        if menu_item.add_on_options.filter(id=instance.id).exists():
+                            menu_item.add_on_options.remove(instance)
+                            removed_count += 1
+                            logger.info(f"➖ Удалено дополнение '{instance.name}' из товара '{menu_item.name}' (категория: {category.name})")
+                    
+                    logger.info(f"✅ Дополнение '{instance.name}' удалено из {removed_count} товаров категории '{category.name}'")
+                    
+            except Exception as e:
+                logger.error(f"Error removing addon from categories: {str(e)}")
+        
+        # Отправляем WebSocket уведомление
+        try:
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                async_to_sync(channel_layer.group_send)(
+                    'menu_updates',
+                    {
+                        'type': 'addon_updated',
+                        'addon_id': instance.id,
+                        'addon_name': instance.name,
+                        'is_active': instance.is_active,
+                        'action': 'categories_changed',
+                        'timestamp': timezone.now().isoformat()
+                    }
+                )
+                logger.info(f"📡 AddOn categories change notification sent: {instance.name}")
+        except Exception as e:
+            logger.error(f"Error sending WebSocket notification for addon categories change: {str(e)}")
+            
+    except Exception as e:
+        logger.error(f"Error handling addon categories change: {str(e)}") 

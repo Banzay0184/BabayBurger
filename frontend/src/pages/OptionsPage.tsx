@@ -19,8 +19,6 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
   const [selectedAddOns, setSelectedAddOns] = useState<AddOn[]>([]);
   const [totalPrice, setTotalPrice] = useState<number>(Number(item?.price) || 0);
   const [currentItem, setCurrentItem] = useState<MenuItem>(item);
-  const [addOnSearch, setAddOnSearch] = useState<string>('');
-  const [sortBy, setSortBy] = useState<'name' | 'price'>('name');
 
   // WebSocket обработчики для real-time обновлений
   const handleAddonUpdate = useCallback((addonId: number, addonName: string, isActive: boolean, action: string) => {
@@ -184,55 +182,32 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
   const availableSizes = currentItem.size_options?.filter((size: SizeOption) => size.is_active) || [];
   const availableAddOns = currentItem.add_on_options?.filter((addOn: AddOn) => addOn.is_active) || [];
   
-  // Фильтруем и сортируем дополнения
-  const filteredAddOns = availableAddOns
-    .filter(addOn => addOn.name.toLowerCase().includes(addOnSearch.toLowerCase()))
-    .sort((a, b) => {
-      if (sortBy === 'price') {
-        return Number(a.price) - Number(b.price);
-      }
-      return a.name.localeCompare(b.name);
-    });
-  
-  // Группируем дополнения по категориям для лучшего отображения
-  const groupedAddOns = filteredAddOns.reduce((groups: { [key: string]: AddOn[] }, addOn) => {
-    const category = addOn.category || 'Другие';
-    if (!groups[category]) {
-      groups[category] = [];
-    }
-    groups[category].push(addOn);
-    return groups;
-  }, {});
-  
-  // Если дополнений немного, показываем их в одной группе
-  const shouldGroupByCategory = Object.keys(groupedAddOns).length > 1 && filteredAddOns.length > 12;
-  
   // Если дополнений очень много, показываем их в 4 колонки
-  const shouldUseFourColumns = filteredAddOns.length > 18;
+  const shouldUseFourColumns = availableAddOns.length > 18;
   
   // Если дополнений очень много, показываем их в 5 колонок
-  const shouldUseFiveColumns = filteredAddOns.length > 30;
+  const shouldUseFiveColumns = availableAddOns.length > 30;
   
   // Если дополнений очень много, показываем их в 6 колонок
-  const shouldUseSixColumns = filteredAddOns.length > 42;
+  const shouldUseSixColumns = availableAddOns.length > 42;
   
   // Если дополнений очень много, показываем их в 7 колонок
-  const shouldUseSevenColumns = filteredAddOns.length > 56;
+  const shouldUseSevenColumns = availableAddOns.length > 56;
   
   // Если дополнений очень много, показываем их в 8 колонок
-  const shouldUseEightColumns = filteredAddOns.length > 72;
+  const shouldUseEightColumns = availableAddOns.length > 72;
   
   // Если дополнений очень много, показываем их в 9 колонок
-  const shouldUseNineColumns = filteredAddOns.length > 90;
+  const shouldUseNineColumns = availableAddOns.length > 90;
   
   // Если дополнений очень много, показываем их в 10 колонок
-  const shouldUseTenColumns = filteredAddOns.length > 110;
+  const shouldUseTenColumns = availableAddOns.length > 110;
   
   // Если дополнений очень много, показываем их в 11 колонок
-  const shouldUseElevenColumns = filteredAddOns.length > 132;
+  const shouldUseElevenColumns = availableAddOns.length > 132;
   
   // Если дополнений очень много, показываем их в 12 колонок
-  const shouldUseTwelveColumns = filteredAddOns.length > 156;
+  const shouldUseTwelveColumns = availableAddOns.length > 156;
 
   // Функция для получения URL изображения
   const getImageUrl = (imagePath: string | null): string => {
@@ -381,126 +356,37 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({ item, onClose }) => {
           <div className="bg-dark-800 rounded-2xl p-3 border border-gray-700/50">
             <h3 className="text-base font-semibold text-gray-100 mb-3 flex items-center">
               <span className="mr-2">➕</span>
-              {t('additions_optional')} ({filteredAddOns.length}/{availableAddOns.length}):
+              {t('additions_optional')}:
             </h3>
             
-            {/* Поиск и сортировка по дополнениям */}
-            {availableAddOns.length > 6 && (
-              <div className="mb-3 space-y-2">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Поиск дополнений..."
-                    value={addOnSearch}
-                    onChange={(e) => setAddOnSearch(e.target.value)}
-                    className="w-full px-3 py-2 pr-8 bg-dark-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:border-primary-500 text-sm"
-                  />
-                  {addOnSearch && (
-                    <button
-                      onClick={() => setAddOnSearch('')}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-                
-                {/* Кнопки сортировки */}
-                <div className="flex gap-2">
+            <div className={`grid gap-2 ${shouldUseTwelveColumns ? 'grid-cols-12' : shouldUseElevenColumns ? 'grid-cols-11' : shouldUseTenColumns ? 'grid-cols-10' : shouldUseNineColumns ? 'grid-cols-9' : shouldUseEightColumns ? 'grid-cols-8' : shouldUseSevenColumns ? 'grid-cols-7' : shouldUseSixColumns ? 'grid-cols-6' : shouldUseFiveColumns ? 'grid-cols-5' : shouldUseFourColumns ? 'grid-cols-4' : 'grid-cols-3'}`}>
+              {availableAddOns.map((addOn) => {
+                const isSelected = selectedAddOns.find(a => a.id === addOn.id);
+                return (
                   <button
-                    onClick={() => setSortBy('name')}
-                    className={`px-3 py-1 text-xs rounded-lg border transition-all duration-300 ${
-                      sortBy === 'name' 
-                        ? 'bg-primary-500 text-white border-primary-500' 
-                        : 'bg-dark-700 text-gray-300 border-gray-600 hover:bg-dark-600'
-                    }`}
+                    key={addOn.id}
+                    onClick={() => handleAddOnToggle(addOn)}
+                    className={`
+                      relative p-2 text-xs rounded-lg border-2 transition-all duration-300 font-medium text-center min-h-[60px] flex flex-col justify-center
+                      ${isSelected
+                        ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-500 shadow-dark-glow scale-105'
+                        : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-primary-500/50 hover:shadow-dark-card hover:scale-102'
+                      }
+                    `}
                   >
-                    По названию
-                  </button>
-                  <button
-                    onClick={() => setSortBy('price')}
-                    className={`px-3 py-1 text-xs rounded-lg border transition-all duration-300 ${
-                      sortBy === 'price' 
-                        ? 'bg-primary-500 text-white border-primary-500' 
-                        : 'bg-dark-700 text-gray-300 border-gray-600 hover:bg-dark-600'
-                    }`}
-                  >
-                    По цене
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {Object.keys(groupedAddOns).length === 0 ? (
-              <div className="text-center py-4 text-gray-400">
-                <p>Дополнения не найдены</p>
-              </div>
-            ) : shouldGroupByCategory ? (
-              Object.entries(groupedAddOns).map(([category, addOns]) => (
-                <div key={category} className="mb-4 last:mb-0">
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">
-                    {category} ({addOns.length})
-                  </h4>
-                  <div className={`grid gap-2 ${shouldUseTwelveColumns ? 'grid-cols-12' : shouldUseElevenColumns ? 'grid-cols-11' : shouldUseTenColumns ? 'grid-cols-10' : shouldUseNineColumns ? 'grid-cols-9' : shouldUseEightColumns ? 'grid-cols-8' : shouldUseSevenColumns ? 'grid-cols-7' : shouldUseSixColumns ? 'grid-cols-6' : shouldUseFiveColumns ? 'grid-cols-5' : shouldUseFourColumns ? 'grid-cols-4' : 'grid-cols-3'}`}>
-                    {addOns.map((addOn) => {
-                      const isSelected = selectedAddOns.find(a => a.id === addOn.id);
-                      return (
-                        <button
-                          key={addOn.id}
-                          onClick={() => handleAddOnToggle(addOn)}
-                          className={`
-                            relative p-2 text-xs rounded-lg border-2 transition-all duration-300 font-medium text-center min-h-[60px] flex flex-col justify-center
-                            ${isSelected
-                              ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-500 shadow-dark-glow scale-105'
-                              : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-primary-500/50 hover:shadow-dark-card hover:scale-102'
-                            }
-                          `}
-                        >
-                          <div className="font-semibold mb-1 text-xs leading-tight">{addOn.name}</div>
-                          <div className={`text-xs ${isSelected ? 'text-accent-100' : 'text-gray-400'}`}>
-                            +{formatCurrency(Number(addOn.price) || 0)}
-                          </div>
-                          {isSelected && (
-                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent-500 rounded-full flex items-center justify-center">
-                              <span className="text-white text-xs">✓</span>
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className={`grid gap-2 ${shouldUseTwelveColumns ? 'grid-cols-12' : shouldUseElevenColumns ? 'grid-cols-11' : shouldUseTenColumns ? 'grid-cols-10' : shouldUseNineColumns ? 'grid-cols-9' : shouldUseEightColumns ? 'grid-cols-8' : shouldUseSevenColumns ? 'grid-cols-7' : shouldUseSixColumns ? 'grid-cols-6' : shouldUseFiveColumns ? 'grid-cols-5' : shouldUseFourColumns ? 'grid-cols-4' : 'grid-cols-3'}`}>
-                {filteredAddOns.map((addOn) => {
-                  const isSelected = selectedAddOns.find(a => a.id === addOn.id);
-                  return (
-                    <button
-                      key={addOn.id}
-                      onClick={() => handleAddOnToggle(addOn)}
-                      className={`
-                        relative p-2 text-xs rounded-lg border-2 transition-all duration-300 font-medium text-center min-h-[60px] flex flex-col justify-center
-                        ${isSelected
-                          ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-500 shadow-dark-glow scale-105'
-                          : 'glass-dark text-gray-300 border-gray-600/50 hover:bg-dark-700/50 hover:border-primary-500/50 hover:shadow-dark-card hover:scale-102'
-                        }
-                      `}
-                    >
-                      <div className="font-semibold mb-1 text-xs leading-tight">{addOn.name}</div>
-                      <div className={`text-xs ${isSelected ? 'text-accent-100' : 'text-gray-400'}`}>
-                        +{formatCurrency(Number(addOn.price) || 0)}
+                    <div className="font-semibold mb-1 text-xs leading-tight">{addOn.name}</div>
+                    <div className={`text-xs ${isSelected ? 'text-accent-100' : 'text-gray-400'}`}>
+                      +{formatCurrency(Number(addOn.price) || 0)}
+                    </div>
+                    {isSelected && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">✓</span>
                       </div>
-                      {isSelected && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs">✓</span>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
