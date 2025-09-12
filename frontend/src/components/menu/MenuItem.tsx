@@ -103,7 +103,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
     }
 
     if (name.includes('куринный') || name.includes('chicken') || name.includes('tovuqliy') || name.includes('цезарь')) {
-      tags.push({ text: `🐔 ${t('chicken')}`, color: 'bg-green-600/20 text-green-400 border-green-500/30' });
+      tags.push({ text: `🐔 ${t('chicken')}`, color: 'bg-orange-600/20 text-orange-400 border-orange-500/30' });
     }
     
     if (name.includes('вегетариан') || name.includes('vegetarian') || name.includes('овощ') || name.includes('sabzavot')) {

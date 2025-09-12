@@ -3,18 +3,12 @@ import type { OrderStatus } from '../../types/operator';
 
 interface CompactOrderFiltersProps {
   selectedStatus: OrderStatus | 'all';
-  selectedZone: string;
-  zones: string[];
   onStatusChange: (status: OrderStatus | 'all') => void;
-  onZoneChange: (zone: string) => void;
 }
 
 export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
   selectedStatus,
-  selectedZone,
-  zones,
   onStatusChange,
-  onZoneChange,
 }) => {
   // Получение текста статуса
   const getStatusText = (status: OrderStatus | 'all'): string => {
@@ -46,11 +40,10 @@ export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
     }
   };
 
-  // Список всех статусов для фильтрации
-  const allStatuses: (OrderStatus | 'all')[] = [
+  // Список основных статусов для фильтрации
+  const mainStatuses: (OrderStatus | 'all')[] = [
     'all',
     'pending',
-    'confirmed',
     'preparing',
     'delivering',
     'completed',
@@ -63,66 +56,30 @@ export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
       <div className="flex flex-wrap items-center gap-1">
         {/* Фильтр по статусам */}
         <div className="flex flex-wrap gap-1">
-          {allStatuses.map((status) => (
+          {mainStatuses.map((status) => (
             <button
               key={status}
               onClick={() => onStatusChange(status)}
-              className={`flex items-center space-x-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
+              className={`flex items-center space-x-1 px-3 py-2 rounded text-sm font-medium transition-colors ${
                 selectedStatus === status
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
-              <span className="text-xs">{getStatusIcon(status)}</span>
+              <span className="text-sm">{getStatusIcon(status)}</span>
               <span className="hidden md:inline">{getStatusText(status)}</span>
             </button>
           ))}
         </div>
 
         {/* Разделитель */}
-        <div className="w-px h-4 bg-gray-600 mx-1"></div>
+
 
         {/* Фильтр по зонам */}
-        <div className="flex flex-wrap gap-1">
-          <button
-            onClick={() => onZoneChange('all')}
-            className={`flex items-center space-x-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
-              selectedZone === 'all'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            <span className="text-xs">🌍</span>
-            <span className="hidden md:inline">Все</span>
-          </button>
-
-          {zones.map((zone) => (
-            <button
-              key={zone}
-              onClick={() => onZoneChange(zone)}
-              className={`flex items-center space-x-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
-                selectedZone === zone
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
-            >
-              <span className="text-xs">📍</span>
-              <span className="hidden md:inline">{zone}</span>
-            </button>
-          ))}
-        </div>
+        
 
         {/* Сброс фильтров */}
-        <button
-          onClick={() => {
-            onStatusChange('all');
-            onZoneChange('all');
-          }}
-          className="flex items-center space-x-1 px-2 py-1 rounded text-xs font-medium bg-gray-600 hover:bg-gray-700 text-gray-300 transition-colors ml-auto"
-        >
-          <span className="text-xs">🔄</span>
-          <span className="hidden md:inline">Сбросить</span>
-        </button>
+       
       </div>
     </div>
   );

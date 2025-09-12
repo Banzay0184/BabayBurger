@@ -10,15 +10,14 @@ interface OperatorDashboardPageProps {
   onNavigate?: (page: OperatorPage) => void;
 }
 import { OrderCard } from '../../components/operator/OrderCard';
-import { OperatorStatsWidget } from '../../components/operator/OperatorStatsWidget';
-import { QuickActionsWidget } from '../../components/operator/QuickActionsWidget';
-import { ConnectionInfoWidget } from '../../components/operator/ConnectionInfoWidget';
 import { CompactOrderFilters } from '../../components/operator/CompactOrderFilters';
 import { OrderSearch } from '../../components/operator/OrderSearch';
 import { NotificationsPanel } from '../../components/operator/NotificationsPanel';
 import { WebSocketStatus } from '../../components/operator/WebSocketStatus';
-import { testWebSocketConnection, testWebSocketWithPing } from '../../utils/websocketTest';
+import { PWAInstallPrompt } from '../../components/operator/PWAInstallPrompt';
+import { PWAStatus } from '../../components/operator/PWAStatus';
 import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
+import { usePWA } from '../../hooks/usePWA';
 
 export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ onNavigate }) => {
   const { state: authState, logout } = useOperatorAuth();
@@ -27,7 +26,6 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | 'all'>('all');
-  const [selectedZone, setSelectedZone] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -136,6 +134,9 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
     enabled: true
   });
 
+  // Инициализируем PWA
+  usePWA();
+
   // Принудительное обновление при подключении WebSocket
   useEffect(() => {
     if (isConnected) {
@@ -179,7 +180,6 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
     try {
       const filters: any = {};
       if (selectedStatus !== 'all') filters.status = selectedStatus;
-      if (selectedZone !== 'all') filters.zone = selectedZone;
       if (searchQuery.trim()) filters.search = searchQuery.trim();
       
       console.log('🔍 Загружаем заказы с фильтрами:', filters);
@@ -248,7 +248,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
   // Перезагрузка заказов при изменении фильтров
   useEffect(() => {
     loadOrders();
-  }, [selectedStatus, selectedZone, searchQuery]);
+  }, [selectedStatus, searchQuery]);
 
   // Автообновление каждые 30 секунд (fallback для WebSocket)
   useEffect(() => {
@@ -279,11 +279,6 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
       filtered = filtered.filter(order => order.status === selectedStatus);
     }
     
-    // Фильтр по зоне
-    if (selectedZone !== 'all') {
-      filtered = filtered.filter(order => order.delivery_zone_info?.id === parseInt(selectedZone));
-    }
-    
     // Фильтр по поиску
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
@@ -298,7 +293,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
     
     console.log(`🔍 Фильтрация: ${orders.length} → ${filtered.length} заказов`);
     return filtered;
-  }, [orders, selectedStatus, selectedZone, searchQuery]);
+  }, [orders, selectedStatus, searchQuery]);
 
   // Обработка выхода
   const handleLogout = async () => {
@@ -310,38 +305,6 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
     }
   };
 
-  // Тестирование WebSocket
-  const handleTestWebSocket = async () => {
-    try {
-      console.log('🧪 Тестирование WebSocket соединения...');
-      const result = await testWebSocketConnection();
-      
-      if (result.success) {
-        alert(`✅ ${result.message}`);
-      } else {
-        alert(`❌ ${result.message}\n${result.error || ''}`);
-      }
-    } catch (error) {
-      console.error('Ошибка тестирования WebSocket:', error);
-      alert('❌ Ошибка тестирования WebSocket');
-    }
-  };
-
-  const handleTestWebSocketPing = async () => {
-    try {
-      console.log('🧪 Тестирование WebSocket с ping...');
-      const result = await testWebSocketWithPing();
-      
-      if (result.success) {
-        alert(`✅ ${result.message}`);
-      } else {
-        alert(`❌ ${result.message}\n${result.error || ''}`);
-      }
-    } catch (error) {
-      console.error('Ошибка тестирования WebSocket ping:', error);
-      alert('❌ Ошибка тестирования WebSocket ping');
-    }
-  };
 
   if (isLoading && !dashboard) {
     return (
@@ -378,74 +341,39 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
 
   return (
     <div className="min-h-screen bg-gray-900">
-      {/* Верхняя панель - планшетная версия */}
+      {/* Упрощенная верхняя панель */}
       <header className="bg-gray-800 border-b border-gray-700">
-        <div className="max-w-full mx-auto px-6">
-          <div className="flex justify-between items-center h-20">
+        <div className="max-w-full mx-auto px-4">
+          <div className="flex justify-between items-center h-16">
             {/* Логотип и название */}
             <div className="flex items-center">
-              <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mr-4">
-                <span className="text-white text-3xl">👨‍💼</span>
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                <span className="text-white text-xl">👨‍💼</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Оператор Babay Food</h1>
+                <h1 className="text-lg font-bold text-white">Оператор</h1>
                 <div className="flex items-center space-x-2">
-                  <p className="text-gray-400 text-sm">
-                    {authState.operator?.assigned_zones?.map(zone => zone.city).join(', ')}
-                  </p>
-                  {/* WebSocket статус */}
                   <WebSocketStatus />
+                  <PWAStatus />
                 </div>
               </div>
             </div>
 
-            {/* Информация об операторе и действия */}
-            <div className="flex items-center space-x-6">
+            {/* Информация об операторе и кнопка выхода */}
+            <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-lg text-gray-300 font-medium">
+                <p className="text-sm text-gray-300 font-medium">
                   {authState.operator?.first_name} {authState.operator?.last_name}
                 </p>
-                <p className="text-sm text-gray-400">
-                  Оператор
+                <p className="text-xs text-gray-400">
+                  {authState.operator?.assigned_zones?.map(zone => zone.city).join(', ')}
                 </p>
               </div>
               
-              {/* Кнопка уведомлений - планшетная версия */}
-              <button
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="relative p-4 text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 rounded-xl"
-              >
-                <span className="text-2xl">🔔</span>
-                {Array.isArray(dashboard?.notifications) && (dashboard?.notifications?.filter(n => !n.is_read).length || 0) > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-sm rounded-full h-6 w-6 flex items-center justify-center font-bold">
-                    {dashboard?.notifications?.filter(n => !n.is_read).length}
-                  </span>
-                )}
-              </button>
-
-              {/* Кнопки тестирования WebSocket */}
-              <button
-                onClick={handleTestWebSocket}
-                className="p-4 text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 rounded-xl"
-                title="Тест WebSocket соединения"
-              >
-                <span className="text-2xl">🔌</span>
-              </button>
-
-              <button
-                onClick={handleTestWebSocketPing}
-                className="p-4 text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 rounded-xl"
-                title="Тест WebSocket ping/pong"
-              >
-                <span className="text-2xl">🏓</span>
-              </button>
-
-
-
-              {/* Кнопка выхода - планшетная версия */}
+              {/* Кнопка выхода */}
               <button
                 onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors"
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               >
                 Выйти
               </button>
@@ -467,108 +395,79 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
         {/* Компактная панель фильтрации */}
         <CompactOrderFilters
           selectedStatus={selectedStatus}
-          selectedZone={selectedZone}
-          zones={dashboard?.assigned_zones || []}
           onStatusChange={setSelectedStatus}
-          onZoneChange={setSelectedZone}
         />
 
-        {/* Заказы - планшетная версия с двумя колонками */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Левая колонка - список заказов */}
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center space-x-3">
-                <h2 className="text-lg font-semibold text-white">
-                  Заказы {selectedStatus !== 'all' && `(${selectedStatus})`}
-                  {searchQuery && (
-                    <span className="ml-2 text-sm text-blue-400">
-                      - "{searchQuery}"
-                    </span>
-                  )}
-                </h2>
-                
-                {/* Статус WebSocket */}
-                <div className="flex items-center space-x-1">
-                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  <span className="text-xs text-gray-400">
-                    {isConnected ? 'WS' : 'OFF'}
+        {/* Заказы - одноколоночный макет */}
+        <div className="bg-gray-800 rounded-lg p-4">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center space-x-3">
+              <h2 className="text-lg font-semibold text-white">
+                Заказы {selectedStatus !== 'all' && `(${selectedStatus})`}
+                {searchQuery && (
+                  <span className="ml-2 text-sm text-blue-400">
+                    - "{searchQuery}"
                   </span>
-                </div>
-              </div>
-              <div className="flex space-x-1">
-                <button
-                  onClick={() => {
-                    console.log('🔄 Принудительное обновление всех данных...');
-                    loadDashboard();
-                    loadOrders();
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
-                >
-                  🔄
-                </button>
-                <button
-                  onClick={() => {
-                    if (onNavigate) {
-                      onNavigate('stats');
-                    }
-                  }}
-                  className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
-                >
-                  📊
-                </button>
+                )}
+              </h2>
+              
+              {/* Статус WebSocket */}
+              <div className="flex items-center space-x-1">
+                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <span className="text-xs text-gray-400">
+                  {isConnected ? 'WS' : 'OFF'}
+                </span>
               </div>
             </div>
-
-            {/* Список заказов */}
-            {!filteredOrders || filteredOrders.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-gray-400 text-4xl mb-3">📋</div>
-                <p className="text-gray-400 text-sm mb-1">Нет заказов</p>
-                <p className="text-gray-500 text-xs">
-                  {searchQuery 
-                    ? `По запросу "${searchQuery}" ничего не найдено`
-                    : selectedStatus !== 'all' || selectedZone !== 'all' 
-                      ? 'Попробуйте изменить фильтры' 
-                      : 'Новые заказы появятся здесь автоматически'
+            <div className="flex space-x-1">
+              <button
+                onClick={() => {
+                  console.log('🔄 Принудительное обновление всех данных...');
+                  loadDashboard();
+                  loadOrders();
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+              >
+                🔄
+              </button>
+              <button
+                onClick={() => {
+                  if (onNavigate) {
+                    onNavigate('stats');
                   }
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar">
-                {filteredOrders.map((order) => (
-                  <OrderCard
-                    key={order.id}
-                    order={order}
-                    onUpdate={updateOrder}
-                  />
-                ))}
-              </div>
-            )}
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+              >
+                📊
+              </button>
+            </div>
           </div>
 
-          {/* Правая колонка - статистика и быстрые действия */}
-          <div className="space-y-4">
-            {/* Статистика */}
-            <OperatorStatsWidget orders={filteredOrders} />
-
-            {/* Быстрые действия */}
-            <QuickActionsWidget
-              onStatusChange={setSelectedStatus}
-              onRefresh={() => {
-                console.log('🔄 Принудительное обновление всех данных...');
-                loadDashboard();
-                loadOrders();
-              }}
-              onNavigate={onNavigate as ((page: 'login' | 'dashboard' | 'stats') => void) | undefined}
-            />
-
-            {/* Информация о подключении */}
-            <ConnectionInfoWidget
-              isConnected={isConnected}
-              operator={authState.operator}
-            />
-          </div>
+          {/* Список заказов */}
+          {!filteredOrders || filteredOrders.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-gray-400 text-4xl mb-3">📋</div>
+              <p className="text-gray-400 text-sm mb-1">Нет заказов</p>
+              <p className="text-gray-500 text-xs">
+                {searchQuery 
+                  ? `По запросу "${searchQuery}" ничего не найдено`
+                  : selectedStatus !== 'all' 
+                    ? 'Попробуйте изменить фильтры' 
+                    : 'Новые заказы появятся здесь автоматически'
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+              {filteredOrders.map((order) => (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onUpdate={updateOrder}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </main>
 
@@ -580,6 +479,9 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
           onMarkAsRead={operatorNotificationsApi.markAsRead}
         />
       )}
+
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
     </div>
   );
 };
