@@ -201,10 +201,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
     });
   };
 
-  // Форматирование цены
-  const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat('ru-RU').format(price) + ' сум';
-  };
 
   return (
     <>
