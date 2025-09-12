@@ -7,7 +7,7 @@
   "background_color": "#ffffff",
   "theme_color": "#f97316",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": "/cashier",
   "lang": "ru",
   "icons": [
     {

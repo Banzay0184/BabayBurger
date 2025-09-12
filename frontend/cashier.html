@@ -4,11 +4,11 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/jpeg" href="/logo.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>Babay Food - Доставка еды</title>
-    <meta name="description" content="Доставка вкусной еды в Бухаре и Кагане. Babay Food - быстро, вкусно, удобно!" />
+    <title>Babay Burger - Кассир</title>
+    <meta name="description" content="Интерфейс кассира для ресторана Babay Burger" />
     
-    <!-- PWA Manifest для клиента -->
-    <link rel="manifest" href="/client-manifest.json" />
+    <!-- PWA Manifest для кассира -->
+    <link rel="manifest" href="/manifest.json" />
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#f97316" />
@@ -31,17 +31,17 @@
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://babayburger.com/" />
-    <meta property="og:title" content="Babay Food - Доставка еды" />
-    <meta property="og:description" content="Доставка вкусных бургеров в Бухаре и Кагане. Быстро, вкусно, удобно!" />
-    <meta property="og:image" content="https://babayburger.com/og-image.jpg" />
+    <meta property="og:url" content="https://babayburger.com/cashier" />
+    <meta property="og:title" content="Babay Burger - Кассир" />
+    <meta property="og:description" content="Интерфейс кассира для ресторана Babay Burger" />
+    <meta property="og:image" content="https://babayburger.com/logo.jpg" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://babayburger.com/" />
-    <meta property="twitter:title" content="Babay Food - Доставка еды" />
-    <meta property="twitter:description" content="Доставка вкусных бургеров в Бухаре и Кагане. Быстро, вкусно, удобно!" />
-    <meta property="twitter:image" content="https://babayburger.com/og-image.jpg" />
+    <meta property="twitter:url" content="https://babayburger.com/cashier" />
+    <meta property="twitter:title" content="Babay Burger - Кассир" />
+    <meta property="twitter:description" content="Интерфейс кассира для ресторана Babay Burger" />
+    <meta property="twitter:image" content="https://babayburger.com/logo.jpg" />
     
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -99,10 +99,74 @@
         display: flex;
         flex-direction: column;
       }
+
+      /* Стили для PWA */
+      @media (display-mode: standalone) {
+        body {
+          background-color: #f8fafc;
+        }
+      }
+
+      /* Стили для офлайн режима */
+      .offline-indicator {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #dc2626;
+        color: white;
+        text-align: center;
+        padding: 8px;
+        font-size: 14px;
+        z-index: 9999;
+        display: none;
+      }
+
+      .offline-indicator.show {
+        display: block;
+      }
     </style>
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- Индикатор офлайн режима -->
+    <div id="offline-indicator" class="offline-indicator">
+      📱 Приложение работает в офлайн режиме
+    </div>
+    
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- PWA скрипт -->
+    <script>
+      // Проверка офлайн режима
+      function updateOnlineStatus() {
+        const indicator = document.getElementById('offline-indicator');
+        if (navigator.onLine) {
+          indicator.classList.remove('show');
+        } else {
+          indicator.classList.add('show');
+        }
+      }
+
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      
+      // Проверяем статус при загрузке
+      updateOnlineStatus();
+
+      // Регистрируем Service Worker для кассира
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('✅ Cashier Service Worker зарегистрирован:', registration);
+            })
+            .catch((error) => {
+              console.error('❌ Ошибка регистрации Cashier Service Worker:', error);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
