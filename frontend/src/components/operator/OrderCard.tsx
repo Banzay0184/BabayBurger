@@ -83,10 +83,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
     }
   };
 
-  // Получение иконки ресторана
-  const getRestaurantIcon = (): string => {
-    return '🏪';
-  };
 
 
 
@@ -235,54 +231,51 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
           </div>
         </div>
 
-        {/* Информация о клиенте - компактная планшетная версия */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div className="space-y-1">
-            <p className="text-gray-300 text-sm">
-              <span className="font-semibold">👤 Клиент:</span> {order.user_info.first_name} {order.user_info.last_name}
-            </p>
-            <p className="text-gray-400 text-sm">
-              <span className="font-semibold">📱 Телефон:</span> {order.address_info.phone_number}
-            </p>
+        {/* Основная информация о клиенте - упрощенная версия */}
+        <div className="space-y-3 mb-4">
+          {/* Клиент и телефон */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white text-sm font-semibold">
+                👤 {order.user_info.first_name} {order.user_info.last_name}
+              </p>
+              <p className="text-gray-400 text-sm">
+                📱 {order.address_info.phone_number}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-white text-lg font-bold">
+                {new Intl.NumberFormat('ru-RU').format(order.total_price)} сум
+              </p>
+              <div className="flex items-center space-x-1 mt-1">
+                <span className="text-sm">{getPaymentMethodIcon(order.payment_method)}</span>
+                <span className="text-gray-400 text-xs">{getPaymentMethodText(order.payment_method)}</span>
+              </div>
+            </div>
           </div>
           
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <p className="text-gray-300 text-sm truncate">
-                <span className="font-semibold">📍 Адрес:</span> {order.address_info.full_address}
+          {/* Адрес и кнопка карты */}
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-gray-300 text-sm">
+                📍 {order.address_info.full_address}
               </p>
-              <button
-                onClick={() => {
-                  const { latitude, longitude } = order.address_info;
-                  const yandexMapUrl = `https://yandex.ru/maps/?pt=${longitude},${latitude}&z=16&l=map`;
-                  window.open(yandexMapUrl, '_blank');
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center space-x-1 ml-2"
-                title="Открыть на карте"
-              >
-                <span>🗺️</span>
-              </button>
+              <p className="text-gray-400 text-xs">
+                🏙️ {order.address_info.city}
+              </p>
             </div>
-            <p className="text-gray-400 text-sm">
-              <span className="font-semibold">🏙️ Город:</span> {order.address_info.city}
-            </p>
-          </div>
-
-          <div className="space-y-1">
-            {order.delivery_zone_info && (
-              <p className="text-gray-400 text-sm">
-                <span className="font-semibold">🌍 Зона:</span> {order.delivery_zone_info.name}
-              </p>
-            )}
-            {order.restaurant_info && (
-              <p className="text-gray-400 text-sm">
-                <span className="font-semibold">{getRestaurantIcon()} Ресторан:</span> {order.restaurant_info.name}
-              </p>
-            )}
-            <div className="flex items-center space-x-1">
-              <span className="text-sm">{getPaymentMethodIcon(order.payment_method)}</span>
-              <span className="text-gray-300 text-sm font-medium">{getPaymentMethodText(order.payment_method)}</span>
-            </div>
+            <button
+              onClick={() => {
+                const { latitude, longitude } = order.address_info;
+                const yandexMapUrl = `https://yandex.ru/maps/?pt=${longitude},${latitude}&z=16&l=map`;
+                window.open(yandexMapUrl, '_blank');
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ml-3"
+              title="Открыть на Яндекс.Картах"
+            >
+              <span>🗺️</span>
+              <span>Карта</span>
+            </button>
           </div>
         </div>
 
