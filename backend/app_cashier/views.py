@@ -190,8 +190,8 @@ class CashierOrderViewSet(viewsets.ModelViewSet):
         # Получаем или создаем OrderProcessing
         processing, created = OrderProcessing.objects.get_or_create(
             order=order,
-            cashier=cashier,
             defaults={
+                'cashier': cashier,
                 'status': 'preparing',
                 'started_preparing_at': timezone.now(),
                 'notes': 'Автоматически создано при отметке готовности'
@@ -223,8 +223,8 @@ class CashierOrderViewSet(viewsets.ModelViewSet):
         # Получаем или создаем OrderProcessing
         processing, created = OrderProcessing.objects.get_or_create(
             order=order,
-            cashier=cashier,
             defaults={
+                'cashier': cashier,
                 'status': 'ready',
                 'ready_at': timezone.now(),
                 'notes': 'Автоматически создано при отправке на доставку'
@@ -256,8 +256,8 @@ class CashierOrderViewSet(viewsets.ModelViewSet):
         # Получаем или создаем OrderProcessing
         processing, created = OrderProcessing.objects.get_or_create(
             order=order,
-            cashier=cashier,
             defaults={
+                'cashier': cashier,
                 'status': 'delivering',
                 'notes': 'Автоматически создано при завершении заказа'
             }

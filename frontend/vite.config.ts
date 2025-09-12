@@ -10,6 +10,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html',
+        client: 'client.html',
         cashier: 'cashier.html',
         operator: 'operator.html'
       }

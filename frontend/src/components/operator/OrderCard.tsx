@@ -290,35 +290,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
           </div>
         </div>
 
-        {/* Детали заказа и цены - компактная планшетная версия */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <p className="text-gray-300 text-sm mb-2">
-              <span className="font-semibold">🍽️ Позиции ({order.items_details.length}):</span>
-            </p>
-            <div className="space-y-1">
-              {order.items_details.slice(0, 2).map((item, index) => (
-                <p key={index} className="text-gray-400 text-sm">
-                  • {item.menu_item_name} x{item.quantity} - {formatPrice(item.total_price)}
-                </p>
-              ))}
-              {order.items_details.length > 2 && (
-                <p className="text-gray-500 text-sm">
-                  ... и еще {order.items_details.length - 2} позиций
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <p className="text-gray-400 text-sm">Сумма: <span className="text-white font-semibold">{formatPrice(order.total_price)}</span></p>
-            {order.discount_amount > 0 && (
-              <p className="text-green-400 text-sm">Скидка: <span className="font-semibold">{formatPrice(order.discount_amount)}</span></p>
-            )}
-            <p className="text-gray-400 text-sm">Доставка: <span className="text-white font-semibold">{formatPrice(order.delivery_fee)}</span></p>
-            <p className="text-gray-300 text-sm font-bold">Итого: <span className="text-white text-lg">{formatPrice(order.final_price)}</span></p>
-          </div>
-        </div>
 
         {/* Заметки - компактная версия */}
         {(order.notes || order.operator_notes) && (

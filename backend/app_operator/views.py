@@ -1004,7 +1004,7 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             reason='Заказ подтвержден оператором и передан на кухню'
         )
         
-        # Создаем OrderProcessing для кассиров ресторана
+        # Создаем OrderProcessing для заказа
         from app_cashier.models import OrderProcessing, Cashier
         from app_cashier.models import CashierNotification
         
@@ -1014,20 +1014,22 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             is_active_cashier=True
         )
         
-        # Создаем OrderProcessing для каждого кассира ресторана
-        for cashier in restaurant_cashiers:
-            # Создаем OrderProcessing, если его еще нет
+        # Выбираем первого активного кассира для обработки заказа
+        if restaurant_cashiers.exists():
+            assigned_cashier = restaurant_cashiers.first()
+            
+            # Создаем OrderProcessing для заказа (только одну запись)
             order_processing, created = OrderProcessing.objects.get_or_create(
                 order=order,
-                cashier=cashier,
                 defaults={
+                    'cashier': assigned_cashier,
                     'status': 'received',
                     'notes': 'Заказ подтвержден оператором и передан на кухню'
                 }
             )
             
-            # Создаем уведомление для кассира
-            if created:
+            # Создаем уведомления для всех активных кассиров ресторана
+            for cashier in restaurant_cashiers:
                 CashierNotification.objects.create(
                     cashier=cashier,
                     notification_type='new_order',
