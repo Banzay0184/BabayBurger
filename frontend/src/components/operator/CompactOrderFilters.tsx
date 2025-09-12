@@ -59,8 +59,8 @@ export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
   ];
 
   return (
-    <div className="bg-gray-800 rounded-lg p-3 mb-4">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="bg-gray-800 rounded-lg p-2 mb-4">
+      <div className="flex flex-wrap items-center gap-1">
         {/* Фильтр по статусам */}
         <div className="flex flex-wrap gap-1">
           {allStatuses.map((status) => (
@@ -73,14 +73,14 @@ export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
-              <span className="text-sm">{getStatusIcon(status)}</span>
-              <span className="hidden sm:inline">{getStatusText(status)}</span>
+              <span className="text-xs">{getStatusIcon(status)}</span>
+              <span className="hidden md:inline">{getStatusText(status)}</span>
             </button>
           ))}
         </div>
 
         {/* Разделитель */}
-        <div className="w-px h-6 bg-gray-600 mx-1"></div>
+        <div className="w-px h-4 bg-gray-600 mx-1"></div>
 
         {/* Фильтр по зонам */}
         <div className="flex flex-wrap gap-1">
@@ -92,8 +92,8 @@ export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
-            <span className="text-sm">🌍</span>
-            <span className="hidden sm:inline">Все</span>
+            <span className="text-xs">🌍</span>
+            <span className="hidden md:inline">Все</span>
           </button>
 
           {zones.map((zone) => (
@@ -106,8 +106,8 @@ export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
-              <span className="text-sm">📍</span>
-              <span className="hidden sm:inline">{zone}</span>
+              <span className="text-xs">📍</span>
+              <span className="hidden md:inline">{zone}</span>
             </button>
           ))}
         </div>
@@ -120,8 +120,8 @@ export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
           }}
           className="flex items-center space-x-1 px-2 py-1 rounded text-xs font-medium bg-gray-600 hover:bg-gray-700 text-gray-300 transition-colors ml-auto"
         >
-          <span className="text-sm">🔄</span>
-          <span className="hidden sm:inline">Сбросить</span>
+          <span className="text-xs">🔄</span>
+          <span className="hidden md:inline">Сбросить</span>
         </button>
       </div>
     </div>

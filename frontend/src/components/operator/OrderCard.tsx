@@ -208,59 +208,52 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
 
   return (
     <>
-      <div className="bg-gray-700 rounded-xl p-6 border-l-4 border-l-blue-500 hover:bg-gray-600 transition-colors">
-        {/* Заголовок карточки - планшетная версия */}
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex items-center space-x-4">
-            <span className="text-4xl">{getServiceTypeIcon(order.service_type)}</span>
+      <div className="bg-gray-700 rounded-xl p-4 border-l-4 border-l-blue-500 hover:bg-gray-600 transition-colors">
+        {/* Заголовок карточки - компактная планшетная версия */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">{getServiceTypeIcon(order.service_type)}</span>
             <div>
-              <h3 className="text-white font-bold text-xl">
+              <h3 className="text-white font-bold text-lg">
                 Заказ #{order.id}
                 {order.operator_order_number && (
-                  <span className="text-blue-400 ml-2">(№{order.operator_order_number})</span>
+                  <span className="text-blue-400 ml-1">(№{order.operator_order_number})</span>
                 )}
               </h3>
-              <p className="text-gray-400 text-lg">
+              <p className="text-gray-400 text-sm">
                 {getServiceTypeText(order.service_type)} • {formatDate(order.created_at)}
               </p>
-              <div className="flex items-center space-x-2 mt-1">
-                <span className="text-lg">{getPaymentMethodIcon(order.payment_method)}</span>
-                <span className="text-gray-300 font-medium">{getPaymentMethodText(order.payment_method)}</span>
-              </div>
             </div>
           </div>
           
-          {/* Статус - планшетная версия */}
-          <div className="flex items-center space-x-3">
-            <span className={`${getStatusColor(order.status)} text-white text-sm px-4 py-2 rounded-full font-medium`}>
+          {/* Статус и быстрые действия - компактная версия */}
+          <div className="flex items-center space-x-2">
+            <span className={`${getStatusColor(order.status)} text-white text-xs px-3 py-1 rounded-full font-medium`}>
               {getStatusText(order.status)}
             </span>
             {order.operator_called && (
-              <span className="bg-green-500 text-white text-sm px-4 py-2 rounded-full font-medium">
-                Звонили
+              <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                ✓
               </span>
             )}
           </div>
         </div>
 
-        {/* Информация о клиенте - планшетная версия */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="space-y-3">
-            <p className="text-gray-300 text-lg">
-              <span className="font-semibold">Клиент:</span> {order.user_info.first_name} {order.user_info.last_name}
+        {/* Информация о клиенте - компактная планшетная версия */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="space-y-1">
+            <p className="text-gray-300 text-sm">
+              <span className="font-semibold">👤 Клиент:</span> {order.user_info.first_name} {order.user_info.last_name}
             </p>
-            <p className="text-gray-400 text-lg">
-              <span className="font-semibold">Telegram:</span> @{order.user_info.username}
-            </p>
-            <p className="text-gray-400 text-lg">
-              <span className="font-semibold">Телефон:</span> {order.address_info.phone_number}
+            <p className="text-gray-400 text-sm">
+              <span className="font-semibold">📱 Телефон:</span> {order.address_info.phone_number}
             </p>
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <p className="text-gray-300 text-lg">
-                <span className="font-semibold">Адрес:</span> {order.address_info.full_address}
+              <p className="text-gray-300 text-sm truncate">
+                <span className="font-semibold">📍 Адрес:</span> {order.address_info.full_address}
               </p>
               <button
                 onClick={() => {
@@ -268,87 +261,93 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
                   const yandexMapUrl = `https://yandex.ru/maps/?pt=${longitude},${latitude}&z=16&l=map`;
                   window.open(yandexMapUrl, '_blank');
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center space-x-1 ml-2"
                 title="Открыть на карте"
               >
                 <span>🗺️</span>
-                <span>Карта</span>
               </button>
             </div>
-            <p className="text-gray-400 text-lg">
-              <span className="font-semibold">Город:</span> {order.address_info.city}
+            <p className="text-gray-400 text-sm">
+              <span className="font-semibold">🏙️ Город:</span> {order.address_info.city}
             </p>
+          </div>
+
+          <div className="space-y-1">
             {order.delivery_zone_info && (
-              <p className="text-gray-400 text-lg">
-                <span className="font-semibold">Зона:</span> {order.delivery_zone_info.name}
+              <p className="text-gray-400 text-sm">
+                <span className="font-semibold">🌍 Зона:</span> {order.delivery_zone_info.name}
               </p>
             )}
             {order.restaurant_info && (
-              <p className="text-gray-400 text-lg">
+              <p className="text-gray-400 text-sm">
                 <span className="font-semibold">{getRestaurantIcon()} Ресторан:</span> {order.restaurant_info.name}
               </p>
             )}
+            <div className="flex items-center space-x-1">
+              <span className="text-sm">{getPaymentMethodIcon(order.payment_method)}</span>
+              <span className="text-gray-300 text-sm font-medium">{getPaymentMethodText(order.payment_method)}</span>
+            </div>
           </div>
         </div>
 
-        {/* Детали заказа - планшетная версия */}
-        <div className="mb-6">
-          <p className="text-gray-300 text-lg mb-3">
-            <span className="font-semibold">Позиции ({order.items_details.length}):</span>
-          </p>
-          <div className="space-y-2">
-            {order.items_details.slice(0, 3).map((item, index) => (
-              <p key={index} className="text-gray-400 text-lg">
-                • {item.menu_item_name} x{item.quantity} - {formatPrice(item.total_price)}
-              </p>
-            ))}
-            {order.items_details.length > 3 && (
-              <p className="text-gray-500 text-lg">
-                ... и еще {order.items_details.length - 3} позиций
-              </p>
-            )}
+        {/* Детали заказа и цены - компактная планшетная версия */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <p className="text-gray-300 text-sm mb-2">
+              <span className="font-semibold">🍽️ Позиции ({order.items_details.length}):</span>
+            </p>
+            <div className="space-y-1">
+              {order.items_details.slice(0, 2).map((item, index) => (
+                <p key={index} className="text-gray-400 text-sm">
+                  • {item.menu_item_name} x{item.quantity} - {formatPrice(item.total_price)}
+                </p>
+              ))}
+              {order.items_details.length > 2 && (
+                <p className="text-gray-500 text-sm">
+                  ... и еще {order.items_details.length - 2} позиций
+                </p>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Цены - планшетная версия */}
-        <div className="grid grid-cols-2 gap-6 mb-6 text-lg">
-          <div className="space-y-2">
-            <p className="text-gray-400">Сумма заказа: <span className="text-white font-semibold">{formatPrice(order.total_price)}</span></p>
+          <div className="space-y-1">
+            <p className="text-gray-400 text-sm">Сумма: <span className="text-white font-semibold">{formatPrice(order.total_price)}</span></p>
             {order.discount_amount > 0 && (
-              <p className="text-green-400">Скидка: <span className="font-semibold">{formatPrice(order.discount_amount)}</span></p>
+              <p className="text-green-400 text-sm">Скидка: <span className="font-semibold">{formatPrice(order.discount_amount)}</span></p>
             )}
-            <p className="text-gray-400">Доставка: <span className="text-white font-semibold">{formatPrice(order.delivery_fee)}</span></p>
-          </div>
-          <div className="text-right">
-            <p className="text-gray-400">Итого: <span className="text-white font-bold text-2xl">{formatPrice(order.final_price)}</span></p>
+            <p className="text-gray-400 text-sm">Доставка: <span className="text-white font-semibold">{formatPrice(order.delivery_fee)}</span></p>
+            <p className="text-gray-300 text-sm font-bold">Итого: <span className="text-white text-lg">{formatPrice(order.final_price)}</span></p>
           </div>
         </div>
 
-        {/* Заметки - планшетная версия */}
-        {order.notes && (
-          <div className="mb-6 p-4 bg-gray-600 rounded-xl">
-            <p className="text-gray-300 text-lg">
-              <span className="font-semibold">Заметки клиента:</span> {order.notes}
-            </p>
+        {/* Заметки - компактная версия */}
+        {(order.notes || order.operator_notes) && (
+          <div className="mb-4 space-y-2">
+            {order.notes && (
+              <div className="p-3 bg-gray-600 rounded-lg">
+                <p className="text-gray-300 text-sm">
+                  <span className="font-semibold">💬 Клиент:</span> {order.notes}
+                </p>
+              </div>
+            )}
+            {order.operator_notes && (
+              <div className="p-3 bg-blue-900/30 border border-blue-600/50 rounded-lg">
+                <p className="text-blue-300 text-sm">
+                  <span className="font-semibold">📝 Оператор:</span> {order.operator_notes}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {order.operator_notes && (
-          <div className="mb-6 p-4 bg-blue-900/30 border border-blue-600/50 rounded-xl">
-            <p className="text-blue-300 text-lg">
-              <span className="font-semibold">Заметки оператора:</span> {order.operator_notes}
-            </p>
-          </div>
-        )}
-
-        {/* Действия оператора - планшетная версия */}
-        <div className="flex flex-wrap gap-4">
+        {/* Действия оператора - компактная планшетная версия */}
+        <div className="flex flex-wrap gap-2">
           {/* Кнопка деталей */}
           <button
             onClick={() => setShowDetails(true)}
-            className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors"
+            className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
-            Детали
+            📋 Детали
           </button>
 
           {/* Действия в зависимости от статуса */}
@@ -357,17 +356,17 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
               <button
                 onClick={() => setShowConfirmModal(true)}
                 disabled={isLoading}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors disabled:opacity-50"
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
               >
-                {isLoading ? '...' : 'Подтвердить заказ'}
+                {isLoading ? '...' : '✅ Подтвердить'}
               </button>
               
               <button
                 onClick={() => setShowRejectModal(true)}
                 disabled={isLoading}
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors disabled:opacity-50"
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
               >
-                {isLoading ? '...' : 'Отклонить заказ'}
+                {isLoading ? '...' : '❌ Отклонить'}
               </button>
             </>
           )}
@@ -377,9 +376,9 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
             <button
               onClick={handleCallCustomer}
               disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors disabled:opacity-50"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
-              {isLoading ? '...' : 'Звонить клиенту'}
+              {isLoading ? '...' : '📞 Звонить'}
             </button>
           )}
         </div>

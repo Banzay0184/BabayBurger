@@ -101,6 +101,10 @@ export const MenuItem: React.FC<MenuItemProps> = ({
     if (name.includes('острый') || name.includes('spicy') || name.includes('чили') || name.includes('o\'tkir')) {
       tags.push({ text: `🌶️ ${t('spicy')}`, color: 'bg-red-600/20 text-red-400 border-red-500/30' });
     }
+
+    if (name.includes('куринный') || name.includes('chicken') || name.includes('tovuqliy') || name.includes('цезарь')) {
+      tags.push({ text: `🐔 ${t('chicken')}`, color: 'bg-green-600/20 text-green-400 border-green-500/30' });
+    }
     
     if (name.includes('вегетариан') || name.includes('vegetarian') || name.includes('овощ') || name.includes('sabzavot')) {
       tags.push({ text: `🥬 ${t('vegetarian')}`, color: 'bg-green-600/20 text-green-400 border-green-500/30' });

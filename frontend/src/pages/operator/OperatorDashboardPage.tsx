@@ -10,7 +10,9 @@ interface OperatorDashboardPageProps {
   onNavigate?: (page: OperatorPage) => void;
 }
 import { OrderCard } from '../../components/operator/OrderCard';
-// import { DashboardStats } from '../../components/operator/DashboardStats';
+import { OperatorStatsWidget } from '../../components/operator/OperatorStatsWidget';
+import { QuickActionsWidget } from '../../components/operator/QuickActionsWidget';
+import { ConnectionInfoWidget } from '../../components/operator/ConnectionInfoWidget';
 import { CompactOrderFilters } from '../../components/operator/CompactOrderFilters';
 import { OrderSearch } from '../../components/operator/OrderSearch';
 import { NotificationsPanel } from '../../components/operator/NotificationsPanel';
@@ -452,7 +454,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
         </div>
       </header>
 
-      {/* Основной контент - компактная версия */}
+      {/* Основной контент - планшетная версия с двумя колонками */}
       <main className="max-w-full mx-auto px-4 py-4">
         {/* Поиск заказов */}
         <OrderSearch
@@ -471,79 +473,102 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
           onZoneChange={setSelectedZone}
         />
 
-        {/* Заказы */}
-        <div className="w-full">
-            <div className="bg-gray-800 rounded-lg p-4">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center space-x-4">
-                  <h2 className="text-xl font-semibold text-white">
-                    Заказы {selectedStatus !== 'all' && `(${selectedStatus})`}
-                    {searchQuery && (
-                      <span className="ml-2 text-sm text-blue-400">
-                        - Поиск: "{searchQuery}"
-                      </span>
-                    )}
-                  </h2>
-                  
-                  {/* Статус WebSocket */}
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                    <span className="text-sm text-gray-400">
-                      {isConnected ? 'WebSocket подключен' : 'WebSocket отключен'}
+        {/* Заказы - планшетная версия с двумя колонками */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Левая колонка - список заказов */}
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center space-x-3">
+                <h2 className="text-lg font-semibold text-white">
+                  Заказы {selectedStatus !== 'all' && `(${selectedStatus})`}
+                  {searchQuery && (
+                    <span className="ml-2 text-sm text-blue-400">
+                      - "{searchQuery}"
                     </span>
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => {
-                      console.log('🔄 Принудительное обновление всех данных...');
-                      loadDashboard();
-                      loadOrders();
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    🔄 Обновить
-                  </button>
-                  <button
-                    onClick={() => {
-                      // Переход на страницу статистики через внутреннюю навигацию
-                      if (onNavigate) {
-                        onNavigate('stats');
-                      }
-                    }}
-                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    📊 Статистика
-                  </button>
+                  )}
+                </h2>
+                
+                {/* Статус WebSocket */}
+                <div className="flex items-center space-x-1">
+                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <span className="text-xs text-gray-400">
+                    {isConnected ? 'WS' : 'OFF'}
+                  </span>
                 </div>
               </div>
-
-              {/* Список заказов */}
-              {!filteredOrders || filteredOrders.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="text-gray-400 text-8xl mb-6">📋</div>
-                  <p className="text-gray-400 text-xl mb-2">Нет заказов</p>
-                  <p className="text-gray-500 text-lg">
-                    {searchQuery 
-                      ? `По запросу "${searchQuery}" ничего не найдено`
-                      : selectedStatus !== 'all' || selectedZone !== 'all' 
-                        ? 'Попробуйте изменить фильтры' 
-                        : 'Новые заказы появятся здесь автоматически'
+              <div className="flex space-x-1">
+                <button
+                  onClick={() => {
+                    console.log('🔄 Принудительное обновление всех данных...');
+                    loadDashboard();
+                    loadOrders();
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                >
+                  🔄
+                </button>
+                <button
+                  onClick={() => {
+                    if (onNavigate) {
+                      onNavigate('stats');
                     }
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {filteredOrders.map((order) => (
-                    <OrderCard
-                      key={order.id}
-                      order={order}
-                      onUpdate={updateOrder}
-                    />
-                  ))}
-                </div>
-              )}
+                  }}
+                  className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                >
+                  📊
+                </button>
+              </div>
             </div>
+
+            {/* Список заказов */}
+            {!filteredOrders || filteredOrders.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-gray-400 text-4xl mb-3">📋</div>
+                <p className="text-gray-400 text-sm mb-1">Нет заказов</p>
+                <p className="text-gray-500 text-xs">
+                  {searchQuery 
+                    ? `По запросу "${searchQuery}" ничего не найдено`
+                    : selectedStatus !== 'all' || selectedZone !== 'all' 
+                      ? 'Попробуйте изменить фильтры' 
+                      : 'Новые заказы появятся здесь автоматически'
+                  }
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar">
+                {filteredOrders.map((order) => (
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    onUpdate={updateOrder}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Правая колонка - статистика и быстрые действия */}
+          <div className="space-y-4">
+            {/* Статистика */}
+            <OperatorStatsWidget orders={filteredOrders} />
+
+            {/* Быстрые действия */}
+            <QuickActionsWidget
+              onStatusChange={setSelectedStatus}
+              onRefresh={() => {
+                console.log('🔄 Принудительное обновление всех данных...');
+                loadDashboard();
+                loadOrders();
+              }}
+              onNavigate={onNavigate as ((page: 'login' | 'dashboard' | 'stats') => void) | undefined}
+            />
+
+            {/* Информация о подключении */}
+            <ConnectionInfoWidget
+              isConnected={isConnected}
+              operator={authState.operator}
+            />
+          </div>
         </div>
       </main>
 

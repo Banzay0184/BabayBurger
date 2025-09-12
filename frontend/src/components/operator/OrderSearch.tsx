@@ -101,8 +101,8 @@ export const OrderSearch: React.FC<OrderSearchProps> = ({
   }, []);
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 mb-4">
-      <div className="flex items-center space-x-3">
+    <div className="bg-gray-800 rounded-lg p-3 mb-4">
+      <div className="flex items-center space-x-2">
         {/* Поле поиска с предложениями */}
         <div className="flex-1 relative">
           <input

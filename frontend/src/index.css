@@ -453,3 +453,95 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #4b5563;
 }
+
+/* Стили для планшетной версии операторского интерфейса */
+@media (min-width: 768px) {
+  .tablet-optimized {
+    /* Оптимизация для планшетов */
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  .tablet-card {
+    /* Компактные карточки для планшетов */
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .tablet-button {
+    /* Кнопки оптимизированные для touch */
+    min-height: 44px;
+    min-width: 44px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  .tablet-grid {
+    /* Сетка для планшетов */
+    display: grid;
+    gap: 16px;
+  }
+  
+  .tablet-two-column {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .tablet-three-column {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Темная прокрутка для операторского интерфейса */
+.operator-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 #1f2937;
+}
+
+.operator-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.operator-scrollbar::-webkit-scrollbar-track {
+  background: #1f2937;
+  border-radius: 4px;
+}
+
+.operator-scrollbar::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+.operator-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Анимации для планшетного интерфейса */
+.tablet-fade-in {
+  animation: tabletFadeIn 0.3s ease-out;
+}
+
+.tablet-slide-up {
+  animation: tabletSlideUp 0.3s ease-out;
+}
+
+@keyframes tabletFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tabletSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

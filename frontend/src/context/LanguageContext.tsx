@@ -159,6 +159,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Теги
     'spicy': 'Острое',
     'vegetarian': 'Вегетарианское',
+    'chicken': 'Куринное',
     'gluten_free': 'Без глютена',
     'hit': 'Хит',
     'new': 'Новинка',
