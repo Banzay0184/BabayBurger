@@ -291,6 +291,11 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
       };
       
       console.log('🔄 Отправляем данные корзины:', cartData);
+      console.log('📋 Информация о заказе:', {
+        orderId: order.id,
+        assignedOperator: order.assigned_operator,
+        status: order.status
+      });
       
       // Отправляем обновленную корзину на сервер
       const updatedOrder = await operatorOrdersApi.updateOrderCart(order.id, cartData);
