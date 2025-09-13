@@ -473,8 +473,8 @@ class DeliveryWebhookView(APIView):
                     "/help - помощь"
                 )
             
-            # Отправляем сообщение через резервный механизм
-            result = telegram_fallback.send_message(
+            # Отправляем сообщение через бота доставщиков
+            result = self.send_delivery_message(
                 chat_id=chat_id,
                 text=welcome_text,
                 parse_mode="HTML"
@@ -517,7 +517,7 @@ class DeliveryWebhookView(APIView):
                 except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
                     status_text = "❌ Вы не зарегистрированы как курьер."
                 
-                result = telegram_fallback.send_message(chat_id, status_text)
+                result = self.send_delivery_message(chat_id, status_text)
                 
             elif text == '/orders':
                 # Показываем текущие заказы
@@ -549,7 +549,7 @@ class DeliveryWebhookView(APIView):
                 except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
                     orders_text = "❌ Вы не зарегистрированы как курьер."
                 
-                result = telegram_fallback.send_message(chat_id, orders_text)
+                result = self.send_delivery_message(chat_id, orders_text)
                 
             elif text == '/help':
                 help_text = (
@@ -559,10 +559,10 @@ class DeliveryWebhookView(APIView):
                     "/orders - мои заказы\n"
                     "/help - эта справка"
                 )
-                result = telegram_fallback.send_message(chat_id, help_text)
+                result = self.send_delivery_message(chat_id, help_text)
                 
             else:
-                result = telegram_fallback.send_message(
+                result = self.send_delivery_message(
                     chat_id, 
                     "❓ Неизвестная команда. Используйте /help для справки."
                 )
@@ -588,7 +588,7 @@ class DeliveryWebhookView(APIView):
                 "/help - справка"
             )
             
-            result = telegram_fallback.send_message(chat_id, response_text)
+            result = self.send_delivery_message(chat_id, response_text)
             return Response({'status': 'ok'}, status=status.HTTP_200_OK)
             
         except Exception as e:
@@ -604,3 +604,52 @@ class DeliveryWebhookView(APIView):
         except Exception as e:
             logger.error(f"Error handling callback query: {str(e)}")
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def send_delivery_message(self, chat_id, text, parse_mode=None, reply_markup=None):
+        """Отправляет сообщение через бота доставщиков"""
+        try:
+            import requests
+            import os
+            from dotenv import load_dotenv
+            load_dotenv()
+            
+            delivery_bot_token = os.getenv('DELIVERY_BOT_TOKEN')
+            if not delivery_bot_token:
+                logger.error("DELIVERY_BOT_TOKEN not found")
+                return {'success': False, 'error': 'Bot token not configured'}
+            
+            url = f'https://api.telegram.org/bot{delivery_bot_token}/sendMessage'
+            data = {
+                'chat_id': chat_id,
+                'text': text
+            }
+            
+            if parse_mode:
+                data['parse_mode'] = parse_mode
+            if reply_markup:
+                data['reply_markup'] = reply_markup
+            
+            response = requests.post(url, json=data, timeout=10)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get('ok'):
+                    logger.info(f"Message sent successfully to {chat_id} via delivery bot")
+                    return {
+                        'success': True,
+                        'message_id': result['result']['message_id'],
+                        'chat_id': chat_id
+                    }
+                else:
+                    logger.error(f"Telegram API error: {result}")
+                    return {'success': False, 'error': result.get('description', 'Unknown error')}
+            else:
+                logger.error(f"HTTP error {response.status_code}: {response.text}")
+                return {'success': False, 'error': f'HTTP {response.status_code}'}
+                
+        except requests.RequestException as e:
+            logger.error(f"Network error sending delivery message: {str(e)}")
+            return {'success': False, 'error': str(e)}
+        except Exception as e:
+            logger.error(f"Error sending delivery message: {str(e)}")
+            return {'success': False, 'error': str(e)}
