@@ -700,7 +700,6 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         total_orders = all_orders.count()
         pending_orders = all_orders.filter(status='pending').count()
         new_orders = all_orders.filter(status='new').count()
-        processing_orders = all_orders.filter(status='operator_processing').count()
         confirmed_orders = all_orders.filter(status='confirmed').count()
         completed_orders = all_orders.filter(status='completed').count()
         cancelled_orders = all_orders.filter(status='cancelled').count()
@@ -788,45 +787,6 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             'order': OrderForOperatorSerializer(order).data
         })
     
-    @action(detail=True, methods=['post'])
-    def start_processing(self, request, pk=None):
-        """Начать обработку заказа"""
-        order = get_object_or_404(Order, pk=pk)
-        operator = request.user
-        
-        # Проверяем, назначен ли заказ оператору
-        if order.assigned_operator != operator:
-            return Response(
-                {'error': 'Заказ не назначен вам'}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
-        # Обновляем статус
-        order.status = 'operator_processing'
-        order.save()
-        
-        # Обновляем назначение
-        try:
-            assignment = OrderAssignment.objects.get(order=order)
-            assignment.status = 'accepted'
-            assignment.accepted_at = timezone.now()
-            assignment.save()
-        except OrderAssignment.DoesNotExist:
-            pass
-        
-        # Записываем в историю
-        OrderStatusHistory.objects.create(
-            order=order,
-            operator=operator,
-            old_status='assigned',
-            new_status='operator_processing',
-            reason='Оператор начал обработку'
-        )
-        
-        return Response({
-            'message': 'Обработка заказа начата',
-            'order': OrderForOperatorSerializer(order).data
-        })
     
     @action(detail=True, methods=['post'])
     def call_customer(self, request, pk=None):
@@ -883,7 +843,7 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         elif call_result == 'cancelled':
             order.status = 'cancelled'
         elif call_result == 'modified':
-            order.status = 'operator_processing'
+            order.status = 'assigned'  # Возвращаем к статусу "назначен"
         
         order.save()
         
@@ -891,7 +851,7 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         OrderStatusHistory.objects.create(
             order=order,
             operator=operator,
-            old_status='operator_processing',
+            old_status='assigned',  # Был назначен, теперь меняем статус
             new_status=order.status,
             reason=f'Результат звонка: {call_result}'
         )
@@ -940,20 +900,25 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         if order.assigned_operator != operator:
             # Если заказ не назначен, назначаем его текущему оператору
             if order.assigned_operator is None:
+                old_status_before = order.status
+                logger.info(f"🔄 Auto-assigning order {order.id} to operator {operator.username}. Status before: {old_status_before}")
+                
                 order.assigned_operator = operator
                 # Не меняем статус - оставляем прежний
                 order.save()
+                
+                logger.info(f"✅ Order {order.id} assigned. Status after save: {order.status}")
                 
                 # Записываем в историю назначение без изменения статуса
                 OrderStatusHistory.objects.create(
                     order=order,
                     operator=operator,
-                    old_status=order.status,
+                    old_status=old_status_before,
                     new_status=order.status,
                     reason='Заказ автоматически назначен оператору при редактировании корзины'
                 )
                 
-                logger.info(f"Order {order.id} auto-assigned to operator {operator.username} (status unchanged: {order.status})")
+                logger.info(f"📝 OrderStatusHistory created: {old_status_before} -> {order.status}")
             else:
                 return Response(
                     {'error': 'Заказ назначен другому оператору'}, 
@@ -961,8 +926,8 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
                 )
         
         # Проверяем, что заказ можно редактировать
-        # Разрешаем редактирование в статусах: pending, operator_processing, confirmed
-        if order.status not in ['pending', 'operator_processing', 'confirmed']:
+        # Разрешаем редактирование в статусах: pending, assigned, confirmed
+        if order.status not in ['pending', 'assigned', 'confirmed']:
             return Response(
                 {'error': f'Заказ нельзя редактировать в статусе "{order.get_status_display()}"'}, 
                 status=status.HTTP_400_BAD_REQUEST
@@ -1045,6 +1010,8 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
                 )
             except Exception as notification_error:
                 logger.error(f"Failed to send cart update notification: {str(notification_error)}")
+            
+            logger.info(f"🎯 Cart update completed. Final order status: {order.status}")
             
             return Response({
                 'message': 'Корзина заказа обновлена',

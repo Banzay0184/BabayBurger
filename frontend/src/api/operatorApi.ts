@@ -189,19 +189,6 @@ export const operatorOrdersApi = {
     return response.json();
   },
 
-  // Начать обработку заказа
-  startProcessing: async (orderId: number): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/start_processing/`, {
-      method: 'POST',
-      headers: getHeaders()
-    });
-
-    if (!response.ok) {
-      await handleApiError(response);
-    }
-
-    return response.json();
-  },
 
   // Отметить звонок клиенту
   callCustomer: async (orderId: number): Promise<{ message: string; order: OrderForOperator }> => {

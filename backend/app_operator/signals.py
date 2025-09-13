@@ -169,7 +169,10 @@ def notify_status_change(sender, instance, created, **kwargs):
     """
     Уведомляет операторов об изменении статуса заказа через WebSocket и уведомления
     """
+    logger.info(f"🔔 OrderStatusHistory signal: order #{instance.order.id}, created={created}, {instance.old_status} -> {instance.new_status}")
+    
     if created and instance.old_status != instance.new_status:
+        logger.info(f"📢 Status changed - sending notification: {instance.old_status} -> {instance.new_status}")
         # Уведомляем оператора, который изменил статус
         try:
             status_display = dict(Order.STATUS_CHOICES).get(instance.new_status, instance.new_status)
@@ -269,6 +272,11 @@ def notify_status_change(sender, instance, created, **kwargs):
             logger.info(f"Уведомление об изменении статуса заказа #{instance.order.id} отправлено оператору {instance.operator.username}")
         except Exception as e:
             logger.error(f"Ошибка при создании уведомления об изменении статуса: {e}")
+    else:
+        if created:
+            logger.info(f"⚪ Status unchanged - no notification sent: {instance.old_status} == {instance.new_status}")
+        else:
+            logger.info(f"🔄 OrderStatusHistory updated (not created)")
 
 @receiver(post_save, sender=Order)
 def update_operator_analytics(sender, instance, **kwargs):

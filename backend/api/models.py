@@ -1035,7 +1035,6 @@ class Order(models.Model):
         ('pending', 'Ожидает обработки'),
         ('new', 'Новый'),
         ('assigned', 'Назначен оператору'),
-        ('operator_processing', 'Обрабатывается оператором'),
         ('confirmed', 'Подтвержден клиентом'),
         ('preparing', 'Готовится'),
         ('ready_for_delivery', 'Готов к доставке'),
