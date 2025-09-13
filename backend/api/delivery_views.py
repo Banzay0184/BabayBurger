@@ -797,6 +797,9 @@ class DeliveryWebhookView(APIView):
                                 
                                 # Обновляем сообщение в группе
                                 self.update_group_message(order, existing_assignment)
+                                
+                                # Отправляем команду /route курьеру
+                                self.send_route_command_to_driver(driver.telegram_id)
                             else:
                                 # Заказ уже назначен другому курьеру
                                 response_text = f"❌ Заказ #{order_id} уже назначен курьеру {existing_assignment.driver.user.first_name}"
@@ -813,6 +816,9 @@ class DeliveryWebhookView(APIView):
                             
                             # Обновляем сообщение в группе
                             self.update_group_message(order, assignment)
+                            
+                            # Отправляем команду /route курьеру
+                            self.send_route_command_to_driver(driver.telegram_id)
                         
                     except DeliveryDriver.DoesNotExist:
                         response_text = f"❌ Курьер с Telegram ID {user_id} не найден или неактивен"
@@ -1025,3 +1031,34 @@ class DeliveryWebhookView(APIView):
         except (ValueError, Order.DoesNotExist, DeliveryDriver.DoesNotExist) as e:
             logger.error(f"Error updating order status: {str(e)}")
             return f"❌ Ошибка обновления статуса заказа #{order_id}"
+    
+    def send_route_command_to_driver(self, driver_telegram_id):
+        """Отправляет команду /route курьеру после принятия заказа"""
+        try:
+            import requests
+            import os
+            from dotenv import load_dotenv
+            load_dotenv()
+            
+            delivery_bot_token = os.getenv('DELIVERY_BOT_TOKEN')
+            
+            if not delivery_bot_token:
+                logger.warning("DELIVERY_BOT_TOKEN not found")
+                return
+            
+            # Отправляем команду /route курьеру
+            url = f"https://api.telegram.org/bot{delivery_bot_token}/sendMessage"
+            data = {
+                "chat_id": driver_telegram_id,
+                "text": "🗺️ Ваш маршрут обновлен! Используйте команду /route для просмотра.",
+                "parse_mode": "HTML"
+            }
+            
+            response = requests.post(url, json=data, timeout=10)
+            if response.status_code == 200:
+                logger.info(f"Route command notification sent to driver {driver_telegram_id}")
+            else:
+                logger.error(f"Error sending route command notification: {response.status_code} - {response.text}")
+                
+        except Exception as e:
+            logger.error(f"Error sending route command to driver: {str(e)}")
