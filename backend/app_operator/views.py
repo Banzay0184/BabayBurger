@@ -726,7 +726,6 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             'total_orders': total_orders,
             'pending_orders': pending_orders,
             'new_orders': new_orders,
-            'processing_orders': processing_orders,
             'confirmed_orders': confirmed_orders,
             'completed_orders': completed_orders,
             'cancelled_orders': cancelled_orders,

@@ -598,7 +598,6 @@ class OperatorDashboardSerializer(serializers.Serializer):
     """Сериализатор для дашборда оператора"""
     total_orders = serializers.IntegerField()
     new_orders = serializers.IntegerField()
-    processing_orders = serializers.IntegerField()
     confirmed_orders = serializers.IntegerField()
     completed_orders = serializers.IntegerField()
     cancelled_orders = serializers.IntegerField()
