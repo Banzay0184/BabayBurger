@@ -2,9 +2,13 @@ from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from django.db.models import Count, Avg, Q, F
 from django.utils import timezone
 from datetime import timedelta
+import logging
+
+logger = logging.getLogger('api')
 
 from .models import DeliveryDriver, DeliveryAssignment, Order
 from .delivery_serializers import (
@@ -348,3 +352,255 @@ def order_assignments(request, order_id):
             {'error': 'Заказ не найден'},
             status=status.HTTP_404_NOT_FOUND
         )
+
+
+class DeliveryWebhookView(APIView):
+    """Webhook для бота доставщиков"""
+    
+    def post(self, request):
+        try:
+            # Проверяем наличие данных
+            if not request.data:
+                logger.warning("Delivery webhook received empty data")
+                return Response({'error': 'Empty request data'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            update = request.data
+            
+            # Проверяем структуру данных
+            if not isinstance(update, dict):
+                logger.warning(f"Delivery webhook received invalid data type: {type(update)}")
+                return Response({'error': 'Invalid data format'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Безопасное извлечение данных с проверками
+            message = update.get('message')
+            
+            if message:
+                # Обработка текстовых сообщений
+                text = message.get('text', '')
+                chat_id = message.get('chat', {}).get('id')
+                user_info = message.get('from', {})
+                
+                logger.info(f"Delivery webhook received message: {text} from chat {chat_id}")
+                
+                # Обработка команды /start
+                if text == '/start':
+                    return self.handle_start_command(chat_id, user_info)
+                
+                # Обработка других команд
+                elif text.startswith('/'):
+                    return self.handle_command(text, chat_id, user_info)
+                
+                # Обработка обычных сообщений
+                else:
+                    return self.handle_message(text, chat_id, user_info)
+            
+            # Обработка callback_query
+            elif update.get('callback_query'):
+                callback_query = update['callback_query']
+                return self.handle_callback_query(callback_query)
+            
+            else:
+                logger.warning(f"Delivery webhook received unknown update type: {update}")
+                return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+                
+        except Exception as e:
+            logger.error(f"Error in delivery webhook: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def handle_start_command(self, chat_id, user_info):
+        """Обработка команды /start для доставщиков"""
+        try:
+            from api.models import User, DeliveryDriver
+            from api.telegram_fallback import telegram_fallback
+            
+            # Получаем или создаем пользователя
+            telegram_id = user_info.get('id')
+            username = user_info.get('username', '')
+            first_name = user_info.get('first_name', '')
+            last_name = user_info.get('last_name', '')
+            
+            if not telegram_id:
+                logger.error("No telegram_id in user info")
+                return Response({'error': 'Invalid user data'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Создаем или обновляем пользователя
+            user, created = User.objects.get_or_create(
+                telegram_id=telegram_id,
+                defaults={
+                    'username': username,
+                    'first_name': first_name,
+                    'last_name': last_name
+                }
+            )
+            
+            if not created:
+                # Обновляем данные пользователя
+                user.username = username
+                user.first_name = first_name
+                user.last_name = last_name
+                user.save()
+            
+            # Проверяем, является ли пользователь курьером
+            try:
+                driver = DeliveryDriver.objects.get(user=user)
+                driver_status = driver.status
+                is_active = driver.is_active
+            except DeliveryDriver.DoesNotExist:
+                driver_status = "not_registered"
+                is_active = False
+            
+            # Формируем ответное сообщение
+            if driver_status == "not_registered":
+                welcome_text = (
+                    "🚚 Добро пожаловать в Babay Food Delivery!\n\n"
+                    "Вы не зарегистрированы как курьер.\n"
+                    "Обратитесь к администратору для регистрации."
+                )
+            elif not is_active:
+                welcome_text = (
+                    "🚚 Добро пожаловать в Babay Food Delivery!\n\n"
+                    "Ваш аккаунт курьера неактивен.\n"
+                    "Обратитесь к администратору для активации."
+                )
+            else:
+                welcome_text = (
+                    "🚚 Добро пожаловать в Babay Food Delivery!\n\n"
+                    f"Статус: {driver_status}\n"
+                    "Вы готовы принимать заказы на доставку!\n\n"
+                    "Доступные команды:\n"
+                    "/status - проверить статус\n"
+                    "/orders - мои заказы\n"
+                    "/help - помощь"
+                )
+            
+            # Отправляем сообщение через резервный механизм
+            result = telegram_fallback.send_message(
+                chat_id=chat_id,
+                text=welcome_text,
+                parse_mode="HTML"
+            )
+            
+            if result['success']:
+                logger.info(f"Start command processed successfully for delivery driver {chat_id}")
+                return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+            else:
+                logger.error(f"Failed to send start message: {result.get('error')}")
+                return Response({'error': 'Failed to send message'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+        except Exception as e:
+            logger.error(f"Error handling start command: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def handle_command(self, text, chat_id, user_info):
+        """Обработка команд"""
+        try:
+            from api.telegram_fallback import telegram_fallback
+            
+            if text == '/status':
+                # Проверяем статус курьера
+                from api.models import User, DeliveryDriver
+                telegram_id = user_info.get('id')
+                
+                try:
+                    user = User.objects.get(telegram_id=telegram_id)
+                    driver = DeliveryDriver.objects.get(user=user)
+                    
+                    status_text = (
+                        f"🚚 Статус курьера:\n\n"
+                        f"Имя: {driver.user.first_name}\n"
+                        f"Статус: {driver.status}\n"
+                        f"Активен: {'Да' if driver.is_active else 'Нет'}\n"
+                        f"Текущих заказов: {driver.current_orders_count}\n"
+                        f"Максимум заказов: {driver.max_orders}\n"
+                        f"Рейтинг: {driver.rating:.1f}/5.0"
+                    )
+                except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
+                    status_text = "❌ Вы не зарегистрированы как курьер."
+                
+                result = telegram_fallback.send_message(chat_id, status_text)
+                
+            elif text == '/orders':
+                # Показываем текущие заказы
+                from api.models import User, DeliveryDriver, DeliveryAssignment
+                telegram_id = user_info.get('id')
+                
+                try:
+                    user = User.objects.get(telegram_id=telegram_id)
+                    driver = DeliveryDriver.objects.get(user=user)
+                    
+                    assignments = DeliveryAssignment.objects.filter(
+                        driver=driver,
+                        status__in=['assigned', 'picked_up', 'in_transit']
+                    ).order_by('-assigned_at')[:5]
+                    
+                    if assignments:
+                        orders_text = "📦 Ваши текущие заказы:\n\n"
+                        for assignment in assignments:
+                            order = assignment.order
+                            orders_text += (
+                                f"Заказ #{order.id}\n"
+                                f"Статус: {assignment.status}\n"
+                                f"Адрес: {order.delivery_address}\n"
+                                f"Сумма: {order.total_amount} сум\n\n"
+                            )
+                    else:
+                        orders_text = "📦 У вас нет активных заказов."
+                        
+                except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
+                    orders_text = "❌ Вы не зарегистрированы как курьер."
+                
+                result = telegram_fallback.send_message(chat_id, orders_text)
+                
+            elif text == '/help':
+                help_text = (
+                    "🚚 Помощь по командам:\n\n"
+                    "/start - начать работу\n"
+                    "/status - проверить статус\n"
+                    "/orders - мои заказы\n"
+                    "/help - эта справка"
+                )
+                result = telegram_fallback.send_message(chat_id, help_text)
+                
+            else:
+                result = telegram_fallback.send_message(
+                    chat_id, 
+                    "❓ Неизвестная команда. Используйте /help для справки."
+                )
+            
+            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error handling command: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def handle_message(self, text, chat_id, user_info):
+        """Обработка обычных сообщений"""
+        try:
+            from api.telegram_fallback import telegram_fallback
+            
+            # Простой ответ на обычные сообщения
+            response_text = (
+                "🚚 Спасибо за сообщение!\n\n"
+                "Используйте команды для взаимодействия с ботом:\n"
+                "/start - начать работу\n"
+                "/status - проверить статус\n"
+                "/orders - мои заказы\n"
+                "/help - справка"
+            )
+            
+            result = telegram_fallback.send_message(chat_id, response_text)
+            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error handling message: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def handle_callback_query(self, callback_query):
+        """Обработка callback_query"""
+        try:
+            # Пока что просто отвечаем на callback
+            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error handling callback query: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

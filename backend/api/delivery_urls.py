@@ -2,6 +2,9 @@ from django.urls import path
 from . import delivery_views
 
 urlpatterns = [
+    # Webhook для бота доставщиков
+    path('delivery-webhook/', delivery_views.DeliveryWebhookView.as_view(), name='delivery-webhook'),
+    
     # Курьеры
     path('drivers/', delivery_views.DeliveryDriverListCreateView.as_view(), name='delivery-driver-list-create'),
     path('drivers/<int:pk>/', delivery_views.DeliveryDriverDetailView.as_view(), name='delivery-driver-detail'),
