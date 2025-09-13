@@ -9,6 +9,76 @@ from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
+def _build_detailed_order_message(order, new_status):
+    """
+    Формирует детальное сообщение о заказе для Telegram
+    
+    Args:
+        order: Объект заказа
+        new_status: Новый статус заказа
+    
+    Returns:
+        str: Форматированное сообщение
+    """
+    # Статусы и их сообщения
+    status_messages = {
+        'pending': '🕐 Ваш заказ принят и ожидает обработки',
+        'assigned': '👨‍💼 Ваш заказ назначен оператору',
+        'confirmed': '✅ Ваш заказ подтвержден!',
+        'preparing': '🍳 Ваш заказ готовится!',
+        'ready_for_delivery': '📦 Ваш заказ готов к доставке!',
+        'delivering': '🚚 Ваш заказ в пути!',
+        'completed': '🎉 Заказ выполнен! Спасибо за покупку!',
+        'cancelled': '❌ Заказ отменен',
+        'rejected': '🚫 Заказ отклонен'
+    }
+    
+    # Основное сообщение о статусе
+    status_text = status_messages.get(new_status, f'Статус заказа изменен на: {new_status}')
+    
+    # Информация о заказе
+    order_info = f"""
+🍔 <b>Заказ #{order.id}</b>
+{status_text}
+
+💰 <b>Сумма:</b> {order.total_price:,.0f} UZS
+📍 <b>Адрес:</b> {order.address.street}, {order.address.city}
+⏰ <b>Время:</b> {order.created_at.strftime('%H:%M')}
+"""
+    
+    # Информация о блюдах
+    if order.orderitem_set.exists():
+        order_info += "\n📋 <b>Ваш заказ:</b>\n"
+        for item in order.orderitem_set.all():
+            item_text = f"• {item.menu_item.name}"
+            if item.size_option:
+                item_text += f" ({item.size_option.name})"
+            if item.add_ons.exists():
+                addons = ", ".join([addon.name for addon in item.add_ons.all()])
+                item_text += f" + {addons}"
+            item_text += f" x{item.quantity}"
+            order_info += f"{item_text}\n"
+    
+    # Информация о ресторане
+    if order.restaurant:
+        order_info += f"\n🏪 <b>Ресторан:</b> {order.restaurant.name}"
+    
+    # Информация о способе получения
+    if order.service_type == 'delivery':
+        order_info += "\n🚚 <b>Доставка</b>"
+    elif order.service_type == 'pickup':
+        order_info += "\n🏃‍♂️ <b>Самовывоз</b>"
+    
+    # Дополнительная информация в зависимости от статуса
+    if new_status == 'preparing':
+        order_info += "\n\n⏳ Примерное время готовности: 15-30 минут"
+    elif new_status == 'delivering':
+        order_info += "\n\n🚚 Курьер свяжется с вами перед доставкой"
+    elif new_status == 'completed':
+        order_info += "\n\n🙏 Спасибо за заказ! Приятного аппетита!"
+    
+    return order_info.strip()
+
 @shared_task(
     bind=True,
     name='api.tasks.send_telegram_notification',
@@ -152,15 +222,23 @@ def send_order_status_notification(self, chat_id, order_id, old_status, new_stat
         dict: Результат отправки
     """
     try:
-        # Формируем сообщение о изменении статуса
-        status_messages = {
-            'preparing': 'Ваш заказ готовится! 🍳',
-            'delivering': 'Ваш заказ в пути! 🚚',
-            'completed': 'Заказ выполнен! Спасибо за покупку! ✅',
-            'cancelled': 'Заказ отменен. ❌'
-        }
+        from api.models import Order
         
-        message = status_messages.get(new_status, f'Статус заказа изменен на: {new_status}')
+        # Получаем заказ с полной информацией
+        try:
+            order = Order.objects.select_related(
+                'user', 'address', 'restaurant', 'promo_code'
+            ).prefetch_related(
+                'orderitem_set__menu_item',
+                'orderitem_set__size_option',
+                'orderitem_set__add_ons'
+            ).get(id=order_id)
+        except Order.DoesNotExist:
+            logger.error(f"Order {order_id} not found")
+            return {'success': False, 'error': 'Order not found'}
+        
+        # Формируем детальное сообщение
+        message = _build_detailed_order_message(order, new_status)
         
         # Отправляем уведомление
         result = send_telegram_notification.delay(chat_id, message)
@@ -317,21 +395,59 @@ def send_cart_updated_notification(self, telegram_id, order_id, operator_name):
             logger.warning(f"No telegram_id for order {order_id}")
             return {'success': False, 'error': 'No telegram_id'}
         
+        from api.models import Order
+        
+        # Получаем заказ с полной информацией
+        try:
+            order = Order.objects.select_related(
+                'user', 'address', 'restaurant', 'promo_code'
+            ).prefetch_related(
+                'orderitem_set__menu_item',
+                'orderitem_set__size_option',
+                'orderitem_set__add_ons'
+            ).get(id=order_id)
+        except Order.DoesNotExist:
+            logger.error(f"Order {order_id} not found")
+            return {'success': False, 'error': 'Order not found'}
+        
+        # Формируем детальное сообщение об изменении корзины
         message = f"""
-🛒 <b>Ваш заказ #{order_id} был скорректирован</b>
+🛒 <b>Ваш заказ #{order.id} был скорректирован</b>
 
 Оператор <b>{operator_name}</b> внес корректировки в состав вашего заказа.
 
-📋 <b>Что изменилось:</b>
-• Обновлен состав блюд
-• Пересчитана общая стоимость
-
-✅ <b>Ваш заказ остается в том же статусе</b> - никаких дополнительных действий не требуется.
-
-Если у вас есть вопросы по изменениям, свяжитесь с нами.
-        """.strip()
+💰 <b>Новая сумма:</b> {order.total_price:,.0f} UZS
+📍 <b>Адрес:</b> {order.address.street}, {order.address.city}
+⏰ <b>Время:</b> {order.created_at.strftime('%H:%M')}
+"""
         
-        return send_telegram_notification.delay(telegram_id, message)
+        # Информация о блюдах
+        if order.orderitem_set.exists():
+            message += "\n📋 <b>Обновленный состав заказа:</b>\n"
+            for item in order.orderitem_set.all():
+                item_text = f"• {item.menu_item.name}"
+                if item.size_option:
+                    item_text += f" ({item.size_option.name})"
+                if item.add_ons.exists():
+                    addons = ", ".join([addon.name for addon in item.add_ons.all()])
+                    item_text += f" + {addons}"
+                item_text += f" x{item.quantity}"
+                message += f"{item_text}\n"
+        
+        # Информация о ресторане
+        if order.restaurant:
+            message += f"\n🏪 <b>Ресторан:</b> {order.restaurant.name}"
+        
+        # Информация о способе получения
+        if order.service_type == 'delivery':
+            message += "\n🚚 <b>Доставка</b>"
+        elif order.service_type == 'pickup':
+            message += "\n🏃‍♂️ <b>Самовывоз</b>"
+        
+        message += "\n\n✅ <b>Ваш заказ остается в том же статусе</b> - никаких дополнительных действий не требуется."
+        message += "\n\nЕсли у вас есть вопросы по изменениям, свяжитесь с нами."
+        
+        return send_telegram_notification.delay(telegram_id, message.strip())
         
     except Exception as e:
         logger.error(f"Failed to send cart update notification: {str(e)}")

@@ -411,16 +411,21 @@ class WebhookView(APIView):
                     "text": welcome_text,
                     "reply_markup": keyboard,
                     "parse_mode": "HTML"
-                }
+                },
+                timeout=5  # Добавляем таймаут
             )
             
             if response.status_code == 200:
                 logger.info(f"Start command processed successfully for chat {chat_id}")
+                logger.info(f"Telegram API response: {response.json()}")
                 return Response({'status': 'ok'}, status=status.HTTP_200_OK)
             else:
-                logger.error(f"Failed to send start message: {response.text}")
+                logger.error(f"Failed to send start message: {response.status_code} - {response.text}")
                 return Response({'error': 'Failed to send message'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                 
+        except requests.RequestException as e:
+            logger.error(f"Network error in start command: {str(e)}")
+            return Response({'error': 'Network error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
             logger.error(f"Error handling start command: {str(e)}")
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
