@@ -941,19 +941,19 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             # Если заказ не назначен, назначаем его текущему оператору
             if order.assigned_operator is None:
                 order.assigned_operator = operator
-                order.status = 'operator_processing'
+                # Не меняем статус - оставляем прежний
                 order.save()
                 
-                # Записываем в историю назначение
+                # Записываем в историю назначение без изменения статуса
                 OrderStatusHistory.objects.create(
                     order=order,
                     operator=operator,
-                    old_status='pending',
-                    new_status='operator_processing',
+                    old_status=order.status,
+                    new_status=order.status,
                     reason='Заказ автоматически назначен оператору при редактировании корзины'
                 )
                 
-                logger.info(f"Order {order.id} auto-assigned to operator {operator.username}")
+                logger.info(f"Order {order.id} auto-assigned to operator {operator.username} (status unchanged: {order.status})")
             else:
                 return Response(
                     {'error': 'Заказ назначен другому оператору'}, 
@@ -961,9 +961,10 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
                 )
         
         # Проверяем, что заказ можно редактировать
-        if order.status not in ['pending', 'operator_processing']:
+        # Разрешаем редактирование в статусах: pending, operator_processing, confirmed
+        if order.status not in ['pending', 'operator_processing', 'confirmed']:
             return Response(
-                {'error': 'Заказ нельзя редактировать в текущем статусе'}, 
+                {'error': f'Заказ нельзя редактировать в статусе "{order.get_status_display()}"'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -1031,7 +1032,7 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
                 operator=operator,
                 old_status=order.status,
                 new_status=order.status,
-                reason='Корзина заказа обновлена оператором'
+                reason=f'Корзина заказа обновлена оператором {operator.first_name} (статус не изменен)'
             )
             
             # Отправляем уведомление клиенту в Telegram

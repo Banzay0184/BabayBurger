@@ -169,7 +169,7 @@ def notify_status_change(sender, instance, created, **kwargs):
     """
     Уведомляет операторов об изменении статуса заказа через WebSocket и уведомления
     """
-    if created:
+    if created and instance.old_status != instance.new_status:
         # Уведомляем оператора, который изменил статус
         try:
             status_display = dict(Order.STATUS_CHOICES).get(instance.new_status, instance.new_status)
