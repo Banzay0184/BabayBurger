@@ -113,6 +113,10 @@ class TelegramMonitor:
         try:
             cached_data = cache.get(self.cache_key)
             if cached_data:
+                # Конвертируем строку даты обратно в datetime
+                if 'last_check' in cached_data and isinstance(cached_data['last_check'], str):
+                    from datetime import datetime
+                    cached_data['last_check'] = datetime.fromisoformat(cached_data['last_check'])
                 return TelegramAPIStatus(**cached_data)
         except Exception as e:
             logger.error(f"Error getting cached status: {e}")
