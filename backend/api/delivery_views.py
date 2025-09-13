@@ -470,6 +470,7 @@ class DeliveryWebhookView(APIView):
                     "Доступные команды:\n"
                     "/status - проверить статус\n"
                     "/orders - мои заказы\n"
+                    "/route - маршрут доставки\n"
                     "/help - помощь"
                 )
             
@@ -530,18 +531,31 @@ class DeliveryWebhookView(APIView):
                     
                     assignments = DeliveryAssignment.objects.filter(
                         driver=driver,
-                        status__in=['assigned', 'picked_up', 'in_transit']
+                        status__in=['accepted', 'picked_up', 'in_transit']
                     ).order_by('-assigned_at')[:5]
                     
                     if assignments:
                         orders_text = "📦 Ваши текущие заказы:\n\n"
                         for assignment in assignments:
                             order = assignment.order
+                            restaurant = order.restaurant
+                            address = order.address
+                            
+                            status_emoji = {
+                                'accepted': '✅',
+                                'picked_up': '🚚',
+                                'in_transit': '🚗',
+                                'delivered': '🎉'
+                            }.get(assignment.status, '❓')
+                            
                             orders_text += (
-                                f"Заказ #{order.id}\n"
-                                f"Статус: {assignment.status}\n"
-                                f"Адрес: {order.delivery_address}\n"
-                                f"Сумма: {order.total_amount} сум\n\n"
+                                f"{status_emoji} Заказ #{order.id}\n"
+                                f"   📍 От: {restaurant.name if restaurant else 'Не указан'}\n"
+                                f"   📍 До: {address.street if address else 'Не указан'}, {address.house_number if address else ''}\n"
+                                f"   📞 Клиент: {order.phone}\n"
+                                f"   💰 Сумма: {order.final_price:,} сум\n"
+                                f"   ⏰ Статус: {assignment.status}\n"
+                                f"   📅 Назначен: {assignment.assigned_at.strftime('%H:%M %d.%m')}\n\n"
                             )
                     else:
                         orders_text = "📦 У вас нет активных заказов."
@@ -551,12 +565,75 @@ class DeliveryWebhookView(APIView):
                 
                 result = self.send_delivery_message(chat_id, orders_text)
                 
+            elif text == '/route':
+                # Показываем маршрут для текущих заказов
+                from api.models import User, DeliveryDriver, DeliveryAssignment
+                telegram_id = user_info.get('id')
+                
+                try:
+                    user = User.objects.get(telegram_id=telegram_id)
+                    driver = DeliveryDriver.objects.get(user=user)
+                    
+                    assignments = DeliveryAssignment.objects.filter(
+                        driver=driver,
+                        status__in=['accepted', 'picked_up', 'in_transit']
+                    ).order_by('-assigned_at')[:3]
+                    
+                    if assignments:
+                        route_text = "🗺️ Ваш маршрут:\n\n"
+                        for i, assignment in enumerate(assignments, 1):
+                            order = assignment.order
+                            restaurant = order.restaurant
+                            address = order.address
+                            
+                            route_text += (
+                                f"{i}. Заказ #{order.id}\n"
+                                f"   📍 От: {restaurant.name}\n"
+                                f"   📍 До: {address.street}, {address.house_number}\n"
+                                f"   📞 Клиент: {order.phone}\n"
+                                f"   💰 Сумма: {order.final_price:,} сум\n"
+                                f"   ⏰ Статус: {assignment.status}\n\n"
+                            )
+                        
+                        # Добавляем кнопки для обновления статуса
+                        keyboard = []
+                        for assignment in assignments:
+                            if assignment.status == 'accepted':
+                                keyboard.append([{
+                                    'text': f'🚚 Взять заказ #{assignment.order.id}',
+                                    'callback_data': f'pickup_{assignment.order.id}'
+                                }])
+                            elif assignment.status == 'picked_up':
+                                keyboard.append([{
+                                    'text': f'🚗 В пути #{assignment.order.id}',
+                                    'callback_data': f'intransit_{assignment.order.id}'
+                                }])
+                            elif assignment.status == 'in_transit':
+                                keyboard.append([{
+                                    'text': f'✅ Доставлен #{assignment.order.id}',
+                                    'callback_data': f'delivered_{assignment.order.id}'
+                                }])
+                        
+                        result = self.send_delivery_message(
+                            chat_id, 
+                            route_text,
+                            reply_markup={'inline_keyboard': keyboard} if keyboard else None
+                        )
+                    else:
+                        route_text = "🗺️ У вас нет активных заказов для маршрута."
+                        result = self.send_delivery_message(chat_id, route_text)
+                        
+                except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
+                    route_text = "❌ Вы не зарегистрированы как курьер."
+                    result = self.send_delivery_message(chat_id, route_text)
+                
             elif text == '/help':
                 help_text = (
                     "🚚 Помощь по командам:\n\n"
                     "/start - начать работу\n"
                     "/status - проверить статус\n"
                     "/orders - мои заказы\n"
+                    "/route - маршрут доставки\n"
                     "/help - эта справка"
                 )
                 result = self.send_delivery_message(chat_id, help_text)
@@ -612,6 +689,22 @@ class DeliveryWebhookView(APIView):
                 response_text = f"✅ Тестовая кнопка работает! Пользователь: {from_user.get('first_name', 'Unknown')}"
                 self.answer_callback_query(callback_id, response_text)
                 logger.info(f"Test button callback processed for user {user_id}")
+            
+            # Обрабатываем callback для обновления статуса заказа
+            elif callback_data.startswith('pickup_'):
+                order_id = callback_data.replace('pickup_', '')
+                response_text = self.update_order_status(order_id, user_id, 'picked_up', 'взят курьером')
+                self.answer_callback_query(callback_id, response_text)
+                
+            elif callback_data.startswith('intransit_'):
+                order_id = callback_data.replace('intransit_', '')
+                response_text = self.update_order_status(order_id, user_id, 'in_transit', 'в пути')
+                self.answer_callback_query(callback_id, response_text)
+                
+            elif callback_data.startswith('delivered_'):
+                order_id = callback_data.replace('delivered_', '')
+                response_text = self.update_order_status(order_id, user_id, 'delivered', 'доставлен')
+                self.answer_callback_query(callback_id, response_text)
             
             # Обрабатываем callback для принятия заказа
             elif callback_data.startswith('take_order_'):
@@ -825,3 +918,49 @@ class DeliveryWebhookView(APIView):
                 
         except Exception as e:
             logger.error(f"Error updating group message: {str(e)}")
+    
+    def update_order_status(self, order_id, user_id, new_status, status_description):
+        """Обновляет статус заказа курьером"""
+        try:
+            order_id = int(order_id)
+            order = Order.objects.get(id=order_id)
+            
+            # Ищем курьера
+            driver = DeliveryDriver.objects.get(telegram_id=user_id, is_active=True)
+            
+            # Ищем назначение
+            assignment = DeliveryAssignment.objects.filter(
+                order=order,
+                driver=driver
+            ).first()
+            
+            if not assignment:
+                return f"❌ Заказ #{order_id} не назначен вам"
+            
+            # Обновляем статус
+            old_status = assignment.status
+            assignment.status = new_status
+            
+            if new_status == 'picked_up':
+                assignment.picked_up_at = timezone.now()
+            elif new_status == 'delivered':
+                assignment.delivered_at = timezone.now()
+                # Обновляем счетчик курьера
+                driver.current_orders_count = max(0, driver.current_orders_count - 1)
+                driver.total_deliveries += 1
+                driver.save()
+            
+            assignment.save()
+            
+            # Обновляем статус заказа
+            if new_status == 'delivered':
+                order.status = 'completed'
+                order.save()
+            
+            logger.info(f"Order #{order_id} status updated from {old_status} to {new_status} by driver {driver.user.first_name}")
+            
+            return f"✅ Заказ #{order_id} {status_description}!"
+            
+        except (ValueError, Order.DoesNotExist, DeliveryDriver.DoesNotExist) as e:
+            logger.error(f"Error updating order status: {str(e)}")
+            return f"❌ Ошибка обновления статуса заказа #{order_id}"
