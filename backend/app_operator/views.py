@@ -18,6 +18,7 @@ from .models import (
     Operator, OperatorSession, OrderAssignment, 
     OrderStatusHistory, OperatorNotification, OperatorAnalytics
 )
+from api.models import Order, OrderItem, MenuItem, SizeOption, AddOn
 from .serializers import (
     OperatorRegistrationSerializer, OperatorLoginSerializer, OperatorProfileSerializer,
     OperatorSessionSerializer, OrderAssignmentSerializer, OrderStatusChangeSerializer,
@@ -928,6 +929,117 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             'message': 'Заметки добавлены',
             'order': OrderForOperatorSerializer(order).data
         })
+
+    @action(detail=True, methods=['post'])
+    def update_cart(self, request, pk=None):
+        """Обновить корзину заказа оператором"""
+        order = get_object_or_404(Order, pk=pk)
+        operator = request.user
+        
+        # Проверяем, назначен ли заказ оператору
+        if order.assigned_operator != operator:
+            return Response(
+                {'error': 'Заказ не назначен вам'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Проверяем, что заказ можно редактировать
+        if order.status not in ['pending', 'operator_processing']:
+            return Response(
+                {'error': 'Заказ нельзя редактировать в текущем статусе'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        cart_items = request.data.get('items', [])
+        if not cart_items:
+            return Response(
+                {'error': 'Необходимо указать товары корзины'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # Удаляем все существующие товары заказа
+            OrderItem.objects.filter(order=order).delete()
+            
+            # Добавляем новые товары
+            total_price = 0
+            for item_data in cart_items:
+                menu_item_id = item_data.get('menu_item_id')
+                quantity = item_data.get('quantity', 1)
+                size_option_id = item_data.get('size_option_id')
+                addon_ids = item_data.get('addon_ids', [])
+                
+                if not menu_item_id:
+                    continue
+                
+                try:
+                    menu_item = MenuItem.objects.get(id=menu_item_id)
+                except MenuItem.DoesNotExist:
+                    continue
+                
+                # Создаем OrderItem
+                order_item = OrderItem.objects.create(
+                    order=order,
+                    menu_item=menu_item,
+                    quantity=quantity
+                )
+                
+                # Добавляем размер, если указан
+                if size_option_id:
+                    try:
+                        size_option = SizeOption.objects.get(id=size_option_id)
+                        order_item.size_option = size_option
+                        order_item.save()
+                    except SizeOption.DoesNotExist:
+                        pass
+                
+                # Добавляем добавки, если указаны
+                if addon_ids:
+                    try:
+                        addons = AddOn.objects.filter(id__in=addon_ids)
+                        order_item.add_ons.set(addons)
+                    except Exception:
+                        pass
+                
+                # Рассчитываем общую стоимость
+                total_price += order_item.calculate_total()
+            
+            # Обновляем общую стоимость заказа
+            order.total_price = total_price
+            order.save()
+            
+            # Записываем в историю
+            OrderStatusHistory.objects.create(
+                order=order,
+                operator=operator,
+                old_status=order.status,
+                new_status=order.status,
+                reason='Корзина заказа обновлена оператором'
+            )
+            
+            # Отправляем уведомление клиенту в Telegram
+            try:
+                from api.tasks import send_cart_updated_notification
+                send_cart_updated_notification.delay(
+                    order.user.telegram_id,
+                    order.id,
+                    operator.first_name
+                )
+            except Exception as notification_error:
+                logger.error(f"Failed to send cart update notification: {str(notification_error)}")
+            
+            return Response({
+                'message': 'Корзина заказа обновлена',
+                'order': OrderForOperatorSerializer(order).data,
+                'total_price': total_price
+            })
+            
+        except Exception as e:
+            logger.error(f"Error updating cart: {str(e)}", exc_info=True)
+            return Response(
+                {'error': 'Ошибка обновления корзины'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @action(detail=True, methods=['post'])
     def confirm_order(self, request, pk=None):

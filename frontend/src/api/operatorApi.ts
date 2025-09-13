@@ -311,6 +311,21 @@ export const operatorOrdersApi = {
     }
 
     return response.json();
+  },
+
+  // Обновление корзины заказа
+  updateOrderCart: async (orderId: number, cartData: { items: Array<{ menu_item_id: number; quantity: number; size_option_id?: number | null; addon_ids?: number[] }> }): Promise<OrderForOperator> => {
+    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/update_cart/`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(cartData)
+    });
+
+    if (!response.ok) {
+      await handleApiError(response);
+    }
+
+    return response.json();
   }
 };
 
@@ -418,6 +433,28 @@ export const operatorAnalyticsApi = {
     }
 
     return response.json();
+  },
+
+
+  // Получение меню для добавления блюд
+  getMenuItems: async (): Promise<any[]> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/menu-items/`, {
+        method: 'GET',
+        headers: getHeaders()
+      });
+
+      if (!response.ok) {
+        await handleApiError(response);
+      }
+
+      const data = await response.json();
+      console.log('🍽️ Загружено меню:', data);
+      return data;
+    } catch (error) {
+      console.error('Ошибка загрузки меню:', error);
+      return [];
+    }
   }
 };
 

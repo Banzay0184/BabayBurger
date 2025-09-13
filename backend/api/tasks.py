@@ -290,4 +290,45 @@ def reset_operator_order_numbers():
         return {
             'success': False,
             'error': str(e)
-        } 
+        }
+
+@shared_task(
+    bind=True,
+    name='api.tasks.send_cart_updated_notification',
+    queue='notifications',
+    autoretry_for=(requests.RequestException,),
+    retry_kwargs={'max_retries': 3, 'countdown': 5},
+    retry_backoff=True,
+)
+def send_cart_updated_notification(self, telegram_id, order_id, operator_name):
+    """
+    Отправка уведомления клиенту об изменении корзины заказа оператором
+    
+    Args:
+        telegram_id: ID пользователя в Telegram
+        order_id: ID заказа
+        operator_name: Имя оператора
+    
+    Returns:
+        dict: Результат отправки
+    """
+    try:
+        if not telegram_id:
+            logger.warning(f"No telegram_id for order {order_id}")
+            return {'success': False, 'error': 'No telegram_id'}
+        
+        message = f"""
+🛒 <b>Ваш заказ #{order_id} был изменен</b>
+
+Оператор <b>{operator_name}</b> внес изменения в ваш заказ.
+
+Пожалуйста, проверьте обновленный состав заказа и подтвердите изменения.
+
+Если у вас есть вопросы, свяжитесь с нами.
+        """.strip()
+        
+        return send_telegram_notification.delay(telegram_id, message)
+        
+    except Exception as e:
+        logger.error(f"Failed to send cart update notification: {str(e)}")
+        return {'success': False, 'error': str(e)} 

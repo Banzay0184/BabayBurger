@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import type { OrderForOperator, OrderStatus, OperatorCallResult } from '../../types/operator';
+import type { OrderForOperator, OrderStatus } from '../../types/operator';
 import { operatorOrdersApi } from '../../api/operatorApi';
 import { OrderDetailsModal } from './OrderDetailsModal';
+import { EditOrderModal } from './EditOrderModal';
 import { ConfirmOrderModal } from './ConfirmOrderModal';
 import { RejectOrderModal } from './RejectOrderModal';
 
@@ -13,7 +14,7 @@ interface OrderCardProps {
 export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [showCallResultModal, setShowCallResultModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
 
@@ -86,19 +87,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
 
 
 
-  // Звонить клиенту
-  const handleCallCustomer = async () => {
-    try {
-      setIsLoading(true);
-      const result = await operatorOrdersApi.callCustomer(order.id);
-      onUpdate(result.order);
-    } catch (error) {
-      console.error('Ошибка отметки звонка:', error);
-      alert('Ошибка отметки звонка');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Подтвердить заказ
   const handleConfirmOrder = async (customerName?: string, restaurantId?: number) => {
@@ -168,22 +156,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
     }
   };
 
-  // Обновить результат звонка
-  const handleUpdateCallResult = async (callResult: OperatorCallResult) => {
-    try {
-      setIsLoading(true);
-      const result = await operatorOrdersApi.updateCallResult(order.id, {
-        call_result: callResult
-      });
-      onUpdate(result.order);
-      setShowCallResultModal(false);
-    } catch (error) {
-      console.error('Ошибка обновления результата звонка:', error);
-      alert('Ошибка обновления результата звонка');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Форматирование даты
   const formatDate = (dateString: string): string => {
@@ -223,11 +195,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
             <span className={`${getStatusColor(order.status)} text-white text-xs px-3 py-1 rounded-full font-medium`}>
               {getStatusText(order.status)}
             </span>
-            {order.operator_called && (
-              <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                ✓
-              </span>
-            )}
           </div>
         </div>
 
@@ -331,14 +298,14 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
             </>
           )}
 
-          {/* Кнопка звонка для любого статуса */}
-          {!order.operator_called && order.status !== 'completed' && order.status !== 'cancelled' && (
+          {/* Кнопка изменения заказа */}
+          {order.status !== 'completed' && order.status !== 'cancelled' && order.status !== 'rejected' && (
             <button
-              onClick={handleCallCustomer}
+              onClick={() => setShowEditModal(true)}
               disabled={isLoading}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
-              {isLoading ? '...' : '📞 Звонить'}
+              {isLoading ? '...' : '✏️ Изменить'}
             </button>
           )}
         </div>
@@ -353,63 +320,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
         />
       )}
 
-      {/* Модальное окно результата звонка - планшетная версия */}
-      {showCallResultModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-xl p-8 max-w-lg w-full mx-4">
-            <h3 className="text-white text-2xl font-bold mb-6 text-center">Результат звонка клиенту</h3>
-            
-            <div className="space-y-4 mb-8">
-              <button
-                onClick={() => handleUpdateCallResult('confirmed')}
-                disabled={isLoading}
-                className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-xl text-lg font-medium transition-colors disabled:opacity-50"
-              >
-                {isLoading ? '...' : '✅ Подтвердил заказ'}
-              </button>
-              
-              <button
-                onClick={() => handleUpdateCallResult('modified')}
-                disabled={isLoading}
-                className="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-4 rounded-xl text-lg font-medium transition-colors disabled:opacity-50"
-              >
-                {isLoading ? '...' : '✏️ Изменил заказ'}
-              </button>
-              
-              <button
-                onClick={() => handleUpdateCallResult('cancelled')}
-                disabled={isLoading}
-                className="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-4 rounded-xl text-lg font-medium transition-colors disabled:opacity-50"
-              >
-                {isLoading ? '...' : '❌ Отменил заказ'}
-              </button>
-              
-              <button
-                onClick={() => handleUpdateCallResult('unreachable')}
-                disabled={isLoading}
-                className="w-full bg-gray-600 hover:bg-gray-700 text-white px-6 py-4 rounded-xl text-lg font-medium transition-colors disabled:opacity-50"
-              >
-                {isLoading ? '...' : '📞 Не дозвонились'}
-              </button>
-              
-              <button
-                onClick={() => handleUpdateCallResult('wrong_number')}
-                disabled={isLoading}
-                className="w-full bg-red-800 hover:bg-red-900 text-white px-6 py-4 rounded-xl text-lg font-medium transition-colors disabled:opacity-50"
-              >
-                {isLoading ? '...' : '📱 Неверный номер'}
-              </button>
-            </div>
-            
-            <button
-              onClick={() => setShowCallResultModal(false)}
-              className="w-full bg-gray-600 hover:bg-gray-700 text-white px-6 py-4 rounded-xl text-lg font-medium transition-colors"
-            >
-              Отмена
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Модальное окно подтверждения заказа */}
       <ConfirmOrderModal
@@ -426,6 +336,15 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
         isOpen={showRejectModal}
         onClose={() => setShowRejectModal(false)}
         onReject={handleRejectOrder}
+        isLoading={isLoading}
+      />
+
+      {/* Модальное окно редактирования заказа */}
+      <EditOrderModal
+        order={order}
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onUpdate={onUpdate}
         isLoading={isLoading}
       />
     </>
