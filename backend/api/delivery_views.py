@@ -471,6 +471,7 @@ class DeliveryWebhookView(APIView):
                     "/status - проверить статус\n"
                     "/orders - мои заказы\n"
                     "/route - маршрут доставки\n"
+                    "/map - карты маршрутов\n"
                     "/help - помощь"
                 )
             
@@ -496,6 +497,7 @@ class DeliveryWebhookView(APIView):
         """Обработка команд"""
         try:
             from api.telegram_fallback import telegram_fallback
+            logger.info(f"Processing command: {text} from user {chat_id}")
             
             if text == '/status':
                 # Проверяем статус курьера
@@ -519,6 +521,7 @@ class DeliveryWebhookView(APIView):
                     status_text = "❌ Вы не зарегистрированы как курьер."
                 
                 result = self.send_delivery_message(chat_id, status_text)
+                logger.info(f"Status command processed for user {chat_id}")
                 
             elif text == '/orders':
                 # Показываем текущие заказы
@@ -564,6 +567,7 @@ class DeliveryWebhookView(APIView):
                     orders_text = "❌ Вы не зарегистрированы как курьер."
                 
                 result = self.send_delivery_message(chat_id, orders_text)
+                logger.info(f"Orders command processed for user {chat_id}")
                 
             elif text == '/route':
                 # Показываем маршрут для текущих заказов
@@ -595,9 +599,22 @@ class DeliveryWebhookView(APIView):
                                 f"   ⏰ Статус: {assignment.status}\n\n"
                             )
                         
-                        # Добавляем кнопки для обновления статуса
+                        # Добавляем кнопки для обновления статуса и маршрута
                         keyboard = []
                         for assignment in assignments:
+                            order = assignment.order
+                            restaurant = order.restaurant
+                            address = order.address
+                            
+                            # Кнопка маршрута для каждого заказа
+                            if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
+                                route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.latitude},{address.longitude}&rtt=auto"
+                                keyboard.append([{
+                                    'text': f'🗺️ Маршрут #{order.id}',
+                                    'url': route_url
+                                }])
+                            
+                            # Кнопки статуса
                             if assignment.status == 'accepted':
                                 keyboard.append([{
                                     'text': f'🚚 Взять заказ #{assignment.order.id}',
@@ -619,6 +636,7 @@ class DeliveryWebhookView(APIView):
                             route_text,
                             reply_markup={'inline_keyboard': keyboard} if keyboard else None
                         )
+                        logger.info(f"Route command processed for user {chat_id}, {len(assignments)} orders")
                     else:
                         route_text = "🗺️ У вас нет активных заказов для маршрута."
                         result = self.send_delivery_message(chat_id, route_text)
@@ -627,6 +645,53 @@ class DeliveryWebhookView(APIView):
                     route_text = "❌ Вы не зарегистрированы как курьер."
                     result = self.send_delivery_message(chat_id, route_text)
                 
+            elif text == '/map':
+                # Показываем карты для всех активных заказов
+                from api.models import User, DeliveryDriver, DeliveryAssignment
+                telegram_id = user_info.get('id')
+                
+                try:
+                    user = User.objects.get(telegram_id=telegram_id)
+                    driver = DeliveryDriver.objects.get(user=user)
+                    
+                    assignments = DeliveryAssignment.objects.filter(
+                        driver=driver,
+                        status__in=['accepted', 'picked_up', 'in_transit']
+                    ).order_by('-assigned_at')[:3]
+                    
+                    if assignments:
+                        map_text = "🗺️ Карты маршрутов:\n\n"
+                        keyboard = []
+                        
+                        for assignment in assignments:
+                            order = assignment.order
+                            restaurant = order.restaurant
+                            address = order.address
+                            
+                            if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
+                                route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.latitude},{address.longitude}&rtt=auto"
+                                map_text += f"📍 Заказ #{order.id}: {restaurant.name} → {address.street}\n"
+                                keyboard.append([{
+                                    'text': f'🗺️ Маршрут #{order.id}',
+                                    'url': route_url
+                                }])
+                            else:
+                                map_text += f"❌ Заказ #{order.id}: Нет координат для маршрута\n"
+                        
+                        result = self.send_delivery_message(
+                            chat_id, 
+                            map_text,
+                            reply_markup={'inline_keyboard': keyboard} if keyboard else None
+                        )
+                        logger.info(f"Map command processed for user {chat_id}, {len(assignments)} orders")
+                    else:
+                        map_text = "🗺️ У вас нет активных заказов для маршрутов."
+                        result = self.send_delivery_message(chat_id, map_text)
+                        
+                except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
+                    map_text = "❌ Вы не зарегистрированы как курьер."
+                    result = self.send_delivery_message(chat_id, map_text)
+                
             elif text == '/help':
                 help_text = (
                     "🚚 Помощь по командам:\n\n"
@@ -634,6 +699,7 @@ class DeliveryWebhookView(APIView):
                     "/status - проверить статус\n"
                     "/orders - мои заказы\n"
                     "/route - маршрут доставки\n"
+                    "/map - карты маршрутов\n"
                     "/help - эта справка"
                 )
                 result = self.send_delivery_message(chat_id, help_text)
