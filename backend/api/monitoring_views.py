@@ -4,7 +4,7 @@ API endpoints для мониторинга Telegram API
 import logging
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status as http_status
 from django.http import JsonResponse
 from api.telegram_monitor import telegram_monitor
 from api.telegram_fallback import telegram_fallback
@@ -26,14 +26,14 @@ class TelegramAPIStatusView(APIView):
                 'error_count': status.error_count,
                 'last_check': status.last_check.isoformat(),
                 'last_error': status.last_error
-            }, status=status.HTTP_200_OK)
+            }, status=http_status.HTTP_200_OK)
             
         except Exception as e:
             logger.error(f"Error getting Telegram API status: {e}")
             return Response({
                 'success': False,
                 'error': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            }, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class TelegramFallbackStatsView(APIView):
     """API endpoint для статистики резервной очереди"""
@@ -46,14 +46,14 @@ class TelegramFallbackStatsView(APIView):
             return Response({
                 'success': True,
                 **stats
-            }, status=status.HTTP_200_OK)
+            }, status=http_status.HTTP_200_OK)
             
         except Exception as e:
             logger.error(f"Error getting fallback stats: {e}")
             return Response({
                 'success': False,
                 'error': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            }, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def post(self, request):
         """Обрабатывает очередь резервных сообщений вручную"""
@@ -63,14 +63,14 @@ class TelegramFallbackStatsView(APIView):
             return Response({
                 'success': True,
                 **result
-            }, status=status.HTTP_200_OK)
+            }, status=http_status.HTTP_200_OK)
             
         except Exception as e:
             logger.error(f"Error processing fallback queue: {e}")
             return Response({
                 'success': False,
                 'error': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            }, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def delete(self, request):
         """Очищает очередь резервных сообщений"""
@@ -80,14 +80,14 @@ class TelegramFallbackStatsView(APIView):
             return Response({
                 'success': True,
                 'message': 'Queue cleared successfully'
-            }, status=status.HTTP_200_OK)
+            }, status=http_status.HTTP_200_OK)
             
         except Exception as e:
             logger.error(f"Error clearing queue: {e}")
             return Response({
                 'success': False,
                 'error': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            }, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class TelegramHealthCheckView(APIView):
     """Простая проверка здоровья для мониторинга"""
