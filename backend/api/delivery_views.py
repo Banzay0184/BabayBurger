@@ -607,8 +607,14 @@ class DeliveryWebhookView(APIView):
             
             logger.info(f"Delivery callback received: {callback_data} from user {user_id}")
             
+            # Обрабатываем тестовую кнопку
+            if callback_data.startswith('test_button_'):
+                response_text = f"✅ Тестовая кнопка работает! Пользователь: {from_user.get('first_name', 'Unknown')}"
+                self.answer_callback_query(callback_id, response_text)
+                logger.info(f"Test button callback processed for user {user_id}")
+            
             # Обрабатываем callback для принятия заказа
-            if callback_data.startswith('take_order_'):
+            elif callback_data.startswith('take_order_'):
                 order_id = callback_data.replace('take_order_', '')
                 
                 try:
