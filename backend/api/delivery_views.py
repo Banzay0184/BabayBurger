@@ -534,11 +534,11 @@ class DeliveryWebhookView(APIView):
                     
                     assignments = DeliveryAssignment.objects.filter(
                         driver=driver,
-                        status__in=['accepted', 'picked_up', 'in_transit']
+                        status__in=['picked_up', 'in_transit']
                     ).order_by('-assigned_at')[:5]
                     
                     if assignments:
-                        orders_text = "📦 Ваши текущие заказы:\n\n"
+                        orders_text = "📦 Ваши принятые заказы:\n\n"
                         for assignment in assignments:
                             order = assignment.order
                             restaurant = order.restaurant
@@ -561,7 +561,7 @@ class DeliveryWebhookView(APIView):
                                 f"   📅 Назначен: {assignment.assigned_at.strftime('%H:%M %d.%m')}\n\n"
                             )
                     else:
-                        orders_text = "📦 У вас нет активных заказов."
+                        orders_text = "📦 У вас нет принятых заказов.\n\nПринимайте заказы через группу доставщиков!"
                         
                 except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
                     orders_text = "❌ Вы не зарегистрированы как курьер."
@@ -580,11 +580,11 @@ class DeliveryWebhookView(APIView):
                     
                     assignments = DeliveryAssignment.objects.filter(
                         driver=driver,
-                        status__in=['accepted', 'picked_up', 'in_transit']
+                        status__in=['picked_up', 'in_transit']
                     ).order_by('-assigned_at')[:3]
                     
                     if assignments:
-                        route_text = "🗺️ Ваш маршрут:\n\n"
+                        route_text = "🗺️ Ваш маршрут (принятые заказы):\n\n"
                         for i, assignment in enumerate(assignments, 1):
                             order = assignment.order
                             restaurant = order.restaurant
@@ -614,13 +614,8 @@ class DeliveryWebhookView(APIView):
                                     'url': route_url
                                 }])
                             
-                            # Кнопки статуса
-                            if assignment.status == 'accepted':
-                                keyboard.append([{
-                                    'text': f'🚚 Взять заказ #{assignment.order.id}',
-                                    'callback_data': f'pickup_{assignment.order.id}'
-                                }])
-                            elif assignment.status == 'picked_up':
+                            # Кнопки статуса (только для уже принятых заказов)
+                            if assignment.status == 'picked_up':
                                 keyboard.append([{
                                     'text': f'🚗 В пути #{assignment.order.id}',
                                     'callback_data': f'intransit_{assignment.order.id}'
@@ -638,7 +633,7 @@ class DeliveryWebhookView(APIView):
                         )
                         logger.info(f"Route command processed for user {chat_id}, {len(assignments)} orders")
                     else:
-                        route_text = "🗺️ У вас нет активных заказов для маршрута."
+                        route_text = "🗺️ У вас нет принятых заказов для маршрута.\n\nПринимайте заказы через группу доставщиков!"
                         result = self.send_delivery_message(chat_id, route_text)
                         
                 except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
@@ -656,11 +651,11 @@ class DeliveryWebhookView(APIView):
                     
                     assignments = DeliveryAssignment.objects.filter(
                         driver=driver,
-                        status__in=['accepted', 'picked_up', 'in_transit']
+                        status__in=['picked_up', 'in_transit']
                     ).order_by('-assigned_at')[:3]
                     
                     if assignments:
-                        map_text = "🗺️ Карты маршрутов:\n\n"
+                        map_text = "🗺️ Карты маршрутов (принятые заказы):\n\n"
                         keyboard = []
                         
                         for assignment in assignments:
@@ -685,7 +680,7 @@ class DeliveryWebhookView(APIView):
                         )
                         logger.info(f"Map command processed for user {chat_id}, {len(assignments)} orders")
                     else:
-                        map_text = "🗺️ У вас нет активных заказов для маршрутов."
+                        map_text = "🗺️ У вас нет принятых заказов для маршрутов.\n\nПринимайте заказы через группу доставщиков!"
                         result = self.send_delivery_message(chat_id, map_text)
                         
                 except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
