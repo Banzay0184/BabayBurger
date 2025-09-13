@@ -598,7 +598,72 @@ class DeliveryWebhookView(APIView):
     def handle_callback_query(self, callback_query):
         """Обработка callback_query"""
         try:
-            # Пока что просто отвечаем на callback
+            callback_id = callback_query.get('id')
+            callback_data = callback_query.get('data', '')
+            from_user = callback_query.get('from', {})
+            user_id = from_user.get('id')
+            message = callback_query.get('message', {})
+            chat_id = message.get('chat', {}).get('id')
+            
+            logger.info(f"Delivery callback received: {callback_data} from user {user_id}")
+            
+            # Обрабатываем callback для принятия заказа
+            if callback_data.startswith('take_order_'):
+                order_id = callback_data.replace('take_order_', '')
+                
+                try:
+                    order_id = int(order_id)
+                    order = Order.objects.get(id=order_id)
+                    
+                    # Ищем курьера по telegram_id
+                    try:
+                        driver = DeliveryDriver.objects.get(telegram_id=user_id, is_active=True)
+                        
+                        # Проверяем, есть ли уже назначение для этого заказа
+                        existing_assignment = DeliveryAssignment.objects.filter(
+                            order=order,
+                            status__in=['assigned', 'accepted', 'picked_up', 'delivering']
+                        ).first()
+                        
+                        if existing_assignment:
+                            # Проверяем, может ли этот курьер принять заказ
+                            if existing_assignment.driver.telegram_id == user_id:
+                                # Курьер принимает свой заказ
+                                existing_assignment.status = 'accepted'
+                                existing_assignment.accepted_at = timezone.now()
+                                existing_assignment.save()
+                                
+                                response_text = f"✅ Заказ #{order_id} принят курьером {driver.user.first_name}!"
+                                
+                                # Обновляем сообщение в группе
+                                self.update_group_message(order, existing_assignment)
+                            else:
+                                # Заказ уже назначен другому курьеру
+                                response_text = f"❌ Заказ #{order_id} уже назначен курьеру {existing_assignment.driver.user.first_name}"
+                        else:
+                            # Создаем новое назначение
+                            assignment = DeliveryAssignment.objects.create(
+                                order=order,
+                                driver=driver,
+                                status='accepted',
+                                accepted_at=timezone.now()
+                            )
+                            
+                            response_text = f"✅ Заказ #{order_id} принят курьером {driver.user.first_name}!"
+                            
+                            # Обновляем сообщение в группе
+                            self.update_group_message(order, assignment)
+                        
+                    except DeliveryDriver.DoesNotExist:
+                        response_text = f"❌ Курьер с Telegram ID {user_id} не найден или неактивен"
+                    
+                    # Отвечаем на callback
+                    self.answer_callback_query(callback_id, response_text)
+                    
+                except (ValueError, Order.DoesNotExist):
+                    response_text = f"❌ Заказ #{order_id} не найден"
+                    self.answer_callback_query(callback_id, response_text)
+            
             return Response({'status': 'ok'}, status=status.HTTP_200_OK)
             
         except Exception as e:
@@ -653,3 +718,104 @@ class DeliveryWebhookView(APIView):
         except Exception as e:
             logger.error(f"Error sending delivery message: {str(e)}")
             return {'success': False, 'error': str(e)}
+    
+    def answer_callback_query(self, callback_id, text, show_alert=False):
+        """Отвечает на callback query"""
+        try:
+            import requests
+            import os
+            from dotenv import load_dotenv
+            load_dotenv()
+            
+            delivery_bot_token = os.getenv('DELIVERY_BOT_TOKEN')
+            if not delivery_bot_token:
+                logger.error("DELIVERY_BOT_TOKEN not found")
+                return {'success': False, 'error': 'Bot token not configured'}
+            
+            url = f'https://api.telegram.org/bot{delivery_bot_token}/answerCallbackQuery'
+            data = {
+                'callback_query_id': callback_id,
+                'text': text,
+                'show_alert': show_alert
+            }
+            
+            response = requests.post(url, json=data, timeout=10)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get('ok'):
+                    logger.info(f"Callback query answered successfully: {text}")
+                    return {'success': True}
+                else:
+                    logger.error(f"Telegram API error answering callback: {result}")
+                    return {'success': False, 'error': result.get('description', 'Unknown error')}
+            else:
+                logger.error(f"HTTP error answering callback {response.status_code}: {response.text}")
+                return {'success': False, 'error': f'HTTP {response.status_code}'}
+                
+        except requests.RequestException as e:
+            logger.error(f"Network error answering callback: {str(e)}")
+            return {'success': False, 'error': str(e)}
+        except Exception as e:
+            logger.error(f"Error answering callback: {str(e)}")
+            return {'success': False, 'error': str(e)}
+    
+    def update_group_message(self, order, assignment):
+        """Обновляет сообщение в группе после принятия заказа"""
+        try:
+            import requests
+            import os
+            from dotenv import load_dotenv
+            load_dotenv()
+            
+            delivery_bot_token = os.getenv('DELIVERY_BOT_TOKEN')
+            group_chat_id = order.restaurant.telegram_group_id
+            
+            if not delivery_bot_token or not group_chat_id or not order.telegram_message_id:
+                logger.warning("Missing required data for updating group message")
+                return
+            
+            # Формируем обновленное сообщение
+            message = f"""🚚 <b>Заказ принят!</b>
+
+📋 Заказ #{order.id}
+🏪 Ресторан: {order.restaurant.name if order.restaurant else 'Не указан'}
+👤 Клиент: {order.user.first_name} {order.user.last_name}
+📞 Телефон: {order.phone}
+📍 Адрес: {order.address.full_address if order.address else 'Адрес не указан'}
+💰 Сумма: {order.final_price:,} сум
+💳 Оплата: {order.get_payment_method_display()}
+⏰ Время: {order.created_at.strftime('%H:%M')}
+
+✅ <b>Принят курьером:</b> {assignment.driver.user.first_name}
+📱 Telegram: @{assignment.driver.user.username if assignment.driver.user.username else 'не указан'}
+
+🍽️ <b>Заказ:</b>"""
+            
+            # Добавляем товары
+            for item in order.orderitem_set.all():
+                message += f"\n• {item.quantity}x {item.menu_item.name}"
+                if hasattr(item, 'size_option') and item.size_option:
+                    message += f" ({item.size_option.name})"
+                message += f" - {item.menu_item.price * item.quantity:,} сум"
+            
+            if order.notes:
+                message += f"\n\n📝 <b>Заметки:</b> {order.notes}"
+            
+            # Обновляем сообщение
+            url = f"https://api.telegram.org/bot{delivery_bot_token}/editMessageText"
+            data = {
+                "chat_id": group_chat_id,
+                "message_id": order.telegram_message_id,
+                "text": message,
+                "parse_mode": "HTML"
+            }
+            
+            response = requests.post(url, json=data, timeout=10)
+            if response.status_code == 200:
+                logger.info(f"Group message updated for order #{order.id}")
+            else:
+                logger.error(f"Error updating group message: {response.status_code} - {response.text}")
+                
+        except Exception as e:
+            logger.error(f"Error updating group message: {str(e)}")
