@@ -31,12 +31,18 @@ app.conf.update(
             'exchange': 'maintenance',
             'routing_key': 'maintenance',
         },
+        'monitoring': {
+            'exchange': 'monitoring',
+            'routing_key': 'monitoring',
+        },
     },
     
     # Настройки маршрутизации
     task_routes={
         'api.tasks.send_telegram_notification': {'queue': 'notifications'},
         'api.tasks.reset_operator_order_numbers': {'queue': 'maintenance'},
+        'api.tasks.process_telegram_fallback_queue': {'queue': 'notifications'},
+        'api.tasks.check_telegram_api_health': {'queue': 'monitoring'},
     },
     
     # Настройки Celery Beat (периодические задачи)
@@ -45,6 +51,16 @@ app.conf.update(
             'task': 'api.tasks.reset_operator_order_numbers',
             'schedule': 60.0 * 60.0 * 24.0,  # Каждые 24 часа
             'options': {'queue': 'maintenance'},
+        },
+        'process-telegram-fallback-queue': {
+            'task': 'api.tasks.process_telegram_fallback_queue',
+            'schedule': 60.0,  # Каждую минуту
+            'options': {'queue': 'notifications'},
+        },
+        'check-telegram-api-health': {
+            'task': 'api.tasks.check_telegram_api_health',
+            'schedule': 60.0 * 5,  # Каждые 5 минут
+            'options': {'queue': 'monitoring'},
         },
     },
     

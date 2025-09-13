@@ -403,24 +403,22 @@ class WebhookView(APIView):
                 "Нажмите кнопку ниже, чтобы открыть приложение и сделать заказ:"
             )
             
-            # Отправляем сообщение с кнопкой
-            response = requests.post(
-                f"https://api.telegram.org/bot{settings.BOT_TOKEN}/sendMessage",
-                json={
-                    "chat_id": chat_id,
-                    "text": welcome_text,
-                    "reply_markup": keyboard,
-                    "parse_mode": "HTML"
-                },
-                timeout=5  # Добавляем таймаут
+            # Отправляем сообщение с кнопкой через резервный механизм
+            from api.telegram_fallback import telegram_fallback
+            
+            result = telegram_fallback.send_message(
+                chat_id=chat_id,
+                text=welcome_text,
+                parse_mode="HTML",
+                reply_markup=keyboard
             )
             
-            if response.status_code == 200:
+            if result['success']:
                 logger.info(f"Start command processed successfully for chat {chat_id}")
-                logger.info(f"Telegram API response: {response.json()}")
+                logger.info(f"Message sent with fallback: {result}")
                 return Response({'status': 'ok'}, status=status.HTTP_200_OK)
             else:
-                logger.error(f"Failed to send start message: {response.status_code} - {response.text}")
+                logger.error(f"Failed to send start message: {result.get('error')}")
                 return Response({'error': 'Failed to send message'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                 
         except requests.RequestException as e:

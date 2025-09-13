@@ -372,6 +372,63 @@ def reset_operator_order_numbers():
 
 @shared_task(
     bind=True,
+    name='api.tasks.process_telegram_fallback_queue',
+    queue='notifications',
+)
+def process_telegram_fallback_queue(self):
+    """
+    Обрабатывает очередь резервных сообщений Telegram
+    
+    Returns:
+        dict: Результат обработки очереди
+    """
+    try:
+        from api.telegram_fallback import telegram_fallback
+        
+        result = telegram_fallback.process_fallback_queue()
+        
+        logger.info(f"Fallback queue processed: {result}")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error processing fallback queue: {str(e)}")
+        return {'success': False, 'error': str(e)}
+
+@shared_task(
+    bind=True,
+    name='api.tasks.check_telegram_api_health',
+    queue='monitoring',
+)
+def check_telegram_api_health(self):
+    """
+    Проверяет состояние Telegram API
+    
+    Returns:
+        dict: Статус API
+    """
+    try:
+        from api.telegram_monitor import telegram_monitor
+        
+        status = telegram_monitor.check_api_health()
+        
+        logger.info(f"Telegram API health check: healthy={status.is_healthy}, "
+                   f"response_time={status.response_time:.3f}s, "
+                   f"error_count={status.error_count}")
+        
+        return {
+            'success': True,
+            'is_healthy': status.is_healthy,
+            'response_time': status.response_time,
+            'error_count': status.error_count,
+            'last_error': status.last_error
+        }
+        
+    except Exception as e:
+        logger.error(f"Error checking Telegram API health: {str(e)}")
+        return {'success': False, 'error': str(e)}
+
+@shared_task(
+    bind=True,
     name='api.tasks.send_cart_updated_notification',
     queue='notifications',
     autoretry_for=(requests.RequestException,),

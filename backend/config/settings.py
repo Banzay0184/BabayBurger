@@ -22,6 +22,10 @@ TELEGRAM_BOT_USERNAME = os.environ.get('TELEGRAM_BOT_USERNAME', '')  # Имя б
 # Настройки для Mini App
 MINI_APP_URL = os.environ.get('MINI_APP_URL', '')  # URL вашего Mini App
 
+# Настройки для алертов Telegram API
+ADMIN_TELEGRAM_IDS = os.environ.get('ADMIN_TELEGRAM_IDS', '')  # ID администраторов через запятую
+TELEGRAM_API_ERROR_THRESHOLD = int(os.environ.get('TELEGRAM_API_ERROR_THRESHOLD', '5'))  # Порог ошибок для алерта
+
 # Определяем окружение
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 DEBUG = ENVIRONMENT == 'development'

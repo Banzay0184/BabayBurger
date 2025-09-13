@@ -9,6 +9,9 @@ from .views import (
     StatisticsView, CartView, TestConnectionView, FavoriteView, RestaurantView,
     validate_promo_code, apply_promo_code
 )
+from .monitoring_views import (
+    TelegramAPIStatusView, TelegramFallbackStatsView, TelegramHealthCheckView
+)
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -64,6 +67,11 @@ urlpatterns = [
     path('restaurants/', RestaurantView.as_view(), name='restaurants'),
     path('promo-codes/validate/', validate_promo_code, name='validate_promo_code'),
     path('promo-codes/apply/', apply_promo_code, name='apply_promo_code'),
+    
+    # Мониторинг Telegram API
+    path('monitoring/telegram-status/', TelegramAPIStatusView.as_view(), name='telegram-api-status'),
+    path('monitoring/telegram-fallback/', TelegramFallbackStatsView.as_view(), name='telegram-fallback-stats'),
+    path('monitoring/health/', TelegramHealthCheckView.as_view(), name='telegram-health-check'),
 ]
 
 urlpatterns += router.urls
