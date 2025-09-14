@@ -405,11 +405,10 @@ class DeliveryDriverAdmin(admin.ModelAdmin):
 
 @admin.register(DeliveryAssignment)
 class DeliveryAssignmentAdmin(admin.ModelAdmin):
-    list_display = ['order_id', 'driver_name', 'status', 'assigned_at', 'accepted_at', 'delivered_at']
+    list_display = ['order_id', 'driver_name', 'status', 'has_receipt', 'assigned_at', 'accepted_at', 'delivered_at']
     list_filter = ['status', 'assigned_at', 'accepted_at', 'delivered_at']
     search_fields = ['order__id', 'driver__user__first_name', 'driver__user__last_name']
-    readonly_fields = ['assigned_at', 'accepted_at', 'picked_up_at', 'delivered_at', 'created_at', 'updated_at']
-    exclude = ['receipt_photo']  # Скрываем поле фото чека
+    readonly_fields = ['assigned_at', 'accepted_at', 'picked_up_at', 'delivered_at', 'created_at', 'updated_at', 'receipt_photo_display']
     ordering = ['-assigned_at']
     
     fieldsets = (
@@ -418,6 +417,10 @@ class DeliveryAssignmentAdmin(admin.ModelAdmin):
         }),
         ('Временные метки', {
             'fields': ('assigned_at', 'accepted_at', 'picked_up_at', 'delivered_at')
+        }),
+        ('Фото чека', {
+            'fields': ('receipt_photo_display',),
+            'classes': ('collapse',)
         }),
         ('Дополнительно', {
             'fields': ('notes', 'created_at', 'updated_at'),
@@ -432,6 +435,30 @@ class DeliveryAssignmentAdmin(admin.ModelAdmin):
     def driver_name(self, obj):
         return f"{obj.driver.user.first_name} {obj.driver.user.last_name}".strip()
     driver_name.short_description = 'Курьер'
+    
+    def has_receipt(self, obj):
+        """Показывает есть ли фото чека"""
+        return bool(obj.receipt_photo)
+    has_receipt.boolean = True
+    has_receipt.short_description = 'Есть чек'
+    
+    def receipt_photo_display(self, obj):
+        """Отображает фото чека в админке"""
+        if obj.receipt_photo:
+            return format_html(
+                '<div style="margin: 10px 0;">'
+                '<h4>Фото чека:</h4>'
+                '<img src="{}" style="max-width: 400px; max-height: 400px; border: 1px solid #ddd; border-radius: 5px;" />'
+                '<br><br>'
+                '<a href="{}" target="_blank" style="color: #007cba; text-decoration: none;">'
+                '🔗 Открыть в новом окне'
+                '</a>'
+                '</div>',
+                obj.receipt_photo.url,
+                obj.receipt_photo.url
+            )
+        return "Фото чека не загружено"
+    receipt_photo_display.short_description = 'Фото чека'
 
 
 # Настройка админ-панели
