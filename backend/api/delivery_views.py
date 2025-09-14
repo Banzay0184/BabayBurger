@@ -678,14 +678,13 @@ class DeliveryWebhookView(APIView):
                                         'url': route_url
                                     }])
                         
-                        # Создаем комбинированный reply_markup с inline кнопками и Reply Keyboard
-                        combined_markup = {'inline_keyboard': keyboard} if keyboard else {}
-                        combined_markup.update(self.get_delivery_keyboard())
+                        # Создаем только inline keyboard для кнопок процесса
+                        reply_markup = {'inline_keyboard': keyboard} if keyboard else {}
                         
                         result = self.send_delivery_message(
                             chat_id, 
                             route_text,
-                            reply_markup=combined_markup
+                            reply_markup=reply_markup
                         )
                         logger.info(f"Route command processed for user {chat_id}, {len(assignments)} orders")
                     else:
@@ -744,14 +743,13 @@ class DeliveryWebhookView(APIView):
                             else:
                                 map_text += f"❌ Заказ #{order.id} ({status_text}): Нет координат для маршрута\n"
                         
-                        # Создаем комбинированный reply_markup с inline кнопками и Reply Keyboard
-                        combined_markup = {'inline_keyboard': keyboard} if keyboard else {}
-                        combined_markup.update(self.get_delivery_keyboard())
+                        # Создаем только inline keyboard для кнопок карт
+                        reply_markup = {'inline_keyboard': keyboard} if keyboard else {}
                         
                         result = self.send_delivery_message(
                             chat_id, 
                             map_text,
-                            reply_markup=combined_markup
+                            reply_markup=reply_markup
                         )
                         logger.info(f"Map command processed for user {chat_id}, {len(assignments)} orders")
                     else:
@@ -793,13 +791,12 @@ class DeliveryWebhookView(APIView):
                         [{'text': '🔴 Не в сети', 'callback_data': f'change_driver_status_offline_{driver.id}'}]
                     ]
                     
-                    combined_markup = {'inline_keyboard': keyboard}
-                    combined_markup.update(self.get_delivery_keyboard())
+                    reply_markup = {'inline_keyboard': keyboard}
                     
                     result = self.send_delivery_message(
                         chat_id, 
                         status_text,
-                        reply_markup=combined_markup
+                        reply_markup=reply_markup
                     )
                     
                 except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
