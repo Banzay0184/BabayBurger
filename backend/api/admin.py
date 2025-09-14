@@ -409,6 +409,7 @@ class DeliveryAssignmentAdmin(admin.ModelAdmin):
     list_filter = ['status', 'assigned_at', 'accepted_at', 'delivered_at']
     search_fields = ['order__id', 'driver__user__first_name', 'driver__user__last_name']
     readonly_fields = ['assigned_at', 'accepted_at', 'picked_up_at', 'delivered_at', 'created_at', 'updated_at']
+    exclude = ['receipt_photo']  # Скрываем поле фото чека
     ordering = ['-assigned_at']
     
     fieldsets = (

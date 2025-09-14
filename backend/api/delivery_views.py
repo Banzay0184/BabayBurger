@@ -938,9 +938,10 @@ class DeliveryWebhookView(APIView):
                         ).first()
                         
                         if existing_assignment:
-                            # Проверяем, может ли этот курьер принять заказ
-                            if existing_assignment.driver.telegram_id == user_id:
-                                # Курьер принимает свой заказ
+                            # Проверяем статус назначения
+                            if existing_assignment.status == 'assigned':
+                                # Заказ назначен, но еще не принят - любой курьер может его взять
+                                existing_assignment.driver = driver
                                 existing_assignment.status = 'accepted'
                                 existing_assignment.accepted_at = timezone.now()
                                 existing_assignment.save()
@@ -952,9 +953,12 @@ class DeliveryWebhookView(APIView):
                                 
                                 # Отправляем команду /route курьеру
                                 self.send_route_command_to_driver(driver.telegram_id)
+                            elif existing_assignment.status == 'accepted':
+                                # Заказ уже принят другим курьером
+                                response_text = f"❌ Заказ #{order_id} уже принят курьером {existing_assignment.driver.user.first_name}"
                             else:
-                                # Заказ уже назначен другому курьеру
-                                response_text = f"❌ Заказ #{order_id} уже назначен курьеру {existing_assignment.driver.user.first_name}"
+                                # Заказ в процессе выполнения
+                                response_text = f"❌ Заказ #{order_id} уже в процессе выполнения"
                         else:
                             # Создаем новое назначение
                             assignment = DeliveryAssignment.objects.create(
