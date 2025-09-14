@@ -357,6 +357,22 @@ def order_assignments(request, order_id):
 class DeliveryWebhookView(APIView):
     """Webhook для бота доставщиков"""
     
+    def check_pending_receipt_photo(self, driver):
+        """Проверяет, есть ли у курьера заказы, требующие фото чека"""
+        try:
+            from django.db import models
+            pending_receipt_orders = DeliveryAssignment.objects.filter(
+                driver=driver,
+                status='picked_up',
+                order__payment_method='card'
+            ).filter(
+                models.Q(receipt_photo__isnull=True) | models.Q(receipt_photo__exact='')
+            )
+            return pending_receipt_orders.exists()
+        except Exception as e:
+            logger.error(f"Error checking pending receipt photo: {str(e)}")
+            return False
+    
     def post(self, request):
         try:
             # Проверяем наличие данных
@@ -505,7 +521,24 @@ class DeliveryWebhookView(APIView):
         """Обработка команд"""
         try:
             from api.telegram_fallback import telegram_fallback
+            from api.models import User, DeliveryDriver
             logger.info(f"Processing command: {text} from user {chat_id}")
+            
+            # Проверяем, есть ли у курьера заказы, требующие фото чека
+            telegram_id = user_info.get('id')
+            try:
+                user = User.objects.get(telegram_id=telegram_id)
+                driver = DeliveryDriver.objects.get(user=user)
+                
+                if self.check_pending_receipt_photo(driver):
+                    response_text = "💳 У вас есть заказы с оплатой картой, требующие фото чека. Пожалуйста, отправьте фото чека для завершения заказов."
+                    return self.send_delivery_message(
+                        chat_id, 
+                        response_text,
+                        reply_markup=self.get_delivery_keyboard()
+                    )
+            except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
+                pass  # Продолжаем обычную обработку
             
             if text == '/status':
                 # Проверяем статус курьера
@@ -787,6 +820,23 @@ class DeliveryWebhookView(APIView):
         """Обработка обычных сообщений и кнопок Reply Keyboard"""
         try:
             from api.telegram_fallback import telegram_fallback
+            from api.models import User, DeliveryDriver
+            
+            # Проверяем, есть ли у курьера заказы, требующие фото чека
+            telegram_id = user_info.get('id')
+            try:
+                user = User.objects.get(telegram_id=telegram_id)
+                driver = DeliveryDriver.objects.get(user=user)
+                
+                if self.check_pending_receipt_photo(driver):
+                    response_text = "💳 У вас есть заказы с оплатой картой, требующие фото чека. Пожалуйста, отправьте фото чека для завершения заказов."
+                    return self.send_delivery_message(
+                        chat_id, 
+                        response_text,
+                        reply_markup=self.get_delivery_keyboard()
+                    )
+            except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
+                pass  # Продолжаем обычную обработку
             
             # Обрабатываем кнопки Reply Keyboard
             if text == "📦 Мои заказы":
