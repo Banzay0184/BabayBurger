@@ -467,19 +467,21 @@ class DeliveryWebhookView(APIView):
                     "🚚 Добро пожаловать в Babay Food Delivery!\n\n"
                     f"Статус: {driver_status}\n"
                     "Вы готовы принимать заказы на доставку!\n\n"
-                    "Доступные команды:\n"
-                    "/status - проверить статус\n"
-                    "/orders - мои заказы\n"
-                    "/route - маршрут доставки\n"
-                    "/map - карты маршрутов\n"
-                    "/help - помощь"
+                    "Доступные функции:\n"
+                    "📦 Мои заказы - просмотр активных заказов\n"
+                    "🗺️ Маршрут - маршрут доставки\n"
+                    "🗺️ Карты - карты маршрутов\n"
+                    "📊 Статус - статус курьера\n"
+                    "❓ Помощь - справка\n\n"
+                    "💡 Используйте кнопки внизу экрана!"
                 )
             
-            # Отправляем сообщение через бота доставщиков
+            # Отправляем сообщение через бота доставщиков с Reply Keyboard
             result = self.send_delivery_message(
                 chat_id=chat_id,
                 text=welcome_text,
-                parse_mode="HTML"
+                parse_mode="HTML",
+                reply_markup=self.get_delivery_keyboard()
             )
             
             if result['success']:
@@ -520,7 +522,11 @@ class DeliveryWebhookView(APIView):
                 except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
                     status_text = "❌ Вы не зарегистрированы как курьер."
                 
-                result = self.send_delivery_message(chat_id, status_text)
+                result = self.send_delivery_message(
+                    chat_id, 
+                    status_text,
+                    reply_markup=self.get_delivery_keyboard()
+                )
                 logger.info(f"Status command processed for user {chat_id}")
                 
             elif text == '/orders':
@@ -566,7 +572,11 @@ class DeliveryWebhookView(APIView):
                 except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
                     orders_text = "❌ Вы не зарегистрированы как курьер."
                 
-                result = self.send_delivery_message(chat_id, orders_text)
+                result = self.send_delivery_message(
+                    chat_id, 
+                    orders_text,
+                    reply_markup=self.get_delivery_keyboard()
+                )
                 logger.info(f"Orders command processed for user {chat_id}")
                 
             elif text == '/route':
@@ -626,19 +636,31 @@ class DeliveryWebhookView(APIView):
                                     'callback_data': f'delivered_{assignment.order.id}'
                                 }])
                         
+                        # Создаем комбинированный reply_markup с inline кнопками и Reply Keyboard
+                        combined_markup = {'inline_keyboard': keyboard} if keyboard else {}
+                        combined_markup.update(self.get_delivery_keyboard())
+                        
                         result = self.send_delivery_message(
                             chat_id, 
                             route_text,
-                            reply_markup={'inline_keyboard': keyboard} if keyboard else None
+                            reply_markup=combined_markup
                         )
                         logger.info(f"Route command processed for user {chat_id}, {len(assignments)} orders")
                     else:
                         route_text = "🗺️ У вас нет активных заказов для маршрута.\n\nПринимайте заказы через группу доставщиков!"
-                        result = self.send_delivery_message(chat_id, route_text)
+                        result = self.send_delivery_message(
+                            chat_id, 
+                            route_text,
+                            reply_markup=self.get_delivery_keyboard()
+                        )
                         
                 except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
                     route_text = "❌ Вы не зарегистрированы как курьер."
-                    result = self.send_delivery_message(chat_id, route_text)
+                    result = self.send_delivery_message(
+                        chat_id, 
+                        route_text,
+                        reply_markup=self.get_delivery_keyboard()
+                    )
                 
             elif text == '/map':
                 # Показываем карты для всех активных заказов
@@ -673,36 +695,53 @@ class DeliveryWebhookView(APIView):
                             else:
                                 map_text += f"❌ Заказ #{order.id}: Нет координат для маршрута\n"
                         
+                        # Создаем комбинированный reply_markup с inline кнопками и Reply Keyboard
+                        combined_markup = {'inline_keyboard': keyboard} if keyboard else {}
+                        combined_markup.update(self.get_delivery_keyboard())
+                        
                         result = self.send_delivery_message(
                             chat_id, 
                             map_text,
-                            reply_markup={'inline_keyboard': keyboard} if keyboard else None
+                            reply_markup=combined_markup
                         )
                         logger.info(f"Map command processed for user {chat_id}, {len(assignments)} orders")
                     else:
                         map_text = "🗺️ У вас нет активных заказов для маршрутов.\n\nПринимайте заказы через группу доставщиков!"
-                        result = self.send_delivery_message(chat_id, map_text)
+                        result = self.send_delivery_message(
+                            chat_id, 
+                            map_text,
+                            reply_markup=self.get_delivery_keyboard()
+                        )
                         
                 except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
                     map_text = "❌ Вы не зарегистрированы как курьер."
-                    result = self.send_delivery_message(chat_id, map_text)
+                    result = self.send_delivery_message(
+                        chat_id, 
+                        map_text,
+                        reply_markup=self.get_delivery_keyboard()
+                    )
                 
             elif text == '/help':
                 help_text = (
-                    "🚚 Помощь по командам:\n\n"
-                    "/start - начать работу\n"
-                    "/status - проверить статус\n"
-                    "/orders - мои заказы\n"
-                    "/route - маршрут доставки\n"
-                    "/map - карты маршрутов\n"
-                    "/help - эта справка"
+                    "🚚 Помощь по кнопкам:\n\n"
+                    "📦 Мои заказы - просмотр активных заказов\n"
+                    "🗺️ Маршрут - маршрут доставки с кнопками\n"
+                    "🗺️ Карты - карты маршрутов\n"
+                    "📊 Статус - статус курьера\n"
+                    "❓ Помощь - эта справка\n\n"
+                    "💡 Используйте кнопки внизу экрана для удобства!"
                 )
-                result = self.send_delivery_message(chat_id, help_text)
+                result = self.send_delivery_message(
+                    chat_id, 
+                    help_text,
+                    reply_markup=self.get_delivery_keyboard()
+                )
                 
             else:
                 result = self.send_delivery_message(
                     chat_id, 
-                    "❓ Неизвестная команда. Используйте /help для справки."
+                    "❓ Неизвестная команда. Используйте кнопки внизу экрана или /help для справки.",
+                    reply_markup=self.get_delivery_keyboard()
                 )
             
             return Response({'status': 'ok'}, status=status.HTTP_200_OK)
@@ -712,22 +751,39 @@ class DeliveryWebhookView(APIView):
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def handle_message(self, text, chat_id, user_info):
-        """Обработка обычных сообщений"""
+        """Обработка обычных сообщений и кнопок Reply Keyboard"""
         try:
             from api.telegram_fallback import telegram_fallback
             
-            # Простой ответ на обычные сообщения
-            response_text = (
-                "🚚 Спасибо за сообщение!\n\n"
-                "Используйте команды для взаимодействия с ботом:\n"
-                "/start - начать работу\n"
-                "/status - проверить статус\n"
-                "/orders - мои заказы\n"
-                "/help - справка"
-            )
-            
-            result = self.send_delivery_message(chat_id, response_text)
-            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+            # Обрабатываем кнопки Reply Keyboard
+            if text == "📦 Мои заказы":
+                return self.handle_command("/orders", chat_id, user_info)
+            elif text == "🗺️ Маршрут":
+                return self.handle_command("/route", chat_id, user_info)
+            elif text == "🗺️ Карты":
+                return self.handle_command("/map", chat_id, user_info)
+            elif text == "📊 Статус":
+                return self.handle_command("/status", chat_id, user_info)
+            elif text == "❓ Помощь":
+                return self.handle_command("/help", chat_id, user_info)
+            else:
+                # Простой ответ на обычные сообщения
+                response_text = (
+                    "🚚 Спасибо за сообщение!\n\n"
+                    "Используйте кнопки внизу экрана для взаимодействия с ботом:\n\n"
+                    "📦 Мои заказы - просмотр активных заказов\n"
+                    "🗺️ Маршрут - маршрут доставки\n"
+                    "🗺️ Карты - карты маршрутов\n"
+                    "📊 Статус - статус курьера\n"
+                    "❓ Помощь - справка"
+                )
+                
+                result = self.send_delivery_message(
+                    chat_id, 
+                    response_text,
+                    reply_markup=self.get_delivery_keyboard()
+                )
+                return Response({'status': 'ok'}, status=status.HTTP_200_OK)
             
         except Exception as e:
             logger.error(f"Error handling message: {str(e)}")
@@ -884,6 +940,19 @@ class DeliveryWebhookView(APIView):
         except Exception as e:
             logger.error(f"Error sending delivery message: {str(e)}")
             return {'success': False, 'error': str(e)}
+    
+    def get_delivery_keyboard(self):
+        """Возвращает Reply Keyboard для курьеров"""
+        return {
+            "keyboard": [
+                ["📦 Мои заказы", "🗺️ Маршрут"],
+                ["🗺️ Карты", "📊 Статус"],
+                ["❓ Помощь"]
+            ],
+            "resize_keyboard": True,
+            "one_time_keyboard": False,
+            "selective": False
+        }
     
     def answer_callback_query(self, callback_id, text, show_alert=False):
         """Отвечает на callback query"""
