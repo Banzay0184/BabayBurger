@@ -143,7 +143,7 @@ export interface Order {
   user: number;
   items: OrderItem[];
   total_price: number;
-  status: 'pending' | 'preparing' | 'delivering' | 'completed' | 'cancelled';
+  status: 'pending' | 'preparing' | 'in_transit' | 'delivering' | 'completed' | 'cancelled';
   address: Address;
   created_at: string;
   updated_at: string;

@@ -106,6 +106,7 @@ export type OrderStatus =
   | 'confirmed'
   | 'preparing'
   | 'ready_for_delivery'
+  | 'in_transit'
   | 'delivering'
   | 'completed'
   | 'cancelled'

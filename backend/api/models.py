@@ -1038,6 +1038,7 @@ class Order(models.Model):
         ('confirmed', 'Подтвержден клиентом'),
         ('preparing', 'Готовится'),
         ('ready_for_delivery', 'Готов к доставке'),
+        ('in_transit', 'В пути'),
         ('delivering', 'Доставляется'),
         ('completed', 'Выполнен'),
         ('cancelled', 'Отменен'),

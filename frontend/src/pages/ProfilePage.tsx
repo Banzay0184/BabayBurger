@@ -171,6 +171,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
       'pending': 'Ожидание',
       'preparing': 'Готовится',
       'ready_for_delivery': 'Готов к доставке',
+      'in_transit': 'В пути',
       'delivering': 'Доставляется',
       'completed': 'Выполнен',
       'cancelled': 'Отменен'
@@ -202,6 +203,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
       'pending': 'bg-yellow-600/20 text-yellow-400 border-yellow-600/50',
       'preparing': 'bg-blue-600/20 text-blue-400 border-blue-600/50',
       'ready_for_delivery': 'bg-orange-600/20 text-orange-400 border-orange-600/50',
+      'in_transit': 'bg-cyan-600/20 text-cyan-400 border-cyan-600/50',
       'delivering': 'bg-purple-600/20 text-purple-400 border-purple-600/50',
       'completed': 'bg-green-600/20 text-green-400 border-green-600/50',
       'cancelled': 'bg-red-600/20 text-red-400 border-red-600/50'
@@ -215,6 +217,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
       'pending': '⏳',
       'preparing': '👨‍🍳',
       'ready_for_delivery': '📦',
+      'in_transit': '🚛',
       'delivering': '🚚',
       'completed': '✅',
       'cancelled': '❌'

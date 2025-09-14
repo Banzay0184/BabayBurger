@@ -28,6 +28,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
       case 'confirmed': return 'bg-green-500';
       case 'preparing': return 'bg-indigo-500';
       case 'ready_for_delivery': return 'bg-teal-500';
+      case 'in_transit': return 'bg-cyan-500';
       case 'delivering': return 'bg-orange-500';
       case 'completed': return 'bg-green-600';
       case 'cancelled': return 'bg-red-500';
@@ -46,6 +47,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
       case 'confirmed': return 'Подтвержден';
       case 'preparing': return 'Готовится';
       case 'ready_for_delivery': return 'Готов к доставке';
+      case 'in_transit': return 'В пути';
       case 'delivering': return 'Доставляется';
       case 'completed': return 'Завершен';
       case 'cancelled': return 'Отменен';
