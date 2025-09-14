@@ -1218,7 +1218,7 @@ class DeliveryWebhookView(APIView):
             return f"❌ Ошибка обновления статуса заказа #{order_id}"
     
     def send_route_command_to_driver(self, driver_telegram_id):
-        """Отправляет обновленный маршрут курьеру после принятия заказа"""
+        """Отправляет курьеру его текущий заказ с кнопками после принятия заказа"""
         try:
             import requests
             import os
@@ -1243,7 +1243,7 @@ class DeliveryWebhookView(APIView):
                 ).order_by('-assigned_at')[:3]
                 
                 if assignments:
-                    route_text = "🗺️ Ваш маршрут обновлен!\n\n"
+                    route_text = "🗺️ <b>Ваш маршрут обновлен!</b>\n\n"
                     keyboard = []
                     
                     for i, assignment in enumerate(assignments, 1):
