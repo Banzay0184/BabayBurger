@@ -1550,11 +1550,13 @@ class DeliveryWebhookView(APIView):
             load_dotenv()
             
             telegram_id = user_info.get('id')
+            logger.info(f"Processing photo message from user {telegram_id}")
             
             # Ищем курьера
             try:
                 user = User.objects.get(telegram_id=telegram_id)
                 driver = DeliveryDriver.objects.get(user=user)
+                logger.info(f"Found driver: {driver.user.first_name} {driver.user.last_name}")
                 
                 # Ищем активные заказы курьера, которые требуют фото чека
                 assignments = DeliveryAssignment.objects.filter(
@@ -1563,6 +1565,8 @@ class DeliveryWebhookView(APIView):
                     order__payment_method='card',
                     receipt_photo__isnull=True
                 ).order_by('-assigned_at')[:1]
+                
+                logger.info(f"Found {assignments.count()} assignments requiring receipt photo")
                 
                 if assignments:
                     assignment = assignments[0]
