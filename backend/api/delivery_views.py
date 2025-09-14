@@ -375,11 +375,17 @@ class DeliveryWebhookView(APIView):
             message = update.get('message')
             
             if message:
-                # Обработка текстовых сообщений
-                text = message.get('text', '')
                 chat_id = message.get('chat', {}).get('id')
                 user_info = message.get('from', {})
                 
+                # Сначала проверяем фото
+                if message.get('photo'):
+                    photo_info = message.get('photo', [])
+                    logger.info(f"Processing photo message from user {user_info.get('id')} in chat {chat_id}")
+                    return self.handle_photo_message(chat_id, user_info, photo_info)
+                
+                # Затем обрабатываем текст
+                text = message.get('text', '')
                 logger.info(f"Delivery webhook received message: {text} from chat {chat_id}")
                 
                 # Обработка команды /start
@@ -398,14 +404,6 @@ class DeliveryWebhookView(APIView):
             elif update.get('callback_query'):
                 callback_query = update['callback_query']
                 return self.handle_callback_query(callback_query)
-            
-            # Обработка фотографий
-            elif message and message.get('photo'):
-                photo_info = message.get('photo', [])
-                chat_id = message.get('chat', {}).get('id')
-                user_info = message.get('from', {})
-                logger.info(f"Processing photo message from user {user_info.get('id')} in chat {chat_id}")
-                return self.handle_photo_message(chat_id, user_info, photo_info)
             
             else:
                 logger.warning(f"Delivery webhook received unknown update type: {update}")
