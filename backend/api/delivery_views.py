@@ -540,7 +540,7 @@ class DeliveryWebhookView(APIView):
                     
                     assignments = DeliveryAssignment.objects.filter(
                         driver=driver,
-                        status__in=['accepted', 'picked_up', 'in_transit']
+                        status__in=['accepted', 'in_transit']
                     ).order_by('-assigned_at')[:5]
                     
                     if assignments:
@@ -552,14 +552,12 @@ class DeliveryWebhookView(APIView):
                             
                             status_emoji = {
                                 'accepted': '✅',
-                                'picked_up': '🚚',
                                 'in_transit': '🚗',
                                 'delivered': '🎉'
                             }.get(assignment.status, '❓')
                             
                             status_text = {
                                 'accepted': 'Принят',
-                                'picked_up': 'Взят',
                                 'in_transit': 'В пути',
                                 'delivered': 'Доставлен'
                             }.get(assignment.status, assignment.status)
@@ -597,7 +595,7 @@ class DeliveryWebhookView(APIView):
                     
                     assignments = DeliveryAssignment.objects.filter(
                         driver=driver,
-                        status__in=['accepted', 'picked_up', 'in_transit']
+                        status__in=['accepted', 'in_transit']
                     ).order_by('-assigned_at')[:3]
                     
                     if assignments:
@@ -609,7 +607,6 @@ class DeliveryWebhookView(APIView):
                             
                             status_text = {
                                 'accepted': 'Принят',
-                                'picked_up': 'Взят',
                                 'in_transit': 'В пути',
                                 'delivered': 'Доставлен'
                             }.get(assignment.status, assignment.status)
@@ -635,7 +632,7 @@ class DeliveryWebhookView(APIView):
                                 # Заказ принят - показываем кнопки для начала процесса
                                 keyboard.append([{
                                     'text': f'🚗 Взять заказ #{order.id}',
-                                    'callback_data': f'pickup_{order.id}'
+                                    'callback_data': f'intransit_{order.id}'
                                 }])
                                 
                                 if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
@@ -648,20 +645,6 @@ class DeliveryWebhookView(APIView):
                                     keyboard.append([{
                                         'text': f'❌ Нет координат #{order.id}',
                                         'callback_data': 'no_coords'
-                                    }])
-                                    
-                            elif assignment.status == 'picked_up':
-                                # Заказ взят - показываем кнопки для доставки
-                                keyboard.append([{
-                                    'text': f'🚚 В пути #{order.id}',
-                                    'callback_data': f'intransit_{order.id}'
-                                }])
-                                
-                                if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
-                                    route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.latitude},{address.longitude}&rtt=auto"
-                                    keyboard.append([{
-                                        'text': f'🗺️ Маршрут #{order.id}',
-                                        'url': route_url
                                     }])
                                     
                             elif assignment.status == 'in_transit':
@@ -714,7 +697,7 @@ class DeliveryWebhookView(APIView):
                     
                     assignments = DeliveryAssignment.objects.filter(
                         driver=driver,
-                        status__in=['accepted', 'picked_up', 'in_transit']
+                        status__in=['accepted', 'in_transit']
                     ).order_by('-assigned_at')[:3]
                     
                     if assignments:
@@ -728,7 +711,6 @@ class DeliveryWebhookView(APIView):
                             
                             status_text = {
                                 'accepted': 'Принят',
-                                'picked_up': 'Взят',
                                 'in_transit': 'В пути',
                                 'delivered': 'Доставлен'
                             }.get(assignment.status, assignment.status)
@@ -1197,7 +1179,7 @@ class DeliveryWebhookView(APIView):
             old_status = assignment.status
             assignment.status = new_status
             
-            if new_status == 'picked_up':
+            if new_status == 'in_transit':
                 assignment.picked_up_at = timezone.now()
             elif new_status == 'delivered':
                 assignment.delivered_at = timezone.now()
