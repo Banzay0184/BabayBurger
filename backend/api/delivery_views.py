@@ -532,11 +532,12 @@ class DeliveryWebhookView(APIView):
                 
                 if self.check_pending_receipt_photo(driver):
                     response_text = "💳 У вас есть заказы с оплатой картой, требующие фото чека. Пожалуйста, отправьте фото чека для завершения заказов."
-                    return self.send_delivery_message(
+                    self.send_delivery_message(
                         chat_id, 
                         response_text,
                         reply_markup=self.get_delivery_keyboard()
                     )
+                    return Response({'status': 'ok'}, status=status.HTTP_200_OK)
             except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
                 pass  # Продолжаем обычную обработку
             
@@ -830,11 +831,12 @@ class DeliveryWebhookView(APIView):
                 
                 if self.check_pending_receipt_photo(driver):
                     response_text = "💳 У вас есть заказы с оплатой картой, требующие фото чека. Пожалуйста, отправьте фото чека для завершения заказов."
-                    return self.send_delivery_message(
+                    self.send_delivery_message(
                         chat_id, 
                         response_text,
                         reply_markup=self.get_delivery_keyboard()
                     )
+                    return Response({'status': 'ok'}, status=status.HTTP_200_OK)
             except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
                 pass  # Продолжаем обычную обработку
             
@@ -1693,6 +1695,7 @@ class DeliveryWebhookView(APIView):
                         text=response_text,
                         reply_markup=self.get_delivery_keyboard()
                     )
+                    return Response({'status': 'ok'}, status=status.HTTP_200_OK)
                     
                 else:
                     # Нет заказов, требующих фото чека
@@ -1702,6 +1705,7 @@ class DeliveryWebhookView(APIView):
                         text=response_text,
                         reply_markup=self.get_delivery_keyboard()
                     )
+                    return Response({'status': 'ok'}, status=status.HTTP_200_OK)
                     
             except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
                 response_text = "❌ Вы не зарегистрированы как курьер."
@@ -1710,8 +1714,7 @@ class DeliveryWebhookView(APIView):
                     text=response_text,
                     reply_markup=self.get_delivery_keyboard()
                 )
-                
-            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+                return Response({'status': 'ok'}, status=status.HTTP_200_OK)
                 
         except Exception as e:
             logger.error(f"Error handling photo message: {str(e)}")
