@@ -1218,7 +1218,7 @@ class DeliveryWebhookView(APIView):
             return f"❌ Ошибка обновления статуса заказа #{order_id}"
     
     def send_route_command_to_driver(self, driver_telegram_id):
-        """Отправляет команду /route курьеру после принятия заказа"""
+        """Отправляет обновленный маршрут курьеру после принятия заказа"""
         try:
             import requests
             import os
@@ -1231,19 +1231,109 @@ class DeliveryWebhookView(APIView):
                 logger.warning("DELIVERY_BOT_TOKEN not found")
                 return
             
-            # Отправляем команду /route курьеру
-            url = f"https://api.telegram.org/bot{delivery_bot_token}/sendMessage"
-            data = {
-                "chat_id": driver_telegram_id,
-                "text": "🗺️ Ваш маршрут обновлен! Используйте команду /route для просмотра.",
-                "parse_mode": "HTML"
-            }
-            
-            response = requests.post(url, json=data, timeout=10)
-            if response.status_code == 200:
-                logger.info(f"Route command notification sent to driver {driver_telegram_id}")
-            else:
-                logger.error(f"Error sending route command notification: {response.status_code} - {response.text}")
+            # Получаем активные заказы курьера
+            from api.models import User, DeliveryDriver, DeliveryAssignment
+            try:
+                user = User.objects.get(telegram_id=driver_telegram_id)
+                driver = DeliveryDriver.objects.get(user=user)
+                
+                assignments = DeliveryAssignment.objects.filter(
+                    driver=driver,
+                    status__in=['accepted', 'in_transit']
+                ).order_by('-assigned_at')[:3]
+                
+                if assignments:
+                    route_text = "🗺️ Ваш маршрут обновлен!\n\n"
+                    keyboard = []
+                    
+                    for i, assignment in enumerate(assignments, 1):
+                        order = assignment.order
+                        restaurant = order.restaurant
+                        address = order.address
+                        
+                        status_text = {
+                            'accepted': 'Принят',
+                            'in_transit': 'В пути',
+                            'delivered': 'Доставлен'
+                        }.get(assignment.status, assignment.status)
+                        
+                        route_text += (
+                            f"{i}. Заказ #{order.id}\n"
+                            f"   📍 От: {restaurant.name if restaurant else 'Не указан'}\n"
+                            f"   📍 До: {address.street if address else 'Не указан'}, {address.house_number if address else ''}\n"
+                            f"   📞 Клиент: {order.phone}\n"
+                            f"   💰 Сумма: {order.final_price:,} сум\n"
+                            f"   ⏰ Статус: {status_text}\n\n"
+                        )
+                        
+                        # Создаем кнопки в зависимости от статуса заказа
+                        if assignment.status == 'accepted':
+                            # Заказ принят - показываем кнопки для начала процесса
+                            keyboard.append([{
+                                'text': f'🚗 Взять заказ #{order.id}',
+                                'callback_data': f'intransit_{order.id}'
+                            }])
+                            
+                            if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
+                                route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.latitude},{address.longitude}&rtt=auto"
+                                keyboard.append([{
+                                    'text': f'🗺️ Показать маршрут #{order.id}',
+                                    'url': route_url
+                                }])
+                            else:
+                                keyboard.append([{
+                                    'text': f'❌ Нет координат #{order.id}',
+                                    'callback_data': 'no_coords'
+                                }])
+                                
+                        elif assignment.status == 'in_transit':
+                            # В пути - показываем кнопку завершения
+                            keyboard.append([{
+                                'text': f'✅ Завершить заказ #{order.id}',
+                                'callback_data': f'delivered_{order.id}'
+                            }])
+                            
+                            if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
+                                route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.latitude},{address.longitude}&rtt=auto"
+                                keyboard.append([{
+                                    'text': f'🗺️ Маршрут #{order.id}',
+                                    'url': route_url
+                                }])
+                    
+                    # Создаем только inline keyboard для кнопок процесса
+                    reply_markup = {'inline_keyboard': keyboard} if keyboard else {}
+                    
+                    # Отправляем обновленное сообщение курьеру
+                    url = f"https://api.telegram.org/bot{delivery_bot_token}/sendMessage"
+                    data = {
+                        "chat_id": driver_telegram_id,
+                        "text": route_text,
+                        "parse_mode": "HTML",
+                        "reply_markup": reply_markup
+                    }
+                    
+                    response = requests.post(url, json=data, timeout=10)
+                    if response.status_code == 200:
+                        logger.info(f"Updated route sent to driver {driver_telegram_id}")
+                    else:
+                        logger.error(f"Error sending updated route: {response.status_code} - {response.text}")
+                else:
+                    # Нет активных заказов
+                    url = f"https://api.telegram.org/bot{delivery_bot_token}/sendMessage"
+                    data = {
+                        "chat_id": driver_telegram_id,
+                        "text": "🗺️ У вас нет активных заказов для маршрута.",
+                        "parse_mode": "HTML"
+                    }
+                    
+                    response = requests.post(url, json=data, timeout=10)
+                    if response.status_code == 200:
+                        logger.info(f"No active orders notification sent to driver {driver_telegram_id}")
+                    else:
+                        logger.error(f"Error sending no orders notification: {response.status_code} - {response.text}")
+                        
+            except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
+                logger.warning(f"Driver with telegram_id {driver_telegram_id} not found")
                 
         except Exception as e:
             logger.error(f"Error sending route command to driver: {str(e)}")
