@@ -1543,6 +1543,7 @@ class DeliveryWebhookView(APIView):
         """Обрабатывает фотографии от курьера"""
         try:
             from api.models import User, DeliveryDriver, DeliveryAssignment, Order
+            from django.db import models
             import requests
             import os
             from dotenv import load_dotenv
@@ -1561,8 +1562,9 @@ class DeliveryWebhookView(APIView):
                 assignments = DeliveryAssignment.objects.filter(
                     driver=driver,
                     status='picked_up',
-                    order__payment_method='card',
-                    receipt_photo__isnull=True
+                    order__payment_method='card'
+                ).filter(
+                    models.Q(receipt_photo__isnull=True) | models.Q(receipt_photo__exact='')
                 ).order_by('-assigned_at')[:1]
                 
                 logger.info(f"Found {assignments.count()} assignments requiring receipt photo")
