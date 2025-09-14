@@ -469,8 +469,7 @@ class DeliveryWebhookView(APIView):
                     "Вы готовы принимать заказы на доставку!\n\n"
                     "Доступные функции:\n"
                     "📦 Мои заказы - просмотр активных заказов\n"
-                    "🗺️ Маршрут - маршрут доставки с кнопками\n"
-                    "🗺️ Карты - карты маршрутов\n"
+                    "🗺️ Маршрут - маршрут доставки с кнопками процесса\n"
                     "📊 Статус - статус курьера\n"
                     "⚙️ Изменить статус - изменить статус курьера\n"
                     "❓ Помощь - справка\n\n"
@@ -624,32 +623,60 @@ class DeliveryWebhookView(APIView):
                                 f"   ⏰ Статус: {status_text}\n\n"
                             )
                         
-                        # Добавляем кнопки для обновления статуса и маршрута
+                        # Добавляем кнопки для процесса доставки
                         keyboard = []
                         for assignment in assignments:
                             order = assignment.order
                             restaurant = order.restaurant
                             address = order.address
                             
-                            # Кнопка маршрута для каждого заказа
-                            if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
-                                route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.latitude},{address.longitude}&rtt=auto"
+                            # Кнопки в зависимости от статуса заказа
+                            if assignment.status == 'accepted':
+                                # Заказ принят - показываем кнопки для начала процесса
                                 keyboard.append([{
-                                    'text': f'🗺️ Маршрут #{order.id}',
-                                    'url': route_url
+                                    'text': f'🚗 Взять заказ #{order.id}',
+                                    'callback_data': f'pickup_{order.id}'
                                 }])
-                            
-                            # Кнопки статуса (только для уже принятых заказов)
-                            if assignment.status == 'picked_up':
+                                
+                                if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
+                                    route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.latitude},{address.longitude}&rtt=auto"
+                                    keyboard.append([{
+                                        'text': f'🗺️ Показать маршрут #{order.id}',
+                                        'url': route_url
+                                    }])
+                                else:
+                                    keyboard.append([{
+                                        'text': f'❌ Нет координат #{order.id}',
+                                        'callback_data': 'no_coords'
+                                    }])
+                                    
+                            elif assignment.status == 'picked_up':
+                                # Заказ взят - показываем кнопки для доставки
                                 keyboard.append([{
-                                    'text': f'🚗 В пути #{assignment.order.id}',
-                                    'callback_data': f'intransit_{assignment.order.id}'
+                                    'text': f'🚚 В пути #{order.id}',
+                                    'callback_data': f'intransit_{order.id}'
                                 }])
+                                
+                                if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
+                                    route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.latitude},{address.longitude}&rtt=auto"
+                                    keyboard.append([{
+                                        'text': f'🗺️ Маршрут #{order.id}',
+                                        'url': route_url
+                                    }])
+                                    
                             elif assignment.status == 'in_transit':
+                                # В пути - показываем кнопку завершения
                                 keyboard.append([{
-                                    'text': f'✅ Доставлен #{assignment.order.id}',
-                                    'callback_data': f'delivered_{assignment.order.id}'
+                                    'text': f'✅ Завершить заказ #{order.id}',
+                                    'callback_data': f'delivered_{order.id}'
                                 }])
+                                
+                                if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
+                                    route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.latitude},{address.longitude}&rtt=auto"
+                                    keyboard.append([{
+                                        'text': f'🗺️ Маршрут #{order.id}',
+                                        'url': route_url
+                                    }])
                         
                         # Создаем комбинированный reply_markup с inline кнопками и Reply Keyboard
                         combined_markup = {'inline_keyboard': keyboard} if keyboard else {}
@@ -787,8 +814,7 @@ class DeliveryWebhookView(APIView):
                 help_text = (
                     "🚚 Помощь по кнопкам:\n\n"
                     "📦 Мои заказы - просмотр активных заказов\n"
-                    "🗺️ Маршрут - маршрут доставки с кнопками\n"
-                    "🗺️ Карты - карты маршрутов\n"
+                    "🗺️ Маршрут - маршрут доставки с кнопками процесса\n"
                     "📊 Статус - статус курьера\n"
                     "⚙️ Изменить статус - изменить статус курьера\n"
                     "❓ Помощь - эта справка\n\n"
@@ -823,8 +849,6 @@ class DeliveryWebhookView(APIView):
                 return self.handle_command("/orders", chat_id, user_info)
             elif text == "🗺️ Маршрут":
                 return self.handle_command("/route", chat_id, user_info)
-            elif text == "🗺️ Карты":
-                return self.handle_command("/map", chat_id, user_info)
             elif text == "📊 Статус":
                 return self.handle_command("/status", chat_id, user_info)
             elif text == "❓ Помощь":
@@ -837,9 +861,9 @@ class DeliveryWebhookView(APIView):
                     "🚚 Спасибо за сообщение!\n\n"
                     "Используйте кнопки внизу экрана для взаимодействия с ботом:\n\n"
                     "📦 Мои заказы - просмотр активных заказов\n"
-                    "🗺️ Маршрут - маршрут доставки\n"
-                    "🗺️ Карты - карты маршрутов\n"
+                    "🗺️ Маршрут - маршрут доставки с кнопками процесса\n"
                     "📊 Статус - статус курьера\n"
+                    "⚙️ Изменить статус - изменить статус курьера\n"
                     "❓ Помощь - справка"
                 )
                 
@@ -1045,8 +1069,8 @@ class DeliveryWebhookView(APIView):
         return {
             "keyboard": [
                 ["📦 Мои заказы", "🗺️ Маршрут"],
-                ["🗺️ Карты", "📊 Статус"],
-                ["⚙️ Изменить статус", "❓ Помощь"]
+                ["📊 Статус", "⚙️ Изменить статус"],
+                ["❓ Помощь"]
             ],
             "resize_keyboard": True,
             "one_time_keyboard": False,
