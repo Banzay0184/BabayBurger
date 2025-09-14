@@ -899,7 +899,6 @@ class DeliveryWebhookView(APIView):
                     driver_id = parts[4]
                     
                     try:
-                        from api.models import DeliveryDriver
                         driver = DeliveryDriver.objects.get(id=driver_id, telegram_id=user_id)
                         
                         old_status = driver.status
