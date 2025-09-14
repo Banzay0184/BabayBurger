@@ -404,6 +404,7 @@ class DeliveryWebhookView(APIView):
                 photo_info = message.get('photo', [])
                 chat_id = message.get('chat', {}).get('id')
                 user_info = message.get('from', {})
+                logger.info(f"Processing photo message from user {user_info.get('id')} in chat {chat_id}")
                 return self.handle_photo_message(chat_id, user_info, photo_info)
             
             else:
