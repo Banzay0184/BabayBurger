@@ -875,6 +875,12 @@ class DeliveryWebhookView(APIView):
                 self.answer_callback_query(callback_id, response_text)
                 logger.info(f"Test button callback processed for user {user_id}")
             
+            # Обрабатываем кнопку "Заказ принят"
+            elif callback_data == 'order_taken':
+                response_text = "✅ Заказ уже принят курьером"
+                self.answer_callback_query(callback_id, response_text)
+                logger.info(f"Order taken callback processed for user {user_id}")
+            
             # Обрабатываем callback для обновления статуса заказа
             elif callback_data.startswith('pickup_'):
                 order_id = callback_data.replace('pickup_', '')
@@ -1138,13 +1144,19 @@ class DeliveryWebhookView(APIView):
             if order.notes:
                 message += f"\n\n📝 <b>Заметки:</b> {order.notes}"
             
-            # Обновляем сообщение
+            # Обновляем сообщение с новыми кнопками
             url = f"https://api.telegram.org/bot{delivery_bot_token}/editMessageText"
             data = {
                 "chat_id": group_chat_id,
                 "message_id": order.telegram_message_id,
                 "text": message,
-                "parse_mode": "HTML"
+                "parse_mode": "HTML",
+                "reply_markup": {
+                    "inline_keyboard": [[{
+                        "text": f"✅ Принят курьером: {assignment.driver.user.first_name}",
+                        "callback_data": "order_taken"
+                    }]]
+                }
             }
             
             response = requests.post(url, json=data, timeout=10)
