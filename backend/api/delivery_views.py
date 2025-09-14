@@ -469,9 +469,10 @@ class DeliveryWebhookView(APIView):
                     "Вы готовы принимать заказы на доставку!\n\n"
                     "Доступные функции:\n"
                     "📦 Мои заказы - просмотр активных заказов\n"
-                    "🗺️ Маршрут - маршрут доставки\n"
+                    "🗺️ Маршрут - маршрут доставки с кнопками\n"
                     "🗺️ Карты - карты маршрутов\n"
                     "📊 Статус - статус курьера\n"
+                    "⚙️ Изменить статус - изменить статус курьера\n"
                     "❓ Помощь - справка\n\n"
                     "💡 Используйте кнопки внизу экрана!"
                 )
@@ -557,13 +558,20 @@ class DeliveryWebhookView(APIView):
                                 'delivered': '🎉'
                             }.get(assignment.status, '❓')
                             
+                            status_text = {
+                                'accepted': 'Принят',
+                                'picked_up': 'Взят',
+                                'in_transit': 'В пути',
+                                'delivered': 'Доставлен'
+                            }.get(assignment.status, assignment.status)
+                            
                             orders_text += (
                                 f"{status_emoji} Заказ #{order.id}\n"
                                 f"   📍 От: {restaurant.name if restaurant else 'Не указан'}\n"
                                 f"   📍 До: {address.street if address else 'Не указан'}, {address.house_number if address else ''}\n"
                                 f"   📞 Клиент: {order.phone}\n"
                                 f"   💰 Сумма: {order.final_price:,} сум\n"
-                                f"   ⏰ Статус: {assignment.status}\n"
+                                f"   ⏰ Статус: {status_text}\n"
                                 f"   📅 Назначен: {assignment.assigned_at.strftime('%H:%M %d.%m')}\n\n"
                             )
                     else:
@@ -600,13 +608,20 @@ class DeliveryWebhookView(APIView):
                             restaurant = order.restaurant
                             address = order.address
                             
+                            status_text = {
+                                'accepted': 'Принят',
+                                'picked_up': 'Взят',
+                                'in_transit': 'В пути',
+                                'delivered': 'Доставлен'
+                            }.get(assignment.status, assignment.status)
+                            
                             route_text += (
                                 f"{i}. Заказ #{order.id}\n"
                                 f"   📍 От: {restaurant.name}\n"
                                 f"   📍 До: {address.street}, {address.house_number}\n"
                                 f"   📞 Клиент: {order.phone}\n"
                                 f"   💰 Сумма: {order.final_price:,} сум\n"
-                                f"   ⏰ Статус: {assignment.status}\n\n"
+                                f"   ⏰ Статус: {status_text}\n\n"
                             )
                         
                         # Добавляем кнопки для обновления статуса и маршрута
@@ -685,15 +700,22 @@ class DeliveryWebhookView(APIView):
                             restaurant = order.restaurant
                             address = order.address
                             
+                            status_text = {
+                                'accepted': 'Принят',
+                                'picked_up': 'Взят',
+                                'in_transit': 'В пути',
+                                'delivered': 'Доставлен'
+                            }.get(assignment.status, assignment.status)
+                            
                             if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
                                 route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.latitude},{address.longitude}&rtt=auto"
-                                map_text += f"📍 Заказ #{order.id}: {restaurant.name} → {address.street}\n"
+                                map_text += f"📍 Заказ #{order.id} ({status_text}): {restaurant.name} → {address.street}\n"
                                 keyboard.append([{
                                     'text': f'🗺️ Маршрут #{order.id}',
                                     'url': route_url
                                 }])
                             else:
-                                map_text += f"❌ Заказ #{order.id}: Нет координат для маршрута\n"
+                                map_text += f"❌ Заказ #{order.id} ({status_text}): Нет координат для маршрута\n"
                         
                         # Создаем комбинированный reply_markup с inline кнопками и Reply Keyboard
                         combined_markup = {'inline_keyboard': keyboard} if keyboard else {}
@@ -721,6 +743,46 @@ class DeliveryWebhookView(APIView):
                         reply_markup=self.get_delivery_keyboard()
                     )
                 
+            elif text == '/change_status':
+                # Показываем кнопки для изменения статуса курьера
+                from api.models import User, DeliveryDriver
+                telegram_id = user_info.get('id')
+                
+                try:
+                    user = User.objects.get(telegram_id=telegram_id)
+                    driver = DeliveryDriver.objects.get(user=user)
+                    
+                    status_text = (
+                        f"⚙️ Изменение статуса курьера:\n\n"
+                        f"Текущий статус: {driver.status}\n"
+                        f"Активен: {'Да' if driver.is_active else 'Нет'}\n\n"
+                        f"Выберите новый статус:"
+                    )
+                    
+                    # Создаем inline keyboard для выбора статуса
+                    keyboard = [
+                        [{'text': '🟢 Активный', 'callback_data': f'change_driver_status_active_{driver.id}'}],
+                        [{'text': '🟡 Занят', 'callback_data': f'change_driver_status_busy_{driver.id}'}],
+                        [{'text': '🔴 Не в сети', 'callback_data': f'change_driver_status_offline_{driver.id}'}]
+                    ]
+                    
+                    combined_markup = {'inline_keyboard': keyboard}
+                    combined_markup.update(self.get_delivery_keyboard())
+                    
+                    result = self.send_delivery_message(
+                        chat_id, 
+                        status_text,
+                        reply_markup=combined_markup
+                    )
+                    
+                except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
+                    status_text = "❌ Вы не зарегистрированы как курьер."
+                    result = self.send_delivery_message(
+                        chat_id, 
+                        status_text,
+                        reply_markup=self.get_delivery_keyboard()
+                    )
+                
             elif text == '/help':
                 help_text = (
                     "🚚 Помощь по кнопкам:\n\n"
@@ -728,6 +790,7 @@ class DeliveryWebhookView(APIView):
                     "🗺️ Маршрут - маршрут доставки с кнопками\n"
                     "🗺️ Карты - карты маршрутов\n"
                     "📊 Статус - статус курьера\n"
+                    "⚙️ Изменить статус - изменить статус курьера\n"
                     "❓ Помощь - эта справка\n\n"
                     "💡 Используйте кнопки внизу экрана для удобства!"
                 )
@@ -766,6 +829,8 @@ class DeliveryWebhookView(APIView):
                 return self.handle_command("/status", chat_id, user_info)
             elif text == "❓ Помощь":
                 return self.handle_command("/help", chat_id, user_info)
+            elif text == "⚙️ Изменить статус":
+                return self.handle_command("/change_status", chat_id, user_info)
             else:
                 # Простой ответ на обычные сообщения
                 response_text = (
@@ -822,6 +887,40 @@ class DeliveryWebhookView(APIView):
                 order_id = callback_data.replace('delivered_', '')
                 response_text = self.update_order_status(order_id, user_id, 'delivered', 'доставлен')
                 self.answer_callback_query(callback_id, response_text)
+                
+            elif callback_data.startswith('change_driver_status_'):
+                # Обрабатываем изменение статуса курьера
+                parts = callback_data.split('_')
+                if len(parts) >= 4:
+                    new_status = parts[3]  # active, busy, offline
+                    driver_id = parts[4]
+                    
+                    try:
+                        from api.models import DeliveryDriver
+                        driver = DeliveryDriver.objects.get(id=driver_id, telegram_id=user_id)
+                        
+                        old_status = driver.status
+                        driver.status = new_status
+                        driver.save()
+                        
+                        status_names = {
+                            'active': 'Активный',
+                            'busy': 'Занят',
+                            'offline': 'Не в сети'
+                        }
+                        
+                        response_text = f"✅ Статус изменен с '{old_status}' на '{status_names.get(new_status, new_status)}'"
+                        self.answer_callback_query(callback_id, response_text)
+                        
+                        logger.info(f"Driver {driver.user.first_name} status changed from {old_status} to {new_status}")
+                        
+                    except DeliveryDriver.DoesNotExist:
+                        response_text = "❌ Курьер не найден"
+                        self.answer_callback_query(callback_id, response_text)
+                    except Exception as e:
+                        logger.error(f"Error changing driver status: {str(e)}")
+                        response_text = "❌ Ошибка изменения статуса"
+                        self.answer_callback_query(callback_id, response_text)
             
             # Обрабатываем callback для принятия заказа
             elif callback_data.startswith('take_order_'):
@@ -947,7 +1046,7 @@ class DeliveryWebhookView(APIView):
             "keyboard": [
                 ["📦 Мои заказы", "🗺️ Маршрут"],
                 ["🗺️ Карты", "📊 Статус"],
-                ["❓ Помощь"]
+                ["⚙️ Изменить статус", "❓ Помощь"]
             ],
             "resize_keyboard": True,
             "one_time_keyboard": False,
