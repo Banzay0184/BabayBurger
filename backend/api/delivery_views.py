@@ -399,6 +399,13 @@ class DeliveryWebhookView(APIView):
                 callback_query = update['callback_query']
                 return self.handle_callback_query(callback_query)
             
+            # Обработка фотографий
+            elif message and message.get('photo'):
+                photo_info = message.get('photo', [])
+                chat_id = message.get('chat', {}).get('id')
+                user_info = message.get('from', {})
+                return self.handle_photo_message(chat_id, user_info, photo_info)
+            
             else:
                 logger.warning(f"Delivery webhook received unknown update type: {update}")
                 return Response({'status': 'ok'}, status=status.HTTP_200_OK)
@@ -856,8 +863,28 @@ class DeliveryWebhookView(APIView):
                 
             elif callback_data.startswith('delivered_'):
                 order_id = callback_data.replace('delivered_', '')
-                response_text = self.update_order_status(order_id, user_id, 'delivered', 'доставлен')
-                self.answer_callback_query(callback_id, response_text)
+                
+                # Проверяем способ оплаты
+                try:
+                    order = Order.objects.get(id=order_id)
+                    if order.payment_method == 'card':
+                        # Оплата картой - требуем фото чека
+                        response_text = "💳 Оплата картой! Пожалуйста, отправьте фото чека для завершения заказа."
+                        self.answer_callback_query(callback_id, response_text, show_alert=True)
+                        
+                        # Отправляем сообщение с инструкцией
+                        self.request_receipt_photo(user_id, order_id)
+                    else:
+                        # Оплата наличными - завершаем сразу
+                        response_text = self.update_order_status(order_id, user_id, 'delivered', 'доставлен')
+                        self.answer_callback_query(callback_id, response_text)
+                        
+                        # Обновляем сообщение курьера после завершения заказа
+                        self.update_driver_message_after_delivery(user_id, order_id)
+                        
+                except Order.DoesNotExist:
+                    response_text = f"❌ Заказ #{order_id} не найден"
+                    self.answer_callback_query(callback_id, response_text)
                 
             elif callback_data.startswith('change_driver_status_'):
                 # Обрабатываем изменение статуса курьера
@@ -1378,3 +1405,261 @@ class DeliveryWebhookView(APIView):
                 
         except Exception as e:
             logger.error(f"Error updating driver message after pickup: {str(e)}")
+    
+    def update_driver_message_after_delivery(self, driver_telegram_id, order_id):
+        """Обновляет сообщение курьера после завершения заказа"""
+        try:
+            import requests
+            import os
+            from dotenv import load_dotenv
+            load_dotenv()
+            
+            delivery_bot_token = os.getenv('DELIVERY_BOT_TOKEN')
+            
+            if not delivery_bot_token:
+                logger.warning("DELIVERY_BOT_TOKEN not found")
+                return
+            
+            # Получаем активные заказы курьера
+            from api.models import User, DeliveryDriver, DeliveryAssignment
+            try:
+                user = User.objects.get(telegram_id=driver_telegram_id)
+                driver = DeliveryDriver.objects.get(user=user)
+                
+                assignments = DeliveryAssignment.objects.filter(
+                    driver=driver,
+                    status__in=['accepted', 'picked_up']
+                ).order_by('-assigned_at')[:3]
+                
+                if assignments:
+                    route_text = "🗺️ <b>Ваш маршрут обновлен!</b>\n\n"
+                    
+                    for i, assignment in enumerate(assignments, 1):
+                        order = assignment.order
+                        restaurant = order.restaurant
+                        address = order.address
+                        
+                        status_text = {
+                            'accepted': 'Принят',
+                            'picked_up': 'В пути',
+                            'delivered': 'Доставлен'
+                        }.get(assignment.status, assignment.status)
+                        
+                        route_text += (
+                            f"{i}. Заказ #{order.id}\n"
+                            f"   📍 От: {restaurant.name if restaurant else 'Не указан'}\n"
+                            f"   📍 До: {address.street if address else 'Не указан'}, {address.house_number if address else ''}\n"
+                            f"   📞 Клиент: {order.phone}\n"
+                            f"   💰 Сумма: {order.final_price:,} сум\n"
+                            f"   ⏰ Статус: {status_text}\n\n"
+                        )
+                    
+                    # Создаем клавиатуру с кнопками
+                    reply_markup = self.create_order_keyboard(assignments)
+                    
+                    # Отправляем обновленное сообщение курьеру
+                    url = f"https://api.telegram.org/bot{delivery_bot_token}/sendMessage"
+                    data = {
+                        "chat_id": driver_telegram_id,
+                        "text": route_text,
+                        "parse_mode": "HTML",
+                        "reply_markup": reply_markup
+                    }
+                    
+                    response = requests.post(url, json=data, timeout=10)
+                    if response.status_code == 200:
+                        logger.info(f"Updated message sent to driver {driver_telegram_id} after delivery")
+                    else:
+                        logger.error(f"Error sending updated message: {response.status_code} - {response.text}")
+                else:
+                    # Нет активных заказов - отправляем сообщение о завершении
+                    completion_text = f"🎉 <b>Заказ #{order_id} завершен!</b>\n\nУ вас нет активных заказов."
+                    
+                    url = f"https://api.telegram.org/bot{delivery_bot_token}/sendMessage"
+                    data = {
+                        "chat_id": driver_telegram_id,
+                        "text": completion_text,
+                        "parse_mode": "HTML"
+                    }
+                    
+                    response = requests.post(url, json=data, timeout=10)
+                    if response.status_code == 200:
+                        logger.info(f"Completion message sent to driver {driver_telegram_id}")
+                    else:
+                        logger.error(f"Error sending completion message: {response.status_code} - {response.text}")
+                        
+            except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
+                logger.warning(f"Driver with telegram_id {driver_telegram_id} not found")
+                
+        except Exception as e:
+            logger.error(f"Error updating driver message after delivery: {str(e)}")
+    
+    def request_receipt_photo(self, driver_telegram_id, order_id):
+        """Отправляет курьеру запрос на фото чека"""
+        try:
+            import requests
+            import os
+            from dotenv import load_dotenv
+            load_dotenv()
+            
+            delivery_bot_token = os.getenv('DELIVERY_BOT_TOKEN')
+            
+            if not delivery_bot_token:
+                logger.warning("DELIVERY_BOT_TOKEN not found")
+                return
+            
+            # Отправляем сообщение с инструкцией
+            message_text = f"""💳 <b>Заказ #{order_id} - Оплата картой</b>
+
+Для завершения заказа необходимо отправить фото чека.
+
+📸 <b>Инструкция:</b>
+1. Сделайте фото чека
+2. Отправьте его в этот чат
+3. После проверки заказ будет завершен
+
+⚠️ <b>Важно:</b> Чек должен быть четким и читаемым!"""
+            
+            url = f"https://api.telegram.org/bot{delivery_bot_token}/sendMessage"
+            data = {
+                "chat_id": driver_telegram_id,
+                "text": message_text,
+                "parse_mode": "HTML"
+            }
+            
+            response = requests.post(url, json=data, timeout=10)
+            if response.status_code == 200:
+                logger.info(f"Receipt photo request sent to driver {driver_telegram_id} for order #{order_id}")
+            else:
+                logger.error(f"Error sending receipt photo request: {response.status_code} - {response.text}")
+                
+        except Exception as e:
+            logger.error(f"Error requesting receipt photo: {str(e)}")
+    
+    def handle_photo_message(self, chat_id, user_info, photo_info):
+        """Обрабатывает фотографии от курьера"""
+        try:
+            from api.models import User, DeliveryDriver, DeliveryAssignment, Order
+            import requests
+            import os
+            from dotenv import load_dotenv
+            load_dotenv()
+            
+            telegram_id = user_info.get('id')
+            
+            # Ищем курьера
+            try:
+                user = User.objects.get(telegram_id=telegram_id)
+                driver = DeliveryDriver.objects.get(user=user)
+                
+                # Ищем активные заказы курьера, которые требуют фото чека
+                assignments = DeliveryAssignment.objects.filter(
+                    driver=driver,
+                    status='picked_up',
+                    order__payment_method='card',
+                    receipt_photo__isnull=True
+                ).order_by('-assigned_at')[:1]
+                
+                if assignments:
+                    assignment = assignments[0]
+                    order = assignment.order
+                    
+                    # Получаем файл фотографии
+                    delivery_bot_token = os.getenv('DELIVERY_BOT_TOKEN')
+                    if not delivery_bot_token:
+                        logger.error("DELIVERY_BOT_TOKEN not found")
+                        return Response({'error': 'Bot token not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    
+                    # Получаем file_id самого большого фото
+                    largest_photo = max(photo_info, key=lambda x: x.get('file_size', 0))
+                    file_id = largest_photo.get('file_id')
+                    
+                    # Получаем URL файла
+                    file_url_response = requests.get(
+                        f"https://api.telegram.org/bot{delivery_bot_token}/getFile",
+                        params={'file_id': file_id},
+                        timeout=10
+                    )
+                    
+                    if file_url_response.status_code == 200:
+                        file_data = file_url_response.json()
+                        if file_data.get('ok'):
+                            file_path = file_data['result']['file_path']
+                            file_url = f"https://api.telegram.org/file/bot{delivery_bot_token}/{file_path}"
+                            
+                            # Скачиваем файл
+                            photo_response = requests.get(file_url, timeout=30)
+                            if photo_response.status_code == 200:
+                                # Сохраняем фото
+                                from django.core.files.base import ContentFile
+                                photo_content = ContentFile(photo_response.content)
+                                photo_name = f"receipt_order_{order.id}_{assignment.id}.jpg"
+                                assignment.receipt_photo.save(photo_name, photo_content, save=True)
+                                
+                                # Обновляем статус заказа
+                                assignment.status = 'delivered'
+                                assignment.delivered_at = timezone.now()
+                                assignment.save()
+                                
+                                # Обновляем статус заказа
+                                order.status = 'completed'
+                                order.save()
+                                
+                                # Обновляем счетчик курьера
+                                driver.current_orders_count = max(0, driver.current_orders_count - 1)
+                                driver.total_deliveries += 1
+                                driver.save()
+                                
+                                # Отправляем подтверждение
+                                response_text = f"✅ Фото чека получено для заказа #{order.id}!\n\n🎉 Заказ завершен."
+                                self.send_delivery_message(
+                                    chat_id=chat_id,
+                                    text=response_text,
+                                    reply_markup=self.get_delivery_keyboard()
+                                )
+                                
+                                logger.info(f"Receipt photo processed for order #{order.id} by driver {driver.user.first_name}")
+                                return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+                            else:
+                                logger.error(f"Error downloading photo: {photo_response.status_code}")
+                        else:
+                            logger.error(f"Error getting file info: {file_data}")
+                    else:
+                        logger.error(f"Error getting file URL: {file_url_response.status_code}")
+                        
+                    # Если не удалось обработать фото
+                    response_text = "❌ Ошибка обработки фото. Попробуйте еще раз."
+                    self.send_delivery_message(
+                        chat_id=chat_id,
+                        text=response_text,
+                        reply_markup=self.get_delivery_keyboard()
+                    )
+                    
+                else:
+                    # Нет заказов, требующих фото чека
+                    response_text = "❌ У вас нет заказов, требующих фото чека."
+                    self.send_delivery_message(
+                        chat_id=chat_id,
+                        text=response_text,
+                        reply_markup=self.get_delivery_keyboard()
+                    )
+                    
+            except (User.DoesNotExist, DeliveryDriver.DoesNotExist):
+                response_text = "❌ Вы не зарегистрированы как курьер."
+                self.send_delivery_message(
+                    chat_id=chat_id,
+                    text=response_text,
+                    reply_markup=self.get_delivery_keyboard()
+                )
+                
+            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+                
+        except Exception as e:
+            logger.error(f"Error handling photo message: {str(e)}")
+            response_text = "❌ Ошибка обработки фото. Попробуйте еще раз."
+            self.send_delivery_message(
+                chat_id=chat_id,
+                text=response_text,
+                reply_markup=self.get_delivery_keyboard()
+            )
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

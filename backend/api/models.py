@@ -1528,6 +1528,7 @@ class DeliveryAssignment(models.Model):
     picked_up_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата забора")
     delivered_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата доставки")
     notes = models.TextField(blank=True, verbose_name="Заметки")
+    receipt_photo = models.ImageField(upload_to='receipts/', null=True, blank=True, verbose_name="Фото чека")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
     
