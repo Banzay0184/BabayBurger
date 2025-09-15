@@ -193,14 +193,25 @@ class OrderForOperatorSerializer(serializers.ModelSerializer):
     
     def get_delivery_zone_info(self, obj):
         """Получить информацию о зоне доставки"""
-        if obj.address and obj.address.delivery_zone:
-            zone = obj.address.delivery_zone
-            return {
-                'id': zone.id,
-                'name': zone.name or '',
-                'city': zone.city or '',
-                'delivery_fee': zone.delivery_fee or 0
-            }
+        if obj.address:
+            # Проверяем, находится ли адрес в какой-либо зоне доставки
+            is_in_zone, message = obj.address.is_in_delivery_zone()
+            if is_in_zone:
+                # Находим зону доставки для этого адреса
+                from api.models import DeliveryZone
+                delivery_zones = DeliveryZone.objects.filter(
+                    city=obj.address.city,
+                    is_active=True
+                )
+                
+                for zone in delivery_zones:
+                    if zone.is_address_in_zone(obj.address.latitude, obj.address.longitude):
+                        return {
+                            'id': zone.id,
+                            'name': zone.name or '',
+                            'city': zone.city or '',
+                            'delivery_fee': zone.delivery_fee or 0
+                        }
         return None
 
 
