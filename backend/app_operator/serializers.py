@@ -4,13 +4,15 @@ from .models import (
     Operator, OperatorSession, OrderAssignment, OrderStatusHistory, 
     OperatorOrderNumber, OperatorNotification, OperatorAnalytics
 )
+from api.models import Order, OrderItem
+from api.serializers import OrderItemSerializer
 
 
 class OperatorSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Operator"""
     formatted_phone = serializers.ReadOnlyField()
     assigned_zones_names = serializers.ReadOnlyField()
-    
+
     class Meta:
         model = Operator
         fields = [
@@ -26,7 +28,7 @@ class OperatorSessionSerializer(serializers.ModelSerializer):
     operator_name = serializers.CharField(source='operator.get_full_name', read_only=True)
     duration = serializers.ReadOnlyField()
     avg_delivery_time = serializers.ReadOnlyField()
-    
+
     class Meta:
         model = OperatorSession
         fields = [
@@ -42,7 +44,7 @@ class OrderAssignmentSerializer(serializers.ModelSerializer):
     order_status = serializers.CharField(source='order.status', read_only=True)
     order_total = serializers.DecimalField(source='order.final_price', max_digits=10, decimal_places=2, read_only=True)
     operator_name = serializers.CharField(source='operator.get_full_name', read_only=True)
-    
+
     class Meta:
         model = OrderAssignment
         fields = [
@@ -56,7 +58,7 @@ class OrderStatusHistorySerializer(serializers.ModelSerializer):
     """Сериализатор для модели OrderStatusHistory"""
     order_id = serializers.IntegerField(source='order.id', read_only=True)
     operator_name = serializers.CharField(source='operator.get_full_name', read_only=True)
-    
+
     class Meta:
         model = OrderStatusHistory
         fields = [
@@ -81,7 +83,7 @@ class OperatorOrderNumberSerializer(serializers.ModelSerializer):
 class OperatorNotificationSerializer(serializers.ModelSerializer):
     """Сериализатор для модели OperatorNotification"""
     operator_name = serializers.CharField(source='operator.get_full_name', read_only=True)
-    
+
     class Meta:
         model = OperatorNotification
         fields = [
@@ -94,7 +96,7 @@ class OperatorNotificationSerializer(serializers.ModelSerializer):
 class OperatorAnalyticsSerializer(serializers.ModelSerializer):
     """Сериализатор для модели OperatorAnalytics"""
     operator_name = serializers.CharField(source='operator.get_full_name', read_only=True)
-    
+
     class Meta:
         model = OperatorAnalytics
         fields = [
@@ -125,3 +127,24 @@ class OperatorAuthSerializer(serializers.Serializer):
                 raise serializers.ValidationError('Неверные учетные данные')
         else:
             raise serializers.ValidationError('Необходимо указать username и password')
+
+
+class OrderForOperatorSerializer(serializers.ModelSerializer):
+    """Сериализатор для заказа, оптимизированный для операторов"""
+    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    user_phone = serializers.CharField(source='user.phone', read_only=True)
+    address_text = serializers.CharField(source='address.address', read_only=True)
+    restaurant_name = serializers.CharField(source='restaurant.name', read_only=True)
+    promo_code_code = serializers.CharField(source='promo_code.code', read_only=True)
+    items = OrderItemSerializer(source='orderitem_set', many=True, read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'user', 'user_name', 'user_phone', 'address', 'address_text',
+            'restaurant', 'restaurant_name', 'promo_code', 'promo_code_code',
+            'total_price', 'final_price', 'delivery_fee', 'status', 'status_display',
+            'payment_method', 'payment_status', 'items', 'notes', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']

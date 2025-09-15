@@ -199,8 +199,16 @@
             console.log('🔧 Зарегистрированные Service Workers:', registrations.length);
             registrations.forEach((registration, index) => {
               console.log(`- SW ${index + 1}:`, registration.scope, registration.active?.scriptURL);
+              console.log(`- SW ${index + 1} состояние:`, registration.active?.state);
             });
           });
+          
+          // Проверяем контроллер
+          if (navigator.serviceWorker.controller) {
+            console.log('✅ Service Worker контроллер активен:', navigator.serviceWorker.controller.scriptURL);
+          } else {
+            console.log('❌ Service Worker контроллер не активен');
+          }
         }
       }
 
@@ -263,6 +271,9 @@
         console.log('- Standalone:', window.matchMedia('(display-mode: standalone)').matches);
         console.log('- iOS Standalone:', (window.navigator as any).standalone);
         console.log('- Deferred Prompt:', !!deferredPrompt);
+        console.log('- URL:', window.location.href);
+        console.log('- Protocol:', window.location.protocol);
+        console.log('- Hostname:', window.location.hostname);
         
         // Проверяем манифест еще раз
         fetch('/manifest.json')
@@ -284,6 +295,19 @@
             if (manifest.icons && manifest.icons.length > 0) {
               manifest.icons.forEach((icon, index) => {
                 console.log(`📱 Иконка ${index + 1}:`, icon);
+                
+                // Проверяем доступность иконки
+                fetch(icon.src)
+                  .then(response => {
+                    if (response.ok) {
+                      console.log(`✅ Иконка ${index + 1} доступна:`, icon.src);
+                    } else {
+                      console.error(`❌ Иконка ${index + 1} недоступна:`, icon.src, response.status);
+                    }
+                  })
+                  .catch(error => {
+                    console.error(`❌ Ошибка загрузки иконки ${index + 1}:`, icon.src, error);
+                  });
               });
             } else {
               console.error('❌ Нет иконок в манифесте!');
@@ -293,6 +317,21 @@
             console.error('❌ Ошибка загрузки манифеста:', error);
           });
       }, 5000);
+      
+      // Дополнительная проверка через 10 секунд
+      setTimeout(() => {
+        console.log('🔍 Проверка через 10 секунд:');
+        console.log('- Deferred Prompt:', !!deferredPrompt);
+        console.log('- PWA установлена:', window.matchMedia('(display-mode: standalone)').matches);
+        
+        if (!deferredPrompt) {
+          console.log('❌ beforeinstallprompt не сработал. Возможные причины:');
+          console.log('1. PWA уже установлена');
+          console.log('2. Браузер не поддерживает PWA');
+          console.log('3. Не выполнены критерии PWA');
+          console.log('4. Проблемы с манифестом или иконками');
+        }
+      }, 10000);
     </script>
   </body>
 </html>
