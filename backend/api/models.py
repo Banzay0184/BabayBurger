@@ -232,6 +232,11 @@ class DeliveryZone(models.Model):
     def is_address_in_zone(self, latitude, longitude):
         """Проверяет, находится ли адрес в зоне доставки"""
         try:
+            # Проверяем, что координаты не None
+            if latitude is None or longitude is None:
+                print(f"⚠️ Координаты адреса отсутствуют: lat={latitude}, lng={longitude}")
+                return False
+            
             # Преобразуем координаты в float для избежания ошибок типов
             latitude = float(latitude)
             longitude = float(longitude)
