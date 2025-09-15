@@ -98,16 +98,18 @@ class CashierAuthSerializer(serializers.Serializer):
         password = attrs.get('password')
         
         if username and password:
-            user = authenticate(username=username, password=password)
-            if user:
-                # Поскольку Cashier наследуется от AbstractUser,
-                # user уже является экземпляром Cashier
-                if hasattr(user, 'is_active_cashier') and user.is_active_cashier:
-                    attrs['cashier'] = user
-                    return attrs
+            # Используем прямую проверку кассира вместо стандартной authenticate()
+            try:
+                cashier = Cashier.objects.get(username=username)
+                if cashier.check_password(password):
+                    if cashier.is_active and cashier.is_active_cashier:
+                        attrs['cashier'] = cashier
+                        return attrs
+                    else:
+                        raise serializers.ValidationError('Кассир неактивен')
                 else:
-                    raise serializers.ValidationError('Кассир неактивен')
-            else:
+                    raise serializers.ValidationError('Неверные учетные данные')
+            except Cashier.DoesNotExist:
                 raise serializers.ValidationError('Неверные учетные данные')
         else:
             raise serializers.ValidationError('Необходимо указать username и password')
@@ -149,16 +151,18 @@ class CashierLoginSerializer(serializers.Serializer):
         password = attrs.get('password')
         
         if username and password:
-            user = authenticate(username=username, password=password)
-            if user:
-                # Поскольку Cashier наследуется от AbstractUser,
-                # user уже является экземпляром Cashier
-                if hasattr(user, 'is_active_cashier') and user.is_active_cashier:
-                    attrs['cashier'] = user
-                    return attrs
+            # Используем прямую проверку кассира вместо стандартной authenticate()
+            try:
+                cashier = Cashier.objects.get(username=username)
+                if cashier.check_password(password):
+                    if cashier.is_active and cashier.is_active_cashier:
+                        attrs['cashier'] = cashier
+                        return attrs
+                    else:
+                        raise serializers.ValidationError('Кассир неактивен')
                 else:
-                    raise serializers.ValidationError('Кассир неактивен')
-            else:
+                    raise serializers.ValidationError('Неверные учетные данные')
+            except Cashier.DoesNotExist:
                 raise serializers.ValidationError('Неверные учетные данные')
         else:
             raise serializers.ValidationError('Необходимо указать username и password')
