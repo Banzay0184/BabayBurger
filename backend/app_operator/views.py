@@ -64,7 +64,7 @@ class OperatorAuthViewSet(viewsets.ViewSet):
         """Вход оператора"""
         serializer = OperatorLoginSerializer(data=request.data)
         if serializer.is_valid():
-            operator = serializer.validated_data['operator']
+            operator = serializer.validated_data['user']
             
             # Создаем или получаем токен
             try:
