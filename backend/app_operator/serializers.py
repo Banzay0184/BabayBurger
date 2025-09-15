@@ -131,23 +131,78 @@ class OperatorAuthSerializer(serializers.Serializer):
 
 class OrderForOperatorSerializer(serializers.ModelSerializer):
     """Сериализатор для заказа, оптимизированный для операторов"""
-    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
-    user_phone = serializers.CharField(source='user.phone', read_only=True)
-    address_text = serializers.CharField(source='address.address', read_only=True)
-    restaurant_name = serializers.CharField(source='restaurant.name', read_only=True)
-    promo_code_code = serializers.CharField(source='promo_code.code', read_only=True)
-    items = OrderItemSerializer(source='orderitem_set', many=True, read_only=True)
+    user_info = serializers.SerializerMethodField()
+    address_info = serializers.SerializerMethodField()
+    restaurant_info = serializers.SerializerMethodField()
+    delivery_zone_info = serializers.SerializerMethodField()
+    items_details = OrderItemSerializer(source='orderitem_set', many=True, read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    service_type_display = serializers.CharField(source='get_service_type_display', read_only=True)
+    payment_method_display = serializers.CharField(source='get_payment_method_display', read_only=True)
     
     class Meta:
         model = Order
         fields = [
-            'id', 'user', 'user_name', 'user_phone', 'address', 'address_text',
-            'restaurant', 'restaurant_name', 'promo_code', 'promo_code_code',
-            'total_price', 'final_price', 'delivery_fee', 'status', 'status_display',
-            'payment_method', 'items', 'notes', 'created_at', 'updated_at'
+            'id', 'status', 'status_display', 'service_type', 'service_type_display',
+            'payment_method', 'payment_method_display', 'total_price', 'final_price',
+            'delivery_fee', 'discount_amount', 'created_at', 'delivery_time', 'notes',
+            'operator_notes', 'operator_called', 'operator_call_time', 'operator_call_result',
+            'operator_call_result_display', 'assigned_operator', 'assigned_at',
+            'operator_order_number', 'user_info', 'address_info', 'restaurant_info',
+            'delivery_zone_info', 'items_details'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'assigned_at', 'operator_call_time']
+    
+    def get_user_info(self, obj):
+        """Получить информацию о пользователе"""
+        if obj.user:
+            return {
+                'id': obj.user.id,
+                'first_name': obj.user.first_name or '',
+                'last_name': obj.user.last_name or '',
+                'username': obj.user.username or '',
+                'telegram_id': obj.user.telegram_id or 0
+            }
+        return None
+    
+    def get_address_info(self, obj):
+        """Получить информацию об адресе"""
+        if obj.address:
+            return {
+                'id': obj.address.id,
+                'full_address': obj.address.full_address or '',
+                'city': obj.address.city or '',
+                'phone_number': obj.address.phone_number or '',
+                'latitude': obj.address.latitude,
+                'longitude': obj.address.longitude
+            }
+        return None
+    
+    def get_restaurant_info(self, obj):
+        """Получить информацию о ресторане"""
+        if obj.restaurant:
+            return {
+                'id': obj.restaurant.id,
+                'name': obj.restaurant.name or '',
+                'address': obj.restaurant.address or '',
+                'city': obj.restaurant.city or '',
+                'phone': obj.restaurant.phone or '',
+                'latitude': obj.restaurant.latitude,
+                'longitude': obj.restaurant.longitude
+            }
+        return None
+    
+    def get_delivery_zone_info(self, obj):
+        """Получить информацию о зоне доставки"""
+        if obj.address and obj.address.delivery_zone:
+            zone = obj.address.delivery_zone
+            return {
+                'id': zone.id,
+                'name': zone.name or '',
+                'city': zone.city or '',
+                'delivery_fee': zone.delivery_fee or 0
+            }
+        return None
 
 
 class OperatorRegistrationSerializer(serializers.ModelSerializer):
