@@ -100,8 +100,10 @@ class CashierAuthSerializer(serializers.Serializer):
         if username and password:
             user = authenticate(username=username, password=password)
             if user:
-                if hasattr(user, 'cashier') and user.cashier.is_active_cashier:
-                    attrs['user'] = user
+                # Поскольку Cashier наследуется от AbstractUser,
+                # user уже является экземпляром Cashier
+                if hasattr(user, 'is_active_cashier') and user.is_active_cashier:
+                    attrs['cashier'] = user
                     return attrs
                 else:
                     raise serializers.ValidationError('Кассир неактивен')
@@ -149,8 +151,10 @@ class CashierLoginSerializer(serializers.Serializer):
         if username and password:
             user = authenticate(username=username, password=password)
             if user:
-                if hasattr(user, 'cashier') and user.cashier.is_active_cashier:
-                    attrs['user'] = user
+                # Поскольку Cashier наследуется от AbstractUser,
+                # user уже является экземпляром Cashier
+                if hasattr(user, 'is_active_cashier') and user.is_active_cashier:
+                    attrs['cashier'] = user
                     return attrs
                 else:
                     raise serializers.ValidationError('Кассир неактивен')
