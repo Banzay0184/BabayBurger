@@ -57,6 +57,7 @@ class DeliveryAssignmentSerializer(serializers.ModelSerializer):
 
 class AdminAuthView(generics.GenericAPIView):
     """Аутентификация для админки"""
+    permission_classes = []  # Разрешаем доступ без аутентификации
     
     def post(self, request):
         username = request.data.get('username')
