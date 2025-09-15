@@ -1,4 +1,4 @@
-from rest_framework import status, generics, viewsets
+from rest_framework import status, generics, viewsets, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -20,11 +20,39 @@ from app_operator.models import Operator, OperatorSession, OrderAssignment, Oper
 from .serializers import (
     MenuItemSerializer, CategorySerializer, OrderSerializer, UserSerializer,
     AddressSerializer, AddOnSerializer, SizeOptionSerializer, PromotionSerializer,
-    DeliveryZoneSerializer, RestaurantSerializer, PromoCodeSerializer,
-    DeliveryDriverSerializer, DeliveryAssignmentSerializer
+    DeliveryZoneSerializer, RestaurantSerializer, PromoCodeSerializer
 )
 from app_cashier.serializers import CashierSerializer, CashierSessionSerializer, OrderProcessingSerializer
 from app_operator.serializers import OperatorSerializer, OperatorSessionSerializer, OrderAssignmentSerializer
+
+
+# Простые сериализаторы для админки
+class DeliveryDriverSerializer(serializers.ModelSerializer):
+    """Сериализатор для курьеров доставки"""
+    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    user_phone = serializers.CharField(source='user.phone', read_only=True)
+    
+    class Meta:
+        model = DeliveryDriver
+        fields = [
+            'id', 'user', 'user_name', 'user_phone', 'telegram_id', 'status',
+            'is_active', 'vehicle_type', 'license_plate', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class DeliveryAssignmentSerializer(serializers.ModelSerializer):
+    """Сериализатор для назначений доставки"""
+    driver_name = serializers.CharField(source='driver.user.get_full_name', read_only=True)
+    order_id = serializers.IntegerField(source='order.id', read_only=True)
+    
+    class Meta:
+        model = DeliveryAssignment
+        fields = [
+            'id', 'order', 'order_id', 'driver', 'driver_name', 'assigned_at',
+            'accepted_at', 'picked_up_at', 'delivered_at', 'status', 'notes'
+        ]
+        read_only_fields = ['id', 'assigned_at']
 
 
 class AdminAuthView(generics.GenericAPIView):

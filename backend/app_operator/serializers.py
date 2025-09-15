@@ -4,7 +4,7 @@ from .models import (
     Operator, OperatorSession, OrderAssignment, OrderStatusHistory, 
     OperatorOrderNumber, OperatorNotification, OperatorAnalytics
 )
-from api.models import Order, OrderItem
+from api.models import Order, OrderItem, DeliveryZone
 from api.serializers import OrderItemSerializer
 
 
@@ -146,5 +146,141 @@ class OrderForOperatorSerializer(serializers.ModelSerializer):
             'restaurant', 'restaurant_name', 'promo_code', 'promo_code_code',
             'total_price', 'final_price', 'delivery_fee', 'status', 'status_display',
             'payment_method', 'payment_status', 'items', 'notes', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class OperatorRegistrationSerializer(serializers.ModelSerializer):
+    """Сериализатор для регистрации оператора"""
+    password = serializers.CharField(write_only=True, min_length=8)
+    password_confirm = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = Operator
+        fields = [
+            'username', 'email', 'first_name', 'last_name', 'phone', 
+            'assigned_zones', 'password', 'password_confirm'
+        ]
+    
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError('Пароли не совпадают')
+        return attrs
+    
+    def create(self, validated_data):
+        validated_data.pop('password_confirm')
+        password = validated_data.pop('password')
+        user = Operator.objects.create_user(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
+
+class OperatorLoginSerializer(serializers.Serializer):
+    """Сериализатор для входа оператора"""
+    username = serializers.CharField()
+    password = serializers.CharField()
+    
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+        
+        if username and password:
+            user = authenticate(username=username, password=password)
+            if user:
+                if hasattr(user, 'operator') and user.operator.is_active_operator:
+                    attrs['user'] = user
+                    return attrs
+                else:
+                    raise serializers.ValidationError('Оператор неактивен')
+            else:
+                raise serializers.ValidationError('Неверные учетные данные')
+        else:
+            raise serializers.ValidationError('Необходимо указать username и password')
+
+
+class OperatorProfileSerializer(serializers.ModelSerializer):
+    """Сериализатор для профиля оператора"""
+    assigned_zones_names = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = Operator
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name', 'phone',
+            'assigned_zones', 'assigned_zones_names', 'is_active_operator', 'telegram_id',
+            'completed_orders_count', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'username', 'completed_orders_count', 'created_at', 'updated_at']
+
+
+class OrderStatusChangeSerializer(serializers.Serializer):
+    """Сериализатор для изменения статуса заказа"""
+    order_id = serializers.IntegerField()
+    new_status = serializers.ChoiceField(choices=[
+        ('pending', 'Ожидает'),
+        ('confirmed', 'Подтвержден'),
+        ('preparing', 'Готовится'),
+        ('ready', 'Готов'),
+        ('delivering', 'Доставляется'),
+        ('completed', 'Завершен'),
+        ('cancelled', 'Отменен'),
+    ])
+    reason = serializers.CharField(required=False, allow_blank=True)
+    
+    def validate_order_id(self, value):
+        try:
+            Order.objects.get(id=value)
+        except Order.DoesNotExist:
+            raise serializers.ValidationError('Заказ не найден')
+        return value
+
+
+class OrderListSerializer(serializers.ModelSerializer):
+    """Сериализатор для списка заказов оператора"""
+    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    user_phone = serializers.CharField(source='user.phone', read_only=True)
+    address_text = serializers.CharField(source='address.address', read_only=True)
+    restaurant_name = serializers.CharField(source='restaurant.name', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    items_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'user_name', 'user_phone', 'address_text', 'restaurant_name',
+            'total_price', 'final_price', 'status', 'status_display', 'items_count',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def get_items_count(self, obj):
+        return obj.orderitem_set.count()
+
+
+class DeliveryZoneSerializer(serializers.ModelSerializer):
+    """Сериализатор для зон доставки"""
+    
+    class Meta:
+        model = DeliveryZone
+        fields = [
+            'id', 'name', 'city', 'delivery_fee', 'min_order_amount', 
+            'is_active', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class OrderMapLocationSerializer(serializers.ModelSerializer):
+    """Сериализатор для локации заказа на карте"""
+    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    address_text = serializers.CharField(source='address.address', read_only=True)
+    restaurant_name = serializers.CharField(source='restaurant.name', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'user_name', 'address_text', 'restaurant_name',
+            'total_price', 'final_price', 'status', 'status_display',
+            'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

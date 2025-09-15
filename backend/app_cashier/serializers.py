@@ -111,6 +111,55 @@ class CashierAuthSerializer(serializers.Serializer):
             raise serializers.ValidationError('Необходимо указать username и password')
 
 
+class CashierRegistrationSerializer(serializers.ModelSerializer):
+    """Сериализатор для регистрации кассира"""
+    password = serializers.CharField(write_only=True, min_length=8)
+    password_confirm = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = Cashier
+        fields = [
+            'username', 'email', 'first_name', 'last_name', 'phone', 
+            'restaurant', 'password', 'password_confirm'
+        ]
+    
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError('Пароли не совпадают')
+        return attrs
+    
+    def create(self, validated_data):
+        validated_data.pop('password_confirm')
+        password = validated_data.pop('password')
+        user = Cashier.objects.create_user(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
+
+class CashierLoginSerializer(serializers.Serializer):
+    """Сериализатор для входа кассира"""
+    username = serializers.CharField()
+    password = serializers.CharField()
+    
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+        
+        if username and password:
+            user = authenticate(username=username, password=password)
+            if user:
+                if hasattr(user, 'cashier') and user.cashier.is_active_cashier:
+                    attrs['user'] = user
+                    return attrs
+                else:
+                    raise serializers.ValidationError('Кассир неактивен')
+            else:
+                raise serializers.ValidationError('Неверные учетные данные')
+        else:
+            raise serializers.ValidationError('Необходимо указать username и password')
+
+
 class OrderForCashierSerializer(serializers.ModelSerializer):
     """Сериализатор для заказа, оптимизированный для кассиров"""
     user_name = serializers.CharField(source='user.get_full_name', read_only=True)
@@ -130,3 +179,17 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
             'payment_method', 'payment_status', 'items', 'notes', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class CashierProfileSerializer(serializers.ModelSerializer):
+    """Сериализатор для профиля кассира"""
+    restaurant_name = serializers.CharField(source='restaurant.name', read_only=True)
+    
+    class Meta:
+        model = Cashier
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name', 'phone',
+            'restaurant', 'restaurant_name', 'is_active_cashier', 'telegram_id',
+            'processed_orders_count', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'username', 'processed_orders_count', 'created_at', 'updated_at']
