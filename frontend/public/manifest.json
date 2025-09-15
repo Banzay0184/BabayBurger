@@ -2,7 +2,7 @@
   "name": "Babay Burger - Кассир",
   "short_name": "Babay Кассир",
   "description": "Интерфейс кассира для ресторана Babay Burger",
-  "start_url": "/cashier",
+  "start_url": "/cashier/login",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#f97316",
@@ -35,10 +35,10 @@
   ],
   "shortcuts": [
     {
-      "name": "Новые заказы",
-      "short_name": "Новые",
-      "description": "Просмотр новых заказов",
-      "url": "/cashier?filter=pending",
+      "name": "Вход в систему",
+      "short_name": "Вход",
+      "description": "Вход в интерфейс кассира",
+      "url": "/cashier/login",
       "icons": [
         {
           "src": "/logobabay.png",
@@ -47,10 +47,10 @@
       ]
     },
     {
-      "name": "Все заказы",
-      "short_name": "Все",
-      "description": "Просмотр всех заказов",
-      "url": "/cashier?filter=all",
+      "name": "Новые заказы",
+      "short_name": "Новые",
+      "description": "Просмотр новых заказов",
+      "url": "/cashier?filter=pending",
       "icons": [
         {
           "src": "/logobabay.png",
