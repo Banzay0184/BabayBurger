@@ -20,7 +20,7 @@ from app_operator.models import Operator, OperatorSession, OrderAssignment, Oper
 from .serializers import (
     MenuItemSerializer, CategorySerializer, OrderSerializer, UserSerializer,
     AddressSerializer, AddOnSerializer, SizeOptionSerializer, PromotionSerializer,
-    DeliveryZoneSerializer, RestaurantSerializer, PromoCodeSerializer, PromoCodeUsageSerializer,
+    DeliveryZoneSerializer, RestaurantSerializer, PromoCodeSerializer,
     DeliveryDriverSerializer, DeliveryAssignmentSerializer
 )
 from app_cashier.serializers import CashierSerializer, CashierSessionSerializer, OrderProcessingSerializer

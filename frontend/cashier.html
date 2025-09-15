@@ -169,13 +169,14 @@
 
       // Проверяем PWA критерии
       function checkPWACriteria() {
-        console.log('🔍 Проверка PWA критериев:');
-        console.log('- HTTPS:', location.protocol === 'https:' || location.hostname === 'localhost');
-        console.log('- Service Worker:', 'serviceWorker' in navigator);
-        console.log('- Manifest:', document.querySelector('link[rel="manifest"]') !== null);
-        console.log('- Icons:', document.querySelectorAll('link[rel="icon"]').length > 0);
-        console.log('- Start URL:', '/cashier/login');
-        console.log('- Scope:', '/cashier');
+        try {
+          console.log('🔍 Проверка PWA критериев:');
+          console.log('- HTTPS:', location.protocol === 'https:' || location.hostname === 'localhost');
+          console.log('- Service Worker:', 'serviceWorker' in navigator);
+          console.log('- Manifest:', document.querySelector('link[rel="manifest"]') !== null);
+          console.log('- Icons:', document.querySelectorAll('link[rel="icon"]').length > 0);
+          console.log('- Start URL:', '/cashier/login');
+          console.log('- Scope:', '/cashier');
         
         // Проверяем манифест
         const manifestLink = document.querySelector('link[rel="manifest"]');
@@ -210,23 +211,30 @@
             console.log('❌ Service Worker контроллер не активен');
           }
         }
+        } catch (error) {
+          console.error('❌ Ошибка в checkPWACriteria:', error);
+        }
       }
 
       // Простая проверка сразу
-      console.log('🚀 PWA диагностика запущена');
-      
-      // Проверяем манифест сразу
-      fetch('/manifest.json')
-        .then(response => {
-          console.log('📱 Манифест ответ:', response.status, response.statusText);
-          return response.json();
-        })
-        .then(manifest => {
-          console.log('📱 Манифест загружен:', manifest);
-        })
-        .catch(error => {
-          console.error('❌ Ошибка загрузки манифеста:', error);
-        });
+      try {
+        console.log('🚀 PWA диагностика запущена');
+        
+        // Проверяем манифест сразу
+        fetch('/manifest.json')
+          .then(response => {
+            console.log('📱 Манифест ответ:', response.status, response.statusText);
+            return response.json();
+          })
+          .then(manifest => {
+            console.log('📱 Манифест загружен:', manifest);
+          })
+          .catch(error => {
+            console.error('❌ Ошибка загрузки манифеста:', error);
+          });
+      } catch (error) {
+        console.error('❌ Ошибка в PWA диагностике:', error);
+      }
       
       // Проверяем при загрузке
       setTimeout(checkPWACriteria, 1000);
@@ -237,9 +245,10 @@
       // Отладка beforeinstallprompt
       let deferredPrompt = null;
       
-      console.log('📱 Ожидаем событие beforeinstallprompt...');
-      
-      window.addEventListener('beforeinstallprompt', (e) => {
+      try {
+        console.log('📱 Ожидаем событие beforeinstallprompt...');
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
         console.log('🎉 beforeinstallprompt событие получено!');
         console.log('Event:', e);
         e.preventDefault();
@@ -276,22 +285,26 @@
         document.body.appendChild(installButton);
       });
 
-      window.addEventListener('appinstalled', () => {
-        console.log('✅ PWA установлено успешно!');
-        deferredPrompt = null;
-      });
+        window.addEventListener('appinstalled', () => {
+          console.log('✅ PWA установлено успешно!');
+          deferredPrompt = null;
+        });
+      } catch (error) {
+        console.error('❌ Ошибка в обработчиках событий:', error);
+      }
 
       // Проверяем критерии PWA через 5 секунд
       setTimeout(() => {
-        console.log('🔍 Финальная проверка PWA критериев:');
-        console.log('- User Agent:', navigator.userAgent);
-        console.log('- Platform:', navigator.platform);
-        console.log('- Standalone:', window.matchMedia('(display-mode: standalone)').matches);
-        console.log('- iOS Standalone:', (window.navigator as any).standalone);
-        console.log('- Deferred Prompt:', !!deferredPrompt);
-        console.log('- URL:', window.location.href);
-        console.log('- Protocol:', window.location.protocol);
-        console.log('- Hostname:', window.location.hostname);
+        try {
+          console.log('🔍 Финальная проверка PWA критериев:');
+          console.log('- User Agent:', navigator.userAgent);
+          console.log('- Platform:', navigator.platform);
+          console.log('- Standalone:', window.matchMedia('(display-mode: standalone)').matches);
+          console.log('- iOS Standalone:', (window.navigator as any).standalone);
+          console.log('- Deferred Prompt:', !!deferredPrompt);
+          console.log('- URL:', window.location.href);
+          console.log('- Protocol:', window.location.protocol);
+          console.log('- Hostname:', window.location.hostname);
         
         // Проверяем манифест еще раз
         fetch('/manifest.json')
@@ -334,20 +347,27 @@
           .catch(error => {
             console.error('❌ Ошибка загрузки манифеста:', error);
           });
+        } catch (error) {
+          console.error('❌ Ошибка в финальной проверке:', error);
+        }
       }, 5000);
       
       // Дополнительная проверка через 10 секунд
       setTimeout(() => {
-        console.log('🔍 Проверка через 10 секунд:');
-        console.log('- Deferred Prompt:', !!deferredPrompt);
-        console.log('- PWA установлена:', window.matchMedia('(display-mode: standalone)').matches);
-        
-        if (!deferredPrompt) {
-          console.log('❌ beforeinstallprompt не сработал. Возможные причины:');
-          console.log('1. PWA уже установлена');
-          console.log('2. Браузер не поддерживает PWA');
-          console.log('3. Не выполнены критерии PWA');
-          console.log('4. Проблемы с манифестом или иконками');
+        try {
+          console.log('🔍 Проверка через 10 секунд:');
+          console.log('- Deferred Prompt:', !!deferredPrompt);
+          console.log('- PWA установлена:', window.matchMedia('(display-mode: standalone)').matches);
+          
+          if (!deferredPrompt) {
+            console.log('❌ beforeinstallprompt не сработал. Возможные причины:');
+            console.log('1. PWA уже установлена');
+            console.log('2. Браузер не поддерживает PWA');
+            console.log('3. Не выполнены критерии PWA');
+            console.log('4. Проблемы с манифестом или иконками');
+          }
+        } catch (error) {
+          console.error('❌ Ошибка в проверке через 10 секунд:', error);
         }
       }, 10000);
     </script>
