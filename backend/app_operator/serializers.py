@@ -253,7 +253,9 @@ class OperatorLoginSerializer(serializers.Serializer):
         if username and password:
             user = authenticate(username=username, password=password)
             if user:
-                if hasattr(user, 'operator') and user.operator.is_active_operator:
+                # Поскольку Operator является основной моделью пользователя,
+                # user уже является экземпляром Operator
+                if user.is_active_operator:
                     attrs['user'] = user
                     return attrs
                 else:
