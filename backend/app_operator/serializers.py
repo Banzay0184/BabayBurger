@@ -152,6 +152,47 @@ class OrderForOperatorSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'assigned_at', 'operator_call_time']
     
+    def to_representation(self, instance):
+        """Конвертируем Decimal в float для WebSocket сериализации"""
+        from decimal import Decimal
+        
+        data = super().to_representation(instance)
+        
+        # Конвертируем все Decimal поля в float
+        decimal_fields = ['total_price', 'final_price', 'delivery_fee', 'discount_amount']
+        for field in decimal_fields:
+            if field in data and data[field] is not None:
+                if isinstance(data[field], Decimal):
+                    data[field] = float(data[field])
+        
+        # Конвертируем Decimal в address_info и restaurant_info
+        if 'address_info' in data and data['address_info']:
+            address_info = data['address_info']
+            if 'latitude' in address_info and address_info['latitude'] is not None:
+                if isinstance(address_info['latitude'], Decimal):
+                    address_info['latitude'] = float(address_info['latitude'])
+            if 'longitude' in address_info and address_info['longitude'] is not None:
+                if isinstance(address_info['longitude'], Decimal):
+                    address_info['longitude'] = float(address_info['longitude'])
+        
+        if 'restaurant_info' in data and data['restaurant_info']:
+            restaurant_info = data['restaurant_info']
+            if 'latitude' in restaurant_info and restaurant_info['latitude'] is not None:
+                if isinstance(restaurant_info['latitude'], Decimal):
+                    restaurant_info['latitude'] = float(restaurant_info['latitude'])
+            if 'longitude' in restaurant_info and restaurant_info['longitude'] is not None:
+                if isinstance(restaurant_info['longitude'], Decimal):
+                    restaurant_info['longitude'] = float(restaurant_info['longitude'])
+        
+        # Конвертируем Decimal в delivery_zone_info
+        if 'delivery_zone_info' in data and data['delivery_zone_info']:
+            zone_info = data['delivery_zone_info']
+            if 'delivery_fee' in zone_info and zone_info['delivery_fee'] is not None:
+                if isinstance(zone_info['delivery_fee'], Decimal):
+                    zone_info['delivery_fee'] = float(zone_info['delivery_fee'])
+        
+        return data
+    
     def get_user_info(self, obj):
         """Получить информацию о пользователе"""
         if obj.user:
@@ -167,27 +208,49 @@ class OrderForOperatorSerializer(serializers.ModelSerializer):
     def get_address_info(self, obj):
         """Получить информацию об адресе"""
         if obj.address:
+            from decimal import Decimal
+            
+            latitude = obj.address.latitude
+            longitude = obj.address.longitude
+            
+            # Конвертируем Decimal в float для WebSocket
+            if isinstance(latitude, Decimal):
+                latitude = float(latitude)
+            if isinstance(longitude, Decimal):
+                longitude = float(longitude)
+            
             return {
                 'id': obj.address.id,
                 'full_address': obj.address.full_address or '',
                 'city': obj.address.city or '',
                 'phone_number': obj.address.phone_number or '',
-                'latitude': obj.address.latitude,
-                'longitude': obj.address.longitude
+                'latitude': latitude,
+                'longitude': longitude
             }
         return None
     
     def get_restaurant_info(self, obj):
         """Получить информацию о ресторане"""
         if obj.restaurant:
+            from decimal import Decimal
+            
+            latitude = obj.restaurant.latitude
+            longitude = obj.restaurant.longitude
+            
+            # Конвертируем Decimal в float для WebSocket
+            if isinstance(latitude, Decimal):
+                latitude = float(latitude)
+            if isinstance(longitude, Decimal):
+                longitude = float(longitude)
+            
             return {
                 'id': obj.restaurant.id,
                 'name': obj.restaurant.name or '',
                 'address': obj.restaurant.address or '',
                 'city': obj.restaurant.city or '',
                 'phone': obj.restaurant.phone or '',
-                'latitude': obj.restaurant.latitude,
-                'longitude': obj.restaurant.longitude
+                'latitude': latitude,
+                'longitude': longitude
             }
         return None
     
