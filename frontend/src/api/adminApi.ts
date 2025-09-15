@@ -26,14 +26,14 @@ interface AnalyticsResponse {
     revenue: number;
   }>;
   top_categories: Array<{
-    id: number;
-    name: string;
+  id: number;
+  name: string;
     orders_count: number;
     revenue: number;
   }>;
   top_items: Array<{
-    id: number;
-    name: string;
+  id: number;
+  name: string;
     orders_count: number;
     quantity_sold: number;
     revenue: number;
