@@ -151,7 +151,7 @@ class CashierLoginSerializer(serializers.Serializer):
             if user:
                 if hasattr(user, 'cashier') and user.cashier.is_active_cashier:
                     attrs['user'] = user
-            return attrs
+                    return attrs
                 else:
                     raise serializers.ValidationError('Кассир неактивен')
             else:
