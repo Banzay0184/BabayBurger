@@ -20,9 +20,9 @@
     <meta name="msapplication-tap-highlight" content="no" />
     
     <!-- PWA Icons -->
-    <link rel="apple-touch-icon" href="/logobabay.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/logobabay.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/logobabay.png" />
+    <link rel="apple-touch-icon" href="/logo.jpg" />
+    <link rel="icon" type="image/jpeg" sizes="192x192" href="/logo.jpg" />
+    <link rel="icon" type="image/jpeg" sizes="512x512" href="/logo.jpg" />
     
     <!-- Современный шрифт Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -209,6 +209,90 @@
       
       // Дополнительная проверка через 3 секунды
       setTimeout(checkPWACriteria, 3000);
+
+      // Отладка beforeinstallprompt
+      let deferredPrompt = null;
+      
+      window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('🎉 beforeinstallprompt событие получено!');
+        console.log('Event:', e);
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Показываем кнопку установки
+        const installButton = document.createElement('button');
+        installButton.textContent = 'Установить PWA';
+        installButton.style.cssText = `
+          position: fixed;
+          bottom: 20px;
+          left: 20px;
+          z-index: 1000;
+          background: #f97316;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 14px;
+        `;
+        
+        installButton.addEventListener('click', async () => {
+          if (deferredPrompt) {
+            console.log('🚀 Показываем prompt установки...');
+            await deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log('📱 Результат установки:', outcome);
+            deferredPrompt = null;
+            installButton.remove();
+          }
+        });
+        
+        document.body.appendChild(installButton);
+      });
+
+      window.addEventListener('appinstalled', () => {
+        console.log('✅ PWA установлено успешно!');
+        deferredPrompt = null;
+      });
+
+      // Проверяем критерии PWA через 5 секунд
+      setTimeout(() => {
+        console.log('🔍 Финальная проверка PWA критериев:');
+        console.log('- User Agent:', navigator.userAgent);
+        console.log('- Platform:', navigator.platform);
+        console.log('- Standalone:', window.matchMedia('(display-mode: standalone)').matches);
+        console.log('- iOS Standalone:', (window.navigator as any).standalone);
+        console.log('- Deferred Prompt:', !!deferredPrompt);
+        
+        // Проверяем манифест еще раз
+        fetch('/manifest.json')
+          .then(response => response.json())
+          .then(manifest => {
+            console.log('📱 Финальная проверка манифеста:', manifest);
+            
+            // Проверяем каждое поле манифеста
+            const requiredFields = ['name', 'short_name', 'start_url', 'display', 'icons'];
+            requiredFields.forEach(field => {
+              if (!manifest[field]) {
+                console.error(`❌ Отсутствует обязательное поле: ${field}`);
+              } else {
+                console.log(`✅ Поле ${field}:`, manifest[field]);
+              }
+            });
+            
+            // Проверяем иконки
+            if (manifest.icons && manifest.icons.length > 0) {
+              manifest.icons.forEach((icon, index) => {
+                console.log(`📱 Иконка ${index + 1}:`, icon);
+              });
+            } else {
+              console.error('❌ Нет иконок в манифесте!');
+            }
+          })
+          .catch(error => {
+            console.error('❌ Ошибка загрузки манифеста:', error);
+          });
+      }, 5000);
     </script>
   </body>
 </html>
