@@ -212,6 +212,22 @@
         }
       }
 
+      // Простая проверка сразу
+      console.log('🚀 PWA диагностика запущена');
+      
+      // Проверяем манифест сразу
+      fetch('/manifest.json')
+        .then(response => {
+          console.log('📱 Манифест ответ:', response.status, response.statusText);
+          return response.json();
+        })
+        .then(manifest => {
+          console.log('📱 Манифест загружен:', manifest);
+        })
+        .catch(error => {
+          console.error('❌ Ошибка загрузки манифеста:', error);
+        });
+      
       // Проверяем при загрузке
       setTimeout(checkPWACriteria, 1000);
       
@@ -220,6 +236,8 @@
 
       // Отладка beforeinstallprompt
       let deferredPrompt = null;
+      
+      console.log('📱 Ожидаем событие beforeinstallprompt...');
       
       window.addEventListener('beforeinstallprompt', (e) => {
         console.log('🎉 beforeinstallprompt событие получено!');

@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import Cashier, CashierSession, OrderProcessing, CashierNotification, CashierAnalytics, CashierToken
+from api.models import Order, OrderItem
+from api.serializers import OrderItemSerializer
 
 
 class CashierSerializer(serializers.ModelSerializer):
@@ -107,3 +109,24 @@ class CashierAuthSerializer(serializers.Serializer):
                 raise serializers.ValidationError('Неверные учетные данные')
         else:
             raise serializers.ValidationError('Необходимо указать username и password')
+
+
+class OrderForCashierSerializer(serializers.ModelSerializer):
+    """Сериализатор для заказа, оптимизированный для кассиров"""
+    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    user_phone = serializers.CharField(source='user.phone', read_only=True)
+    address_text = serializers.CharField(source='address.address', read_only=True)
+    restaurant_name = serializers.CharField(source='restaurant.name', read_only=True)
+    promo_code_code = serializers.CharField(source='promo_code.code', read_only=True)
+    items = OrderItemSerializer(source='orderitem_set', many=True, read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'user', 'user_name', 'user_phone', 'address', 'address_text',
+            'restaurant', 'restaurant_name', 'promo_code', 'promo_code_code',
+            'total_price', 'final_price', 'delivery_fee', 'status', 'status_display',
+            'payment_method', 'payment_status', 'items', 'notes', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
