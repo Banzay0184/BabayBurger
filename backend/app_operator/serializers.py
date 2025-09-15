@@ -331,7 +331,8 @@ class OperatorLoginSerializer(serializers.Serializer):
 
 class OperatorProfileSerializer(serializers.ModelSerializer):
     """Сериализатор для профиля оператора"""
-    assigned_zones_names = serializers.ReadOnlyField()
+    assigned_zones_names = serializers.SerializerMethodField()
+    assigned_zones = serializers.SerializerMethodField()
     
     class Meta:
         model = Operator
@@ -341,6 +342,24 @@ class OperatorProfileSerializer(serializers.ModelSerializer):
             'completed_orders_count', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'username', 'completed_orders_count', 'created_at', 'updated_at']
+    
+    def get_assigned_zones_names(self, obj):
+        """Возвращает названия назначенных зон как строку"""
+        zone_names = [zone.name for zone in obj.assigned_zones.filter(is_active=True)]
+        return ', '.join(zone_names)
+    
+    def get_assigned_zones(self, obj):
+        """Возвращает полную информацию о назначенных зонах"""
+        zones = obj.assigned_zones.filter(is_active=True)
+        return [
+            {
+                'id': zone.id,
+                'name': zone.name,
+                'city': zone.city,
+                'delivery_fee': float(zone.delivery_fee) if zone.delivery_fee else 0
+            }
+            for zone in zones
+        ]
 
 
 class OrderStatusChangeSerializer(serializers.Serializer):
