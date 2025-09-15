@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
+import { CashierPWAInstallPrompt } from '../../components/cashier/PWAInstallPrompt';
+import { PWAStatus } from '../../components/cashier/PWAStatus';
 
 import { cashierApi, type CashierLoginData } from '../../api/cashierApi';
 import { universalStorage } from '../../utils/storage';
@@ -57,6 +59,14 @@ export const CashierLoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
+      {/* PWA Components */}
+      <CashierPWAInstallPrompt />
+      
+      {/* PWA Status */}
+      <div className="absolute top-4 right-4 z-20">
+        <PWAStatus />
+      </div>
+      
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-20">
         <div className="w-full h-full" style={{

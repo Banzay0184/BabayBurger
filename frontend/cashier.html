@@ -2,7 +2,7 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+    <link rel="icon" type="image/png" href="/logobabay.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Babay Burger - Кассир</title>
     <meta name="description" content="Интерфейс кассира для ресторана Babay Burger" />
@@ -74,11 +74,7 @@
       }, 2000);
     </script>
     
-    <!-- Telegram Web App мета-теги -->
-    <meta name="theme-color" content="#3b82f6" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Babay Food" />
+    <!-- Telegram Web App мета-теги (удалены дублирующиеся PWA теги) -->
     
     <!-- Базовые стили -->
     <style>
@@ -161,12 +157,29 @@
           navigator.serviceWorker.register('/sw.js')
             .then((registration) => {
               console.log('✅ Cashier Service Worker зарегистрирован:', registration);
+              console.log('📱 PWA готов к установке');
             })
             .catch((error) => {
               console.error('❌ Ошибка регистрации Cashier Service Worker:', error);
             });
         });
+      } else {
+        console.log('❌ Service Worker не поддерживается');
       }
+
+      // Проверяем PWA критерии
+      function checkPWACriteria() {
+        console.log('🔍 Проверка PWA критериев:');
+        console.log('- HTTPS:', location.protocol === 'https:' || location.hostname === 'localhost');
+        console.log('- Service Worker:', 'serviceWorker' in navigator);
+        console.log('- Manifest:', document.querySelector('link[rel="manifest"]') !== null);
+        console.log('- Icons:', document.querySelectorAll('link[rel="icon"]').length > 0);
+        console.log('- Start URL:', '/cashier/login');
+        console.log('- Scope:', '/cashier');
+      }
+
+      // Проверяем при загрузке
+      setTimeout(checkPWACriteria, 1000);
     </script>
   </body>
 </html>

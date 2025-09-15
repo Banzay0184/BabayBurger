@@ -23,13 +23,13 @@ export class PWAManager {
   }
 
   // Регистрация Service Worker
-  public async registerServiceWorker(): Promise<boolean> {
+  public async registerServiceWorker(swPath: string = '/sw.js', scope: string = '/'): Promise<boolean> {
     if ('serviceWorker' in navigator) {
       try {
-        console.log('🔧 Registering Service Worker...');
+        console.log('🔧 Registering Service Worker:', swPath);
         
-        const registration = await navigator.serviceWorker.register('/sw.js', {
-          scope: '/'
+        const registration = await navigator.serviceWorker.register(swPath, {
+          scope: scope
         });
 
         console.log('✅ Service Worker registered successfully:', registration);
