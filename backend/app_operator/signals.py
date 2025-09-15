@@ -31,19 +31,28 @@ def notify_operators_new_order(sender, instance, created, **kwargs):
             assigned_zones__is_active=True
         ).distinct()
         
+        logger.info(f"📋 Found {available_operators.count()} available operators")
+        
         # Фильтруем операторов по зонам доставки
         order_address = instance.address
         suitable_operators = []
         
         for operator in available_operators:
             can_handle, message = operator.can_handle_order(instance)
+            logger.info(f"🔍 Operator {operator.username}: can_handle={can_handle}, message='{message}'")
             if can_handle:
                 suitable_operators.append(operator)
+        
+        logger.info(f"✅ Found {len(suitable_operators)} suitable operators for order #{instance.id}")
         
         # Отправляем WebSocket уведомление только подходящим операторам
         try:
             channel_layer = get_channel_layer()
+            logger.info(f"🔌 Channel layer: {channel_layer}")
+            logger.info(f"👥 Suitable operators: {len(suitable_operators)}")
+            
             if channel_layer and suitable_operators:
+                logger.info(f"📦 Loading order details for order #{instance.id}")
                 # Загружаем заказ с полными данными для сериализации
                 order_with_details = Order.objects.select_related(
                     'user', 'address', 'restaurant', 'promo_code'
@@ -53,12 +62,15 @@ def notify_operators_new_order(sender, instance, created, **kwargs):
                     'orderitem_set__add_ons'
                 ).get(id=instance.id)
                 
+                logger.info(f"📋 Order loaded: {order_with_details.id}")
+                
                 # Сериализуем заказ для WebSocket
                 order_data = OrderForOperatorSerializer(order_with_details).data
+                logger.info(f"📄 Order serialized: {len(order_data)} fields")
                 
                 # Отправляем каждому подходящему оператору индивидуально
                 for operator in suitable_operators:
-                    logger.info(f"📡 Sending WebSocket notification to operator {operator.id} for order #{instance.id}")
+                    logger.info(f"📡 Sending WebSocket notification to operator {operator.id} ({operator.username}) for order #{instance.id}")
                     async_to_sync(channel_layer.group_send)(
                         f'operator_{operator.id}',
                         {
@@ -67,10 +79,15 @@ def notify_operators_new_order(sender, instance, created, **kwargs):
                             'timestamp': timezone.now().isoformat()
                         }
                     )
+                    logger.info(f"✅ WebSocket message sent to operator_{operator.id}")
                 
-                logger.info(f"WebSocket уведомление о новом заказе #{instance.id} отправлено {len(suitable_operators)} операторам")
+                logger.info(f"🎉 WebSocket уведомление о новом заказе #{instance.id} отправлено {len(suitable_operators)} операторам")
+            else:
+                logger.warning(f"⚠️ WebSocket не отправлен: channel_layer={channel_layer}, suitable_operators={len(suitable_operators)}")
         except Exception as e:
-            logger.error(f"Ошибка отправки WebSocket уведомления: {e}")
+            logger.error(f"❌ Ошибка отправки WebSocket уведомления: {e}")
+            import traceback
+            logger.error(f"❌ Traceback: {traceback.format_exc()}")
         
         # Мгновенная отправка уведомления о новом заказе в Telegram клиенту
         try:
