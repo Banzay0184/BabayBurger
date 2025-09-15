@@ -1,6 +1,6 @@
-const CACHE_NAME = 'babay-cashier-v1';
-const STATIC_CACHE_NAME = 'babay-cashier-static-v1';
-const DYNAMIC_CACHE_NAME = 'babay-cashier-dynamic-v1';
+const CACHE_NAME = 'babay-cashier-v2';
+const STATIC_CACHE_NAME = 'babay-cashier-static-v2';
+const DYNAMIC_CACHE_NAME = 'babay-cashier-dynamic-v2';
 
 // Статические ресурсы для кэширования
 const STATIC_ASSETS = [
@@ -8,7 +8,7 @@ const STATIC_ASSETS = [
   '/cashier',
   '/cashier/login',
   '/manifest.json',
-  '/logo.jpg'
+  '/logobabay.png'
 ];
 
 // API endpoints для кэширования

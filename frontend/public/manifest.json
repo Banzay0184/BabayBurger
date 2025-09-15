@@ -2,25 +2,63 @@
   "name": "Babay Burger - Кассир",
   "short_name": "Babay Кассир",
   "description": "Интерфейс кассира для ресторана Babay Burger",
-  "start_url": "/cashier/login",
+  "start_url": "/cashier",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#f97316",
   "orientation": "portrait-primary",
-  "scope": "/cashier/login",
+  "scope": "/cashier",
   "lang": "ru",
+  "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "/logo.jpg",
+      "src": "/logobabay.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
-      "purpose": "any"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "/logo.jpg",
+      "src": "/logobabay.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "any"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/logo.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Интерфейс кассира"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Новые заказы",
+      "short_name": "Новые",
+      "description": "Просмотр новых заказов",
+      "url": "/cashier?filter=pending",
+      "icons": [
+        {
+          "src": "/logobabay.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Все заказы",
+      "short_name": "Все",
+      "description": "Просмотр всех заказов",
+      "url": "/cashier?filter=all",
+      "icons": [
+        {
+          "src": "/logobabay.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }
