@@ -609,9 +609,26 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         # Для доставки: по адресу клиента, для самовывоза: по городу ресторана
         from django.db.models import Q
         
-        queryset = Order.objects.filter(
+        # Сначала получаем все заказы в городах оператора
+        base_queryset = Order.objects.filter(
             Q(service_type='delivery', address__city__in=operator_cities) |  # Доставка: только по адресу клиента
             Q(service_type='pickup', restaurant__city__in=operator_cities)  # Самовывоз: только по городу ресторана
+        )
+        
+        # Дополнительная фильтрация для заказов доставки - проверяем, что адрес находится в зонах оператора
+        delivery_orders_in_zones = []
+        pickup_orders = base_queryset.filter(service_type='pickup')
+        
+        for order in base_queryset.filter(service_type='delivery'):
+            # Проверяем, находится ли адрес в какой-либо зоне оператора
+            for zone in operator_zones:
+                if zone.is_address_in_zone(order.address.latitude, order.address.longitude):
+                    delivery_orders_in_zones.append(order.id)
+                    break
+        
+        # Объединяем заказы доставки в зонах и заказы самовывоза
+        queryset = base_queryset.filter(
+            Q(id__in=delivery_orders_in_zones) | Q(service_type='pickup')
         ).select_related(
             'user', 'address', 'restaurant', 'promo_code'
         ).prefetch_related(
