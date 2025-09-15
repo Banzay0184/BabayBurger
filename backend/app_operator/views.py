@@ -615,11 +615,15 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             Q(service_type='pickup', restaurant__city__in=operator_cities)  # Самовывоз: только по городу ресторана
         )
         
-        # Дополнительная фильтрация для заказов доставки - проверяем, что адрес находится в зонах оператора
-        delivery_orders_in_zones = []
+        # Для оптимизации, сначала получаем заказы самовывоза
         pickup_orders = base_queryset.filter(service_type='pickup')
         
-        for order in base_queryset.filter(service_type='delivery'):
+        # Для заказов доставки проверяем зоны более эффективно
+        delivery_orders = base_queryset.filter(service_type='delivery')
+        delivery_orders_in_zones = []
+        
+        # Проверяем только заказы доставки
+        for order in delivery_orders:
             # Проверяем, находится ли адрес в какой-либо зоне оператора
             for zone in operator_zones:
                 if zone.is_address_in_zone(order.address.latitude, order.address.longitude):
@@ -708,9 +712,25 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         # Получаем все заказы в зонах оператора для статистики
         from django.db.models import Q
         
-        all_orders = Order.objects.filter(
+        # Базовая фильтрация по городам
+        base_orders = Order.objects.filter(
             Q(service_type='delivery', address__city__in=operator_cities) |  # Доставка: только по адресу клиента
             Q(service_type='pickup', restaurant__city__in=operator_cities)  # Самовывоз: только по городу ресторана
+        )
+        
+        # Дополнительная фильтрация для заказов доставки по зонам
+        delivery_orders_in_zones = []
+        pickup_orders = base_orders.filter(service_type='pickup')
+        
+        for order in base_orders.filter(service_type='delivery'):
+            for zone in operator_zones:
+                if zone.is_address_in_zone(order.address.latitude, order.address.longitude):
+                    delivery_orders_in_zones.append(order.id)
+                    break
+        
+        # Объединяем заказы доставки в зонах и заказы самовывоза
+        all_orders = base_orders.filter(
+            Q(id__in=delivery_orders_in_zones) | Q(service_type='pickup')
         )
         
         # Статистика по заказам
