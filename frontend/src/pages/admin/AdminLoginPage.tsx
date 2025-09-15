@@ -21,38 +21,96 @@ export const AdminLoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm bg-white p-6 rounded border">
-        <h1 className="text-xl font-semibold mb-4">Вход в админ‑панель</h1>
-        {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
-        <form onSubmit={onSubmit} className="space-y-3">
-          <div>
-            <label className="block text-sm mb-1">Логин</label>
-            <input
-              className="w-full border rounded px-3 py-2"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="max-w-md w-full space-y-8 p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          {/* Логотип и заголовок */}
+          <div className="text-center">
+            <div className="text-4xl mb-4">🍔</div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Babay Burger
+            </h2>
+            <p className="text-gray-600 mb-8">
+              Админ панель
+            </p>
           </div>
-          <div>
-            <label className="block text-sm mb-1">Пароль</label>
-            <input
-              type="password"
-              className="w-full border rounded px-3 py-2"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+
+          {/* Форма входа */}
+          <form className="space-y-6" onSubmit={onSubmit}>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  👤 Имя пользователя
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="Введите имя пользователя"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  🔒 Пароль
+                </label>
+                <input
+                  type="password"
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="Введите пароль"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <span className="text-red-500 mr-2">❌</span>
+                  <span className="text-red-800 text-sm">{error}</span>
+                </div>
+              </div>
+            )}
+
+            {state.error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <span className="text-red-500 mr-2">❌</span>
+                  <span className="text-red-800 text-sm">{state.error}</span>
+                </div>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={state.isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+            >
+              {state.isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Вход...
+                </>
+              ) : (
+                <>
+                  <span className="mr-2">🚪</span>
+                  Войти в админ панель
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Дополнительная информация */}
+          <div className="mt-8 text-center">
+            <div className="text-sm text-gray-500">
+              Доступ только для администраторов
+            </div>
           </div>
-          <button
-            type="submit"
-            disabled={state.isLoading}
-            className="w-full bg-blue-600 text-white rounded py-2 disabled:opacity-60"
-          >
-            {state.isLoading ? 'Входим…' : 'Войти'}
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   );

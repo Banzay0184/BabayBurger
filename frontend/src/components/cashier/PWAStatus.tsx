@@ -11,6 +11,18 @@ export const PWAStatus: React.FC<PWAStatusProps> = ({ className = '' }) => {
   const [connectionStatus, setConnectionStatus] = useState<'online' | 'offline' | 'slow'>('online');
 
   useEffect(() => {
+    // Регистрируем Service Worker для кассира
+    const registerServiceWorker = async () => {
+      try {
+        await pwaManager.registerServiceWorker('/sw.js', '/cashier');
+        console.log('✅ Cashier Service Worker зарегистрирован через PWAStatus');
+      } catch (error) {
+        console.error('❌ Ошибка регистрации Service Worker в PWAStatus:', error);
+      }
+    };
+
+    registerServiceWorker();
+
     // Проверяем статус установки
     setIsInstalled(pwaManager.isPWAInstalled());
     setCanInstall(pwaManager.canInstall());
@@ -25,11 +37,13 @@ export const PWAStatus: React.FC<PWAStatusProps> = ({ className = '' }) => {
 
     // Обработчик beforeinstallprompt
     const handleBeforeInstallPrompt = () => {
+      console.log('📱 beforeinstallprompt событие получено');
       setCanInstall(true);
     };
 
     // Обработчик appinstalled
     const handleAppInstalled = () => {
+      console.log('✅ appinstalled событие получено');
       setIsInstalled(true);
       setCanInstall(false);
     };
@@ -37,10 +51,19 @@ export const PWAStatus: React.FC<PWAStatusProps> = ({ className = '' }) => {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
+    // Периодическая проверка статуса
+    const checkStatus = () => {
+      setIsInstalled(pwaManager.isPWAInstalled());
+      setCanInstall(pwaManager.canInstall());
+    };
+
+    const interval = setInterval(checkStatus, 2000);
+
     return () => {
       window.removeEventListener('connectionchange', handleConnectionChange as EventListener);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      clearInterval(interval);
     };
   }, []);
 

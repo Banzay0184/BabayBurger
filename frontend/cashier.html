@@ -176,10 +176,39 @@
         console.log('- Icons:', document.querySelectorAll('link[rel="icon"]').length > 0);
         console.log('- Start URL:', '/cashier/login');
         console.log('- Scope:', '/cashier');
+        
+        // Проверяем манифест
+        const manifestLink = document.querySelector('link[rel="manifest"]');
+        if (manifestLink) {
+          fetch(manifestLink.href)
+            .then(response => response.json())
+            .then(manifest => {
+              console.log('📱 Манифест загружен:', manifest);
+              console.log('- Иконки в манифесте:', manifest.icons?.length || 0);
+              console.log('- Start URL в манифесте:', manifest.start_url);
+              console.log('- Scope в манифесте:', manifest.scope);
+            })
+            .catch(error => {
+              console.error('❌ Ошибка загрузки манифеста:', error);
+            });
+        }
+        
+        // Проверяем Service Worker
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            console.log('🔧 Зарегистрированные Service Workers:', registrations.length);
+            registrations.forEach((registration, index) => {
+              console.log(`- SW ${index + 1}:`, registration.scope, registration.active?.scriptURL);
+            });
+          });
+        }
       }
 
       // Проверяем при загрузке
       setTimeout(checkPWACriteria, 1000);
+      
+      // Дополнительная проверка через 3 секунды
+      setTimeout(checkPWACriteria, 3000);
     </script>
   </body>
 </html>

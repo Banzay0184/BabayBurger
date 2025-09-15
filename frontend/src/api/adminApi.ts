@@ -1,235 +1,267 @@
-import { clientApi } from './unifiedClient';
-import type { ApiResponse } from './types';
+const API_BASE_URL = '/api/admin';
 
-export type Id = number | string;
-
-export interface AdminCategory {
-  id: number;
-  name: string;
-  description?: string;
-  image?: string;
+interface ApiResponse<T> {
+  data?: T;
+  error?: string;
+  success?: boolean;
 }
 
-export interface AdminMenuItem {
-  id: number;
-  name: string;
-  description?: string;
-  price: string | number;
-  category: number;
-  image?: string;
-  is_hit?: boolean;
-  is_new?: boolean;
-  priority?: number;
+interface DashboardResponse {
+  stats: any;
+  top_items: any[];
+  daily_stats: any[];
 }
 
-export interface AdminAddOn {
-  id: number;
-  name: string;
-  price: string | number;
-  category?: number | null;
-  available_for_categories?: number[];
-  is_active?: boolean;
+interface AnalyticsResponse {
+  period: string;
+  start_date: string;
+  end_date: string;
+  orders_by_status: Array<{
+    status: string;
+    count: number;
+  }>;
+  daily_stats: Array<{
+    date: string;
+    orders: number;
+    revenue: number;
+  }>;
+  top_categories: Array<{
+    id: number;
+    name: string;
+    orders_count: number;
+    revenue: number;
+  }>;
+  top_items: Array<{
+    id: number;
+    name: string;
+    orders_count: number;
+    quantity_sold: number;
+    revenue: number;
+  }>;
 }
 
-export interface AdminSizeOption {
-  id: number;
-  name: string;
-  price_modifier: string | number;
-  description?: string;
-  menu_item: number;
-  is_active?: boolean;
-}
+class AdminApiClient {
+  private baseUrl: string;
 
-export interface AdminPromotion {
-  id: number;
-  name: string;
-  description?: string;
-  discount_type: 'percent' | 'fixed' | 'bogo';
-  discount_value?: string | number;
-  min_order_amount?: string | number;
-  max_discount?: string | number;
-  usage_count?: number;
-  max_uses?: number;
-  valid_from?: string;
-  valid_to?: string;
-  is_active?: boolean;
-  applicable_items?: number[];
-  free_item?: number | null;
-  free_addon?: number | null;
-}
+  constructor(baseUrl: string = API_BASE_URL) {
+    this.baseUrl = baseUrl;
+  }
 
-export const adminApi = {
-  // Menu Items
-  async listMenuItems(): Promise<ApiResponse<AdminMenuItem[]>> {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<ApiResponse<T>> {
     try {
-      const data = await clientApi.get<AdminMenuItem[]>('menu-items/');
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async createMenuItem(payload: Partial<AdminMenuItem>): Promise<ApiResponse<AdminMenuItem>> {
-    try {
-      const data = await clientApi.post<AdminMenuItem>('menu-items/', payload);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async updateMenuItem(id: Id, payload: Partial<AdminMenuItem>): Promise<ApiResponse<AdminMenuItem>> {
-    try {
-      const data = await clientApi.patch<AdminMenuItem>(`menu-items/${id}/`, payload);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async deleteMenuItem(id: Id): Promise<ApiResponse<{}>> {
-    try {
-      const data = await clientApi.delete<{}>(`menu-items/${id}/`);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
+      const url = `${this.baseUrl}${endpoint}`;
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+        ...options,
+      });
 
-  // Add-ons
-  async listAddOns(): Promise<ApiResponse<AdminAddOn[]>> {
-    try {
-      const data = await clientApi.get<AdminAddOn[]>('add-ons/');
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async createAddOn(payload: Partial<AdminAddOn>): Promise<ApiResponse<AdminAddOn>> {
-    try {
-      const data = await clientApi.post<AdminAddOn>('add-ons/', payload);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async updateAddOn(id: Id, payload: Partial<AdminAddOn>): Promise<ApiResponse<AdminAddOn>> {
-    try {
-      const data = await clientApi.patch<AdminAddOn>(`add-ons/${id}/`, payload);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async deleteAddOn(id: Id): Promise<ApiResponse<{}>> {
-    try {
-      const data = await clientApi.delete<{}>(`add-ons/${id}/`);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
+      const data = await response.json();
 
-  // Size options
-  async listSizeOptions(): Promise<ApiResponse<AdminSizeOption[]>> {
-    try {
-      const data = await clientApi.get<AdminSizeOption[]>('size-options/');
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async createSizeOption(payload: Partial<AdminSizeOption>): Promise<ApiResponse<AdminSizeOption>> {
-    try {
-      const data = await clientApi.post<AdminSizeOption>('size-options/', payload);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async updateSizeOption(id: Id, payload: Partial<AdminSizeOption>): Promise<ApiResponse<AdminSizeOption>> {
-    try {
-      const data = await clientApi.patch<AdminSizeOption>(`size-options/${id}/`, payload);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async deleteSizeOption(id: Id): Promise<ApiResponse<{}>> {
-    try {
-      const data = await clientApi.delete<{}>(`size-options/${id}/`);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
+      if (!response.ok) {
+        return { error: data.error || 'Ошибка сервера' };
+      }
 
-  // Promotions
-  async listPromotions(): Promise<ApiResponse<AdminPromotion[]>> {
-    try {
-      const data = await clientApi.get<AdminPromotion[]>('promotions/');
       return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async createPromotion(payload: Partial<AdminPromotion>): Promise<ApiResponse<AdminPromotion>> {
-    try {
-      const data = await clientApi.post<AdminPromotion>('promotions/', payload);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async updatePromotion(id: Id, payload: Partial<AdminPromotion>): Promise<ApiResponse<AdminPromotion>> {
-    try {
-      const data = await clientApi.patch<AdminPromotion>(`promotions/${id}/`, payload);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async deletePromotion(id: Id): Promise<ApiResponse<{}>> {
-    try {
-      const data = await clientApi.delete<{}>(`promotions/${id}/`);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-
-  // Promo codes: нет DRF ViewSet на бэке. Эти методы заработают после добавления router.register('promo-codes', PromoCodeViewSet)
-  async listPromoCodes(): Promise<ApiResponse<any[]>> {
-    try {
-      const data = await clientApi.get<any[]>('promo-codes/');
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async createPromoCode(payload: any): Promise<ApiResponse<any>> {
-    try {
-      const data = await clientApi.post<any>('promo-codes/', payload);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async updatePromoCode(id: Id, payload: any): Promise<ApiResponse<any>> {
-    try {
-      const data = await clientApi.patch<any>(`promo-codes/${id}/`, payload);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
-    }
-  },
-  async deletePromoCode(id: Id): Promise<ApiResponse<{}>> {
-    try {
-      const data = await clientApi.delete<{}>(`promo-codes/${id}/`);
-      return { data, success: true };
-    } catch (error: any) {
-      return { error, success: false };
+    } catch (error) {
+      return { error: 'Ошибка сети' };
     }
   }
-};
 
+  // Аутентификация
+  async login(username: string, password: string) {
+    return this.request('/auth/', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+  }
+
+  // Дашборд
+  async getDashboard(): Promise<ApiResponse<DashboardResponse>> {
+    return this.request('/dashboard/');
+  }
+
+  // Аналитика
+  async getAnalytics(period: string = 'week'): Promise<ApiResponse<AnalyticsResponse>> {
+    return this.request(`/analytics/?period=${period}`);
+  }
+
+  // Меню
+  async getMenuItems(params?: any) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = searchParams.toString();
+    return this.request(`/menu/${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getMenuItem(id: number) {
+    return this.request(`/menu/${id}/`);
+  }
+
+  async createMenuItem(data: any) {
+    return this.request('/menu/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateMenuItem(id: number, data: any) {
+    return this.request(`/menu/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteMenuItem(id: number) {
+    return this.request(`/menu/${id}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async toggleMenuItemHit(id: number) {
+    return this.request(`/menu/${id}/toggle_hit/`, {
+      method: 'POST',
+    });
+  }
+
+  async toggleMenuItemNew(id: number) {
+    return this.request(`/menu/${id}/toggle_new/`, {
+      method: 'POST',
+    });
+  }
+
+  async toggleMenuItemActive(id: number) {
+    return this.request(`/menu/${id}/toggle_active/`, {
+      method: 'POST',
+    });
+  }
+
+  // Категории
+  async getCategories(params?: any) {
+    const searchParams = new URLSearchParams();
+    if (params?.search) {
+      searchParams.append('search', params.search);
+    }
+    const queryString = searchParams.toString();
+    return this.request(`/categories/${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async createCategory(data: any) {
+    return this.request('/categories/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateCategory(id: number, data: any) {
+    return this.request(`/categories/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteCategory(id: number) {
+    return this.request(`/categories/${id}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Заказы
+  async getOrders(params?: any) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = searchParams.toString();
+    return this.request(`/orders/${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async changeOrderStatus(id: number, status: string) {
+    return this.request(`/orders/${id}/change_status/`, {
+      method: 'POST',
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  // Промокоды
+  async getPromoCodes(params?: any) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = searchParams.toString();
+    return this.request(`/promo-codes/${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async createPromoCode(data: any) {
+    return this.request('/promo-codes/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updatePromoCode(id: number, data: any) {
+    return this.request(`/promo-codes/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deletePromoCode(id: number) {
+    return this.request(`/promo-codes/${id}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async togglePromoCodeActive(id: number) {
+    return this.request(`/promo-codes/${id}/toggle_active/`, {
+      method: 'POST',
+    });
+  }
+
+  // Пользователи
+  async getUsers(params?: { search?: string }) {
+    const searchParams = new URLSearchParams();
+    if (params?.search) {
+      searchParams.append('search', params.search);
+    }
+    const queryString = searchParams.toString();
+    return this.request(`/users/${queryString ? `?${queryString}` : ''}`);
+  }
+
+  // Зоны доставки
+  async getDeliveryZones(params?: { city?: string; is_active?: boolean }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = searchParams.toString();
+    return this.request(`/delivery-zones/${queryString ? `?${queryString}` : ''}`);
+  }
+}
+
+export const adminApi = new AdminApiClient();
 export default adminApi;
-
-

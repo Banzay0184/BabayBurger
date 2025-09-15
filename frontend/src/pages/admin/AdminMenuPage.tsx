@@ -18,14 +18,14 @@ export const AdminMenuPage: React.FC = () => {
     try {
       const [categoriesRes, itemsRes] = await Promise.all([
         menuApi.getCategories(),
-        adminApi.listMenuItems()
+        adminApi.getMenuItems()
       ]);
       
       if (categoriesRes.success) setCategories(categoriesRes.data || []);
-      if (itemsRes.success) setMenuItems(itemsRes.data || []);
+      if (itemsRes.success) setMenuItems(Array.isArray(itemsRes.data) ? itemsRes.data : []);
       
       if (!categoriesRes.success) setError(categoriesRes.error?.message || 'Ошибка загрузки категорий');
-      if (!itemsRes.success) setError(itemsRes.error?.message || 'Ошибка загрузки товаров');
+      if (!itemsRes.success) setError(itemsRes.error || 'Ошибка загрузки товаров');
     } catch (e: any) {
       setError(e.message || 'Ошибка загрузки');
     } finally {
@@ -44,7 +44,7 @@ export const AdminMenuPage: React.FC = () => {
     if (res.success) {
       loadData();
     } else {
-      alert('Ошибка удаления: ' + (res.error?.message || 'Неизвестная ошибка'));
+      alert('Ошибка удаления: ' + (res.error || 'Неизвестная ошибка'));
     }
   };
 

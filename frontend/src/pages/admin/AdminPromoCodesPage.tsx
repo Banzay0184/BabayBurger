@@ -24,11 +24,11 @@ export const AdminPromoCodesPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await adminApi.listPromoCodes();
+      const res = await adminApi.getPromoCodes();
       if (res.success) {
-        setItems(res.data || []);
+        setItems(Array.isArray(res.data) ? res.data : []);
       } else {
-        setError(res.error?.message || 'Ошибка загрузки');
+        setError(res.error || 'Ошибка загрузки');
       }
     } catch (e: any) {
       setError(e?.message || 'Ошибка загрузки');
@@ -46,7 +46,7 @@ export const AdminPromoCodesPage: React.FC = () => {
     if (res.success) {
       load();
     } else {
-      alert('Ошибка удаления: ' + (res.error?.message || 'Неизвестная ошибка'));
+      alert('Ошибка удаления: ' + (res.error || 'Неизвестная ошибка'));
     }
   };
 
