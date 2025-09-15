@@ -66,6 +66,9 @@ class OperatorAuthViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             operator = serializer.validated_data['user']
             
+            # Загружаем оператора с связанными зонами доставки
+            operator_with_zones = Operator.objects.prefetch_related('assigned_zones').get(id=operator.id)
+            
             # Создаем или получаем токен
             try:
                 token, created = Token.objects.get_or_create(user=operator)
@@ -80,7 +83,7 @@ class OperatorAuthViewSet(viewsets.ViewSet):
             return Response({
                 'message': 'Успешный вход',
                 'token': token.key,
-                'operator': OperatorProfileSerializer(operator).data
+                'operator': OperatorProfileSerializer(operator_with_zones).data
             }, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
