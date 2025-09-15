@@ -86,7 +86,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     dispatch({ type: 'LOGIN_START' });
 
     try {
-      const response = await fetch('/api/admin/auth/', {
+             const response = await fetch('/api/admin-panel/auth/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

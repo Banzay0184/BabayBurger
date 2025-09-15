@@ -133,8 +133,19 @@
     
     <script type="module" src="/src/main.tsx"></script>
     
+    <!-- Простой тест -->
+    <script>
+      console.log('🧪 Тестовый скрипт загружен!');
+    </script>
+    
     <!-- PWA скрипт -->
     <script>
+      console.log('🚀 PWA скрипт начал выполнение!');
+      
+      // Ждем загрузки DOM
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 DOM загружен, запускаем PWA диагностику!');
+        
       // Проверка офлайн режима
       function updateOnlineStatus() {
         const indicator = document.getElementById('offline-indicator');
@@ -300,7 +311,7 @@
           console.log('- User Agent:', navigator.userAgent);
           console.log('- Platform:', navigator.platform);
           console.log('- Standalone:', window.matchMedia('(display-mode: standalone)').matches);
-          console.log('- iOS Standalone:', (window.navigator as any).standalone);
+          console.log('- iOS Standalone:', window.navigator.standalone);
           console.log('- Deferred Prompt:', !!deferredPrompt);
           console.log('- URL:', window.location.href);
           console.log('- Protocol:', window.location.protocol);
@@ -370,6 +381,9 @@
           console.error('❌ Ошибка в проверке через 10 секунд:', error);
         }
       }, 10000);
+      
+      console.log('✅ PWA скрипт завершил выполнение!');
+      }); // Закрываем DOMContentLoaded
     </script>
   </body>
 </html>
