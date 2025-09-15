@@ -8,6 +8,7 @@ export interface Operator {
   phone: string;
   is_active_operator: boolean;
   assigned_zones: DeliveryZone[];
+  assigned_zones_names: string;
   completed_orders_count: number;
   created_at: string;
   updated_at: string;

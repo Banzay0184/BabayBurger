@@ -366,7 +366,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
                   {authState.operator?.first_name} {authState.operator?.last_name}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {authState.operator?.assigned_zones?.map(zone => zone.city).join(', ')}
+                  {authState.operator?.assigned_zones_names || 'Зоны не назначены'}
                 </p>
               </div>
               
