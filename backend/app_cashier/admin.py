@@ -10,6 +10,19 @@ class CashierAdmin(admin.ModelAdmin):
     list_filter = ['is_active_cashier', 'restaurant', 'created_at']
     search_fields = ['username', 'first_name', 'last_name', 'phone']
     readonly_fields = ['processed_orders_count', 'created_at', 'updated_at']
+    
+    def save_model(self, request, obj, form, change):
+        """
+        Переопределяем сохранение модели для правильного хеширования пароля
+        """
+        # Если это новый объект (не изменение) и пароль не хеширован
+        if not change and obj.password and not obj.password.startswith('pbkdf2'):
+            obj.set_password(obj.password)
+        elif change and 'password' in form.changed_data:
+            # Если пароль изменился при редактировании
+            obj.set_password(obj.password)
+        
+        super().save_model(request, obj, form, change)
 
 @admin.register(CashierSession)
 class CashierSessionAdmin(admin.ModelAdmin):

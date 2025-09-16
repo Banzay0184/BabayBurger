@@ -1,4 +1,5 @@
 from rest_framework import status, generics, viewsets, serializers
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -55,7 +56,7 @@ class DeliveryAssignmentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'assigned_at']
 
 
-class AdminAuthView(generics.GenericAPIView):
+class AdminAuthView(APIView):
     """Аутентификация для админки"""
     permission_classes = []  # Разрешаем доступ без аутентификации
     
