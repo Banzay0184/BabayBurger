@@ -183,7 +183,7 @@ export const AdminMenuPage: React.FC = () => {
                 onClick={() => setActiveTab('categories')}
                 className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
                   activeTab === 'categories' 
-                    ? 'bg-white text-blue-600 shadow-lg' 
+                    ? 'bg-white text-orange-600 shadow-lg' 
                     : 'text-white hover:bg-white/20'
                 }`}
               >
@@ -193,55 +193,55 @@ export const AdminMenuPage: React.FC = () => {
                 onClick={() => setActiveTab('items')}
                 className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
                   activeTab === 'items' 
-                    ? 'bg-white text-blue-600 shadow-lg' 
+                    ? 'bg-white text-orange-600 shadow-lg' 
                     : 'text-white hover:bg-white/20'
                 }`}
               >
                 🍔 Товары
               </button>
             </div>
-            
-            {activeTab === 'items' && (
-              <button
-                onClick={openAddForm}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl flex items-center space-x-2 group"
-              >
-                <span className="group-hover:scale-110 transition-transform">➕</span>
-                <span>Добавить товар</span>
-              </button>
-            )}
           </div>
         </div>
       </div>
 
       {/* Категории */}
       {activeTab === 'categories' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">Категории</h3>
-            <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-              Добавить категорию
-            </button>
-          </div>
-          
-          {loading && <div className="text-center py-4">Загрузка...</div>}
-          {error && <div className="text-red-600 bg-red-50 p-3 rounded">{error}</div>}
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categories.map((c) => (
-              <div key={c.id} className="bg-white border rounded-lg p-4 shadow-sm">
-                <div className="font-medium text-lg text-gray-900">{c.name}</div>
-                <div className="text-sm text-gray-600 mt-1 line-clamp-2">{c.description}</div>
-                <div className="mt-3 flex gap-2">
-                  <button className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
-                    Редактировать
-                  </button>
-                  <button className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200">
-                    Удалить
-                  </button>
-                </div>
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl border border-gray-200/50 shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                  <span className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center text-white text-sm mr-3">📂</span>
+                  Категории ({categories.length})
+                </h3>
+                <button className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex items-center space-x-2 group">
+                  <span className="group-hover:scale-110 transition-transform">➕</span>
+                  <span>Добавить категорию</span>
+                </button>
               </div>
-            ))}
+            </div>
+            
+            <div className="p-6">
+              {loading && <div className="text-center py-8">Загрузка...</div>}
+              {error && <div className="text-red-600 bg-red-50 p-4 rounded-lg mb-4">{error}</div>}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {categories.map((c) => (
+                  <div key={c.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                    <div className="font-bold text-lg text-gray-900 mb-2">{c.name}</div>
+                    <div className="text-sm text-gray-600 mb-3 line-clamp-2">{c.description}</div>
+                    <div className="flex gap-2">
+                      <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-semibold">
+                        Редактировать
+                      </button>
+                      <button className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-semibold">
+                        Удалить
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -268,83 +268,92 @@ export const AdminMenuPage: React.FC = () => {
           )}
           
           <div className="bg-white rounded-2xl border border-gray-200/50 shadow-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6 border-b border-gray-200">
-              <h3 className="text-2xl font-bold text-gray-800 flex items-center">
-                <span className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center text-white text-lg mr-4">🍔</span>
-                Список товаров ({menuItems.length})
-              </h3>
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                  <span className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center text-white text-sm mr-3">🍔</span>
+                  Список товаров ({menuItems.length})
+                </h3>
+                <button
+                  onClick={openAddForm}
+                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex items-center space-x-2 group"
+                >
+                  <span className="group-hover:scale-110 transition-transform">➕</span>
+                  <span>Добавить товар</span>
+                </button>
+              </div>
             </div>
             
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                   <tr>
-                    <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Товар</th>
-                    <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Цена</th>
-                    <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Категория</th>
-                    <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Статус</th>
-                    <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Действия</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Товар</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Цена</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Категория</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Статус</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Действия</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
                   {menuItems.map((item, index) => (
                     <tr key={item.id} className={`hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
-                      <td className="px-8 py-6 whitespace-nowrap">
-                        <div className="flex items-center space-x-4">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
                           {item.image && (
                             <img 
                               src={item.image} 
                               alt={item.name}
-                              className="w-14 h-14 object-cover rounded-xl shadow-md"
+                              className="w-10 h-10 object-cover rounded-lg shadow-sm"
                             />
                           )}
                           <div>
-                            <div className="text-base font-bold text-gray-900">{item.name}</div>
-                            <div className="text-sm text-gray-500 max-w-xs truncate">{item.description}</div>
+                            <div className="text-sm font-bold text-gray-900">{item.name}</div>
+                            <div className="text-xs text-gray-500 max-w-xs truncate">{item.description}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-8 py-6 whitespace-nowrap">
-                        <div className="text-base font-bold text-green-600 bg-green-50 px-4 py-2 rounded-xl">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg">
                           {item.price} ₽
                         </div>
                       </td>
-                      <td className="px-8 py-6 whitespace-nowrap">
-                        <div className="text-sm font-semibold text-gray-700 bg-blue-50 px-4 py-2 rounded-xl">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-xs font-semibold text-gray-700 bg-blue-50 px-2 py-1 rounded-lg">
                           {categories.find(c => c.id === item.category)?.name || 'Неизвестно'}
                         </div>
                       </td>
-                      <td className="px-8 py-6 whitespace-nowrap">
-                        <div className="flex space-x-2">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex space-x-1">
                           {item.is_hit && (
-                            <span className="inline-flex px-3 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200">
-                              🔥 Хит
+                            <span className="inline-flex px-2 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200">
+                              🔥
                             </span>
                           )}
                           {item.is_new && (
-                            <span className="inline-flex px-3 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-200">
-                              🆕 Новинка
+                            <span className="inline-flex px-2 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-200">
+                              🆕
                             </span>
                           )}
                           {!item.is_hit && !item.is_new && (
-                            <span className="inline-flex px-3 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300">
-                              📦 Обычный
+                            <span className="inline-flex px-2 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300">
+                              📦
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="px-8 py-6 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-3">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
                           <button 
                             onClick={() => openEditForm(item)}
-                            className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl hover:from-orange-600 hover:to-red-600 transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex items-center space-x-2 group"
+                            className="px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-200 font-semibold shadow-sm hover:shadow-md flex items-center space-x-1 group text-xs"
                           >
                             <span className="group-hover:scale-110 transition-transform">✏️</span>
-                            <span>Редактировать</span>
+                            <span>Изменить</span>
                           </button>
                           <button 
                             onClick={() => handleDeleteItem(item.id)}
-                            className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex items-center space-x-2 group"
+                            className="px-3 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition-all duration-200 font-semibold shadow-sm hover:shadow-md flex items-center space-x-1 group text-xs"
                           >
                             <span className="group-hover:scale-110 transition-transform">🗑️</span>
                             <span>Удалить</span>
