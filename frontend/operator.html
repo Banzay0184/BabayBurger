@@ -7,8 +7,8 @@
     <title>Babay Burger - Оператор</title>
     <meta name="description" content="Интерфейс оператора для управления заказами ресторана Babay Burger" />
     
-    <!-- PWA Manifest для оператора -->
-    <link rel="manifest" href="/operator-manifest.json" />
+    <!-- PWA Manifest для оператора - ВРЕМЕННО ОТКЛЮЧЕН -->
+    <!-- <link rel="manifest" href="/operator-manifest.json" /> -->
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#3b82f6" />
@@ -118,7 +118,8 @@
       // Проверяем статус при загрузке
       updateOnlineStatus();
 
-      // Регистрируем Service Worker для оператора
+      // Регистрируем Service Worker для оператора - ВРЕМЕННО ОТКЛЮЧЕН
+      /*
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/operator-sw.js')
@@ -130,6 +131,7 @@
             });
         });
       }
+      */
     </script>
   </body>
 </html>
