@@ -55,13 +55,24 @@ class AdminApiClient {
       // Получаем токен из localStorage
       const token = localStorage.getItem('admin_token');
       
+      // Отладочная информация
+      console.log('🔐 Admin API Request:', {
+        url,
+        token: token ? `${token.substring(0, 10)}...` : 'No token',
+        endpoint
+      });
+      
+      const headers = {
+        'Content-Type': 'application/json',
+        // Добавляем токен аутентификации если он есть
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...options.headers,
+      };
+      
+      console.log('📤 Request headers:', headers);
+      
       const response = await fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          // Добавляем токен аутентификации если он есть
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-          ...options.headers,
-        },
+        headers,
         ...options,
       });
 
