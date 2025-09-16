@@ -16,17 +16,29 @@ export const AdminMenuPage: React.FC = () => {
     setError(null);
     
     try {
+      console.log('🔄 Загружаем данные меню...');
       const [categoriesRes, itemsRes] = await Promise.all([
         menuApi.getCategories(),
         adminApi.getMenuItems()
       ]);
       
-      if (categoriesRes.success) setCategories(categoriesRes.data || []);
-      if (itemsRes.success) setMenuItems(Array.isArray(itemsRes.data) ? itemsRes.data : []);
+      console.log('📊 Ответ категорий:', categoriesRes);
+      console.log('📊 Ответ товаров:', itemsRes);
+      
+      if (categoriesRes.success) {
+        setCategories(categoriesRes.data || []);
+        console.log('✅ Категории загружены:', categoriesRes.data);
+      }
+      if (itemsRes.success) {
+        const items = Array.isArray(itemsRes.data) ? itemsRes.data : [];
+        setMenuItems(items);
+        console.log('✅ Товары загружены:', items);
+      }
       
       if (!categoriesRes.success) setError(categoriesRes.error?.message || 'Ошибка загрузки категорий');
       if (!itemsRes.success) setError(itemsRes.error || 'Ошибка загрузки товаров');
     } catch (e: any) {
+      console.error('💥 Ошибка загрузки меню:', e);
       setError(e.message || 'Ошибка загрузки');
     } finally {
       setLoading(false);

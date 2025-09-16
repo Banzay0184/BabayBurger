@@ -76,12 +76,17 @@ class AdminApiClient {
         ...options,
       });
 
+      console.log('📥 Response status:', response.status, response.statusText);
+      
       const data = await response.json();
+      console.log('📥 Response data:', data);
 
       if (!response.ok) {
+        console.error('❌ API Error:', data);
         return { error: data.error || 'Ошибка сервера' };
       }
 
+      console.log('✅ API Success:', data);
       return { data, success: true };
     } catch (error) {
       return { error: 'Ошибка сети' };

@@ -58,14 +58,21 @@ export const AdminOrdersPage: React.FC = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Загружаем заказы с фильтрами:', filters);
       const response = await adminApi.getOrders(filters);
       
+      console.log('📊 Ответ заказов:', response);
+      
       if (response.error) {
+        console.error('❌ Ошибка загрузки заказов:', response.error);
         setError(response.error);
       } else if (response.data) {
-        setOrders(Array.isArray(response.data) ? response.data : []);
+        const ordersData = Array.isArray(response.data) ? response.data : [];
+        setOrders(ordersData);
+        console.log('✅ Заказы загружены:', ordersData);
       }
     } catch (err) {
+      console.error('💥 Исключение при загрузке заказов:', err);
       setError('Ошибка загрузки заказов');
     } finally {
       setLoading(false);

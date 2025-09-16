@@ -66,17 +66,23 @@ export const AdminDashboard: React.FC = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
+        console.log('🔄 Загружаем данные дашборда...');
         const response = await adminApi.getDashboard();
         
+        console.log('📊 Ответ от API дашборда:', response);
+        
         if (response.error) {
+          console.error('❌ Ошибка API дашборда:', response.error);
           setError(response.error);
         } else if (response.data) {
           const data = response.data as any;
+          console.log('✅ Данные дашборда получены:', data);
           setStats(data.stats);
           setTopItems(data.top_items || []);
           setDailyStats(data.daily_stats || []);
         }
       } catch (err) {
+        console.error('💥 Исключение при загрузке дашборда:', err);
         setError('Ошибка загрузки данных');
       } finally {
         setLoading(false);

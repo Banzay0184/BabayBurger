@@ -25,14 +25,21 @@ export const AdminUsersPage: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Загружаем пользователей с поиском:', search);
       const response = await adminApi.getUsers({ search });
       
+      console.log('📊 Ответ пользователей:', response);
+      
       if (response.error) {
+        console.error('❌ Ошибка загрузки пользователей:', response.error);
         setError(response.error);
       } else if (response.data) {
-        setUsers(Array.isArray(response.data) ? response.data : []);
+        const usersData = Array.isArray(response.data) ? response.data : [];
+        setUsers(usersData);
+        console.log('✅ Пользователи загружены:', usersData);
       }
     } catch (err) {
+      console.error('💥 Исключение при загрузке пользователей:', err);
       setError('Ошибка загрузки пользователей');
     } finally {
       setLoading(false);
