@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
+from app_operator.models import Operator
 from django.db.models import Count, Sum, Avg, Q, F
 from django.utils import timezone
 from datetime import datetime, timedelta
@@ -107,10 +107,10 @@ class AdminDashboardView(generics.GenericAPIView):
         # Общая статистика
         stats = {
             'users': {
-                'total': User.objects.count(),
-                'new_today': User.objects.filter(created_at__date=today).count(),
-                'new_week': User.objects.filter(created_at__date__gte=week_ago).count(),
-                'new_month': User.objects.filter(created_at__date__gte=month_ago).count(),
+                'total': Operator.objects.count(),
+                'new_today': Operator.objects.filter(date_joined__date=today).count(),
+                'new_week': Operator.objects.filter(date_joined__date__gte=week_ago).count(),
+                'new_month': Operator.objects.filter(date_joined__date__gte=month_ago).count(),
             },
             'orders': {
                 'total': Order.objects.count(),
@@ -346,14 +346,14 @@ class AdminOrderViewSet(viewsets.ModelViewSet):
 class AdminUserViewSet(viewsets.ReadOnlyModelViewSet):
     """Просмотр пользователей"""
     permission_classes = [IsAuthenticated, IsAdminUser]
-    queryset = User.objects.all()
+    queryset = Operator.objects.all()
     serializer_class = UserSerializer
     
     def get_queryset(self):
-        queryset = User.objects.annotate(
+        queryset = Operator.objects.annotate(
             orders_count=Count('order'),
             total_spent=Sum('order__final_price')
-        ).order_by('-created_at')
+        ).order_by('-date_joined')
         
         search = self.request.query_params.get('search')
         if search:
