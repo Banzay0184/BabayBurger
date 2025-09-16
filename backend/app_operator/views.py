@@ -1191,9 +1191,6 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             try:
                 # Получаем заказ и его адрес
                 order = Order.objects.select_related('address').get(id=order_id)
-                order_city = order.address.city
-                order_latitude = order.address.latitude
-                order_longitude = order.address.longitude
                 
                 # Фильтруем рестораны в зависимости от типа заказа
                 if order.service_type == 'pickup':
@@ -1205,11 +1202,17 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
                     logger.info(f"🍽️ Заказ #{order.id} на самовывоз: найдено {restaurants.count()} ресторанов с самовывозом")
                 else:
                     # Для доставки фильтруем по городу заказа
-                    restaurants = Restaurant.objects.filter(
-                        is_active=True,
-                        city__iexact=order_city
-                    )
-                    logger.info(f"🚚 Заказ #{order.id} на доставку в {order_city}: найдено {restaurants.count()} ресторанов")
+                    if order.address:
+                        order_city = order.address.city
+                        restaurants = Restaurant.objects.filter(
+                            is_active=True,
+                            city__iexact=order_city
+                        )
+                        logger.info(f"🚚 Заказ #{order.id} на доставку в {order_city}: найдено {restaurants.count()} ресторанов")
+                    else:
+                        # Если адрес не указан, показываем все рестораны
+                        restaurants = Restaurant.objects.filter(is_active=True)
+                        logger.info(f"🚚 Заказ #{order.id} на доставку без адреса: найдено {restaurants.count()} ресторанов")
                 
                 # Формируем список подходящих ресторанов
                 suitable_restaurants = []
@@ -1233,10 +1236,11 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
                         if delivery_zones.exists():
                             # Проверяем, попадает ли адрес заказа в зоны доставки
                             can_deliver = False
-                            for zone in delivery_zones:
-                                if zone.is_address_in_zone(order_latitude, order_longitude):
-                                    can_deliver = True
-                                    break
+                            if order.address and order.address.latitude and order.address.longitude:
+                                for zone in delivery_zones:
+                                    if zone.is_address_in_zone(order.address.latitude, order.address.longitude):
+                                        can_deliver = True
+                                        break
                             
                             if can_deliver:
                                 suitable_restaurants.append({

@@ -801,7 +801,7 @@ class OrderView(APIView):
                     'restaurant': {
                         'id': order.restaurant.id,
                         'name': order.restaurant.name,
-                        'city': order.restaurant.city
+                        'city': order.restaurant.city or ''
                     } if order.restaurant else None,
                     'items': []
                 }

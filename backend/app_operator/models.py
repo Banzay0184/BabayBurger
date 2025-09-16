@@ -169,7 +169,7 @@ class Operator(AbstractUser):
                 return False, "У заказа самовывоза не указан ресторан"
             
             # Проверяем, есть ли у оператора зоны в городе ресторана
-            restaurant_city = order.restaurant.city
+            restaurant_city = order.restaurant.city or ''
             operator_cities = list(self.assigned_zones.filter(is_active=True).values_list('city', flat=True).distinct())
             
             if restaurant_city in operator_cities:

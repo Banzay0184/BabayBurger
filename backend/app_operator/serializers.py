@@ -287,7 +287,7 @@ class OrderForOperatorSerializer(serializers.ModelSerializer):
                 # Находим зону доставки для этого адреса
                 from api.models import DeliveryZone
                 delivery_zones = DeliveryZone.objects.filter(
-                    city=obj.address.city,
+                    city=obj.address.city or '',
                     is_active=True
                 )
                 
