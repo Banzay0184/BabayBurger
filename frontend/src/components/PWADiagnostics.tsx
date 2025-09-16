@@ -13,9 +13,20 @@ const PWADiagnostics: React.FC = () => {
   const [serviceWorkerStatus, setServiceWorkerStatus] = useState<string>('Проверка...');
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [canInstall, setCanInstall] = useState(false);
+  const [isAlreadyInstalled, setIsAlreadyInstalled] = useState(false);
 
   useEffect(() => {
     checkPWACriteria();
+    
+    // Проверяем, установлено ли уже приложение
+    const checkIfInstalled = () => {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      const isIOSStandalone = (window.navigator as any).standalone;
+      const installed = isStandalone || isIOSStandalone;
+      setIsAlreadyInstalled(installed);
+    };
+
+    checkIfInstalled();
     
     // Слушаем событие beforeinstallprompt
     const handleBeforeInstallPrompt = (e: any) => {
@@ -28,6 +39,7 @@ const PWADiagnostics: React.FC = () => {
     const handleAppInstalled = () => {
       setCanInstall(false);
       setDeferredPrompt(null);
+      setIsAlreadyInstalled(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -238,19 +250,37 @@ const PWADiagnostics: React.FC = () => {
               <div>URL: <span className="font-medium">{location.href}</span></div>
               <div>Протокол: <span className="font-medium">{location.protocol}</span></div>
               <div>Можно установить: <span className="font-medium">{canInstall ? 'Да' : 'Нет'}</span></div>
+              <div>Уже установлено: <span className="font-medium">{isAlreadyInstalled ? 'Да' : 'Нет'}</span></div>
             </div>
             
-            {!canInstall && (
+            {isAlreadyInstalled ? (
+              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-800">
+                <div className="font-medium mb-1">✅ PWA уже установлено!</div>
+                <div>Приложение уже установлено на вашем устройстве. Проверьте главный экран или список приложений.</div>
+              </div>
+            ) : !canInstall ? (
               <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
                 <div className="font-medium mb-1">Почему нет кнопки установки?</div>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>PWA уже установлена</li>
                   <li>Браузер не поддерживает PWA</li>
                   <li>Не выполнены все критерии</li>
                   <li>Попробуйте очистить кэш</li>
                 </ul>
+                
+                <div className="mt-2 pt-2 border-t border-yellow-300">
+                  <div className="font-medium mb-1">Попробуйте принудительную установку:</div>
+                  <button
+                    onClick={() => {
+                      // Принудительная установка через меню браузера
+                      alert('Попробуйте:\n1. Меню браузера (⋮) → "Установить Babay Кассир"\n2. Или очистите кэш и перезагрузите страницу');
+                    }}
+                    className="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded text-xs mt-1"
+                  >
+                    🔧 Принудительная установка
+                  </button>
+                </div>
               </div>
-            )}
+            ) : null}
           </div>
 
           <div className="flex gap-2 mt-3">
