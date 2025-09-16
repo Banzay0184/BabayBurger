@@ -113,13 +113,13 @@ const PWADiagnostics: React.FC = () => {
     // Проверка манифеста
     setTimeout(async () => {
       try {
-        const response = await fetch('/cashier-manifest.json');
+        const response = await fetch('/cashier-manifest.json?v=' + Date.now());
         if (response.ok) {
           const manifest = await response.json();
           const hasRequiredFields = manifest.name && manifest.short_name && manifest.start_url && manifest.display && manifest.icons;
           updateDiagnostic(2, hasRequiredFields ? 'success' : 'error',
             hasRequiredFields ? '✅ Манифест корректен' : '❌ Манифест неполный',
-            `Иконок: ${manifest.icons?.length || 0}, Start URL: ${manifest.start_url}`
+            `Иконок: ${manifest.icons?.length || 0}, Start URL: ${manifest.start_url}, Иконка: ${manifest.icons?.[0]?.src || 'нет'}`
           );
         } else {
           updateDiagnostic(2, 'error', '❌ Манифест недоступен', `Статус: ${response.status}`);
@@ -132,21 +132,17 @@ const PWADiagnostics: React.FC = () => {
     // Проверка иконок
     setTimeout(async () => {
       try {
-        const icon192Response = await fetch('/icon-192.png');
-        const icon512Response = await fetch('/icon-512.png');
+        const iconResponse = await fetch('/logobabay.png?v=' + Date.now());
         
-        const icon192Ok = icon192Response.ok;
-        const icon512Ok = icon512Response.ok;
-        
-        if (icon192Ok && icon512Ok) {
-          updateDiagnostic(3, 'success', '✅ Иконки доступны', '192x192 и 512x512');
+        if (iconResponse.ok) {
+          updateDiagnostic(3, 'success', '✅ Иконка доступна', 'logobabay.png');
         } else {
-          updateDiagnostic(3, 'error', '❌ Иконки недоступны', 
-            `192x192: ${icon192Ok ? 'OK' : 'FAIL'}, 512x512: ${icon512Ok ? 'OK' : 'FAIL'}`
+          updateDiagnostic(3, 'error', '❌ Иконка недоступна', 
+            `Статус: ${iconResponse.status}`
           );
         }
       } catch (error) {
-        updateDiagnostic(3, 'error', '❌ Ошибка проверки иконок', String(error));
+        updateDiagnostic(3, 'error', '❌ Ошибка проверки иконки', String(error));
       }
     }, 2000);
 
@@ -269,15 +265,46 @@ const PWADiagnostics: React.FC = () => {
                 
                 <div className="mt-2 pt-2 border-t border-yellow-300">
                   <div className="font-medium mb-1">Попробуйте принудительную установку:</div>
-                  <button
-                    onClick={() => {
-                      // Принудительная установка через меню браузера
-                      alert('Попробуйте:\n1. Меню браузера (⋮) → "Установить Babay Кассир"\n2. Или очистите кэш и перезагрузите страницу');
-                    }}
-                    className="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded text-xs mt-1"
-                  >
-                    🔧 Принудительная установка
-                  </button>
+                  <div className="space-y-1">
+                    <button
+                      onClick={async () => {
+                        try {
+                          // Очищаем кэш Service Worker
+                          if ('serviceWorker' in navigator) {
+                            const registrations = await navigator.serviceWorker.getRegistrations();
+                            for (const registration of registrations) {
+                              await registration.unregister();
+                            }
+                            
+                            // Очищаем кэш
+                            if ('caches' in window) {
+                              const cacheNames = await caches.keys();
+                              await Promise.all(
+                                cacheNames.map(cacheName => caches.delete(cacheName))
+                              );
+                            }
+                            
+                            alert('✅ Кэш очищен! Перезагрузите страницу.');
+                            window.location.reload();
+                          }
+                        } catch (error) {
+                          alert('❌ Ошибка очистки кэша: ' + error);
+                        }
+                      }}
+                      className="w-full bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
+                    >
+                      🗑️ Очистить кэш
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        alert('Попробуйте:\n1. Меню браузера (⋮) → "Установить Babay Кассир"\n2. Или очистите кэш и перезагрузите страницу');
+                      }}
+                      className="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded text-xs"
+                    >
+                      🔧 Принудительная установка
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : null}

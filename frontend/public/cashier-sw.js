@@ -1,6 +1,6 @@
-const CACHE_NAME = 'babay-cashier-v5';
-const STATIC_CACHE_NAME = 'babay-cashier-static-v5';
-const DYNAMIC_CACHE_NAME = 'babay-cashier-dynamic-v5';
+const CACHE_NAME = 'babay-cashier-v6';
+const STATIC_CACHE_NAME = 'babay-cashier-static-v6';
+const DYNAMIC_CACHE_NAME = 'babay-cashier-dynamic-v6';
 
 // Статические ресурсы для кэширования
 const STATIC_ASSETS = [
