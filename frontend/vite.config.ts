@@ -14,8 +14,13 @@ export default defineConfig({
         cashier: 'cashier.html',
         operator: 'operator.html'
       }
-    }
+    },
+    // Копируем PWA файлы в build
+    copyPublicDir: true,
+    assetsInlineLimit: 0, // Не инлайним ассеты для PWA
   },
+  // Настройки для PWA
+  publicDir: 'public',
   server: {
     port: 5173,
     open: true,

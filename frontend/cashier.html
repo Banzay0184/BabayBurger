@@ -7,13 +7,28 @@
     <title>Babay Burger - Кассир</title>
     <meta name="description" content="Интерфейс кассира для ресторана Babay Burger" />
     
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/cashier-manifest.json" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#f97316" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Babay Кассир" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="msapplication-TileColor" content="#f97316" />
     <meta name="msapplication-tap-highlight" content="no" />
     
-    <!-- Icons -->
-    <link rel="apple-touch-icon" href="/logo.jpg" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/logo.jpg" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/logo.jpg" />
+    <!-- PWA Icons -->
+    <link rel="apple-touch-icon" href="/cashier-icon-192.png" />
+    <link rel="icon" type="image/png" sizes="72x72" href="/cashier-icon-72.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/cashier-icon-96.png" />
+    <link rel="icon" type="image/png" sizes="128x128" href="/cashier-icon-128.png" />
+    <link rel="icon" type="image/png" sizes="144x144" href="/cashier-icon-144.png" />
+    <link rel="icon" type="image/png" sizes="152x152" href="/cashier-icon-152.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/cashier-icon-192.png" />
+    <link rel="icon" type="image/png" sizes="384x384" href="/cashier-icon-384.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/cashier-icon-512.png" />
     
     <!-- Современный шрифт Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -86,16 +101,301 @@
         flex-direction: column;
       }
 
+      /* PWA стили */
+      @media (display-mode: standalone) {
+        body {
+          background-color: #f8fafc;
+          user-select: none;
+        }
+        
+        /* Скрываем полосы прокрутки в standalone режиме */
+        ::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+          background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+          background: #a8a8a8;
+        }
+      }
+
+      /* Стили для офлайн индикатора */
+      .offline-indicator {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+        text-align: center;
+        padding: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        z-index: 9999;
+        transform: translateY(-100%);
+        transition: transform 0.3s ease-in-out;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .offline-indicator.show {
+        transform: translateY(0);
+      }
+
+      .offline-indicator::before {
+        content: '📶';
+        margin-right: 8px;
+      }
+
+      /* PWA install prompt стили */
+      .pwa-install-prompt {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #f97316, #ea580c);
+        color: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(249, 115, 22, 0.3);
+        z-index: 9998;
+        max-width: 90%;
+        text-align: center;
+        opacity: 0;
+        transform: translateX(-50%) translateY(100%);
+        transition: all 0.3s ease-in-out;
+      }
+
+      .pwa-install-prompt.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      .pwa-install-prompt button {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        margin: 0 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s ease;
+      }
+
+      .pwa-install-prompt button:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+      }
+
     </style>
   </head>
   <body>
     <div id="root"></div>
     
+    <!-- Офлайн индикатор -->
+    <div id="offline-indicator" class="offline-indicator">
+      Нет подключения к интернету
+    </div>
+    
+    <!-- PWA Install Prompt -->
+    <div id="pwa-install-prompt" class="pwa-install-prompt">
+      <div style="margin-bottom: 8px;">📱 Установить Babay Кассир</div>
+      <div style="font-size: 12px; opacity: 0.9; margin-bottom: 12px;">Для удобной работы установите приложение</div>
+      <button id="pwa-install-btn">Установить</button>
+      <button id="pwa-dismiss-btn">Позже</button>
+    </div>
+    
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Простой тест -->
+    <!-- PWA скрипты -->
     <script>
-      console.log('🧪 Тестовый скрипт загружен!');
+      console.log('💰 Cashier PWA: Initializing...');
+      
+      // Переменные для PWA
+      let deferredPrompt = null;
+      let isInstalled = false;
+      
+      // Проверка статуса подключения
+      function updateOnlineStatus() {
+        const indicator = document.getElementById('offline-indicator');
+        if (navigator.onLine) {
+          indicator.classList.remove('show');
+        } else {
+          indicator.classList.add('show');
+        }
+      }
+
+      // Слушатели событий для статуса сети
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      updateOnlineStatus();
+
+      // PWA Install Events
+      window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('💰 PWA: beforeinstallprompt fired');
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Показываем кастомный prompt через 3 секунды
+        setTimeout(() => {
+          if (!isInstalled) {
+            showInstallPrompt();
+          }
+        }, 3000);
+      });
+
+      // Показать install prompt
+      function showInstallPrompt() {
+        const prompt = document.getElementById('pwa-install-prompt');
+        if (prompt && !isInstalled) {
+          prompt.classList.add('show');
+        }
+      }
+
+      // Скрыть install prompt
+      function hideInstallPrompt() {
+        const prompt = document.getElementById('pwa-install-prompt');
+        if (prompt) {
+          prompt.classList.remove('show');
+        }
+      }
+
+      // Обработчик кнопки установки
+      document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
+        if (!deferredPrompt) {
+          console.log('💰 PWA: No deferred prompt available');
+          return;
+        }
+
+        try {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          
+          console.log('💰 PWA: User choice:', outcome);
+          
+          if (outcome === 'accepted') {
+            console.log('💰 PWA: User accepted the install prompt');
+            isInstalled = true;
+          } else {
+            console.log('💰 PWA: User dismissed the install prompt');
+          }
+          
+          deferredPrompt = null;
+          hideInstallPrompt();
+        } catch (error) {
+          console.error('💰 PWA: Error during installation:', error);
+        }
+      });
+
+      // Обработчик кнопки "Позже"
+      document.getElementById('pwa-dismiss-btn')?.addEventListener('click', () => {
+        hideInstallPrompt();
+        
+        // Показать снова через 24 часа
+        localStorage.setItem('pwa-dismiss-time', Date.now().toString());
+      });
+
+      // Проверка, не был ли prompt отложен
+      const dismissTime = localStorage.getItem('pwa-dismiss-time');
+      if (dismissTime) {
+        const dayInMs = 24 * 60 * 60 * 1000;
+        if (Date.now() - parseInt(dismissTime) < dayInMs) {
+          // Не показываем prompt в течение 24 часов
+          console.log('💰 PWA: Install prompt dismissed recently');
+        } else {
+          localStorage.removeItem('pwa-dismiss-time');
+        }
+      }
+
+      // Обработка успешной установки
+      window.addEventListener('appinstalled', () => {
+        console.log('💰 PWA: App was installed');
+        isInstalled = true;
+        hideInstallPrompt();
+        deferredPrompt = null;
+        
+        // Уведомляем пользователя
+        if ('serviceWorker' in navigator && 'Notification' in window) {
+          navigator.serviceWorker.ready.then((registration) => {
+            registration.showNotification('Babay Кассир установлен!', {
+              body: 'Приложение успешно установлено и готово к работе',
+              icon: '/cashier-icon-192.png',
+              badge: '/cashier-icon-96.png',
+              tag: 'install-success'
+            });
+          });
+        }
+      });
+
+      // Регистрация Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+          try {
+            const registration = await navigator.serviceWorker.register('/cashier-sw.js');
+            console.log('💰 PWA: Service Worker registered successfully:', registration);
+            
+            // Проверяем обновления каждые 60 секунд
+            setInterval(() => {
+              registration.update();
+            }, 60000);
+            
+            // Слушаем сообщения от Service Worker
+            navigator.serviceWorker.addEventListener('message', (event) => {
+              console.log('💰 PWA: Message from SW:', event.data);
+              
+              if (event.data.type === 'SYNC_COMPLETE') {
+                console.log('💰 PWA: Background sync completed');
+              }
+            });
+            
+          } catch (error) {
+            console.error('💰 PWA: Service Worker registration failed:', error);
+          }
+        });
+      }
+
+      // Запрос разрешения на уведомления
+      if ('Notification' in window && Notification.permission === 'default') {
+        setTimeout(() => {
+          Notification.requestPermission().then((permission) => {
+            console.log('💰 PWA: Notification permission:', permission);
+          });
+        }, 5000);
+      }
+
+      // Проверка, запущено ли как PWA
+      function isPWA() {
+        return window.matchMedia('(display-mode: standalone)').matches ||
+               window.navigator.standalone === true;
+      }
+
+      if (isPWA()) {
+        console.log('💰 PWA: Running as PWA');
+        document.body.classList.add('pwa-mode');
+        isInstalled = true;
+      } else {
+        console.log('💰 PWA: Running in browser');
+      }
+
+      // Обработка жестов для PWA
+      if (isPWA()) {
+        // Предотвращаем zoom в PWA
+        document.addEventListener('gesturestart', (e) => e.preventDefault());
+        document.addEventListener('gesturechange', (e) => e.preventDefault());
+        
+        // Предотвращаем контекстное меню
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+      }
+
+      console.log('💰 Cashier PWA: Initialized successfully');
     </script>
   </body>
 </html>
