@@ -78,7 +78,7 @@ class AdminApiClient {
 
   // Аутентификация
   async login(username: string, password: string) {
-    return this.request('/auth/', {
+    return this.request('auth/', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     });
@@ -86,12 +86,12 @@ class AdminApiClient {
 
   // Дашборд
   async getDashboard(): Promise<ApiResponse<DashboardResponse>> {
-    return this.request('/dashboard/');
+    return this.request('dashboard/');
   }
 
   // Аналитика
   async getAnalytics(period: string = 'week'): Promise<ApiResponse<AnalyticsResponse>> {
-    return this.request(`/analytics/?period=${period}`);
+    return this.request(`analytics/?period=${period}`);
   }
 
   // Меню
@@ -105,47 +105,47 @@ class AdminApiClient {
       });
     }
     const queryString = searchParams.toString();
-    return this.request(`/menu/${queryString ? `?${queryString}` : ''}`);
+    return this.request(`menu/${queryString ? `?${queryString}` : ''}`);
   }
 
   async getMenuItem(id: number) {
-    return this.request(`/menu/${id}/`);
+    return this.request(`menu/${id}/`);
   }
 
   async createMenuItem(data: any) {
-    return this.request('/menu/', {
+    return this.request('menu/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async updateMenuItem(id: number, data: any) {
-    return this.request(`/menu/${id}/`, {
+    return this.request(`menu/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   async deleteMenuItem(id: number) {
-    return this.request(`/menu/${id}/`, {
+    return this.request(`menu/${id}/`, {
       method: 'DELETE',
     });
   }
 
   async toggleMenuItemHit(id: number) {
-    return this.request(`/menu/${id}/toggle_hit/`, {
+    return this.request(`menu/${id}/toggle_hit/`, {
       method: 'POST',
     });
   }
 
   async toggleMenuItemNew(id: number) {
-    return this.request(`/menu/${id}/toggle_new/`, {
+    return this.request(`menu/${id}/toggle_new/`, {
       method: 'POST',
     });
   }
 
   async toggleMenuItemActive(id: number) {
-    return this.request(`/menu/${id}/toggle_active/`, {
+    return this.request(`menu/${id}/toggle_active/`, {
       method: 'POST',
     });
   }
@@ -157,25 +157,25 @@ class AdminApiClient {
       searchParams.append('search', params.search);
     }
     const queryString = searchParams.toString();
-    return this.request(`/categories/${queryString ? `?${queryString}` : ''}`);
+    return this.request(`categories/${queryString ? `?${queryString}` : ''}`);
   }
 
   async createCategory(data: any) {
-    return this.request('/categories/', {
+    return this.request('categories/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async updateCategory(id: number, data: any) {
-    return this.request(`/categories/${id}/`, {
+    return this.request(`categories/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   async deleteCategory(id: number) {
-    return this.request(`/categories/${id}/`, {
+    return this.request(`categories/${id}/`, {
       method: 'DELETE',
     });
   }
@@ -191,11 +191,11 @@ class AdminApiClient {
       });
     }
     const queryString = searchParams.toString();
-    return this.request(`/orders/${queryString ? `?${queryString}` : ''}`);
+    return this.request(`orders/${queryString ? `?${queryString}` : ''}`);
   }
 
   async changeOrderStatus(id: number, status: string) {
-    return this.request(`/orders/${id}/change_status/`, {
+    return this.request(`orders/${id}/change_status/`, {
       method: 'POST',
       body: JSON.stringify({ status }),
     });
@@ -212,31 +212,31 @@ class AdminApiClient {
       });
     }
     const queryString = searchParams.toString();
-    return this.request(`/promo-codes/${queryString ? `?${queryString}` : ''}`);
+    return this.request(`promo-codes/${queryString ? `?${queryString}` : ''}`);
   }
 
   async createPromoCode(data: any) {
-    return this.request('/promo-codes/', {
+    return this.request('promo-codes/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async updatePromoCode(id: number, data: any) {
-    return this.request(`/promo-codes/${id}/`, {
+    return this.request(`promo-codes/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   async deletePromoCode(id: number) {
-    return this.request(`/promo-codes/${id}/`, {
+    return this.request(`promo-codes/${id}/`, {
       method: 'DELETE',
     });
   }
 
   async togglePromoCodeActive(id: number) {
-    return this.request(`/promo-codes/${id}/toggle_active/`, {
+    return this.request(`promo-codes/${id}/toggle_active/`, {
       method: 'POST',
     });
   }
@@ -248,7 +248,7 @@ class AdminApiClient {
       searchParams.append('search', params.search);
     }
     const queryString = searchParams.toString();
-    return this.request(`/users/${queryString ? `?${queryString}` : ''}`);
+    return this.request(`users/${queryString ? `?${queryString}` : ''}`);
   }
 
   // Зоны доставки
@@ -262,7 +262,7 @@ class AdminApiClient {
       });
     }
     const queryString = searchParams.toString();
-    return this.request(`/delivery-zones/${queryString ? `?${queryString}` : ''}`);
+    return this.request(`delivery-zones/${queryString ? `?${queryString}` : ''}`);
   }
 }
 

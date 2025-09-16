@@ -21,66 +21,84 @@ export const AdminLoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-md w-full space-y-8 p-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Анимированный фон */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-pink-400/20"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(120,119,198,0.3),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(255,119,198,0.3),transparent_50%)]"></div>
+      </div>
+      
+      <div className="max-w-md w-full space-y-8 p-8 relative z-10">
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
           {/* Логотип и заголовок */}
           <div className="text-center">
-            <div className="text-4xl mb-4">🍔</div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <div className="relative mb-6">
+              <div className="text-6xl mb-2 animate-bounce">🍔</div>
+              <div className="absolute -top-2 -right-2 text-2xl animate-pulse">✨</div>
+            </div>
+            <h2 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
               Babay Burger
             </h2>
-            <p className="text-gray-600 mb-8">
+            <p className="text-white/80 mb-8 text-lg font-medium">
               Админ панель
             </p>
           </div>
 
           {/* Форма входа */}
           <form className="space-y-6" onSubmit={onSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  👤 Имя пользователя
+            <div className="space-y-5">
+              <div className="group">
+                <label className="block text-sm font-medium text-white/90 mb-3 flex items-center">
+                  <span className="text-xl mr-2">👤</span>
+                  Имя пользователя
                 </label>
-                <input
-                  type="text"
-                  required
-                  className="w-full text-black px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  placeholder="Введите имя пользователя"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    className="w-full bg-white/10 backdrop-blur-sm text-white placeholder-white/60 px-4 py-4 border border-white/30 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 hover:bg-white/20"
+                    placeholder="Введите имя пользователя"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-yellow-400/20 to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  🔒 Пароль
+              <div className="group">
+                <label className="block text-sm font-medium text-white/90 mb-3 flex items-center">
+                  <span className="text-xl mr-2">🔒</span>
+                  Пароль
                 </label>
-                <input
-                  type="password"
-                  required
-                  className="w-full text-black px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  placeholder="Введите пароль"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <input
+                    type="password"
+                    required
+                    className="w-full bg-white/10 backdrop-blur-sm text-white placeholder-white/60 px-4 py-4 border border-white/30 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 hover:bg-white/20"
+                    placeholder="Введите пароль"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-yellow-400/20 to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                </div>
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="bg-red-500/20 backdrop-blur-sm border border-red-400/30 rounded-xl p-4 animate-pulse">
                 <div className="flex items-center">
-                  <span className="text-red-500 mr-2">❌</span>
-                  <span className="text-red-800 text-sm">{error}</span>
+                  <span className="text-red-400 mr-3 text-xl">⚠️</span>
+                  <span className="text-red-100 text-sm font-medium">{error}</span>
                 </div>
               </div>
             )}
 
             {state.error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="bg-red-500/20 backdrop-blur-sm border border-red-400/30 rounded-xl p-4 animate-pulse">
                 <div className="flex items-center">
-                  <span className="text-red-500 mr-2">❌</span>
-                  <span className="text-red-800 text-sm">{state.error}</span>
+                  <span className="text-red-400 mr-3 text-xl">⚠️</span>
+                  <span className="text-red-100 text-sm font-medium">{state.error}</span>
                 </div>
               </div>
             )}
@@ -88,17 +106,17 @@ export const AdminLoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={state.isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+              className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center transform hover:scale-105 hover:shadow-2xl disabled:transform-none disabled:shadow-none"
             >
               {state.isLoading ? (
                 <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Вход...
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                  <span className="text-lg">Вход...</span>
                 </>
               ) : (
                 <>
-                  <span className="mr-2">🚪</span>
-                  Войти в админ панель
+                  <span className="mr-3 text-xl">🚀</span>
+                  <span className="text-lg">Войти в админ панель</span>
                 </>
               )}
             </button>
@@ -106,11 +124,18 @@ export const AdminLoginPage: React.FC = () => {
 
           {/* Дополнительная информация */}
           <div className="mt-8 text-center">
-            <div className="text-sm text-gray-500">
-              Доступ только для администраторов
+            <div className="text-sm text-white/60 font-medium">
+              🔐 Доступ только для администраторов
+            </div>
+            <div className="mt-2 text-xs text-white/40">
+              © 2024 Babay Burger. Все права защищены.
             </div>
           </div>
         </div>
+        
+        {/* Дополнительные декоративные элементы */}
+        <div className="absolute -top-10 -left-10 w-20 h-20 bg-yellow-400/20 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-orange-500/20 rounded-full blur-xl animate-pulse delay-1000"></div>
       </div>
     </div>
   );
