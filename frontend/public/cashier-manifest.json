@@ -1,4 +1,5 @@
 {
+  "id": "/cashier",
   "name": "Babay Burger - Кассир",
   "short_name": "Babay Кассир",
   "description": "Интерфейс кассира для ресторана Babay Burger",
@@ -12,13 +13,13 @@
   "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "/logobabay.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/logobabay.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -41,7 +42,7 @@
       "url": "/cashier/login",
       "icons": [
         {
-          "src": "/logobabay.png",
+          "src": "/icon-192.png",
           "sizes": "96x96"
         }
       ]
@@ -53,7 +54,7 @@
       "url": "/cashier?filter=pending",
       "icons": [
         {
-          "src": "/logobabay.png",
+          "src": "/icon-192.png",
           "sizes": "96x96"
         }
       ]

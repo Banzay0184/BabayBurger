@@ -113,7 +113,11 @@ const PWADiagnostics: React.FC = () => {
     // Проверка манифеста
     setTimeout(async () => {
       try {
-        const response = await fetch('/cashier-manifest.json?v=' + Date.now());
+        // Определяем правильный манифест в зависимости от текущего пути
+        const currentPath = window.location.pathname;
+        const manifestPath = currentPath.includes('/operator') ? '/operator-manifest.json' : '/cashier-manifest.json';
+        
+        const response = await fetch(manifestPath + '?v=' + Date.now());
         if (response.ok) {
           const manifest = await response.json();
           const hasRequiredFields = manifest.name && manifest.short_name && manifest.start_url && manifest.display && manifest.icons;
@@ -132,10 +136,10 @@ const PWADiagnostics: React.FC = () => {
     // Проверка иконок
     setTimeout(async () => {
       try {
-        const iconResponse = await fetch('/logobabay.png?v=' + Date.now());
+        const iconResponse = await fetch('/icon-192.png?v=' + Date.now());
         
         if (iconResponse.ok) {
-          updateDiagnostic(3, 'success', '✅ Иконка доступна', 'logobabay.png');
+          updateDiagnostic(3, 'success', '✅ Иконка доступна', 'icon-192.png');
         } else {
           updateDiagnostic(3, 'error', '❌ Иконка недоступна', 
             `Статус: ${iconResponse.status}`

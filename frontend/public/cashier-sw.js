@@ -1,6 +1,6 @@
-const CACHE_NAME = 'babay-cashier-v6';
-const STATIC_CACHE_NAME = 'babay-cashier-static-v6';
-const DYNAMIC_CACHE_NAME = 'babay-cashier-dynamic-v6';
+const CACHE_NAME = 'babay-cashier-v7';
+const STATIC_CACHE_NAME = 'babay-cashier-static-v7';
+const DYNAMIC_CACHE_NAME = 'babay-cashier-dynamic-v7';
 
 // Статические ресурсы для кэширования
 const STATIC_ASSETS = [
@@ -8,7 +8,8 @@ const STATIC_ASSETS = [
   '/cashier',
   '/cashier/login',
   '/cashier-manifest.json',
-  '/logobabay.png'
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 // API endpoints для кэширования
@@ -178,4 +179,67 @@ function isStaticAsset(url) {
          url.includes('.ico') ||
          url.includes('.woff') ||
          url.includes('.woff2');
+}
+
+// Обработка push уведомлений
+self.addEventListener('push', (event) => {
+  console.log('🔔 Push notification received:', event);
+  
+  const options = {
+    body: 'Новый заказ требует обработки',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: 1
+    },
+    actions: [
+      {
+        action: 'view',
+        title: 'Просмотреть заказ',
+        icon: '/icon-192.png'
+      },
+      {
+        action: 'close',
+        title: 'Закрыть',
+        icon: '/icon-192.png'
+      }
+    ]
+  };
+  
+  event.waitUntil(
+    self.registration.showNotification('Babay Burger - Новый заказ', options)
+  );
+});
+
+// Обработка кликов по уведомлениям
+self.addEventListener('notificationclick', (event) => {
+  console.log('🔔 Notification clicked:', event);
+  
+  event.notification.close();
+  
+  if (event.action === 'view') {
+    event.waitUntil(
+      clients.openWindow('/cashier')
+    );
+  }
+});
+
+// Синхронизация в фоне
+self.addEventListener('sync', (event) => {
+  console.log('🔄 Background sync:', event.tag);
+  
+  if (event.tag === 'background-sync') {
+    event.waitUntil(doBackgroundSync());
+  }
+});
+
+async function doBackgroundSync() {
+  try {
+    // Здесь можно добавить логику синхронизации данных
+    console.log('🔄 Performing background sync...');
+  } catch (error) {
+    console.error('❌ Background sync failed:', error);
+  }
 }

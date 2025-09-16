@@ -8,7 +8,8 @@ const STATIC_ASSETS = [
   '/operator/login',
   '/operator/dashboard',
   '/operator-manifest.json',
-  '/logobabay.png',
+  '/icon-192.png',
+  '/icon-512.png',
   '/logo.jpg'
 ];
 
