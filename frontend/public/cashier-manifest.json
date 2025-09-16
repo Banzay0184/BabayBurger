@@ -2,7 +2,7 @@
   "name": "Babay Burger - Кассир",
   "short_name": "Babay Кассир",
   "description": "Интерфейс кассира для ресторана Babay Burger",
-  "start_url": "/cashier/login",
+  "start_url": "/cashier",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#f97316",
@@ -12,28 +12,16 @@
   "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "/logo.jpg",
+      "src": "/logobabay.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
-      "purpose": "any"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "/logo.jpg",
+      "src": "/logobabay.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "any"
-    },
-    {
-      "src": "/logo.jpg",
-      "sizes": "192x192",
-      "type": "image/jpeg",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/logo.jpg",
-      "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "maskable"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "screenshots": [
@@ -53,9 +41,8 @@
       "url": "/cashier/login",
       "icons": [
         {
-          "src": "/logo.jpg",
-          "sizes": "96x96",
-          "type": "image/jpeg"
+          "src": "/logobabay.png",
+          "sizes": "96x96"
         }
       ]
     },
@@ -66,9 +53,8 @@
       "url": "/cashier?filter=pending",
       "icons": [
         {
-          "src": "/logo.jpg",
-          "sizes": "96x96",
-          "type": "image/jpeg"
+          "src": "/logobabay.png",
+          "sizes": "96x96"
         }
       ]
     }

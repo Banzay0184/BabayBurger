@@ -20,9 +20,9 @@
     <meta name="msapplication-tap-highlight" content="no" />
     
     <!-- PWA Icons -->
-    <link rel="apple-touch-icon" href="/logo.jpg" />
-    <link rel="icon" type="image/jpeg" sizes="192x192" href="/logo.jpg" />
-    <link rel="icon" type="image/jpeg" sizes="512x512" href="/logo.jpg" />
+    <link rel="apple-touch-icon" href="/logobabay.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/logobabay.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/logobabay.png" />
     
     <!-- Современный шрифт Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -140,12 +140,6 @@
     
     <!-- PWA скрипт -->
     <script>
-      console.log('🚀 PWA скрипт начал выполнение!');
-      
-      // Ждем загрузки DOM
-      document.addEventListener('DOMContentLoaded', function() {
-        console.log('📄 DOM загружен, запускаем PWA диагностику!');
-        
       // Проверка офлайн режима
       function updateOnlineStatus() {
         const indicator = document.getElementById('offline-indicator');
@@ -168,7 +162,6 @@
           navigator.serviceWorker.register('/cashier-sw.js')
             .then((registration) => {
               console.log('✅ Cashier Service Worker зарегистрирован:', registration);
-              console.log('📱 PWA готов к установке');
             })
             .catch((error) => {
               console.error('❌ Ошибка регистрации Cashier Service Worker:', error);
@@ -177,213 +170,6 @@
       } else {
         console.log('❌ Service Worker не поддерживается');
       }
-
-      // Проверяем PWA критерии
-      function checkPWACriteria() {
-        try {
-          console.log('🔍 Проверка PWA критериев:');
-          console.log('- HTTPS:', location.protocol === 'https:' || location.hostname === 'localhost');
-          console.log('- Service Worker:', 'serviceWorker' in navigator);
-          console.log('- Manifest:', document.querySelector('link[rel="manifest"]') !== null);
-          console.log('- Icons:', document.querySelectorAll('link[rel="icon"]').length > 0);
-          console.log('- Start URL:', '/cashier/login');
-          console.log('- Scope:', '/cashier');
-        
-        // Проверяем манифест
-        const manifestLink = document.querySelector('link[rel="manifest"]');
-        if (manifestLink) {
-          fetch(manifestLink.href)
-            .then(response => response.json())
-            .then(manifest => {
-              console.log('📱 Манифест загружен:', manifest);
-              console.log('- Иконки в манифесте:', manifest.icons?.length || 0);
-              console.log('- Start URL в манифесте:', manifest.start_url);
-              console.log('- Scope в манифесте:', manifest.scope);
-            })
-            .catch(error => {
-              console.error('❌ Ошибка загрузки манифеста:', error);
-            });
-        }
-        
-        // Проверяем Service Worker
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(registrations => {
-            console.log('🔧 Зарегистрированные Service Workers:', registrations.length);
-            registrations.forEach((registration, index) => {
-              console.log(`- SW ${index + 1}:`, registration.scope, registration.active?.scriptURL);
-              console.log(`- SW ${index + 1} состояние:`, registration.active?.state);
-            });
-          });
-          
-          // Проверяем контроллер
-          if (navigator.serviceWorker.controller) {
-            console.log('✅ Service Worker контроллер активен:', navigator.serviceWorker.controller.scriptURL);
-          } else {
-            console.log('❌ Service Worker контроллер не активен');
-          }
-        }
-        } catch (error) {
-          console.error('❌ Ошибка в checkPWACriteria:', error);
-        }
-      }
-
-      // Простая проверка сразу
-      try {
-        console.log('🚀 PWA диагностика запущена');
-        
-        // Проверяем манифест сразу
-        fetch('/cashier-manifest.json')
-          .then(response => {
-            console.log('📱 Манифест ответ:', response.status, response.statusText);
-            return response.json();
-          })
-          .then(manifest => {
-            console.log('📱 Манифест загружен:', manifest);
-          })
-          .catch(error => {
-            console.error('❌ Ошибка загрузки манифеста:', error);
-          });
-      } catch (error) {
-        console.error('❌ Ошибка в PWA диагностике:', error);
-      }
-      
-      // Проверяем при загрузке
-      setTimeout(checkPWACriteria, 1000);
-      
-      // Дополнительная проверка через 3 секунды
-      setTimeout(checkPWACriteria, 3000);
-
-      // Отладка beforeinstallprompt
-      let deferredPrompt = null;
-      
-      try {
-        console.log('📱 Ожидаем событие beforeinstallprompt...');
-        
-        window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('🎉 beforeinstallprompt событие получено!');
-        console.log('Event:', e);
-        e.preventDefault();
-        deferredPrompt = e;
-        
-        // Показываем кнопку установки
-        const installButton = document.createElement('button');
-        installButton.textContent = 'Установить PWA';
-        installButton.style.cssText = `
-          position: fixed;
-          bottom: 20px;
-          left: 20px;
-          z-index: 1000;
-          background: #f97316;
-          color: white;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 5px;
-          cursor: pointer;
-          font-size: 14px;
-        `;
-        
-        installButton.addEventListener('click', async () => {
-          if (deferredPrompt) {
-            console.log('🚀 Показываем prompt установки...');
-            await deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log('📱 Результат установки:', outcome);
-            deferredPrompt = null;
-            installButton.remove();
-          }
-        });
-        
-        document.body.appendChild(installButton);
-      });
-
-        window.addEventListener('appinstalled', () => {
-          console.log('✅ PWA установлено успешно!');
-          deferredPrompt = null;
-        });
-      } catch (error) {
-        console.error('❌ Ошибка в обработчиках событий:', error);
-      }
-
-      // Проверяем критерии PWA через 5 секунд
-      setTimeout(() => {
-        try {
-          console.log('🔍 Финальная проверка PWA критериев:');
-          console.log('- User Agent:', navigator.userAgent);
-          console.log('- Platform:', navigator.platform);
-          console.log('- Standalone:', window.matchMedia('(display-mode: standalone)').matches);
-          console.log('- iOS Standalone:', window.navigator.standalone);
-          console.log('- Deferred Prompt:', !!deferredPrompt);
-          console.log('- URL:', window.location.href);
-          console.log('- Protocol:', window.location.protocol);
-          console.log('- Hostname:', window.location.hostname);
-        
-        // Проверяем манифест еще раз
-        fetch('/cashier-manifest.json')
-          .then(response => response.json())
-          .then(manifest => {
-            console.log('📱 Финальная проверка манифеста:', manifest);
-            
-            // Проверяем каждое поле манифеста
-            const requiredFields = ['name', 'short_name', 'start_url', 'display', 'icons'];
-            requiredFields.forEach(field => {
-              if (!manifest[field]) {
-                console.error(`❌ Отсутствует обязательное поле: ${field}`);
-              } else {
-                console.log(`✅ Поле ${field}:`, manifest[field]);
-              }
-            });
-            
-            // Проверяем иконки
-            if (manifest.icons && manifest.icons.length > 0) {
-              manifest.icons.forEach((icon, index) => {
-                console.log(`📱 Иконка ${index + 1}:`, icon);
-                
-                // Проверяем доступность иконки
-                fetch(icon.src)
-                  .then(response => {
-                    if (response.ok) {
-                      console.log(`✅ Иконка ${index + 1} доступна:`, icon.src);
-                    } else {
-                      console.error(`❌ Иконка ${index + 1} недоступна:`, icon.src, response.status);
-                    }
-                  })
-                  .catch(error => {
-                    console.error(`❌ Ошибка загрузки иконки ${index + 1}:`, icon.src, error);
-                  });
-              });
-            } else {
-              console.error('❌ Нет иконок в манифесте!');
-            }
-          })
-          .catch(error => {
-            console.error('❌ Ошибка загрузки манифеста:', error);
-          });
-        } catch (error) {
-          console.error('❌ Ошибка в финальной проверке:', error);
-        }
-      }, 5000);
-      
-      // Дополнительная проверка через 10 секунд
-      setTimeout(() => {
-        try {
-          console.log('🔍 Проверка через 10 секунд:');
-          console.log('- Deferred Prompt:', !!deferredPrompt);
-          console.log('- PWA установлена:', window.matchMedia('(display-mode: standalone)').matches);
-          
-          if (!deferredPrompt) {
-            console.log('❌ beforeinstallprompt не сработал. Возможные причины:');
-            console.log('1. PWA уже установлена');
-            console.log('2. Браузер не поддерживает PWA');
-            console.log('3. Не выполнены критерии PWA');
-            console.log('4. Проблемы с манифестом или иконками');
-          }
-        } catch (error) {
-          console.error('❌ Ошибка в проверке через 10 секунд:', error);
-        }
-      }, 10000);
-      
-      console.log('✅ PWA скрипт завершил выполнение!');
-      }); // Закрываем DOMContentLoaded
     </script>
   </body>
 </html>
