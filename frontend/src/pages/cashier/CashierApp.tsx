@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { CashierLoginPage } from './CashierLoginPage';
 import CashierDashboardPage from './CashierDashboardPage';
 import PWADiagnostics from '../../components/PWADiagnostics';
-import PWAInstallPrompt from '../../components/PWAInstallPrompt';
+import { CashierPWAInstallPrompt } from '../../components/cashier/PWAInstallPrompt';
 
 export const CashierApp: React.FC = () => {
   return (
@@ -18,7 +18,7 @@ export const CashierApp: React.FC = () => {
       <PWADiagnostics />
       
       {/* PWA Установка - показывается когда доступна */}
-      <PWAInstallPrompt />
+      <CashierPWAInstallPrompt />
     </div>
   );
 };

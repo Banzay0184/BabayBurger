@@ -156,41 +156,8 @@
       // Проверяем статус при загрузке
       updateOnlineStatus();
 
-      // Регистрируем Service Worker для кассира
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/cashier-sw.js')
-            .then((registration) => {
-              console.log('✅ Cashier Service Worker зарегистрирован:', registration);
-              
-              // Проверяем PWA критерии
-              setTimeout(() => {
-                console.log('🔍 PWA Критерии:');
-                console.log('- HTTPS:', location.protocol === 'https:' || location.hostname === 'localhost');
-                console.log('- Service Worker:', !!navigator.serviceWorker.controller);
-                console.log('- Manifest:', !!document.querySelector('link[rel="manifest"]'));
-                console.log('- Icons:', document.querySelectorAll('link[rel="icon"]').length > 0);
-                
-                // Проверяем манифест
-                fetch('/cashier-manifest.json')
-                  .then(response => response.json())
-                  .then(manifest => {
-                    console.log('📱 Манифест:', manifest);
-                    console.log('- Иконки:', manifest.icons?.length || 0);
-                    console.log('- Start URL:', manifest.start_url);
-                  })
-                  .catch(error => {
-                    console.error('❌ Ошибка манифеста:', error);
-                  });
-              }, 1000);
-            })
-            .catch((error) => {
-              console.error('❌ Ошибка регистрации Cashier Service Worker:', error);
-            });
-        });
-      } else {
-        console.log('❌ Service Worker не поддерживается');
-      }
+      // Service Worker регистрируется через React компоненты
+      console.log('📱 Cashier HTML загружен, Service Worker будет зарегистрирован через React компоненты');
     </script>
   </body>
 </html>
