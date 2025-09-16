@@ -8,7 +8,7 @@
     <meta name="description" content="Интерфейс кассира для ресторана Babay Burger" />
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/cashier-manifest.json" />
+    <link rel="manifest" href="/cashier/manifest.json" />
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#f97316" />
@@ -48,7 +48,7 @@
     <meta property="og:title" content="Babay Burger - Кассир" />
     <meta property="og:description" content="Интерфейс кассира для ресторана Babay Burger" />
     <meta property="og:image" content="https://babayburger.com/logo.jpg" />
-
+    
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://babayburger.com/cashier" />
@@ -56,50 +56,21 @@
     <meta property="twitter:description" content="Интерфейс кассира для ресторана Babay Burger" />
     <meta property="twitter:image" content="https://babayburger.com/logo.jpg" />
     
-    <!-- Telegram Web App SDK -->
-    <!-- <script src="https://telegram.org/js/telegram-web-app.js"></script> -->
-    
-    <!-- Yandex Maps API -->
-    <!-- <script src="https://api-maps.yandex.ru/2.1/?apikey=3033f881-c5ec-434f-96aa-e13da893f61f&lang=ru_RU" type="text/javascript"></script> -->
-    <!-- <script>
-      // Отладка загрузки Яндекс.Карт API
-      console.log('HTML loaded, checking Yandex Maps API...');
-      
-      function checkYandexMaps() {
-        if (typeof window.ymaps !== 'undefined') {
-          console.log('✅ Yandex Maps API loaded successfully!');
-          console.log('window.ymaps:', window.ymaps);
-          console.log('window.ymaps.ready:', typeof window.ymaps.ready);
-        } else {
-          console.log('❌ Yandex Maps API not loaded yet...');
-          setTimeout(checkYandexMaps, 100);
-        }
-      }
-      
-      // Проверяем каждые 100мс
-      checkYandexMaps();
-      
-      // Также проверяем через 2 секунды
-      setTimeout(() => {
-        if (typeof window.ymaps === 'undefined') {
-          console.error('❌ Yandex Maps API failed to load after 2 seconds!');
-        }
-      }, 2000);
-    </script> -->
-    
-    
-    <!-- Базовые стили -->
     <style>
-      body {
+      /* Базовые стили для PWA */
+      * {
         margin: 0;
         padding: 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-          sans-serif;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        min-height: 100vh;
+        overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        background-color: #f8fafc;
-        color: #1f2937;
       }
       
       #root {
@@ -107,101 +78,65 @@
         display: flex;
         flex-direction: column;
       }
-
-      /* PWA стили */
-      @media (display-mode: standalone) {
-        body {
-          background-color: #f8fafc;
-          user-select: none;
-        }
-        
-        /* Скрываем полосы прокрутки в standalone режиме */
-        ::-webkit-scrollbar {
-          width: 6px;
-        }
-        
-        ::-webkit-scrollbar-track {
-          background: #f1f1f1;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-          background: #c1c1c1;
-          border-radius: 3px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-          background: #a8a8a8;
-        }
-      }
-
-      /* Стили для офлайн индикатора */
+      
+      /* Офлайн индикатор */
       .offline-indicator {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        background: #dc2626;
         color: white;
         text-align: center;
-        padding: 12px;
+        padding: 8px;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 500;
         z-index: 9999;
         transform: translateY(-100%);
-        transition: transform 0.3s ease-in-out;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
       }
-
+      
       .offline-indicator.show {
         transform: translateY(0);
       }
-
-      .offline-indicator::before {
-        content: '📶';
-        margin-right: 8px;
-      }
-
-      /* PWA install prompt стили */
+      
+      /* PWA Install Prompt */
       .pwa-install-prompt {
         position: fixed;
         bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: linear-gradient(135deg, #f97316, #ea580c);
+        left: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.9);
         color: white;
-        padding: 16px 24px;
+        padding: 16px;
         border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(249, 115, 22, 0.3);
-        z-index: 9998;
-        max-width: 90%;
-        text-align: center;
-        opacity: 0;
-        transform: translateX(-50%) translateY(100%);
-        transition: all 0.3s ease-in-out;
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
       }
-
+      
       .pwa-install-prompt.show {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        display: block;
       }
-
+      
       .pwa-install-prompt button {
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: #f97316;
         color: white;
+        border: none;
         padding: 8px 16px;
         border-radius: 6px;
-        margin: 0 4px;
+        margin: 4px;
+        font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
-        font-weight: 600;
         transition: all 0.2s ease;
       }
-
+      
       .pwa-install-prompt button:hover {
         background: rgba(255, 255, 255, 0.3);
         transform: translateY(-1px);
       }
-
     </style>
   </head>
   <body>
@@ -220,11 +155,27 @@
       <button id="pwa-dismiss-btn">Позже</button>
     </div>
     
+    <!-- В продакшене этот скрипт будет заменен на собранный JS -->
     <script type="module" src="/src/main.tsx"></script>
     
     <!-- PWA скрипты -->
     <script>
       console.log('💰 Cashier PWA: Initializing...');
+      
+      // Проверяем и обрабатываем конфликты с внешними библиотеками
+      if (window.TronWeb) {
+        console.log('⚠️ TronWeb detected - this might be from browser extension');
+        // Не перезаписываем существующий TronWeb
+      }
+      
+      // Проверяем другие возможные конфликты
+      if (window.ethereum) {
+        console.log('⚠️ Ethereum provider detected');
+      }
+      
+      if (window.bitcoin) {
+        console.log('⚠️ Bitcoin provider detected');
+      }
       
       // PWA Диагностика
       console.log('💰 PWA Diagnostics:');
@@ -242,7 +193,7 @@
       console.log('- In iframe/WebView:', window.self !== window.top);
       
       // Проверяем манифест
-      fetch('/cashier-manifest.json')
+      fetch('/cashier/manifest.json')
         .then(response => response.json())
         .then(manifest => {
           console.log('💰 PWA: Manifest loaded successfully:', manifest);
@@ -300,43 +251,69 @@
         console.log('💰 PWA: beforeinstallprompt fired');
         console.log('💰 PWA: Event details:', e);
         console.log('💰 PWA: Platforms:', e.platforms);
+        
+        // Предотвращаем автоматический показ баннера
         e.preventDefault();
+        console.log('Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.');
+        
+        // Сохраняем событие для показа позже
         deferredPrompt = e;
         
-        // Показываем кастомный prompt через 3 секунды
+        // Показываем наш кастомный промпт
         setTimeout(() => {
-          if (!isInstalled) {
-            console.log('💰 PWA: Showing install prompt');
-            showInstallPrompt();
-          } else {
-            console.log('💰 PWA: App already installed, not showing prompt');
-          }
+          showInstallPrompt();
         }, 3000);
       });
 
-      // Добавляем слушатель для отладки установки
-      window.addEventListener('DOMContentLoaded', () => {
-        console.log('💰 PWA: DOM loaded, checking install criteria...');
-        
-        // Проверяем критерии установки PWA
-        setTimeout(() => {
-          console.log('💰 PWA: Install criteria check:');
-          console.log('- Service Worker registered:', navigator.serviceWorker.controller !== null);
-          console.log('- Manifest linked:', document.querySelector('link[rel="manifest"]') !== null);
-          console.log('- HTTPS or localhost:', location.protocol === 'https:' || location.hostname === 'localhost');
-          console.log('- Has icons:', document.querySelectorAll('link[rel*="icon"]').length > 0);
-        }, 2000);
+      // Обработка установки
+      window.addEventListener('appinstalled', () => {
+        console.log('💰 PWA: App installed successfully');
+        isInstalled = true;
+        hideInstallPrompt();
       });
 
-      // Показать install prompt
+      // Функция показа промпта установки
       function showInstallPrompt() {
+        if (isInstalled) return;
+        
         const prompt = document.getElementById('pwa-install-prompt');
-        if (prompt && !isInstalled) {
+        if (prompt) {
           prompt.classList.add('show');
+          
+          // Обработчики кнопок
+          const installBtn = document.getElementById('pwa-install-btn');
+          const dismissBtn = document.getElementById('pwa-dismiss-btn');
+          
+          if (installBtn) {
+            installBtn.onclick = () => {
+              if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                  console.log('💰 PWA: User choice:', choiceResult.outcome);
+                  if (choiceResult.outcome === 'accepted') {
+                    console.log('💰 PWA: User accepted the install prompt');
+                  } else {
+                    console.log('💰 PWA: User dismissed the install prompt');
+                  }
+                  deferredPrompt = null;
+                });
+              } else {
+                console.log('💰 PWA: Showing install prompt');
+                showManualInstallInstructions();
+              }
+              hideInstallPrompt();
+            };
+          }
+          
+          if (dismissBtn) {
+            dismissBtn.onclick = () => {
+              hideInstallPrompt();
+            };
+          }
         }
       }
 
-      // Скрыть install prompt
+      // Функция скрытия промпта
       function hideInstallPrompt() {
         const prompt = document.getElementById('pwa-install-prompt');
         if (prompt) {
@@ -344,309 +321,197 @@
         }
       }
 
-      // Обработчик кнопки установки
-      document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
-        if (!deferredPrompt) {
-          console.log('💰 PWA: No deferred prompt available');
-          return;
-        }
+      // Функция показа инструкций по ручной установке
+      function showManualInstallInstructions() {
+        const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isChrome = /Chrome/i.test(navigator.userAgent);
+        const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
+        
+        let instructions = '';
+        
+        if (isMobile) {
+          if (isChrome) {
+            instructions = `
+📱 Установка PWA на мобильном устройстве (Chrome):
 
-        try {
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          
-          console.log('💰 PWA: User choice:', outcome);
-          
-          if (outcome === 'accepted') {
-            console.log('💰 PWA: User accepted the install prompt');
-            isInstalled = true;
+1. Нажмите на меню браузера (⋮)
+2. Найдите "Добавить на главный экран" или "Установить приложение"
+3. Подтвердите установку
+
+Альтернативно:
+1. Откройте в Chrome
+2. Найдите кнопку "Добавить на главный экран"
+3. Подтвердите установку
+            `;
+          } else if (isSafari) {
+            instructions = `
+📱 Установка PWA на iOS (Safari):
+
+1. Нажмите кнопку "Поделиться" (квадрат со стрелкой)
+2. Выберите "На экран Домой"
+3. Подтвердите установку
+            `;
           } else {
-            console.log('💰 PWA: User dismissed the install prompt');
+            instructions = `
+📱 Установка PWA на мобильном устройстве:
+
+1. Откройте в Chrome
+2. Найдите кнопку "Добавить на главный экран"
+3. Подтвердите установку
+            `;
           }
-          
-          deferredPrompt = null;
-          hideInstallPrompt();
-        } catch (error) {
-          console.error('💰 PWA: Error during installation:', error);
-        }
-      });
-
-      // Обработчик кнопки "Позже"
-      document.getElementById('pwa-dismiss-btn')?.addEventListener('click', () => {
-        hideInstallPrompt();
-        
-        // Показать снова через 24 часа
-        localStorage.setItem('pwa-dismiss-time', Date.now().toString());
-      });
-
-      // Проверка, не был ли prompt отложен
-      const dismissTime = localStorage.getItem('pwa-dismiss-time');
-      if (dismissTime) {
-        const dayInMs = 24 * 60 * 60 * 1000;
-        if (Date.now() - parseInt(dismissTime) < dayInMs) {
-          // Не показываем prompt в течение 24 часов
-          console.log('💰 PWA: Install prompt dismissed recently');
         } else {
-          localStorage.removeItem('pwa-dismiss-time');
-        }
-      }
+          if (isChrome) {
+            instructions = `
+💻 Установка PWA на компьютере (Chrome):
 
-      // Обработка успешной установки
-      window.addEventListener('appinstalled', () => {
-        console.log('💰 PWA: App was installed');
-        isInstalled = true;
-        hideInstallPrompt();
-        deferredPrompt = null;
-        
-        // Уведомляем пользователя
-        if ('serviceWorker' in navigator && 'Notification' in window) {
-          navigator.serviceWorker.ready.then((registration) => {
-            registration.showNotification('Babay Кассир установлен!', {
-              body: 'Приложение успешно установлено и готово к работе',
-              icon: '/cashier-icon-192.png',
-              badge: '/cashier-icon-96.png',
-              tag: 'install-success'
-            });
-          });
-        }
-      });
+1. Нажмите на иконку ⊕ в адресной строке
+2. Или: Меню (⋮) → "Установить Babay Кассир"  
+3. Подтвердите установку
 
-      // Регистрация Service Worker
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', async () => {
-          try {
-            console.log('💰 PWA: Registering Service Worker...');
-            const registration = await navigator.serviceWorker.register('/cashier-sw.js', {
-              scope: '/'
-            });
-            console.log('💰 PWA: Service Worker registered successfully:', registration);
-            console.log('💰 PWA: Registration scope:', registration.scope);
-            console.log('💰 PWA: Registration state:', registration.installing?.state || 'installed');
-            
-            // Ждем активации Service Worker
-            if (registration.installing) {
-              console.log('💰 PWA: Service Worker installing...');
-              registration.installing.addEventListener('statechange', () => {
-                console.log('💰 PWA: Service Worker state changed:', registration.installing?.state);
-              });
-            }
-            
-            // Проверяем, что Service Worker активен
-            await navigator.serviceWorker.ready;
-            console.log('💰 PWA: Service Worker is ready and active');
-            
-            // Проверяем обновления каждые 60 секунд
-            setInterval(() => {
-              registration.update();
-            }, 60000);
-            
-            // Слушаем сообщения от Service Worker
-            navigator.serviceWorker.addEventListener('message', (event) => {
-              console.log('💰 PWA: Message from SW:', event.data);
-              
-              if (event.data.type === 'SYNC_COMPLETE') {
-                console.log('💰 PWA: Background sync completed');
-              }
-            });
-            
-          } catch (error) {
-            console.error('💰 PWA: Service Worker registration failed:', error);
-            console.error('💰 PWA: Error details:', error.message);
+Если иконки нет:
+- Попробуйте обновить страницу
+- Или откройте в режиме инкогнито
+- Проверьте DevTools > Application > Manifest
+            `;
+          } else {
+            instructions = 'Для установки PWA рекомендуется использовать Chrome или Edge браузер';
           }
-        });
-      } else {
-        console.error('💰 PWA: Service Worker not supported in this browser');
-      }
-
-      // Запрос разрешения на уведомления
-      if ('Notification' in window && Notification.permission === 'default') {
-        setTimeout(() => {
-          Notification.requestPermission().then((permission) => {
-            console.log('💰 PWA: Notification permission:', permission);
-          });
-        }, 5000);
-      }
-
-      // Проверка, запущено ли как PWA
-      function isPWA() {
-        return window.matchMedia('(display-mode: standalone)').matches ||
-               window.navigator.standalone === true;
-      }
-
-      if (isPWA()) {
-        console.log('💰 PWA: Running as PWA');
-        document.body.classList.add('pwa-mode');
-        isInstalled = true;
-      } else {
-        console.log('💰 PWA: Running in browser');
-      }
-
-      // Обработка жестов для PWA
-      if (isPWA()) {
-        // Предотвращаем zoom в PWA
-        document.addEventListener('gesturestart', (e) => e.preventDefault());
-        document.addEventListener('gesturechange', (e) => e.preventDefault());
+        }
         
-        // Предотвращаем контекстное меню
-        document.addEventListener('contextmenu', (e) => e.preventDefault());
+        alert(instructions.trim());
       }
 
-      console.log('💰 Cashier PWA: Initialized successfully');
-      
-      // Показать предупреждение о Telegram WebApp
+      // Функция показа предупреждения о Telegram
       function showTelegramWarning() {
-        // Создаем предупреждение
         const warning = document.createElement('div');
+        warning.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: rgba(0, 0, 0, 0.9);
+          color: white;
+          padding: 20px;
+          border-radius: 12px;
+          text-align: center;
+          z-index: 10000;
+          max-width: 90%;
+          backdrop-filter: blur(10px);
+        `;
+        
         warning.innerHTML = `
-          <div style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 10001;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-          ">
-            <div style="
-              background: white;
-              border-radius: 12px;
-              padding: 24px;
-              max-width: 400px;
-              text-align: center;
-              box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            ">
-              <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
-              <h3 style="margin: 0 0 12px 0; color: #dc2626; font-size: 18px;">PWA не работает в Telegram</h3>
-              <p style="margin: 0 0 20px 0; color: #374151; font-size: 14px; line-height: 1.5;">
-                Для установки PWA приложения кассира необходимо открыть ссылку в обычном браузере (Chrome, Safari, Edge).
-              </p>
-              <div style="display: flex; gap: 8px; justify-content: center;">
-                <button onclick="copyUrlToClipboard()" style="
-                  background: #3b82f6;
-                  color: white;
-                  border: none;
-                  padding: 8px 16px;
-                  border-radius: 6px;
-                  font-size: 12px;
-                  cursor: pointer;
-                ">📋 Копировать ссылку</button>
-                <button onclick="closeWarning()" style="
-                  background: #6b7280;
-                  color: white;
-                  border: none;
-                  padding: 8px 16px;
-                  border-radius: 6px;
-                  font-size: 12px;
-                  cursor: pointer;
-                ">Закрыть</button>
-              </div>
-            </div>
-          </div>
+          <h3 style="margin-bottom: 12px; color: #f97316;">⚠️ Telegram WebApp</h3>
+          <p style="margin-bottom: 16px;">PWA не работает в Telegram WebApp</p>
+          <p style="margin-bottom: 16px; font-size: 14px; opacity: 0.9;">Для установки приложения откройте ссылку в обычном браузере</p>
+          <button onclick="this.parentElement.remove()" style="
+            background: #f97316;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+          ">Понятно</button>
         `;
         
         document.body.appendChild(warning);
         
-        // Функции для кнопок
-        window.copyUrlToClipboard = () => {
-          const url = window.location.href;
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(url).then(() => {
-              alert('Ссылка скопирована! Откройте её в Chrome или другом браузере.');
-            });
-          } else {
-            // Fallback для старых браузеров
-            const textArea = document.createElement('textarea');
-            textArea.value = url;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            alert('Ссылка скопирована! Откройте её в Chrome или другом браузере.');
-          }
-        };
-        
-        window.closeWarning = () => {
+        // Автоматически скрываем через 10 секунд
+        setTimeout(() => {
           if (warning.parentNode) {
             warning.parentNode.removeChild(warning);
           }
-        };
+        }, 10000);
       }
 
-      // Добавляем кнопку принудительной установки
-      function addForceInstallButton() {
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-          console.log('✅ Already running as PWA');
-          return;
-        }
+      // Проверка критериев установки
+      function checkInstallCriteria() {
+        console.log('💰 PWA: Install criteria check:');
         
-        // Не показываем кнопку в Telegram WebApp
-        if (isTelegramWebApp || isInWebView) {
-          console.log('🚫 Install button disabled in Telegram WebApp');
-          return;
-        }
+        // Проверяем Service Worker
+        const hasServiceWorker = 'serviceWorker' in navigator;
+        console.log('- Service Worker registered:', hasServiceWorker);
+        
+        // Проверяем манифест
+        const manifestLink = document.querySelector('link[rel="manifest"]');
+        const hasManifest = !!manifestLink;
+        console.log('- Manifest linked:', hasManifest);
+        
+        // Проверяем HTTPS
+        const isSecure = location.protocol === 'https:' || location.hostname === 'localhost';
+        console.log('- HTTPS or localhost:', isSecure);
+        
+        // Проверяем иконки
+        const hasIcons = document.querySelectorAll('link[rel*="icon"], link[rel*="apple-touch-icon"]').length > 0;
+        console.log('- Has icons:', hasIcons);
+        
+        return hasServiceWorker && hasManifest && isSecure && hasIcons;
+      }
 
+      // Регистрация Service Worker
+      if ('serviceWorker' in navigator) {
+        console.log('💰 PWA: Registering Service Worker...');
+        
+        navigator.serviceWorker.register('/cashier/sw.js')
+          .then((registration) => {
+            console.log('💰 PWA: Service Worker registered successfully:', registration);
+            console.log('💰 PWA: Registration scope:', registration.scope);
+            console.log('💰 PWA: Registration state:', registration.active ? 'installed' : 'installing');
+            
+            // Проверяем состояние Service Worker
+            if (registration.active) {
+              console.log('💰 PWA: Service Worker is ready and active');
+            } else if (registration.installing) {
+              console.log('💰 PWA: Service Worker is installing...');
+              registration.installing.addEventListener('statechange', () => {
+                if (registration.installing.state === 'activated') {
+                  console.log('💰 PWA: Service Worker activated');
+                }
+              });
+            }
+          })
+          .catch((error) => {
+            console.error('💰 PWA: Service Worker registration failed:', error);
+          });
+      }
+
+      // Проверяем критерии установки после загрузки DOM
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('💰 PWA: DOM loaded, checking install criteria...');
+        checkInstallCriteria();
+      });
+
+      // Функция принудительной установки (для тестирования)
+      function addForceInstallButton() {
+        if (isInstalled) return;
+        
         const button = document.createElement('button');
-        button.innerHTML = '📱 Установить PWA';
+        button.textContent = '🔧 Принудительная установка';
         button.style.cssText = `
           position: fixed;
-          top: 10px;
-          left: 10px;
-          z-index: 10000;
-          background: #f97316;
+          bottom: 80px;
+          right: 20px;
+          background: rgba(0, 0, 0, 0.8);
           color: white;
           border: none;
-          padding: 8px 16px;
+          padding: 8px 12px;
           border-radius: 6px;
           font-size: 12px;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          z-index: 1000;
+          backdrop-filter: blur(10px);
         `;
         
         button.onclick = () => {
-          // Показываем инструкцию для ручной установки
-          const isChrome = /Chrome/.test(navigator.userAgent);
-          const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-          const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-          const isTablet = /iPad|Android.*(?=.*Tablet)|Android.*(?=.*Tab)/i.test(navigator.userAgent);
-          
           let instructions = '';
           
-          if (isTablet || isMobile) {
+          const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+          const isChrome = /Chrome/i.test(navigator.userAgent);
+          
+          if (isMobile) {
             if (isChrome) {
               instructions = `
-📱 Установка PWA на планшет/телефон (Chrome):
-
-1. Найдите иконку ⊕ в адресной строке
-2. Или: Меню (⋮) → "Добавить на главный экран"
-3. Подтвердите установку
-4. Найдите ярлык на главном экране
-
-Если не работает:
-- Обновите страницу
-- Попробуйте режим инкогнито
-- Убедитесь что используете Chrome (не браузер внутри другого приложения)
-              `;
-            } else if (isSafari) {
-              instructions = `
-📱 Установка PWA на iPad (Safari):
-
-1. Нажмите кнопку "Поделиться" (квадрат со стрелкой)
-2. Выберите "На экран Домой"
-3. Нажмите "Добавить"
-4. Найдите ярлык на главном экране
-
-Примечание: На iPad функциональность ограничена
-              `;
-            } else {
-              instructions = `
-📱 Для установки PWA на планшет:
-
-Рекомендуется использовать Chrome или Edge браузер.
-Не используйте браузер внутри других приложений (Telegram, Facebook и т.д.)
+📱 Установка PWA на мобильном устройстве (Chrome):
 
 1. Откройте в Chrome
 2. Найдите кнопку "Добавить на главный экран"
@@ -656,7 +521,7 @@
           } else {
             if (isChrome) {
               instructions = `
-💻 Установка PWA на компьютер (Chrome):
+💻 Установка PWA на компьютере (Chrome):
 
 1. Нажмите на иконку ⊕ в адресной строке
 2. Или: Меню (⋮) → "Установить Babay Кассир"  
@@ -695,6 +560,15 @@
         document.head.appendChild(script);
         console.log('🧪 PWA Test script loaded. Use testPWA() in console for diagnostics.');
       }
+      
+      // Определяем режим работы
+      if (isTelegramWebApp || isInWebView) {
+        console.log('💰 PWA: Running in Telegram WebApp/WebView - PWA features disabled');
+      } else {
+        console.log('💰 PWA: Running in browser');
+      }
+      
+      console.log('💰 Cashier PWA: Initialized successfully');
     </script>
   </body>
 </html>

@@ -13,11 +13,25 @@ export default defineConfig({
         client: 'client.html',
         cashier: 'cashier.html',
         operator: 'operator.html'
+      },
+      output: {
+        // Убеждаемся, что JS файлы имеют правильные расширения
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
     // Копируем PWA файлы в build
     copyPublicDir: true,
     assetsInlineLimit: 0, // Не инлайним ассеты для PWA
+    // Убеждаемся, что модули правильно обрабатываются
+    modulePreload: {
+      polyfill: false
+    },
+    // Настройки для правильной обработки модулей
+    target: 'esnext',
+    minify: 'esbuild',
+    sourcemap: false
   },
   // Настройки для PWA
   publicDir: 'public',

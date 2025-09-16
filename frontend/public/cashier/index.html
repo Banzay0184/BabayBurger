@@ -226,6 +226,21 @@
     <script>
       console.log('💰 Cashier PWA: Initializing...');
       
+      // Проверяем и обрабатываем конфликты с внешними библиотеками
+      if (window.TronWeb) {
+        console.log('⚠️ TronWeb detected - this might be from browser extension');
+        // Не перезаписываем существующий TronWeb
+      }
+      
+      // Проверяем другие возможные конфликты
+      if (window.ethereum) {
+        console.log('⚠️ Ethereum provider detected');
+      }
+      
+      if (window.bitcoin) {
+        console.log('⚠️ Bitcoin provider detected');
+      }
+      
       // PWA Диагностика
       console.log('💰 PWA Diagnostics:');
       console.log('- User Agent:', navigator.userAgent);

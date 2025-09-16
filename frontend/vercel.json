@@ -2,6 +2,8 @@
   "rewrites": [
     { "source": "/operator.html", "destination": "/operator.html" },
     { "source": "/client.html", "destination": "/client.html" },
+    { "source": "/cashier", "destination": "/cashier.html" },
+    { "source": "/cashier/", "destination": "/cashier.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "redirects": [
@@ -31,6 +33,45 @@
         {
           "key": "Service-Worker-Allowed",
           "value": "/"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).js",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).css",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/css"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     },
