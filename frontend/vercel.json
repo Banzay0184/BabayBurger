@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/cashier.html", "destination": "/cashier.html" },
     { "source": "/operator.html", "destination": "/operator.html" },
     { "source": "/client.html", "destination": "/client.html" },
     { "source": "/(.*)", "destination": "/index.html" }
@@ -14,7 +13,7 @@
   ],
   "headers": [
     {
-      "source": "/cashier-manifest.json",
+      "source": "/cashier/manifest.json",
       "headers": [
         {
           "key": "Content-Type",
@@ -23,7 +22,7 @@
       ]
     },
     {
-      "source": "/cashier-sw.js",
+      "source": "/cashier/sw.js",
       "headers": [
         {
           "key": "Content-Type",

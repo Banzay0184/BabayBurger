@@ -1,7 +1,7 @@
 // Конфигурация API для разных окружений
 export const API_CONFIG = {
   // URL API в зависимости от окружения
-  BASE_URL: import.meta.env.VITE_API_URL || 
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 
     (import.meta.env.DEV 
       ? '/api/'  // Используем локальный прокси в разработке
       : 'https://api.babayfood.uz/api/'),

@@ -123,7 +123,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
       const telegramId = getTelegramId();
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api';
       
-      const response = await fetch(`${apiBaseUrl}addresses/?telegram_id=${telegramId}`, {
+      const response = await fetch(`${apiBaseUrl}/addresses/?telegram_id=${telegramId}`, {
         headers: {
           'Accept': 'application/json',
           'ngrok-skip-browser-warning': 'true'
@@ -276,8 +276,8 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
       // Определяем URL и метод
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api';
       const url = editingAddress 
-        ? `${apiBaseUrl}addresses/${editingAddress.id}/`
-        : `${apiBaseUrl}addresses/`;
+        ? `${apiBaseUrl}/addresses/${editingAddress.id}/`
+        : `${apiBaseUrl}/addresses/`;
       const method = editingAddress ? 'PUT' : 'POST';
 
       console.log('🗺️ 🌐 API request:', { method, url });
@@ -368,7 +368,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
         const telegramId = getTelegramId();
         
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api';
-        const response = await fetch(`${apiBaseUrl}addresses/${addressId}/`, {
+        const response = await fetch(`${apiBaseUrl}/addresses/${addressId}/`, {
           method: 'DELETE',
           headers: {
             'Accept': 'application/json',
@@ -409,7 +409,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
       const updatePromises = addresses.map(async (addr) => {
         if (addr.id !== addressId) {
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api';
-          return fetch(`${apiBaseUrl}addresses/${addr.id}/`, {
+          return fetch(`${apiBaseUrl}/addresses/${addr.id}/`, {
             method: 'PUT',
             headers: {
               'Accept': 'application/json',
@@ -433,7 +433,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
       const primaryAddr = addresses.find(addr => addr.id === addressId);
       if (primaryAddr) {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api';
-        const response = await fetch(`${apiBaseUrl}addresses/${addressId}/`, {
+        const response = await fetch(`${apiBaseUrl}/addresses/${addressId}/`, {
           method: 'PUT',
           headers: {
             'Accept': 'application/json',

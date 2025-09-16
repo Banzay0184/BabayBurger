@@ -1,9 +1,5 @@
-/cashier.html /cashier.html 200!
 /operator.html /operator.html 200!
 /client.html /client.html 200!
-/cashier-manifest.json /cashier-manifest.json 200!
-/cashier-sw.js /cashier-sw.js 200!
-/cashier-icon-* /cashier-icon-:splat 200
 /logo.jpg /logo.jpg 200
 /logobabay.png /logobabay.png 200
 /placeholder-* /placeholder-:splat 200
