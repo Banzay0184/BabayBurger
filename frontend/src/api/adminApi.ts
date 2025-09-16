@@ -1,4 +1,7 @@
-const API_BASE_URL = '/api/admin-panel';
+import { getAdminApiUrl } from '../config/api';
+
+// Конфигурация API для админ-панели
+const API_BASE_URL = getAdminApiUrl();
 
 interface ApiResponse<T> {
   data?: T;

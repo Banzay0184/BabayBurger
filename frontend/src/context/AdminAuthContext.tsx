@@ -86,7 +86,11 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     dispatch({ type: 'LOGIN_START' });
 
     try {
-             const response = await fetch('/api/admin-panel/auth/', {
+             // Используем правильный URL для админ-панели
+      const { getAdminApiUrl } = await import('../config/api');
+      const adminApiUrl = getAdminApiUrl('auth/');
+      
+      const response = await fetch(adminApiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

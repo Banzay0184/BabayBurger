@@ -6,6 +6,12 @@ export const API_CONFIG = {
       ? '/api/'  // Используем локальный прокси в разработке
       : 'https://api.babayfood.uz/api/'),
   
+  // URL для админ-панели
+  ADMIN_BASE_URL: import.meta.env.VITE_ADMIN_API_URL || 
+    (import.meta.env.DEV 
+      ? '/api/admin-panel'  // Используем локальный прокси в разработке
+      : 'https://api.babayfood.uz/api/admin-panel/'),
+  
   // URL для авторизации Telegram Widget
   TELEGRAM_WIDGET_URL: import.meta.env.VITE_TELEGRAM_AUTH_URL || 
     (import.meta.env.DEV 
@@ -32,6 +38,17 @@ export const getApiUrl = (endpoint: string): string => {
     : API_CONFIG.BASE_URL + '/';
   
   return `${baseUrl}${cleanEndpoint}`;
+};
+
+// Функция для получения URL админ-панели
+export const getAdminApiUrl = (endpoint: string = ''): string => {
+  // Убираем лишние слеши
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  const baseUrl = API_CONFIG.ADMIN_BASE_URL.endsWith('/') 
+    ? API_CONFIG.ADMIN_BASE_URL 
+    : API_CONFIG.ADMIN_BASE_URL + '/';
+  
+  return cleanEndpoint ? `${baseUrl}${cleanEndpoint}` : baseUrl;
 };
 
 // Функция для получения URL авторизации
