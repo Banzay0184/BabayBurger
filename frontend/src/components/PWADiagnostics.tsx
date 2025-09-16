@@ -11,9 +11,32 @@ const PWADiagnostics: React.FC = () => {
   const [diagnostics, setDiagnostics] = useState<PWADiagnostic[]>([]);
   const [isVisible, setIsVisible] = useState(false);
   const [serviceWorkerStatus, setServiceWorkerStatus] = useState<string>('Проверка...');
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [canInstall, setCanInstall] = useState(false);
 
   useEffect(() => {
     checkPWACriteria();
+    
+    // Слушаем событие beforeinstallprompt
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setCanInstall(true);
+    };
+
+    // Слушаем событие установки
+    const handleAppInstalled = () => {
+      setCanInstall(false);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
   }, []);
 
   const checkPWACriteria = async () => {
@@ -131,6 +154,26 @@ const PWADiagnostics: React.FC = () => {
     ));
   };
 
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+
+    try {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        console.log('✅ Пользователь принял установку PWA');
+      } else {
+        console.log('❌ Пользователь отклонил установку PWA');
+      }
+      
+      setDeferredPrompt(null);
+      setCanInstall(false);
+    } catch (error) {
+      console.error('❌ Ошибка при установке PWA:', error);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'success': return 'text-green-600';
@@ -194,15 +237,39 @@ const PWADiagnostics: React.FC = () => {
               <div>Service Worker: <span className="font-medium">{serviceWorkerStatus}</span></div>
               <div>URL: <span className="font-medium">{location.href}</span></div>
               <div>Протокол: <span className="font-medium">{location.protocol}</span></div>
+              <div>Можно установить: <span className="font-medium">{canInstall ? 'Да' : 'Нет'}</span></div>
             </div>
+            
+            {!canInstall && (
+              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                <div className="font-medium mb-1">Почему нет кнопки установки?</div>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>PWA уже установлена</li>
+                  <li>Браузер не поддерживает PWA</li>
+                  <li>Не выполнены все критерии</li>
+                  <li>Попробуйте очистить кэш</li>
+                </ul>
+              </div>
+            )}
           </div>
 
-          <button
-            onClick={checkPWACriteria}
-            className="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded text-sm transition-colors"
-          >
-            🔄 Перепроверить
-          </button>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={checkPWACriteria}
+              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded text-sm transition-colors"
+            >
+              🔄 Перепроверить
+            </button>
+            
+            {canInstall && (
+              <button
+                onClick={handleInstall}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors"
+              >
+                📱 Установить
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
