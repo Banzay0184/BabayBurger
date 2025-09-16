@@ -1068,7 +1068,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     service_type = models.CharField(max_length=20, choices=SERVICE_TYPE_CHOICES, default='delivery', verbose_name="Тип услуги")
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='cash', verbose_name="Способ оплаты")
-    address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name="Адрес доставки")
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name="Адрес доставки", null=True, blank=True)
     phone = models.CharField(max_length=20, verbose_name="Телефон")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

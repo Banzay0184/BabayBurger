@@ -1208,28 +1208,47 @@ class OrderCreateView(APIView):
                 logger.warning(f"User not found for order creation: telegram_id={telegram_id}")
                 return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
             
-            # Проверяем адрес
+            # Получаем тип услуги
+            service_type = request.data.get('service_type', 'delivery')
+            
+            # Проверяем адрес в зависимости от типа услуги
+            address = None
             address_id = request.data.get('address_id')
-            if not address_id:
-                logger.warning("Order creation without address_id")
-                return Response({'error': 'address_id is required'}, status=status.HTTP_400_BAD_REQUEST)
             
-            try:
-                address = Address.objects.get(id=address_id, user=user)
-            except Address.DoesNotExist:
-                logger.warning(f"Address not found for order: address_id={address_id}")
-                return Response({'error': 'Address not found'}, status=status.HTTP_404_NOT_FOUND)
-            
-            # Получаем информацию о зонах доставки для оператора (без блокировки)
-            is_in_zone, message = address.is_in_delivery_zone()
-            delivery_zones_info = address.get_delivery_zones_info()
-            
-            # Логируем информацию о зоне доставки для оператора
-            if not is_in_zone:
-                logger.info(f"Order address outside delivery zone: {message}")
-                logger.info(f"Delivery zones info: {delivery_zones_info}")
+            if service_type == 'delivery':
+                # Для доставки адрес обязателен
+                if not address_id:
+                    logger.warning("Order creation without address_id for delivery")
+                    return Response({'error': 'address_id is required for delivery'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                try:
+                    address = Address.objects.get(id=address_id, user=user)
+                except Address.DoesNotExist:
+                    logger.warning(f"Address not found for order: address_id={address_id}")
+                    return Response({'error': 'Address not found'}, status=status.HTTP_404_NOT_FOUND)
+                
+                # Получаем информацию о зонах доставки для оператора (без блокировки)
+                is_in_zone, message = address.is_in_delivery_zone()
+                delivery_zones_info = address.get_delivery_zones_info()
+                
+                # Логируем информацию о зоне доставки для оператора
+                if not is_in_zone:
+                    logger.info(f"Order address outside delivery zone: {message}")
+                    logger.info(f"Delivery zones info: {delivery_zones_info}")
+                else:
+                    logger.info(f"Order address in delivery zone: {message}")
             else:
-                logger.info(f"Order address in delivery zone: {message}")
+                # Для самовывоза адрес не обязателен, но если указан - проверяем
+                if address_id:
+                    try:
+                        address = Address.objects.get(id=address_id, user=user)
+                        logger.info(f"Pickup order with address: {address_id}")
+                    except Address.DoesNotExist:
+                        logger.warning(f"Address not found for pickup order: address_id={address_id}")
+                        # Для самовывоза не блокируем создание заказа, если адрес не найден
+                        address = None
+                else:
+                    logger.info("Pickup order without address")
             
             # Получаем товары из запроса или корзины
             items_data = request.data.get('items', [])
@@ -1266,7 +1285,7 @@ class OrderCreateView(APIView):
                     logger.warning(f"Restaurant not found: restaurant_id={restaurant_id}")
             
             # Получаем телефон из запроса или из адреса
-            phone = request.data.get('phone', '') or address.phone_number or ''
+            phone = request.data.get('phone', '') or (address.phone_number if address else '') or ''
             
             # Создаем заказ
             order = Order.objects.create(
