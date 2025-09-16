@@ -113,9 +113,8 @@ const PWADiagnostics: React.FC = () => {
     // Проверка манифеста
     setTimeout(async () => {
       try {
-        // Определяем правильный манифест в зависимости от текущего пути
-        const currentPath = window.location.pathname;
-        const manifestPath = currentPath.includes('/operator') ? '/operator-manifest.json' : '/cashier-manifest.json';
+        // Временно используем только манифест кассира (оператор отключен)
+        const manifestPath = '/cashier-manifest.json';
         
         const response = await fetch(manifestPath + '?v=' + Date.now());
         if (response.ok) {
