@@ -4,19 +4,9 @@
 const CACHE_NAME = 'babay-cashier-v1.0.0';
 const CACHE_URLS = [
   '/cashier.html',
-  '/src/main.tsx',
-  '/src/pages/cashier/CashierApp.tsx',
-  '/src/pages/cashier/CashierLoginPage.tsx',
-  '/src/pages/cashier/CashierDashboardPage.tsx',
-  '/src/api/cashierApi.ts',
-  '/src/utils/storage.ts',
   '/logo.jpg',
   '/logobabay.png',
-  '/cashier-icon-192.png',
-  '/cashier-icon-512.png',
-  // Шрифты
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap',
-  // Основные стили будут кэшироваться автоматически
+  '/cashier-manifest.json'
 ];
 
 // Установка Service Worker

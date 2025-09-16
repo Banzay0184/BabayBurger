@@ -12,52 +12,28 @@
   "categories": ["business", "food", "productivity"],
   "icons": [
     {
-      "src": "/cashier-icon-72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "maskable any"
+      "src": "/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
     },
     {
-      "src": "/cashier-icon-96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "maskable any"
+      "src": "/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
     },
     {
-      "src": "/cashier-icon-128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/cashier-icon-144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/cashier-icon-152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/cashier-icon-192.png",
+      "src": "/logobabay.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/cashier-icon-384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/cashier-icon-512.png",
+      "src": "/logobabay.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     }
   ],
   "shortcuts": [
@@ -68,7 +44,7 @@
       "url": "/cashier.html#/login",
       "icons": [
         {
-          "src": "/cashier-icon-96.png",
+          "src": "/logobabay.png",
           "sizes": "96x96"
         }
       ]
@@ -80,7 +56,7 @@
       "url": "/cashier.html#/dashboard",
       "icons": [
         {
-          "src": "/cashier-icon-96.png",
+          "src": "/logobabay.png",
           "sizes": "96x96"
         }
       ]
