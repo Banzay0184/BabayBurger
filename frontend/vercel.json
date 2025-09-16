@@ -1,12 +1,14 @@
 {
-  "rewrites": [
-    { "source": "/cashier.html", "destination": "/cashier.html" },
-    { "source": "/operator.html", "destination": "/operator.html" },
-    { "source": "/client.html", "destination": "/client.html" },
-    { "source": "/cashier-manifest.json", "destination": "/cashier-manifest.json" },
-    { "source": "/cashier-sw.js", "destination": "/cashier-sw.js" },
-    { "source": "/cashier-icon-:size.png", "destination": "/cashier-icon-:size.png" },
-    { "source": "/(.*)", "destination": "/index.html" }
+  "routes": [
+    { "src": "/cashier.html", "dest": "/cashier.html" },
+    { "src": "/operator.html", "dest": "/operator.html" },
+    { "src": "/client.html", "dest": "/client.html" },
+    { "src": "/cashier-manifest.json", "dest": "/cashier-manifest.json" },
+    { "src": "/cashier-sw.js", "dest": "/cashier-sw.js" },
+    { "src": "/cashier-icon-([^/]+)\\.png", "dest": "/cashier-icon-$1.png" },
+    { "src": "/logo.jpg", "dest": "/logo.jpg" },
+    { "src": "/logobabay.png", "dest": "/logobabay.png" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ],
   "redirects": [
     {
