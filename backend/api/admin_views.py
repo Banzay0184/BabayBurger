@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db.models import Count, Sum, Avg, Q, F
@@ -73,8 +74,12 @@ class AdminAuthView(APIView):
         user = authenticate(username=username, password=password)
         
         if user and user.is_staff:
+            # Создаем или получаем токен для пользователя
+            token, created = Token.objects.get_or_create(user=user)
+            
             return Response({
                 'success': True,
+                'token': token.key,
                 'user': {
                     'id': user.id,
                     'username': user.username,

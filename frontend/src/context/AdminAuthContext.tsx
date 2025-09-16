@@ -102,8 +102,8 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       if (response.ok && data.success) {
         dispatch({ type: 'LOGIN_SUCCESS', payload: data.user });
-        // Сохраняем токен и данные пользователя в localStorage
-        localStorage.setItem('admin_token', 'authenticated');
+        // Сохраняем настоящий токен и данные пользователя в localStorage
+        localStorage.setItem('admin_token', data.token);
         localStorage.setItem('admin_user', JSON.stringify(data.user));
         return true;
       } else {

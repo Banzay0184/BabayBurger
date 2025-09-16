@@ -51,9 +51,15 @@ class AdminApiClient {
   ): Promise<ApiResponse<T>> {
     try {
       const url = getAdminApiUrl(endpoint);
+      
+      // Получаем токен из localStorage
+      const token = localStorage.getItem('admin_token');
+      
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
+          // Добавляем токен аутентификации если он есть
+          ...(token && { 'Authorization': `Bearer ${token}` }),
           ...options.headers,
         },
         ...options,
