@@ -1,12 +1,42 @@
 {
-    "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-      "redirects": [
+  "rewrites": [
+    { "source": "/cashier.html", "destination": "/cashier.html" },
+    { "source": "/operator.html", "destination": "/operator.html" },
+    { "source": "/client.html", "destination": "/client.html" },
+    { "source": "/cashier-manifest.json", "destination": "/cashier-manifest.json" },
+    { "source": "/cashier-sw.js", "destination": "/cashier-sw.js" },
+    { "source": "/cashier-icon-:size.png", "destination": "/cashier-icon-:size.png" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "redirects": [
+    {
+      "source": "/media/:path*",
+      "destination": "https://api.babayfood.uz/media/:path*",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/cashier-manifest.json",
+      "headers": [
         {
-          "source": "/media/:path*",
-          "destination": "https://api.babayfood.uz/media/:path*",
-          "permanent": true
+          "key": "Content-Type",
+          "value": "application/manifest+json"
         }
       ]
-
-    
-  }
+    },
+    {
+      "source": "/cashier-sw.js",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        }
+      ]
+    }
+  ]
+}
