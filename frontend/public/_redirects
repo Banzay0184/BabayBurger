@@ -1,5 +1,7 @@
 /operator.html /operator.html 200!
 /client.html /client.html 200!
+/cashier/login /cashier.html 200!
+/cashier/login/ /cashier.html 200!
 /cashier /cashier.html 200!
 /cashier/ /cashier.html 200!
 /logo.jpg /logo.jpg 200

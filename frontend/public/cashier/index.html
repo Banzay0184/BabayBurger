@@ -227,9 +227,17 @@
       console.log('💰 Cashier PWA: Initializing...');
       
       // Проверяем и обрабатываем конфликты с внешними библиотеками
-      if (window.TronWeb) {
+      let tronWeb;
+      
+      if (window.tronLink && window.tronLink.ready) {
+        console.log('✅ TronLink detected and ready - using TronLink TronWeb instance');
+        tronWeb = window.tronLink.tronWeb;
+      } else if (window.TronWeb) {
         console.log('⚠️ TronWeb detected - this might be from browser extension');
+        tronWeb = window.TronWeb;
         // Не перезаписываем существующий TronWeb
+      } else {
+        console.log('ℹ️ No TronWeb detected - application will work without TronWeb');
       }
       
       // Проверяем другие возможные конфликты
@@ -239,6 +247,12 @@
       
       if (window.bitcoin) {
         console.log('⚠️ Bitcoin provider detected');
+      }
+      
+      // Предотвращаем конфликты с TronLink
+      if (window.tronLink) {
+        console.log('🔗 TronLink extension detected');
+        // Не перезаписываем существующий TronLink
       }
       
       // PWA Диагностика

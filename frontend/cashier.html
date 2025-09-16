@@ -163,9 +163,17 @@
       console.log('💰 Cashier PWA: Initializing...');
       
       // Проверяем и обрабатываем конфликты с внешними библиотеками
-      if (window.TronWeb) {
+      let tronWeb;
+      
+      if (window.tronLink && window.tronLink.ready) {
+        console.log('✅ TronLink detected and ready - using TronLink TronWeb instance');
+        tronWeb = window.tronLink.tronWeb;
+      } else if (window.TronWeb) {
         console.log('⚠️ TronWeb detected - this might be from browser extension');
+        tronWeb = window.TronWeb;
         // Не перезаписываем существующий TronWeb
+      } else {
+        console.log('ℹ️ No TronWeb detected - application will work without TronWeb');
       }
       
       // Проверяем другие возможные конфликты
@@ -175,6 +183,12 @@
       
       if (window.bitcoin) {
         console.log('⚠️ Bitcoin provider detected');
+      }
+      
+      // Предотвращаем конфликты с TronLink
+      if (window.tronLink) {
+        console.log('🔗 TronLink extension detected');
+        // Не перезаписываем существующий TronLink
       }
       
       // PWA Диагностика
@@ -254,7 +268,7 @@
         
         // Предотвращаем автоматический показ баннера
         e.preventDefault();
-        console.log('Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.');
+        console.log('💰 PWA: Banner prevented - will show custom prompt');
         
         // Сохраняем событие для показа позже
         deferredPrompt = e;
@@ -287,6 +301,7 @@
           if (installBtn) {
             installBtn.onclick = () => {
               if (deferredPrompt) {
+                console.log('💰 PWA: Calling deferredPrompt.prompt()');
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choiceResult) => {
                   console.log('💰 PWA: User choice:', choiceResult.outcome);
@@ -296,9 +311,12 @@
                     console.log('💰 PWA: User dismissed the install prompt');
                   }
                   deferredPrompt = null;
+                }).catch((error) => {
+                  console.error('💰 PWA: Error during user choice:', error);
+                  deferredPrompt = null;
                 });
               } else {
-                console.log('💰 PWA: Showing install prompt');
+                console.log('💰 PWA: No deferredPrompt available, showing manual instructions');
                 showManualInstallInstructions();
               }
               hideInstallPrompt();
