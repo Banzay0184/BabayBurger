@@ -10,6 +10,12 @@ export const AdminMenuPage: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<'categories' | 'items'>('categories');
   const [showForm, setShowForm] = React.useState(false);
   const [editingItem, setEditingItem] = React.useState<any>(null);
+  
+  // Пагинация и фильтрация
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [itemsPerPage] = React.useState(20);
+  const [selectedCategory, setSelectedCategory] = React.useState<string>('');
+  const [searchTerm, setSearchTerm] = React.useState<string>('');
   const [formData, setFormData] = React.useState({
     name: '',
     description: '',
@@ -60,6 +66,37 @@ export const AdminMenuPage: React.FC = () => {
   React.useEffect(() => {
     loadData();
   }, []);
+
+  // Фильтрация и пагинация товаров
+  const filteredItems = React.useMemo(() => {
+    let filtered = menuItems;
+
+    // Фильтр по категории
+    if (selectedCategory) {
+      filtered = filtered.filter(item => item.category === parseInt(selectedCategory));
+    }
+
+    // Фильтр по поиску
+    if (searchTerm) {
+      filtered = filtered.filter(item => 
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [menuItems, selectedCategory, searchTerm]);
+
+  // Пагинация
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = filteredItems.slice(startIndex, endIndex);
+
+  // Сброс пагинации при изменении фильтров
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchTerm]);
 
   const handleDeleteItem = async (id: number) => {
     if (!confirm('Удалить товар?')) return;
@@ -269,10 +306,10 @@ export const AdminMenuPage: React.FC = () => {
           
           <div className="bg-white rounded-2xl border border-gray-200/50 shadow-xl overflow-hidden">
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-800 flex items-center">
                   <span className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center text-white text-sm mr-3">🍔</span>
-                  Список товаров ({menuItems.length})
+                  Список товаров ({filteredItems.length} из {menuItems.length})
                 </h3>
                 <button
                   onClick={openAddForm}
@@ -282,21 +319,51 @@ export const AdminMenuPage: React.FC = () => {
                   <span>Добавить товар</span>
                 </button>
               </div>
+              
+              {/* Фильтры */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">🔍 Поиск товаров</label>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Поиск по названию или описанию..."
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                  />
+                </div>
+                <div className="sm:w-64">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">📂 Категория</label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                  >
+                    <option value="">Все категории</option>
+                    {categories.map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
             
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Товар</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Цена</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Категория</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Статус</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Действия</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
-                  {menuItems.map((item, index) => (
+            {currentItems.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Товар</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Цена</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Категория</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Статус</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {currentItems.map((item, index) => (
                     <tr key={item.id} className={`hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
@@ -362,9 +429,88 @@ export const AdminMenuPage: React.FC = () => {
                       </td>
                     </tr>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Товары не найдены</h3>
+                <p className="text-gray-600 mb-4">
+                  {searchTerm || selectedCategory 
+                    ? 'Попробуйте изменить фильтры поиска' 
+                    : 'Добавьте первый товар в меню'
+                  }
+                </p>
+                {!searchTerm && !selectedCategory && (
+                  <button
+                    onClick={openAddForm}
+                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl flex items-center space-x-2 group mx-auto"
+                  >
+                    <span className="group-hover:scale-110 transition-transform">➕</span>
+                    <span>Добавить товар</span>
+                  </button>
+                )}
+              </div>
+            )}
+            
+            {/* Пагинация */}
+            {totalPages > 1 && (
+              <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-700">
+                    Показано {startIndex + 1}-{Math.min(endIndex, filteredItems.length)} из {filteredItems.length} товаров
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      ← Назад
+                    </button>
+                    
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                              currentPage === pageNum
+                                ? 'bg-orange-500 text-white'
+                                : 'bg-white border border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Вперед →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
