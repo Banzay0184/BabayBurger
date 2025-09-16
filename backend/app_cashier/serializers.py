@@ -178,6 +178,9 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
     promo_code_info = serializers.SerializerMethodField()
     cashier_processing_status = serializers.SerializerMethodField()
     cashier_processing_details = serializers.SerializerMethodField()
+    delivery_fee = serializers.SerializerMethodField()
+    discount_amount = serializers.SerializerMethodField()
+    final_price = serializers.SerializerMethodField()
     
     class Meta:
         model = Order
@@ -273,6 +276,18 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
             }
         except OrderProcessing.DoesNotExist:
             return None
+    
+    def get_delivery_fee(self, obj):
+        """Получить стоимость доставки с безопасным значением по умолчанию"""
+        return float(obj.delivery_fee) if obj.delivery_fee is not None else 0.0
+    
+    def get_discount_amount(self, obj):
+        """Получить сумму скидки с безопасным значением по умолчанию"""
+        return float(obj.discount_amount) if obj.discount_amount is not None else 0.0
+    
+    def get_final_price(self, obj):
+        """Получить итоговую стоимость с безопасным значением по умолчанию"""
+        return float(obj.final_price) if obj.final_price is not None else float(obj.total_price)
 
 
 class CashierProfileSerializer(serializers.ModelSerializer):

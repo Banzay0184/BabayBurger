@@ -82,6 +82,17 @@ export interface Order {
   final_price: number;
   notes: string;
   cashier_processing_status?: string;
+  cashier_processing_details?: {
+    status: string;
+    status_display: string;
+    received_at: string;
+    started_preparing_at?: string;
+    ready_at?: string;
+    completed_at?: string;
+    notes?: string;
+    estimated_time?: number;
+    cashier_name?: string;
+  };
   operator_order_number?: number;
   promo_code_info?: {
     code: string;
