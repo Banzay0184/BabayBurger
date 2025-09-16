@@ -7,22 +7,8 @@
     <title>Babay Burger - Оператор</title>
     <meta name="description" content="Интерфейс оператора для управления заказами ресторана Babay Burger" />
     
-    <!-- PWA Manifest для оператора - ВРЕМЕННО ОТКЛЮЧЕН -->
-    <!-- <link rel="manifest" href="/operator-manifest.json" /> -->
-    
-    <!-- PWA Meta Tags - ВРЕМЕННО ОТКЛЮЧЕНЫ -->
-    <!-- <meta name="theme-color" content="#3b82f6" /> -->
-    <!-- <meta name="apple-mobile-web-app-capable" content="yes" /> -->
-    <!-- <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /> -->
-    <!-- <meta name="apple-mobile-web-app-title" content="Babay Оператор" /> -->
-    <!-- <meta name="mobile-web-app-capable" content="yes" /> -->
-    <!-- <meta name="msapplication-TileColor" content="#3b82f6" /> -->
-    <!-- <meta name="msapplication-tap-highlight" content="no" /> -->
-    
-    <!-- PWA Icons - ВРЕМЕННО ОТКЛЮЧЕНЫ -->
-    <!-- <link rel="apple-touch-icon" href="/icon-192.png" /> -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/logo.jpg" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/logo.jpg" />
     
     <!-- Современный шрифт Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -63,75 +49,11 @@
         flex-direction: column;
       }
 
-      /* Стили для PWA */
-      @media (display-mode: standalone) {
-        body {
-          background-color: #1f2937;
-        }
-      }
-
-      /* Стили для офлайн режима */
-      .offline-indicator {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background-color: #dc2626;
-        color: white;
-        text-align: center;
-        padding: 8px;
-        font-size: 14px;
-        z-index: 9999;
-        display: none;
-      }
-
-      .offline-indicator.show {
-        display: block;
-      }
     </style>
   </head>
   <body>
     <div id="root"></div>
     
-    <!-- Индикатор офлайн режима -->
-    <div id="offline-indicator" class="offline-indicator">
-      📱 Приложение работает в офлайн режиме
-    </div>
-    
     <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- PWA скрипт -->
-    <script>
-      // Проверка офлайн режима
-      function updateOnlineStatus() {
-        const indicator = document.getElementById('offline-indicator');
-        if (navigator.onLine) {
-          indicator.classList.remove('show');
-        } else {
-          indicator.classList.add('show');
-        }
-      }
-
-      window.addEventListener('online', updateOnlineStatus);
-      window.addEventListener('offline', updateOnlineStatus);
-      
-      // Проверяем статус при загрузке
-      updateOnlineStatus();
-
-      // Регистрируем Service Worker для оператора - ВРЕМЕННО ОТКЛЮЧЕН
-      /*
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          // navigator.serviceWorker.register('/operator-sw.js')
-            .then((registration) => {
-              console.log('✅ Operator Service Worker зарегистрирован:', registration);
-            })
-            .catch((error) => {
-              console.error('❌ Ошибка регистрации Operator Service Worker:', error);
-            });
-        });
-      }
-      */
-    </script>
   </body>
 </html>

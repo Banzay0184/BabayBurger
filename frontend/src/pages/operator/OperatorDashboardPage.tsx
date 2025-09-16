@@ -14,11 +14,7 @@ import { CompactOrderFilters } from '../../components/operator/CompactOrderFilte
 import { OrderSearch } from '../../components/operator/OrderSearch';
 import { NotificationsPanel } from '../../components/operator/NotificationsPanel';
 import { WebSocketStatus } from '../../components/operator/WebSocketStatus';
-// PWA компоненты временно отключены
-// import { PWAInstallPrompt } from '../../components/operator/PWAInstallPrompt';
-// import { PWAStatus } from '../../components/operator/PWAStatus';
 import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
-// import { usePWA } from '../../hooks/usePWA';
 
 export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ onNavigate }) => {
   const { state: authState, logout } = useOperatorAuth();
@@ -135,8 +131,6 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
     enabled: true
   });
 
-  // Инициализируем PWA
-  // usePWA(); // Временно отключен
 
   // Принудительное обновление при подключении WebSocket
   useEffect(() => {
@@ -355,7 +349,6 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
                 <h1 className="text-lg font-bold text-white">Оператор</h1>
                 <div className="flex items-center space-x-2">
                   <WebSocketStatus />
-                  {/* <PWAStatus /> */}
                 </div>
               </div>
             </div>
@@ -481,8 +474,6 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
         />
       )}
 
-      {/* PWA Install Prompt - временно отключен */}
-      {/* <PWAInstallPrompt /> */}
     </div>
   );
 };

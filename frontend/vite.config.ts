@@ -12,9 +12,7 @@ export default defineConfig({
         main: 'index.html',
         client: 'client.html',
         cashier: 'cashier.html',
-        operator: 'operator.html',
-        'pwa-selector': 'pwa-selector.html',
-        pwa: 'pwa.html'
+        operator: 'operator.html'
       }
     }
   },
