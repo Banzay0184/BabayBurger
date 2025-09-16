@@ -37,12 +37,17 @@ def _build_detailed_order_message(order, new_status):
     status_text = status_messages.get(new_status, f'Статус заказа изменен на: {new_status}')
     
     # Информация о заказе
+    if order.address:
+        address_info = f"📍 <b>Адрес:</b> {order.address.street}, {order.address.city}"
+    else:
+        address_info = "🏪 <b>Самовывоз</b>"
+    
     order_info = f"""
 🍔 <b>Заказ #{order.id}</b>
 {status_text}
 
 💰 <b>Сумма:</b> {order.total_price:,.0f} UZS
-📍 <b>Адрес:</b> {order.address.street}, {order.address.city}
+{address_info}
 ⏰ <b>Время:</b> {order.created_at.strftime('%H:%M')}
 """
     
@@ -468,13 +473,18 @@ def send_cart_updated_notification(self, telegram_id, order_id, operator_name):
             return {'success': False, 'error': 'Order not found'}
         
         # Формируем детальное сообщение об изменении корзины
+        if order.address:
+            address_info = f"📍 <b>Адрес:</b> {order.address.street}, {order.address.city}"
+        else:
+            address_info = "🏪 <b>Самовывоз</b>"
+        
         message = f"""
 🛒 <b>Ваш заказ #{order.id} был скорректирован</b>
 
 Оператор <b>{operator_name}</b> внес корректировки в состав вашего заказа.
 
 💰 <b>Новая сумма:</b> {order.total_price:,.0f} UZS
-📍 <b>Адрес:</b> {order.address.street}, {order.address.city}
+{address_info}
 ⏰ <b>Время:</b> {order.created_at.strftime('%H:%M')}
 """
         
