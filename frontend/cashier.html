@@ -8,7 +8,7 @@
     <meta name="description" content="Интерфейс кассира для ресторана Babay Burger" />
     
     <!-- PWA Manifest для кассира -->
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="/cashier-manifest.json" />
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#f97316" />
@@ -165,7 +165,7 @@
       // Регистрируем Service Worker для кассира
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+          navigator.serviceWorker.register('/cashier-sw.js')
             .then((registration) => {
               console.log('✅ Cashier Service Worker зарегистрирован:', registration);
               console.log('📱 PWA готов к установке');
@@ -232,7 +232,7 @@
         console.log('🚀 PWA диагностика запущена');
         
         // Проверяем манифест сразу
-        fetch('/manifest.json')
+        fetch('/cashier-manifest.json')
           .then(response => {
             console.log('📱 Манифест ответ:', response.status, response.statusText);
             return response.json();
@@ -318,7 +318,7 @@
           console.log('- Hostname:', window.location.hostname);
         
         // Проверяем манифест еще раз
-        fetch('/manifest.json')
+        fetch('/cashier-manifest.json')
           .then(response => response.json())
           .then(manifest => {
             console.log('📱 Финальная проверка манифеста:', manifest);
