@@ -1198,38 +1198,44 @@ class Order(models.Model):
 
     def apply_promotion(self):
         # Получаем информацию о зоне доставки (без блокировки)
-        is_in_zone, message = self.address.is_in_delivery_zone()
-        if not is_in_zone:
-            print(f"⚠️ Предупреждение: адрес не в зоне доставки: {message}")
-            print(f"⚠️ Оператор может принять решение о доставке самостоятельно")
-        
-        # Получаем базовую стоимость доставки из зоны (без учета min_order_amount зоны)
-        base_delivery_fee = 0
-        delivery_zones = DeliveryZone.objects.filter(
-            city__iexact=self.address.city,
-            is_active=True
-        )
-        
-        # Сначала ищем зону, в которой находится адрес
-        for zone in delivery_zones:
-            if zone.is_address_in_zone(self.address.latitude, self.address.longitude):
-                base_delivery_fee = zone.delivery_fee
-                break
-        
-        # Если адрес не в зоне, используем стоимость доставки из ближайшей зоны
-        if base_delivery_fee == 0 and delivery_zones.exists():
-            closest_zone = None
-            min_distance = float('inf')
+        # Только для заказов доставки
+        if self.service_type == 'delivery' and self.address:
+            is_in_zone, message = self.address.is_in_delivery_zone()
+            if not is_in_zone:
+                print(f"⚠️ Предупреждение: адрес не в зоне доставки: {message}")
+                print(f"⚠️ Оператор может принять решение о доставке самостоятельно")
             
+            # Получаем базовую стоимость доставки из зоны (без учета min_order_amount зоны)
+            base_delivery_fee = 0
+            delivery_zones = DeliveryZone.objects.filter(
+                city__iexact=self.address.city,
+                is_active=True
+            )
+            
+            # Сначала ищем зону, в которой находится адрес
             for zone in delivery_zones:
-                distance = zone.get_distance_to_zone(self.address.latitude, self.address.longitude)
-                if distance and distance < min_distance:
-                    min_distance = distance
-                    closest_zone = zone
+                if zone.is_address_in_zone(self.address.latitude, self.address.longitude):
+                    base_delivery_fee = zone.delivery_fee
+                    break
             
-            if closest_zone:
-                base_delivery_fee = closest_zone.delivery_fee
-                print(f"⚠️ Адрес вне зоны, используем стоимость доставки из ближайшей зоны '{closest_zone.name}': {base_delivery_fee}")
+            # Если адрес не в зоне, используем стоимость доставки из ближайшей зоны
+            if base_delivery_fee == 0 and delivery_zones.exists():
+                closest_zone = None
+                min_distance = float('inf')
+                
+                for zone in delivery_zones:
+                    distance = zone.get_distance_to_zone(self.address.latitude, self.address.longitude)
+                    if distance and distance < min_distance:
+                        min_distance = distance
+                        closest_zone = zone
+                
+                if closest_zone:
+                    base_delivery_fee = closest_zone.delivery_fee
+                    print(f"⚠️ Адрес вне зоны, используем стоимость доставки из ближайшей зоны '{closest_zone.name}': {base_delivery_fee}")
+        else:
+            # Для самовывоза стоимость доставки = 0
+            base_delivery_fee = 0
+            delivery_zones = []
         
         # Если акция не выбрана, автоматически применяем лучшую доступную
         if not self.promotion:
@@ -1246,11 +1252,12 @@ class Order(models.Model):
             print(f"   - Акция не валидна или не выбрана")
             # Применяем базовую стоимость доставки и проверяем min_order_amount зоны
             self.delivery_fee = base_delivery_fee
-            for zone in delivery_zones:
-                if zone.is_address_in_zone(self.address.latitude, self.address.longitude):
-                    if zone.min_order_amount and self.calculate_total() >= zone.min_order_amount:
-                        self.delivery_fee = 0
-                    break
+            if self.service_type == 'delivery' and self.address:
+                for zone in delivery_zones:
+                    if zone.is_address_in_zone(self.address.latitude, self.address.longitude):
+                        if zone.min_order_amount and self.calculate_total() >= zone.min_order_amount:
+                            self.delivery_fee = 0
+                        break
             self.discounted_total = self.calculate_total() + self.delivery_fee
             self.save()
             return

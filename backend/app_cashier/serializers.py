@@ -5,6 +5,30 @@ from api.models import Order, OrderItem
 from api.serializers import OrderItemSerializer
 
 
+class OrderItemForCashierSerializer(serializers.ModelSerializer):
+    """Сериализатор для товаров заказа, оптимизированный для кассирского интерфейса"""
+    menu_item_name = serializers.CharField(source='menu_item.name', read_only=True)
+    menu_item_price = serializers.DecimalField(source='menu_item.price', max_digits=10, decimal_places=2, read_only=True)
+    size_option_name = serializers.CharField(source='size_option.name', read_only=True)
+    add_ons_names = serializers.SerializerMethodField()
+    total_price = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = OrderItem
+        fields = [
+            'id', 'menu_item_name', 'menu_item_price', 'quantity', 
+            'size_option_name', 'add_ons_names', 'total_price'
+        ]
+    
+    def get_add_ons_names(self, obj):
+        """Получить названия дополнений"""
+        return [addon.name for addon in obj.add_ons.all()]
+    
+    def get_total_price(self, obj):
+        """Рассчитать общую стоимость товара"""
+        return obj.calculate_total()
+
+
 class CashierSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Cashier"""
     formatted_phone = serializers.ReadOnlyField()
@@ -173,7 +197,7 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
     user_info = serializers.SerializerMethodField()
     address_info = serializers.SerializerMethodField()
     restaurant_info = serializers.SerializerMethodField()
-    items_details = OrderItemSerializer(source='orderitem_set', many=True, read_only=True)
+    items_details = OrderItemForCashierSerializer(source='orderitem_set', many=True, read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     promo_code_info = serializers.SerializerMethodField()
     cashier_processing_status = serializers.SerializerMethodField()
