@@ -39,14 +39,7 @@ export const AdminMenuPage: React.FC = () => {
   // Состояния для добавок и размеров
   const [addOns, setAddOns] = React.useState<any[]>([]);
   const [sizeOptions, setSizeOptions] = React.useState<any[]>([]);
-  const [showAddOnModal, setShowAddOnModal] = React.useState(false);
   const [showSizeModal, setShowSizeModal] = React.useState(false);
-  const [addOnFormData, setAddOnFormData] = React.useState({
-    name: '',
-    price: '',
-    available_for_categories: [] as number[],
-    is_active: true
-  });
   const [sizeFormData, setSizeFormData] = React.useState({
     name: '',
     price_modifier: '',
@@ -64,9 +57,9 @@ export const AdminMenuPage: React.FC = () => {
       // Загружаем категории только один раз
       if (categories.length === 0) {
         const categoriesRes = await menuApi.getCategories();
-        if (categoriesRes.success) {
-          setCategories(categoriesRes.data || []);
-          console.log('✅ Категории загружены:', categoriesRes.data);
+      if (categoriesRes.success) {
+        setCategories(categoriesRes.data || []);
+        console.log('✅ Категории загружены:', categoriesRes.data);
         } else {
           setError(categoriesRes.error?.message || 'Ошибка загрузки категорий');
         }
@@ -207,34 +200,6 @@ export const AdminMenuPage: React.FC = () => {
     }));
   };
 
-  const handleCreateAddOn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setLoading(true);
-      const response = await adminApi.createAddOn({
-        name: addOnFormData.name,
-        price: parseFloat(addOnFormData.price),
-        available_for_categories: addOnFormData.available_for_categories,
-        is_active: addOnFormData.is_active
-      });
-
-      if (response.success) {
-        setShowAddOnModal(false);
-        setAddOnFormData({ name: '', price: '', available_for_categories: [], is_active: true });
-        // Перезагружаем добавки
-        const addOnsRes = await adminApi.getAddOns();
-        if (addOnsRes.success) {
-          setAddOns(addOnsRes.data as any[] || []);
-        }
-      } else {
-        setError(response.error || 'Ошибка создания добавки');
-      }
-    } catch (err) {
-      setError('Ошибка создания добавки');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Функции для работы с размерами
   const handleSizeChange = (sizeId: number, checked: boolean) => {
@@ -260,10 +225,20 @@ export const AdminMenuPage: React.FC = () => {
       if (response.success) {
         setShowSizeModal(false);
         setSizeFormData({ name: '', price_modifier: '', description: '', is_active: true });
+        
         // Перезагружаем размеры
         const sizesRes = await adminApi.getSizeOptions();
         if (sizesRes.success) {
           setSizeOptions(sizesRes.data as any[] || []);
+          
+          // Автоматически добавляем новый размер к товару
+          const newSize = response.data as any;
+          if (newSize && newSize.id) {
+            setFormData(prev => ({
+              ...prev,
+              size_options: [...prev.size_options, newSize.id]
+            }));
+          }
         }
       } else {
         setError(response.error || 'Ошибка создания размера');
@@ -336,7 +311,7 @@ export const AdminMenuPage: React.FC = () => {
               <span className="text-lg">🍽️</span>
             </div>
             <div>
-              <h2 className="text-xl font-bold">Управление меню</h2>
+              <h2 className="text-xl font-bold text-white">Управление меню</h2>
               <p className="text-orange-100 text-sm">Создавайте и редактируйте блюда для вашего ресторана</p>
             </div>
           </div>
@@ -373,37 +348,37 @@ export const AdminMenuPage: React.FC = () => {
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-gray-200/50 shadow-lg overflow-hidden">
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-gray-800 flex items-center">
                   <span className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center text-white text-sm mr-3">📂</span>
-                  Категории ({categories.length})
+                  <span className="text-gray-800">Категории</span> <span className="text-orange-600 ml-1">({categories.length})</span>
                 </h3>
                 <button className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex items-center space-x-2 group">
                   <span className="group-hover:scale-110 transition-transform">➕</span>
                   <span>Добавить категорию</span>
-                </button>
+            </button>
               </div>
-            </div>
-            
+          </div>
+          
             <div className="p-6">
               {loading && <div className="text-center py-8">Загрузка...</div>}
               {error && <div className="text-red-600 bg-red-50 p-4 rounded-lg mb-4">{error}</div>}
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {categories.map((c) => (
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.map((c) => (
                   <div key={c.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                    <div className="font-bold text-lg text-gray-900 mb-2">{c.name}</div>
+                    <div className="font-bold text-lg text-purple-700 mb-2">{c.name}</div>
                     <div className="text-sm text-gray-600 mb-3 line-clamp-2">{c.description}</div>
                     <div className="flex gap-2">
                       <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-semibold">
-                        Редактировать
-                      </button>
+                    Редактировать
+                  </button>
                       <button className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-semibold">
-                        Удалить
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                    Удалить
+                  </button>
+                </div>
+              </div>
+            ))}
               </div>
             </div>
           </div>
@@ -436,7 +411,7 @@ export const AdminMenuPage: React.FC = () => {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-gray-800 flex items-center">
                   <span className="w-6 h-6 bg-gradient-to-br from-orange-500 to-red-500 rounded-md flex items-center justify-center text-white text-xs mr-2">🍔</span>
-                  Список товаров ({paginationInfo.count} всего)
+                  <span className="text-gray-800">Список товаров</span> <span className="text-orange-600 ml-1">({paginationInfo.count} всего)</span>
                 </h3>
                 <button
                   onClick={openAddForm}
@@ -484,8 +459,8 @@ export const AdminMenuPage: React.FC = () => {
             </div>
             
             {menuItems.length > 0 ? (
-              <div className="overflow-x-auto max-h-[calc(100vh-200px)] overflow-y-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+              <div className="overflow-x-auto max-h-[100vh] overflow-y-auto">
+              <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10">
                     <tr>
                       <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Товар</th>
@@ -493,10 +468,10 @@ export const AdminMenuPage: React.FC = () => {
                       <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Категория</th>
                       <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Статус</th>
                       <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Действия</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-100">
-                    {menuItems.map((item, index) => (
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {menuItems.map((item, index) => (
                     <tr key={item.id} className={`hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <div className="flex items-center space-x-2">
@@ -508,18 +483,18 @@ export const AdminMenuPage: React.FC = () => {
                             />
                           )}
                           <div>
-                            <div className="text-xs font-bold text-gray-900">{item.name}</div>
+                            <div className="text-xs font-bold text-blue-700">{item.name}</div>
                             <div className="text-xs text-gray-500 max-w-xs truncate">{item.description}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <div className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
-                          {item.price} ₽
+                          {item.price} сум
                         </div>
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
-                        <div className="text-xs font-semibold text-gray-700 bg-blue-50 px-2 py-1 rounded-md">
+                        <div className="text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-1 rounded-md">
                           {categories.find(c => c.id === item.category)?.name || 'Неизвестно'}
                         </div>
                       </td>
@@ -562,9 +537,9 @@ export const AdminMenuPage: React.FC = () => {
                       </td>
                     </tr>
                   ))}
-                  </tbody>
-                </table>
-              </div>
+                </tbody>
+              </table>
+            </div>
             ) : (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">🔍</div>
@@ -656,7 +631,7 @@ export const AdminMenuPage: React.FC = () => {
             <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  {editingItem ? 'Редактировать товар' : 'Добавить товар'}
+                  {editingItem ? <span className="text-orange-600">Редактировать товар</span> : <span className="text-green-600">Добавить товар</span>}
                 </h3>
                 <button
                   onClick={() => setShowForm(false)}
@@ -669,118 +644,118 @@ export const AdminMenuPage: React.FC = () => {
             
             {/* Контент формы */}
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Основная информация */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Основная информация */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
+                <div className="space-y-4">
+                      <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Название товара *
+                        <span className="text-blue-600 font-semibold">Название товара</span> <span className="text-red-500">*</span>
                       </label>
-                      <input 
-                        type="text" 
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
+                        <input 
+                          type="text" 
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        placeholder="Введите название товара"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
+                          placeholder="Введите название товара"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Описание
-                      </label>
-                      <textarea 
-                        name="description"
-                        value={formData.description}
-                        onChange={handleInputChange}
+                          Описание
+                        </label>
+                        <textarea 
+                          name="description"
+                          value={formData.description}
+                          onChange={handleInputChange}
                         rows={3}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none"
-                        placeholder="Описание товара"
-                      />
-                    </div>
-                    
-                    <div>
+                          placeholder="Описание товара"
+                        />
+                      </div>
+                      
+                      <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Цена (₽) *
+                        <span className="text-green-600 font-semibold">Цена (сум)</span> <span className="text-red-500">*</span>
                       </label>
-                      <input 
-                        type="number" 
-                        name="price"
-                        value={formData.price}
-                        onChange={handleInputChange}
-                        min="0"
-                        step="0.01"
+                          <input 
+                            type="number" 
+                            name="price"
+                            value={formData.price}
+                            onChange={handleInputChange}
+                            min="0"
+                            step="0.01"
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        placeholder="0.00"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
+                            placeholder="0.00"
+                            required
+                          />
+                      </div>
+                      
+                      <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Категория *
+                        <span className="text-purple-600 font-semibold">Категория</span> <span className="text-red-500">*</span>
                       </label>
-                      <select 
-                        name="category"
-                        value={formData.category}
-                        onChange={handleInputChange}
+                        <select 
+                          name="category"
+                          value={formData.category}
+                          onChange={handleInputChange}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        required
-                      >
-                        <option value="">Выберите категорию</option>
-                        {categories.map(c => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                          required
+                        >
+                          <option value="">Выберите категорию</option>
+                          {categories.map(c => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
                   </div>
-                  
-                  <div className="space-y-4">
+                </div>
+                
+                <div className="space-y-4">
                     {/* Изображение */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Изображение товара
+                      Изображение товара
                       </label>
                       <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="hidden"
-                          id="image-upload"
-                        />
-                        <label
-                          htmlFor="image-upload"
-                          className="cursor-pointer flex flex-col items-center space-y-2"
-                        >
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="cursor-pointer flex flex-col items-center space-y-2"
+                      >
                           <span className="text-2xl">📷</span>
                           <span className="text-sm text-gray-600">
-                            {formData.image ? formData.image.name : 'Нажмите для загрузки изображения'}
+                          {formData.image ? formData.image.name : 'Нажмите для загрузки изображения'}
                           </span>
-                        </label>
-                      </div>
-                      
-                      {editingItem?.image && !formData.image && (
-                        <div className="mt-2 p-2 bg-gray-50 rounded-md">
-                          <div className="text-xs text-gray-600 mb-1">Текущее изображение:</div>
-                          <img 
-                            src={editingItem.image} 
-                            alt={editingItem.name}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                        </div>
-                      )}
+                      </label>
                     </div>
                     
-                    {/* Порядок отображения */}
+                    {editingItem?.image && !formData.image && (
+                        <div className="mt-2 p-2 bg-gray-50 rounded-md">
+                          <div className="text-xs text-gray-600 mb-1">Текущее изображение:</div>
+                        <img 
+                          src={editingItem.image} 
+                          alt={editingItem.name}
+                            className="w-12 h-12 object-cover rounded"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Порядок отображения */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Порядок отображения
+                      Порядок отображения
                       </label>
                       <input 
                         type="number" 
@@ -800,14 +775,14 @@ export const AdminMenuPage: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <label className="block text-sm font-medium text-gray-700">
-                      Размеры товара
+                      <span className="text-blue-600 font-semibold">Размеры товара</span> <span className="text-gray-600">(выберите существующие или создайте новые)</span>
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowSizeModal(true)}
                       className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                     >
-                      + Добавить размер
+                      + Создать новый размер
                     </button>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -820,27 +795,23 @@ export const AdminMenuPage: React.FC = () => {
                           className="rounded"
                         />
                         <span className="text-sm">
-                          {size.name} ({size.price_modifier > 0 ? '+' : ''}{size.price_modifier} ₽)
+                          <span className="text-blue-700 font-medium">{size.name}</span> <span className="text-gray-600">({size.price_modifier > 0 ? '+' : ''}{size.price_modifier} сум)</span>
                         </span>
                       </label>
                     ))}
                   </div>
+                  {sizeOptions.length === 0 && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      Нет доступных размеров. Создайте новый размер для этого товара.
+                    </p>
+                  )}
                 </div>
                 
                 {/* Добавки */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Добавки к товару
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setShowAddOnModal(true)}
-                      className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-                    >
-                      + Добавить добавку
-                    </button>
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    <span className="text-green-600 font-semibold">Добавки к товару</span> <span className="text-gray-600">(выберите из существующих)</span>
+                  </label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     {addOns.map(addOn => (
                       <label key={addOn.id} className="flex items-center space-x-2 p-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">
@@ -851,55 +822,60 @@ export const AdminMenuPage: React.FC = () => {
                           className="rounded"
                         />
                         <span className="text-sm">
-                          {addOn.name} ({addOn.price} ₽)
+                          <span className="text-green-700 font-medium">{addOn.name}</span> <span className="text-gray-600">({addOn.price} сум)</span>
                         </span>
                       </label>
                     ))}
                   </div>
-                </div>
-                
-                {/* Настройки */}
+                  {addOns.length === 0 && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      Нет доступных добавок. Обратитесь к администратору для добавления добавок в систему.
+                    </p>
+                  )}
+              </div>
+              
+              {/* Настройки */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Настройки товара
+                    <span className="text-orange-600 font-semibold">Настройки товара</span>
                   </label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        name="is_hit"
-                        checked={formData.is_hit}
-                        onChange={handleInputChange}
+                    <input
+                      type="checkbox"
+                      name="is_hit"
+                      checked={formData.is_hit}
+                      onChange={handleInputChange}
                         className="rounded"
-                      />
+                    />
                       <span className="text-sm">🔥 Хит продаж</span>
-                    </label>
-                    
+                  </label>
+                  
                     <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        name="is_new"
-                        checked={formData.is_new}
-                        onChange={handleInputChange}
+                    <input
+                      type="checkbox"
+                      name="is_new"
+                      checked={formData.is_new}
+                      onChange={handleInputChange}
                         className="rounded"
-                      />
+                    />
                       <span className="text-sm">🆕 Новинка</span>
-                    </label>
-                    
+                  </label>
+                  
                     <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        name="is_active"
-                        checked={formData.is_active}
-                        onChange={handleInputChange}
+                    <input
+                      type="checkbox"
+                      name="is_active"
+                      checked={formData.is_active}
+                      onChange={handleInputChange}
                         className="rounded"
-                      />
+                    />
                       <span className="text-sm">✅ Активен</span>
-                    </label>
-                  </div>
+                  </label>
                 </div>
-                
-                {/* Кнопки */}
+              </div>
+              
+              {/* Кнопки */}
                 <div className="flex gap-3 pt-4 border-t border-gray-200">
                   <button 
                     type="button"
@@ -922,100 +898,6 @@ export const AdminMenuPage: React.FC = () => {
         </div>
       )}
 
-      {/* Модальное окно для добавления добавки */}
-      {showAddOnModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Добавить добавку</h3>
-                <button
-                  onClick={() => setShowAddOnModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <span className="text-xl">×</span>
-                </button>
-              </div>
-            </div>
-            
-            <form onSubmit={handleCreateAddOn} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Название добавки *
-                </label>
-                <input 
-                  type="text" 
-                  value={addOnFormData.name}
-                  onChange={(e) => setAddOnFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="Например: Сыр"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Цена (₽) *
-                </label>
-                <input 
-                  type="number" 
-                  value={addOnFormData.price}
-                  onChange={(e) => setAddOnFormData(prev => ({ ...prev, price: e.target.value }))}
-                  min="0"
-                  step="0.01"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Доступно для категорий
-                </label>
-                <div className="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
-                  {categories.map(category => (
-                    <label key={category.id} className="flex items-center space-x-2 mb-1">
-                      <input
-                        type="checkbox"
-                        checked={addOnFormData.available_for_categories.includes(category.id)}
-                        onChange={(e) => {
-                          const categoryId = category.id;
-                          setAddOnFormData(prev => ({
-                            ...prev,
-                            available_for_categories: e.target.checked
-                              ? [...prev.available_for_categories, categoryId]
-                              : prev.available_for_categories.filter(id => id !== categoryId)
-                          }));
-                        }}
-                        className="rounded"
-                      />
-                      <span className="text-sm">{category.name}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="flex gap-3 pt-4">
-                <button 
-                  type="button"
-                  onClick={() => setShowAddOnModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Отмена
-                </button>
-                <button 
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {loading ? 'Создание...' : 'Создать'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Модальное окно для добавления размера */}
       {showSizeModal && (
@@ -1023,7 +905,10 @@ export const AdminMenuPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
             <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Добавить размер</h3>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900"><span className="text-blue-600">Создать новый размер</span></h3>
+                  <p className="text-sm text-gray-600">Размер будет автоматически добавлен к товару</p>
+                </div>
                 <button
                   onClick={() => setShowSizeModal(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -1036,7 +921,7 @@ export const AdminMenuPage: React.FC = () => {
             <form onSubmit={handleCreateSize} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Название размера *
+                  <span className="text-blue-600 font-semibold">Название размера</span> <span className="text-red-500">*</span>
                 </label>
                 <input 
                   type="text" 
@@ -1050,7 +935,7 @@ export const AdminMenuPage: React.FC = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Модификатор цены (₽) *
+                  <span className="text-green-600 font-semibold">Модификатор цены (сум)</span> <span className="text-red-500">*</span>
                 </label>
                 <input 
                   type="number" 
@@ -1090,7 +975,7 @@ export const AdminMenuPage: React.FC = () => {
                   disabled={loading}
                   className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {loading ? 'Создание...' : 'Создать'}
+                  {loading ? 'Создание...' : 'Создать и добавить к товару'}
                 </button>
               </div>
             </form>
