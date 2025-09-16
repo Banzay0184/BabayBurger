@@ -1363,30 +1363,34 @@ class Order(models.Model):
         
         # Рассчитываем базовую стоимость доставки для оценки FREE_DELIVERY акций (без учета min_order_amount зоны)
         base_delivery_fee = 0
-        delivery_zones = DeliveryZone.objects.filter(
-            city__iexact=self.address.city,
-            is_active=True
-        )
+        delivery_zones = []
         
-        # Сначала ищем зону, в которой находится адрес
-        for zone in delivery_zones:
-            if zone.is_address_in_zone(self.address.latitude, self.address.longitude):
-                base_delivery_fee = zone.delivery_fee
-                break
-        
-        # Если адрес не в зоне, используем стоимость доставки из ближайшей зоны
-        if base_delivery_fee == 0 and delivery_zones.exists():
-            closest_zone = None
-            min_distance = float('inf')
+        # Только для заказов доставки
+        if self.service_type == 'delivery' and self.address:
+            delivery_zones = DeliveryZone.objects.filter(
+                city__iexact=self.address.city,
+                is_active=True
+            )
             
+            # Сначала ищем зону, в которой находится адрес
             for zone in delivery_zones:
-                distance = zone.get_distance_to_zone(self.address.latitude, self.address.longitude)
-                if distance and distance < min_distance:
-                    min_distance = distance
-                    closest_zone = zone
+                if zone.is_address_in_zone(self.address.latitude, self.address.longitude):
+                    base_delivery_fee = zone.delivery_fee
+                    break
             
-            if closest_zone:
-                base_delivery_fee = closest_zone.delivery_fee
+            # Если адрес не в зоне, используем стоимость доставки из ближайшей зоны
+            if base_delivery_fee == 0 and delivery_zones.exists():
+                closest_zone = None
+                min_distance = float('inf')
+                
+                for zone in delivery_zones:
+                    distance = zone.get_distance_to_zone(self.address.latitude, self.address.longitude)
+                    if distance and distance < min_distance:
+                        min_distance = distance
+                        closest_zone = zone
+                
+                if closest_zone:
+                    base_delivery_fee = closest_zone.delivery_fee
         
         # Отладочная информация
         print(f"🔍 Отладка get_best_available_promotion:")
