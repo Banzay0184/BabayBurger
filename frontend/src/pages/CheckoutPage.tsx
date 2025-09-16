@@ -413,10 +413,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         }
       }
       
-      const orderData = {
+      const orderData: any = {
         telegram_id: telegramId,
         service_type: serviceType,
-        address_id: finalAddressId, // Теперь у нас всегда есть реальный ID
         restaurant: selectedRestaurant?.id || null, // Добавляем ID ресторана для самовывоза
         payment_method: paymentMethod,
         notes: notes,
@@ -433,6 +432,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         promo_code_id: appliedPromoCode?.promoCodeId || null,
         discount_amount: appliedPromoCode?.discountAmount || 0
       };
+
+      // Добавляем address_id только если он есть (для доставки или если выбран для самовывоза)
+      if (finalAddressId) {
+        orderData.address_id = finalAddressId;
+      }
 
       console.log('📦 Отправляем заказ:', orderData);
       console.log('📍 Финальный ID адреса:', finalAddressId);

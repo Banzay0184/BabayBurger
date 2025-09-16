@@ -220,32 +220,45 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               {/* Адрес доставки */}
               <div className="bg-gray-700 rounded-lg p-4">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-white font-medium">Адрес доставки</h3>
-                  <button
-                    onClick={() => {
-                      const { latitude, longitude } = order.address_info;
-                      const yandexMapUrl = `https://yandex.ru/maps/?pt=${longitude},${latitude}&z=16&l=map`;
-                      window.open(yandexMapUrl, '_blank');
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
-                  >
-                    <span>🗺️</span>
-                    <span>Карта</span>
-                  </button>
+                  <h3 className="text-white font-medium">
+                    {order.address_info ? 'Адрес доставки' : 'Информация о заказе'}
+                  </h3>
+                  {order.address_info && (
+                    <button
+                      onClick={() => {
+                        const { latitude, longitude } = order.address_info!;
+                        const yandexMapUrl = `https://yandex.ru/maps/?pt=${longitude},${latitude}&z=16&l=map`;
+                        window.open(yandexMapUrl, '_blank');
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
+                    >
+                      <span>🗺️</span>
+                      <span>Карта</span>
+                    </button>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Адрес:</span>
-                    <span className="text-white text-right max-w-xs">{order.address_info.full_address}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Город:</span>
-                    <span className="text-gray-300">{order.address_info.city}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Телефон:</span>
-                    <span className="text-green-400">{order.address_info.phone_number}</span>
-                  </div>
+                  {order.address_info ? (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Адрес:</span>
+                        <span className="text-white text-right max-w-xs">{order.address_info.full_address}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Город:</span>
+                        <span className="text-gray-300">{order.address_info.city}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Телефон:</span>
+                        <span className="text-green-400">{order.address_info.phone_number}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Тип заказа:</span>
+                      <span className="text-white">🏪 Самовывоз</span>
+                    </div>
+                  )}
                   {order.delivery_zone_info && (
                     <div className="flex justify-between">
                       <span className="text-gray-400">Зона доставки:</span>

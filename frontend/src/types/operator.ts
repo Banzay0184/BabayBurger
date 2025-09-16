@@ -77,7 +77,7 @@ export interface OrderForOperator {
   assigned_at?: string;
   operator_order_number?: number;
   user_info: UserInfo;
-  address_info: AddressInfo;
+  address_info: AddressInfo | null;
   restaurant_info?: RestaurantInfo;
   items_details: OrderItemDetail[];
   delivery_zone_info?: DeliveryZoneInfo;

@@ -209,7 +209,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
                 👤 {order.user_info.first_name} {order.user_info.last_name}
               </p>
               <p className="text-gray-400 text-sm">
-                📱 {order.address_info.phone_number}
+                📱 {order.address_info?.phone_number || 'Телефон не указан'}
               </p>
             </div>
             <div className="text-right">
@@ -226,17 +226,26 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
           {/* Адрес и кнопка карты */}
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <p className="text-gray-300 text-sm">
-                📍 {order.address_info.full_address}
-              </p>
-              <p className="text-gray-400 text-xs">
-                🏙️ {order.address_info.city}
-              </p>
+              {order.address_info ? (
+                <>
+                  <p className="text-gray-300 text-sm">
+                    📍 {order.address_info.full_address}
+                  </p>
+                  <p className="text-gray-400 text-xs">
+                    🏙️ {order.address_info.city}
+                  </p>
+                </>
+              ) : (
+                <p className="text-gray-300 text-sm">
+                  🏪 Самовывоз из ресторана
+                </p>
+              )}
             </div>
-            <button
-              onClick={() => {
-                const { latitude, longitude } = order.address_info;
-                const yandexMapUrl = `https://yandex.ru/maps/?pt=${longitude},${latitude}&z=16&l=map`;
+            {order.address_info && (
+              <button
+                onClick={() => {
+                  const { latitude, longitude } = order.address_info!;
+                  const yandexMapUrl = `https://yandex.ru/maps/?pt=${longitude},${latitude}&z=16&l=map`;
                 window.open(yandexMapUrl, '_blank');
               }}
               className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ml-3"
@@ -245,6 +254,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
               <span>🗺️</span>
               <span>Карта</span>
             </button>
+            )}
           </div>
         </div>
 
