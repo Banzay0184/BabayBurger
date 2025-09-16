@@ -62,7 +62,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-gray-900">
-                        {order.final_price.toLocaleString()} сум
+                        {(order.final_price || 0).toLocaleString()} сум
                       </div>
                       <div className="text-xs text-gray-500">
                         {new Date(order.created_at).toLocaleTimeString('ru-RU', {
@@ -84,7 +84,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                           <span className="font-medium text-gray-900">{item.menu_item_name}</span>
                         </div>
                         <span className="text-gray-600">
-                          {item.total_price.toLocaleString()} сум
+                          {(item.total_price || 0).toLocaleString()} сум
                         </span>
                       </div>
                     ))}

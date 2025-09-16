@@ -182,7 +182,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                             <p className="text-sm text-gray-600">Количество: {item.quantity}</p>
                           </div>
                           <span className="font-bold text-gray-900">
-                            {item.total_price.toLocaleString()} сум
+                            {(item.total_price || 0).toLocaleString()} сум
                           </span>
                         </div>
                         
@@ -215,27 +215,27 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Сумма заказа:</span>
-                    <span className="font-medium">{order.total_price.toLocaleString()} сум</span>
+                    <span className="font-medium">{(order.total_price || 0).toLocaleString()} сум</span>
                   </div>
                   
-                  {order.delivery_fee > 0 && (
+                  {(order.delivery_fee || 0) > 0 && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Стоимость доставки:</span>
-                      <span className="font-medium">{order.delivery_fee.toLocaleString()} сум</span>
+                      <span className="font-medium">{(order.delivery_fee || 0).toLocaleString()} сум</span>
                     </div>
                   )}
                   
-                  {order.discount_amount > 0 && (
+                  {(order.discount_amount || 0) > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Скидка:</span>
-                      <span className="font-medium">-{order.discount_amount.toLocaleString()} сум</span>
+                      <span className="font-medium">-{(order.discount_amount || 0).toLocaleString()} сум</span>
                     </div>
                   )}
                   
                   {order.promo_code_info && (
                     <div className="flex justify-between text-blue-600">
                       <span>Промокод ({order.promo_code_info.code}):</span>
-                      <span className="font-medium">-{order.discount_amount.toLocaleString()} сум</span>
+                      <span className="font-medium">-{(order.discount_amount || 0).toLocaleString()} сум</span>
                     </div>
                   )}
                   
@@ -243,7 +243,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   
                   <div className="flex justify-between text-lg font-bold">
                     <span>Итого к оплате:</span>
-                    <span className="text-green-600">{order.final_price.toLocaleString()} сум</span>
+                    <span className="text-green-600">{(order.final_price || 0).toLocaleString()} сум</span>
                   </div>
                   
                   <div className="flex items-center space-x-2 mt-3">

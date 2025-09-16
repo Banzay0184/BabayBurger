@@ -232,7 +232,7 @@ export const OrderSearch: React.FC<OrderSearchProps> = ({
                       </div>
                       
                       <div className="text-xs sm:text-sm text-gray-600 space-y-0.5">
-                        <p>Сумма: {order.final_price.toLocaleString()} сум</p>
+                        <p>Сумма: {(order.final_price || 0).toLocaleString()} сум</p>
                         <p>Время: {new Date(order.created_at).toLocaleString('ru-RU')}</p>
                         {order.address_info && (
                           <p className="truncate">Адрес: {order.address_info.full_address}</p>

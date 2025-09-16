@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '../ui/Button';
 import { type Order } from '../../api/cashierApi';
+import { formatCurrency } from '../../utils/format';
 
 interface OrderColumnProps {
   title: string;
@@ -178,7 +179,7 @@ export const OrderColumn: React.FC<OrderColumnProps> = ({
                             {item.size_option_name && <span className="text-gray-500"> ({item.size_option_name})</span>}
                           </span>
                           <span className="font-bold text-gray-900">
-                            {item.total_price.toLocaleString()} сум
+                            {formatCurrency(item.total_price)}
                           </span>
                         </div>
                       ))
@@ -208,11 +209,11 @@ export const OrderColumn: React.FC<OrderColumnProps> = ({
                     </div>
                     <div className="text-right">
                       <span className="font-bold text-green-700 text-xs sm:text-sm block">
-                        {order.final_price.toLocaleString()} сум
+                        {formatCurrency(order.final_price)}
                       </span>
-                      {order.discount_amount > 0 && (
+                      {(order.discount_amount || 0) > 0 && (
                         <span className="text-xs text-green-600">
-                          -{order.discount_amount.toLocaleString()} сум
+                          -{formatCurrency(order.discount_amount)}
                         </span>
                       )}
                     </div>
