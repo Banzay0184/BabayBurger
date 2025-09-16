@@ -56,11 +56,14 @@ export const AdminUsersPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Заголовок */}
-      <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl font-bold text-gray-900">👥 Управление пользователями</h1>
-        <p className="text-gray-600 mt-1">Просмотр информации о клиентах</p>
+      <div className="text-center pb-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
+          <span className="text-3xl text-white">👥</span>
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Управление пользователями</h1>
+        <p className="text-gray-600 text-lg">Просмотр информации о клиентах</p>
       </div>
 
       {error && (
@@ -71,23 +74,24 @@ export const AdminUsersPage: React.FC = () => {
       )}
 
       {/* Поиск */}
-      <div className="bg-white rounded-lg border shadow-sm p-6">
+      <div className="bg-white rounded-2xl border border-gray-200/50 shadow-lg p-6">
         <div className="max-w-md">
-          <label className="block text-sm font-medium text-gray-700 mb-2">🔍 Поиск пользователей</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">🔍 Поиск пользователей</label>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Поиск по имени, username, telegram_id..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
           />
         </div>
       </div>
 
       {/* Список пользователей */}
-      <div className="bg-white rounded-lg border shadow-sm">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">
+      <div className="bg-white rounded-2xl border border-gray-200/50 shadow-lg overflow-hidden">
+        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+          <h3 className="text-xl font-bold text-gray-900 flex items-center">
+            <span className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm mr-3">👥</span>
             Пользователи ({users.length})
           </h3>
         </div>
@@ -95,31 +99,48 @@ export const AdminUsersPage: React.FC = () => {
         {users.length > 0 ? (
           <div className="divide-y divide-gray-200">
             {users.map((user) => (
-              <div key={user.id} className="p-6 hover:bg-gray-50">
+              <div key={user.id} className="p-6 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center space-x-4">
-                      <div className="text-lg font-semibold text-gray-900">
-                        {user.first_name} {user.last_name}
+                    <div className="flex items-center space-x-4 mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                        {user.first_name.charAt(0).toUpperCase()}
                       </div>
-                      {user.username && (
-                        <div className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                          @{user.username}
+                      <div>
+                        <div className="text-xl font-bold text-gray-900">
+                          {user.first_name} {user.last_name}
                         </div>
-                      )}
+                        {user.username && (
+                          <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold border border-blue-200 mt-1">
+                            @{user.username}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     
-                    <div className="mt-2 text-sm text-gray-600">
-                      <div>🆔 Telegram ID: {user.telegram_id}</div>
-                      <div>📅 Регистрация: {new Date(user.created_at).toLocaleString('ru-RU')}</div>
-                      <div>📋 Заказов: {user.orders_count}</div>
-                      <div>💰 Потрачено: {user.total_spent?.toLocaleString() || 0} ₽</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="font-semibold text-gray-700 mb-1">🆔 Telegram ID</div>
+                        <div className="text-gray-600 text-sm">{user.telegram_id}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="font-semibold text-gray-700 mb-1">📅 Регистрация</div>
+                        <div className="text-gray-600 text-sm">{new Date(user.created_at).toLocaleDateString('ru-RU')}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="font-semibold text-gray-700 mb-1">📋 Заказов</div>
+                        <div className="text-gray-600 text-sm font-bold">{user.orders_count}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="font-semibold text-gray-700 mb-1">💰 Потрачено</div>
+                        <div className="text-gray-600 text-sm font-bold">{user.total_spent?.toLocaleString() || 0} ₽</div>
+                      </div>
                     </div>
                   </div>
                   
                   <div className="flex items-center space-x-2">
                     <div className="text-right text-sm text-gray-600">
-                      <div className="font-medium">ID: {user.id}</div>
+                      <div className="font-bold bg-gray-100 px-3 py-1 rounded-full">ID: {user.id}</div>
                     </div>
                   </div>
                 </div>

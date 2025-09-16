@@ -102,11 +102,14 @@ export const AdminOrdersPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Заголовок */}
-      <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl font-bold text-gray-900">📋 Управление заказами</h1>
-        <p className="text-gray-600 mt-1">Просмотр и управление всеми заказами</p>
+      <div className="text-center pb-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
+          <span className="text-3xl text-white">📋</span>
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Управление заказами</h1>
+        <p className="text-gray-600 text-lg">Просмотр и управление всеми заказами</p>
       </div>
 
       {error && (
@@ -117,15 +120,18 @@ export const AdminOrdersPage: React.FC = () => {
       )}
 
       {/* Фильтры */}
-      <div className="bg-white rounded-lg border shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">🔍 Фильтры</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white rounded-2xl border border-gray-200/50 shadow-lg p-6">
+        <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+          <span className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm mr-3">🔍</span>
+          Фильтры
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Статус</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Статус</label>
             <select
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
             >
               <option value="">Все статусы</option>
               {Object.entries(statusLabels).map(([value, label]) => (
@@ -135,11 +141,11 @@ export const AdminOrdersPage: React.FC = () => {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Тип услуги</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Тип услуги</label>
             <select
               value={filters.service_type}
               onChange={(e) => setFilters({ ...filters, service_type: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
             >
               <option value="">Все типы</option>
               {Object.entries(serviceTypeLabels).map(([value, label]) => (
@@ -149,22 +155,23 @@ export const AdminOrdersPage: React.FC = () => {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Поиск</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Поиск</label>
             <input
               type="text"
               value={filters.search}
               onChange={(e) => setFilters({ ...filters, search: e.target.value })}
               placeholder="Поиск по клиенту, адресу..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
             />
           </div>
         </div>
       </div>
 
       {/* Список заказов */}
-      <div className="bg-white rounded-lg border shadow-sm">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">
+      <div className="bg-white rounded-2xl border border-gray-200/50 shadow-lg overflow-hidden">
+        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+          <h3 className="text-xl font-bold text-gray-900 flex items-center">
+            <span className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm mr-3">📋</span>
             Заказы ({orders.length})
           </h3>
         </div>
@@ -172,36 +179,51 @@ export const AdminOrdersPage: React.FC = () => {
         {orders.length > 0 ? (
           <div className="divide-y divide-gray-200">
             {orders.map((order) => (
-              <div key={order.id} className="p-6 hover:bg-gray-50">
+              <div key={order.id} className="p-6 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center space-x-4">
-                      <div className="text-lg font-semibold text-gray-900">
+                    <div className="flex items-center space-x-4 mb-3">
+                      <div className="text-xl font-bold text-gray-900">
                         Заказ #{order.id}
                       </div>
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        order.status === 'cancelled' || order.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                        order.status === 'preparing' ? 'bg-blue-100 text-blue-800' :
-                        'bg-yellow-100 text-yellow-800'
+                      <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        order.status === 'completed' ? 'bg-green-100 text-green-800 border border-green-200' :
+                        order.status === 'cancelled' || order.status === 'rejected' ? 'bg-red-100 text-red-800 border border-red-200' :
+                        order.status === 'preparing' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                        'bg-yellow-100 text-yellow-800 border border-yellow-200'
                       }`}>
                         {statusLabels[order.status] || order.status}
                       </div>
-                      <div className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">
+                      <div className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold border border-gray-200">
                         {serviceTypeLabels[order.service_type] || order.service_type}
                       </div>
                     </div>
                     
-                    <div className="mt-2 text-sm text-gray-600">
-                      <div>👤 Клиент: {order.user.first_name} {order.user.username && `(@${order.user.username})`}</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="font-semibold text-gray-700 mb-2">👤 Клиент</div>
+                        <div className="text-gray-600">{order.user.first_name} {order.user.username && `(@${order.user.username})`}</div>
+                      </div>
                       {order.address && (
-                        <div>📍 Адрес: {order.address.full_address}</div>
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="font-semibold text-gray-700 mb-2">📍 Адрес</div>
+                          <div className="text-gray-600">{order.address.full_address}</div>
+                        </div>
                       )}
                       {order.restaurant && (
-                        <div>🏪 Ресторан: {order.restaurant.name} ({order.restaurant.city})</div>
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="font-semibold text-gray-700 mb-2">🏪 Ресторан</div>
+                          <div className="text-gray-600">{order.restaurant.name} ({order.restaurant.city})</div>
+                        </div>
                       )}
-                      <div>💰 Сумма: {order.final_price.toLocaleString()} ₽ {order.delivery_fee > 0 && `(+ ${order.delivery_fee.toLocaleString()} ₽ доставка)`}</div>
-                      <div>📅 Дата: {new Date(order.created_at).toLocaleString('ru-RU')}</div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="font-semibold text-gray-700 mb-2">💰 Сумма</div>
+                        <div className="text-gray-600">{order.final_price.toLocaleString()} ₽ {order.delivery_fee > 0 && `(+ ${order.delivery_fee.toLocaleString()} ₽ доставка)`}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="font-semibold text-gray-700 mb-2">📅 Дата</div>
+                        <div className="text-gray-600">{new Date(order.created_at).toLocaleString('ru-RU')}</div>
+                      </div>
                     </div>
                   </div>
                   
@@ -209,7 +231,7 @@ export const AdminOrdersPage: React.FC = () => {
                     <select
                       value={order.status}
                       onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                      className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="px-4 py-2 border-2 border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
                     >
                       {Object.entries(statusLabels).map(([value, label]) => (
                         <option key={value} value={value}>{label}</option>
