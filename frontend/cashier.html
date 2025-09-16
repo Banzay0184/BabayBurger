@@ -238,6 +238,8 @@
       console.log('- Is Tablet:', /iPad|Android.*(?=.*Tablet)|Android.*(?=.*Tab)/i.test(navigator.userAgent));
       console.log('- Screen Size:', window.screen.width + 'x' + window.screen.height);
       console.log('- Viewport Size:', window.innerWidth + 'x' + window.innerHeight);
+      console.log('- Is Telegram WebApp:', !!(window.Telegram && window.Telegram.WebApp));
+      console.log('- In iframe/WebView:', window.self !== window.top);
       
       // Проверяем манифест
       fetch('/cashier-manifest.json')
@@ -248,6 +250,20 @@
         .catch(error => {
           console.error('💰 PWA: Manifest loading failed:', error);
         });
+      
+      // Проверка на Telegram WebApp
+      const isTelegramWebApp = !!(window.Telegram && window.Telegram.WebApp);
+      const isInWebView = window.self !== window.top;
+      
+      if (isTelegramWebApp || isInWebView) {
+        console.warn('⚠️ PWA не работает в Telegram WebApp или WebView!');
+        console.log('📱 Для установки PWA откройте ссылку в обычном браузере');
+        
+        // Показываем предупреждение
+        setTimeout(() => {
+          showTelegramWarning();
+        }, 1000);
+      }
       
       // Переменные для PWA
       let deferredPrompt = null;
@@ -466,10 +482,99 @@
 
       console.log('💰 Cashier PWA: Initialized successfully');
       
+      // Показать предупреждение о Telegram WebApp
+      function showTelegramWarning() {
+        // Создаем предупреждение
+        const warning = document.createElement('div');
+        warning.innerHTML = `
+          <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+          ">
+            <div style="
+              background: white;
+              border-radius: 12px;
+              padding: 24px;
+              max-width: 400px;
+              text-align: center;
+              box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            ">
+              <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+              <h3 style="margin: 0 0 12px 0; color: #dc2626; font-size: 18px;">PWA не работает в Telegram</h3>
+              <p style="margin: 0 0 20px 0; color: #374151; font-size: 14px; line-height: 1.5;">
+                Для установки PWA приложения кассира необходимо открыть ссылку в обычном браузере (Chrome, Safari, Edge).
+              </p>
+              <div style="display: flex; gap: 8px; justify-content: center;">
+                <button onclick="copyUrlToClipboard()" style="
+                  background: #3b82f6;
+                  color: white;
+                  border: none;
+                  padding: 8px 16px;
+                  border-radius: 6px;
+                  font-size: 12px;
+                  cursor: pointer;
+                ">📋 Копировать ссылку</button>
+                <button onclick="closeWarning()" style="
+                  background: #6b7280;
+                  color: white;
+                  border: none;
+                  padding: 8px 16px;
+                  border-radius: 6px;
+                  font-size: 12px;
+                  cursor: pointer;
+                ">Закрыть</button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(warning);
+        
+        // Функции для кнопок
+        window.copyUrlToClipboard = () => {
+          const url = window.location.href;
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+              alert('Ссылка скопирована! Откройте её в Chrome или другом браузере.');
+            });
+          } else {
+            // Fallback для старых браузеров
+            const textArea = document.createElement('textarea');
+            textArea.value = url;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            alert('Ссылка скопирована! Откройте её в Chrome или другом браузере.');
+          }
+        };
+        
+        window.closeWarning = () => {
+          if (warning.parentNode) {
+            warning.parentNode.removeChild(warning);
+          }
+        };
+      }
+
       // Добавляем кнопку принудительной установки
       function addForceInstallButton() {
         if (window.matchMedia('(display-mode: standalone)').matches) {
           console.log('✅ Already running as PWA');
+          return;
+        }
+        
+        // Не показываем кнопку в Telegram WebApp
+        if (isTelegramWebApp || isInWebView) {
+          console.log('🚫 Install button disabled in Telegram WebApp');
           return;
         }
 
