@@ -116,14 +116,14 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                       <span className="text-blue-600 font-bold text-lg">
-                        {order.user_info.first_name.charAt(0)}
+                        {order.user_info?.first_name?.charAt(0) || '?'}
                       </span>
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">
-                        {order.user_info.first_name} {order.user_info.last_name}
+                        {order.user_info?.first_name || 'Неизвестный'} {order.user_info?.last_name || ''}
                       </p>
-                      <p className="text-sm text-gray-600">@{order.user_info.username}</p>
+                      <p className="text-sm text-gray-600">@{order.user_info?.username || 'нет username'}</p>
                     </div>
                   </div>
                   

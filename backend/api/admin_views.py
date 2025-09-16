@@ -21,7 +21,7 @@ from .models import (
 from app_cashier.models import Cashier, CashierSession, OrderProcessing, CashierAnalytics
 from app_operator.models import Operator, OperatorSession, OrderAssignment, OperatorAnalytics
 from .serializers import (
-    MenuItemSerializer, CategorySerializer, OrderSerializer, UserSerializer,
+    CategorySerializer, OrderSerializer, UserSerializer,
     AddressSerializer, AddOnSerializer, SizeOptionSerializer, PromotionSerializer,
     DeliveryZoneSerializer, RestaurantSerializer, PromoCodeSerializer
 )
@@ -30,6 +30,62 @@ from app_operator.serializers import OperatorSerializer, OperatorSessionSerializ
 
 
 # Простые сериализаторы для админки
+class AdminMenuItemSerializer(serializers.ModelSerializer):
+    """Специальный сериализатор для админки с поддержкой FormData"""
+    size_options = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False,
+        allow_empty=True
+    )
+    add_on_options = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False,
+        allow_empty=True
+    )
+    
+    class Meta:
+        model = MenuItem
+        fields = [
+            'id', 'name', 'description', 'price', 'category', 'image', 'created_at',
+            'is_hit', 'is_new', 'is_active', 'priority', 'size_options', 'add_on_options'
+        ]
+        read_only_fields = ['id', 'created_at']
+    
+    def create(self, validated_data):
+        # Извлекаем данные для many-to-many полей
+        size_options_data = validated_data.pop('size_options', [])
+        add_on_options_data = validated_data.pop('add_on_options', [])
+        
+        # Создаем объект
+        menu_item = MenuItem.objects.create(**validated_data)
+        
+        # Устанавливаем связи
+        if size_options_data:
+            menu_item.size_options.set(size_options_data)
+        if add_on_options_data:
+            menu_item.add_on_options.set(add_on_options_data)
+        
+        return menu_item
+    
+    def update(self, instance, validated_data):
+        # Извлекаем данные для many-to-many полей
+        size_options_data = validated_data.pop('size_options', None)
+        add_on_options_data = validated_data.pop('add_on_options', None)
+        
+        # Обновляем основные поля
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Обновляем связи если они переданы
+        if size_options_data is not None:
+            instance.size_options.set(size_options_data)
+        if add_on_options_data is not None:
+            instance.add_on_options.set(add_on_options_data)
+        
+        return instance
 class DeliveryDriverSerializer(serializers.ModelSerializer):
     """Сериализатор для курьеров доставки"""
     user_name = serializers.CharField(source='user.get_full_name', read_only=True)
@@ -185,7 +241,7 @@ class AdminDashboardView(generics.GenericAPIView):
         
         return Response({
             'stats': stats,
-            'top_items': MenuItemSerializer(top_items, many=True).data,
+            'top_items': AdminMenuItemSerializer(top_items, many=True).data,
             'daily_stats': list(reversed(daily_stats)),
         })
 
@@ -195,7 +251,7 @@ class AdminMenuViewSet(viewsets.ModelViewSet):
     authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = MenuItem.objects.all()
-    serializer_class = MenuItemSerializer
+    serializer_class = AdminMenuItemSerializer
     pagination_class = None  # Отключаем стандартную пагинацию DRF
     
     def get_queryset(self):
@@ -620,5 +676,5 @@ class AdminAnalyticsView(generics.GenericAPIView):
             'orders_by_status': list(orders_by_status),
             'daily_stats': daily_orders,
             'top_categories': CategorySerializer(top_categories, many=True).data,
-            'top_items': MenuItemSerializer(top_items, many=True).data,
+            'top_items': AdminMenuItemSerializer(top_items, many=True).data,
         })

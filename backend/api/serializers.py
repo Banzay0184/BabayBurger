@@ -118,7 +118,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
         model = MenuItem
         fields = [
             'id', 'name', 'description', 'price', 'category', 'image', 'created_at',
-            'is_hit', 'is_new', 'priority', 'size_options', 'add_on_options'
+            'is_hit', 'is_new', 'is_active', 'priority', 'size_options', 'add_on_options'
         ]
     
     def get_size_options(self, obj):

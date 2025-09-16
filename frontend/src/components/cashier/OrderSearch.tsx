@@ -224,7 +224,7 @@ export const OrderSearch: React.FC<OrderSearchProps> = ({
                       
                       <div className="flex items-center space-x-2 mb-1 sm:mb-2">
                         <span className="text-xs sm:text-sm text-gray-600">
-                          {order.user_info.first_name} {order.user_info.last_name}
+                          {order.user_info?.first_name || 'Неизвестный'} {order.user_info?.last_name || ''}
                         </span>
                         <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                           {getStatusText(order.status)}

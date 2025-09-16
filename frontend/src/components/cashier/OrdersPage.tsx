@@ -57,7 +57,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                         </div>
                       )}
                       <div className="text-sm text-gray-600">
-                        {order.user_info.first_name} {order.user_info.last_name}
+                        {order.user_info?.first_name || 'Неизвестный'} {order.user_info?.last_name || ''}
                       </div>
                     </div>
                     <div className="text-right">

@@ -62,6 +62,66 @@ class AdminApiClient {
         endpoint
       });
       
+      const headers: any = {
+        // Добавляем токен аутентификации если он есть
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        // Передаем заголовки из options в конце, чтобы они могли перезаписать наши
+        ...options.headers,
+      };
+      
+      // Добавляем Content-Type только если он не передан в options и это не FormData
+      if (!options.headers || !(options.headers as any)['Content-Type']) {
+        if (!(options.body instanceof FormData)) {
+          headers['Content-Type'] = 'application/json';
+        }
+        // Для FormData не устанавливаем Content-Type, браузер установит его автоматически с boundary
+      }
+      
+      console.log('📤 Request headers:', headers);
+      console.log('🔐 Authorization header:', headers.Authorization);
+      console.log('📋 Content-Type header:', headers['Content-Type']);
+      
+      const response = await fetch(url, {
+        headers,
+        ...options,
+      });
+
+      console.log('📥 Response status:', response.status, response.statusText);
+      
+      const data = await response.json();
+      console.log('📥 Response data:', data);
+
+      if (!response.ok) {
+        console.error('❌ API Error:', data);
+        return { error: data.error || 'Ошибка сервера' };
+      }
+
+      console.log('✅ API Success:', data);
+      return { data, success: true };
+    } catch (error) {
+      return { error: 'Ошибка сети' };
+    }
+  }
+
+  // Прямой запрос без admin-panel префикса
+  private async requestDirect<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<ApiResponse<T>> {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || 'https://api.babayfood.uz';
+      const url = `${baseUrl}/${endpoint}`;
+      
+      // Получаем токен из localStorage
+      const token = localStorage.getItem('admin_token');
+      
+      // Отладочная информация
+      console.log('🔐 Direct API Request:', {
+        url,
+        token: token ? `${token.substring(0, 10)}...` : 'No token',
+        endpoint
+      });
+      
       const headers = {
         'Content-Type': 'application/json',
         // Добавляем токен аутентификации если он есть
@@ -138,16 +198,24 @@ class AdminApiClient {
   }
 
   async createMenuItem(data: any) {
+    // Если это FormData, отправляем как есть, иначе JSON
+    const isFormData = data instanceof FormData;
     return this.request('menu/', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: isFormData ? data : JSON.stringify(data),
+      // Для FormData не передаем заголовки, чтобы не перезаписать Authorization
+      headers: isFormData ? undefined : { 'Content-Type': 'application/json' }
     });
   }
 
   async updateMenuItem(id: number, data: any) {
+    // Если это FormData, отправляем как есть, иначе JSON
+    const isFormData = data instanceof FormData;
     return this.request(`menu/${id}/`, {
       method: 'PUT',
-      body: JSON.stringify(data),
+      body: isFormData ? data : JSON.stringify(data),
+      // Для FormData не передаем заголовки, чтобы не перезаписать Authorization
+      headers: isFormData ? undefined : { 'Content-Type': 'application/json' }
     });
   }
 
@@ -301,11 +369,12 @@ class AdminApiClient {
       });
     }
     const queryString = searchParams.toString();
-    return this.request(`add-ons/${queryString ? `?${queryString}` : ''}`);
+    // Используем прямой URL без admin-panel префикса
+    return this.requestDirect(`api/add-ons/${queryString ? `?${queryString}` : ''}`);
   }
 
   async createAddOn(data: { name: string; price: number; available_for_categories?: number[]; is_active?: boolean }) {
-    return this.request('add-ons/', {
+    return this.requestDirect('api/add-ons/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -335,11 +404,12 @@ class AdminApiClient {
       });
     }
     const queryString = searchParams.toString();
-    return this.request(`size-options/${queryString ? `?${queryString}` : ''}`);
+    // Используем прямой URL без admin-panel префикса
+    return this.requestDirect(`api/size-options/${queryString ? `?${queryString}` : ''}`);
   }
 
   async createSizeOption(data: { name: string; price_modifier: number; description?: string; menu_item?: number; is_active?: boolean }) {
-    return this.request('size-options/', {
+    return this.requestDirect('api/size-options/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)

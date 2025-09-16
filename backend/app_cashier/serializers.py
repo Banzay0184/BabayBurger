@@ -170,23 +170,81 @@ class CashierLoginSerializer(serializers.Serializer):
 
 class OrderForCashierSerializer(serializers.ModelSerializer):
     """Сериализатор для заказа, оптимизированный для кассиров"""
-    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
-    user_phone = serializers.CharField(source='user.phone', read_only=True)
-    address_text = serializers.CharField(source='address.address', read_only=True)
-    restaurant_name = serializers.CharField(source='restaurant.name', read_only=True)
-    promo_code_code = serializers.CharField(source='promo_code.code', read_only=True)
-    items = OrderItemSerializer(source='orderitem_set', many=True, read_only=True)
+    user_info = serializers.SerializerMethodField()
+    address_info = serializers.SerializerMethodField()
+    restaurant_info = serializers.SerializerMethodField()
+    items_details = OrderItemSerializer(source='orderitem_set', many=True, read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    promo_code_info = serializers.SerializerMethodField()
     
     class Meta:
         model = Order
         fields = [
-            'id', 'user', 'user_name', 'user_phone', 'address', 'address_text',
-            'restaurant', 'restaurant_name', 'promo_code', 'promo_code_code',
-            'total_price', 'final_price', 'delivery_fee', 'status', 'status_display',
-            'payment_method', 'items', 'notes', 'created_at', 'updated_at'
+            'id', 'user_info', 'restaurant_info', 'items_details', 'total_price', 
+            'final_price', 'delivery_fee', 'discount_amount', 'status', 'status_display',
+            'service_type', 'payment_method', 'address_info', 'phone', 'notes', 
+            'promo_code_info', 'created_at', 'updated_at', 'cashier_processing_status',
+            'operator_order_number'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def get_user_info(self, obj):
+        """Получить информацию о пользователе"""
+        if obj.user:
+            return {
+                'id': obj.user.id,
+                'first_name': obj.user.first_name or '',
+                'last_name': obj.user.last_name or '',
+                'username': obj.user.username or '',
+                'telegram_id': obj.user.telegram_id or 0
+            }
+        return None
+    
+    def get_address_info(self, obj):
+        """Получить информацию об адресе"""
+        if obj.address:
+            from decimal import Decimal
+            
+            latitude = obj.address.latitude
+            longitude = obj.address.longitude
+            
+            # Конвертируем Decimal в float для JSON
+            if isinstance(latitude, Decimal):
+                latitude = float(latitude)
+            if isinstance(longitude, Decimal):
+                longitude = float(longitude)
+            
+            return {
+                'id': obj.address.id,
+                'full_address': obj.address.full_address or '',
+                'city': obj.address.city or '',
+                'phone_number': obj.address.phone_number or '',
+                'latitude': latitude,
+                'longitude': longitude
+            }
+        return None
+    
+    def get_restaurant_info(self, obj):
+        """Получить информацию о ресторане"""
+        if obj.restaurant:
+            return {
+                'id': obj.restaurant.id,
+                'name': obj.restaurant.name or '',
+                'address': obj.restaurant.address or '',
+                'city': obj.restaurant.city or '',
+                'phone': obj.restaurant.phone or ''
+            }
+        return None
+    
+    def get_promo_code_info(self, obj):
+        """Получить информацию о промокоде"""
+        if obj.promo_code:
+            return {
+                'code': obj.promo_code.code,
+                'discount_percent': obj.promo_code.discount_percent,
+                'max_discount': obj.promo_code.max_discount
+            }
+        return None
 
 
 class CashierProfileSerializer(serializers.ModelSerializer):

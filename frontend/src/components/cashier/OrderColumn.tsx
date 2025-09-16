@@ -142,12 +142,12 @@ export const OrderColumn: React.FC<OrderColumnProps> = ({
                   <div className="flex items-center space-x-1.5 sm:space-x-2">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center shadow-sm">
                       <span className="text-blue-700 text-xs font-bold">
-                        {order.user_info.first_name.charAt(0)}
+                        {order.user_info?.first_name?.charAt(0) || '?'}
                       </span>
                     </div>
                     <div>
                       <span className="text-xs sm:text-sm font-bold text-gray-900 block">
-                        {order.user_info.first_name} {order.user_info.last_name}
+                        {order.user_info?.first_name || 'Неизвестный'} {order.user_info?.last_name || ''}
                       </span>
                       <span className="text-xs text-gray-500">📞 {order.phone}</span>
                     </div>
