@@ -8,8 +8,6 @@ const STATIC_ASSETS = [
   '/cashier',
   '/cashier/login',
   '/cashier-manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
   '/logobabay.png'
 ];
 
