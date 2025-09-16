@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logobabay.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Babay Burger - Кассир</title>
     <meta name="description" content="Интерфейс кассира для ресторана Babay Burger" />
     
@@ -19,16 +19,23 @@
     <meta name="msapplication-TileColor" content="#f97316" />
     <meta name="msapplication-tap-highlight" content="no" />
     
+    <!-- Дополнительные мета-теги для планшетов -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <meta name="apple-mobile-web-app-orientations" content="portrait landscape" />
+    
+    <!-- Android Chrome -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f97316" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#ea580c" />
+    
     <!-- PWA Icons -->
-    <link rel="apple-touch-icon" href="/cashier-icon-192.png" />
-    <link rel="icon" type="image/png" sizes="72x72" href="/cashier-icon-72.png" />
-    <link rel="icon" type="image/png" sizes="96x96" href="/cashier-icon-96.png" />
-    <link rel="icon" type="image/png" sizes="128x128" href="/cashier-icon-128.png" />
-    <link rel="icon" type="image/png" sizes="144x144" href="/cashier-icon-144.png" />
-    <link rel="icon" type="image/png" sizes="152x152" href="/cashier-icon-152.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/cashier-icon-192.png" />
-    <link rel="icon" type="image/png" sizes="384x384" href="/cashier-icon-384.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/cashier-icon-512.png" />
+    <link rel="apple-touch-icon" href="/logo.jpg" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/logo.jpg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/logo.jpg" />
+    <link rel="icon" type="image/jpeg" sizes="192x192" href="/logo.jpg" />
+    <link rel="icon" type="image/jpeg" sizes="512x512" href="/logo.jpg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/logobabay.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/logobabay.png" />
     
     <!-- Современный шрифт Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -227,6 +234,10 @@
       console.log('- Manifest Support:', 'manifest' in document.createElement('link'));
       console.log('- Current URL:', location.href);
       console.log('- Display Mode:', window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser');
+      console.log('- Is Mobile:', /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+      console.log('- Is Tablet:', /iPad|Android.*(?=.*Tablet)|Android.*(?=.*Tab)/i.test(navigator.userAgent));
+      console.log('- Screen Size:', window.screen.width + 'x' + window.screen.height);
+      console.log('- Viewport Size:', window.innerWidth + 'x' + window.innerHeight);
       
       // Проверяем манифест
       fetch('/cashier-manifest.json')
@@ -482,10 +493,54 @@
         button.onclick = () => {
           // Показываем инструкцию для ручной установки
           const isChrome = /Chrome/.test(navigator.userAgent);
+          const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+          const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+          const isTablet = /iPad|Android.*(?=.*Tablet)|Android.*(?=.*Tab)/i.test(navigator.userAgent);
           
-          if (isChrome) {
-            alert(`
-📱 Для установки PWA в Chrome:
+          let instructions = '';
+          
+          if (isTablet || isMobile) {
+            if (isChrome) {
+              instructions = `
+📱 Установка PWA на планшет/телефон (Chrome):
+
+1. Найдите иконку ⊕ в адресной строке
+2. Или: Меню (⋮) → "Добавить на главный экран"
+3. Подтвердите установку
+4. Найдите ярлык на главном экране
+
+Если не работает:
+- Обновите страницу
+- Попробуйте режим инкогнито
+- Убедитесь что используете Chrome (не браузер внутри другого приложения)
+              `;
+            } else if (isSafari) {
+              instructions = `
+📱 Установка PWA на iPad (Safari):
+
+1. Нажмите кнопку "Поделиться" (квадрат со стрелкой)
+2. Выберите "На экран Домой"
+3. Нажмите "Добавить"
+4. Найдите ярлык на главном экране
+
+Примечание: На iPad функциональность ограничена
+              `;
+            } else {
+              instructions = `
+📱 Для установки PWA на планшет:
+
+Рекомендуется использовать Chrome или Edge браузер.
+Не используйте браузер внутри других приложений (Telegram, Facebook и т.д.)
+
+1. Откройте в Chrome
+2. Найдите кнопку "Добавить на главный экран"
+3. Подтвердите установку
+              `;
+            }
+          } else {
+            if (isChrome) {
+              instructions = `
+💻 Установка PWA на компьютер (Chrome):
 
 1. Нажмите на иконку ⊕ в адресной строке
 2. Или: Меню (⋮) → "Установить Babay Кассир"  
@@ -495,10 +550,13 @@
 - Попробуйте обновить страницу
 - Или откройте в режиме инкогнито
 - Проверьте DevTools > Application > Manifest
-            `);
-          } else {
-            alert('Для установки PWA рекомендуется использовать Chrome или Edge браузер');
+              `;
+            } else {
+              instructions = 'Для установки PWA рекомендуется использовать Chrome или Edge браузер';
+            }
           }
+          
+          alert(instructions.trim());
         };
         
         document.body.appendChild(button);
