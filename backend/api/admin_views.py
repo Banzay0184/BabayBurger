@@ -196,6 +196,7 @@ class AdminMenuViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = MenuItem.objects.all()
     serializer_class = MenuItemSerializer
+    pagination_class = None  # Отключаем стандартную пагинацию DRF
     
     def get_queryset(self):
         queryset = MenuItem.objects.select_related('category').prefetch_related(
@@ -226,6 +227,41 @@ class AdminMenuViewSet(viewsets.ModelViewSet):
             )
         
         return queryset.order_by('priority', '-created_at')
+    
+    def list(self, request, *args, **kwargs):
+        """Переопределяем list для кастомной пагинации"""
+        queryset = self.get_queryset()
+        
+        # Получаем параметры пагинации
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 20))
+        
+        # Вычисляем offset
+        offset = (page - 1) * page_size
+        
+        # Получаем общее количество
+        total_count = queryset.count()
+        
+        # Получаем данные для текущей страницы
+        items = queryset[offset:offset + page_size]
+        
+        # Сериализуем данные
+        serializer = self.get_serializer(items, many=True)
+        
+        # Вычисляем информацию о пагинации
+        total_pages = (total_count + page_size - 1) // page_size
+        has_next = page < total_pages
+        has_previous = page > 1
+        
+        return Response({
+            'count': total_count,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages,
+            'has_next': has_next,
+            'has_previous': has_previous,
+            'results': serializer.data
+        })
     
     @action(detail=True, methods=['post'])
     def toggle_hit(self, request, pk=None):

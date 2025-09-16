@@ -11,11 +11,17 @@ export const AdminMenuPage: React.FC = () => {
   const [showForm, setShowForm] = React.useState(false);
   const [editingItem, setEditingItem] = React.useState<any>(null);
   
-  // Пагинация и фильтрация
+  // Серверная пагинация и фильтрация
   const [currentPage, setCurrentPage] = React.useState(1);
   const [itemsPerPage] = React.useState(20);
   const [selectedCategory, setSelectedCategory] = React.useState<string>('');
   const [searchTerm, setSearchTerm] = React.useState<string>('');
+  const [paginationInfo, setPaginationInfo] = React.useState({
+    count: 0,
+    total_pages: 0,
+    has_next: false,
+    has_previous: false
+  });
   const [formData, setFormData] = React.useState({
     name: '',
     description: '',
@@ -28,33 +34,48 @@ export const AdminMenuPage: React.FC = () => {
     priority: 0
   });
 
-  const loadData = async () => {
+  const loadData = async (page: number = currentPage) => {
     setLoading(true);
     setError(null);
     
     try {
       console.log('🔄 Загружаем данные меню...');
-      const [categoriesRes, itemsRes] = await Promise.all([
-        menuApi.getCategories(),
-        adminApi.getMenuItems()
-      ]);
       
-      console.log('📊 Ответ категорий:', categoriesRes);
+      // Загружаем категории только один раз
+      if (categories.length === 0) {
+        const categoriesRes = await menuApi.getCategories();
+        if (categoriesRes.success) {
+          setCategories(categoriesRes.data || []);
+          console.log('✅ Категории загружены:', categoriesRes.data);
+        } else {
+          setError(categoriesRes.error?.message || 'Ошибка загрузки категорий');
+        }
+      }
+      
+      // Загружаем товары с пагинацией и фильтрацией
+      const itemsRes = await adminApi.getMenuItems({
+        page,
+        page_size: itemsPerPage,
+        category: selectedCategory || undefined,
+        search: searchTerm || undefined
+      });
+      
       console.log('📊 Ответ товаров:', itemsRes);
       
-      if (categoriesRes.success) {
-        setCategories(categoriesRes.data || []);
-        console.log('✅ Категории загружены:', categoriesRes.data);
-      }
       if (itemsRes.success) {
-        // API возвращает {count: X, results: [...]}, нужно извлечь results
-        const items = Array.isArray((itemsRes.data as any)?.results) ? (itemsRes.data as any).results : [];
-        setMenuItems(items);
-        console.log('✅ Товары загружены:', items);
+        const data = itemsRes.data as any;
+        setMenuItems(data.results || []);
+        setPaginationInfo({
+          count: data.count || 0,
+          total_pages: data.total_pages || 0,
+          has_next: data.has_next || false,
+          has_previous: data.has_previous || false
+        });
+        console.log('✅ Товары загружены:', data.results);
+        console.log('📊 Пагинация:', data);
+      } else {
+        setError(itemsRes.error || 'Ошибка загрузки товаров');
       }
-      
-      if (!categoriesRes.success) setError(categoriesRes.error?.message || 'Ошибка загрузки категорий');
-      if (!itemsRes.success) setError(itemsRes.error || 'Ошибка загрузки товаров');
     } catch (e: any) {
       console.error('💥 Ошибка загрузки меню:', e);
       setError(e.message || 'Ошибка загрузки');
@@ -67,43 +88,19 @@ export const AdminMenuPage: React.FC = () => {
     loadData();
   }, []);
 
-  // Фильтрация и пагинация товаров
-  const filteredItems = React.useMemo(() => {
-    let filtered = menuItems;
-
-    // Фильтр по категории
-    if (selectedCategory) {
-      filtered = filtered.filter(item => item.category === parseInt(selectedCategory));
-    }
-
-    // Фильтр по поиску
-    if (searchTerm) {
-      filtered = filtered.filter(item => 
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    return filtered;
-  }, [menuItems, selectedCategory, searchTerm]);
-
-  // Пагинация
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = filteredItems.slice(startIndex, endIndex);
-
-  // Сброс пагинации при изменении фильтров
+  // Перезагрузка данных при изменении фильтров или страницы
   React.useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedCategory, searchTerm]);
+    if (activeTab === 'items') {
+      loadData(currentPage);
+    }
+  }, [currentPage, selectedCategory, searchTerm, activeTab]);
 
   const handleDeleteItem = async (id: number) => {
     if (!confirm('Удалить товар?')) return;
     
     const res = await adminApi.deleteMenuItem(id);
     if (res.success) {
-      loadData();
+      loadData(currentPage); // Перезагружаем текущую страницу
     } else {
       alert('Ошибка удаления: ' + (res.error || 'Неизвестная ошибка'));
     }
@@ -188,7 +185,7 @@ export const AdminMenuPage: React.FC = () => {
       if (response.success) {
         setShowForm(false);
         resetForm();
-        loadData();
+        loadData(currentPage); // Перезагружаем текущую страницу
       } else {
         setError(response.error || 'Ошибка сохранения');
       }
@@ -309,7 +306,7 @@ export const AdminMenuPage: React.FC = () => {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-800 flex items-center">
                   <span className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center text-white text-sm mr-3">🍔</span>
-                  Список товаров ({filteredItems.length} из {menuItems.length})
+                  Список товаров ({paginationInfo.count} всего)
                 </h3>
                 <button
                   onClick={openAddForm}
@@ -327,7 +324,10 @@ export const AdminMenuPage: React.FC = () => {
                   <input
                     type="text"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1); // Сброс на первую страницу при поиске
+                    }}
                     placeholder="Поиск по названию или описанию..."
                     className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
                   />
@@ -336,7 +336,10 @@ export const AdminMenuPage: React.FC = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">📂 Категория</label>
                   <select
                     value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedCategory(e.target.value);
+                      setCurrentPage(1); // Сброс на первую страницу при смене категории
+                    }}
                     className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
                   >
                     <option value="">Все категории</option>
@@ -350,7 +353,7 @@ export const AdminMenuPage: React.FC = () => {
               </div>
             </div>
             
-            {currentItems.length > 0 ? (
+            {menuItems.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
@@ -363,7 +366,7 @@ export const AdminMenuPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
-                    {currentItems.map((item, index) => (
+                    {menuItems.map((item, index) => (
                     <tr key={item.id} className={`hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
@@ -455,31 +458,31 @@ export const AdminMenuPage: React.FC = () => {
             )}
             
             {/* Пагинация */}
-            {totalPages > 1 && (
+            {paginationInfo.total_pages > 1 && (
               <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-700">
-                    Показано {startIndex + 1}-{Math.min(endIndex, filteredItems.length)} из {filteredItems.length} товаров
+                    Страница {currentPage} из {paginationInfo.total_pages} ({paginationInfo.count} товаров)
                   </div>
                   
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
+                      disabled={!paginationInfo.has_previous}
                       className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       ← Назад
                     </button>
                     
                     <div className="flex items-center space-x-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      {Array.from({ length: Math.min(5, paginationInfo.total_pages) }, (_, i) => {
                         let pageNum: number;
-                        if (totalPages <= 5) {
+                        if (paginationInfo.total_pages <= 5) {
                           pageNum = i + 1;
                         } else if (currentPage <= 3) {
                           pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
+                        } else if (currentPage >= paginationInfo.total_pages - 2) {
+                          pageNum = paginationInfo.total_pages - 4 + i;
                         } else {
                           pageNum = currentPage - 2 + i;
                         }
@@ -501,8 +504,8 @@ export const AdminMenuPage: React.FC = () => {
                     </div>
                     
                     <button
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, paginationInfo.total_pages))}
+                      disabled={!paginationInfo.has_next}
                       className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       Вперед →

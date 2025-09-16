@@ -112,7 +112,15 @@ class AdminApiClient {
   }
 
   // Меню
-  async getMenuItems(params?: any) {
+  async getMenuItems(params?: {
+    page?: number;
+    page_size?: number;
+    category?: string;
+    search?: string;
+    is_active?: boolean;
+    is_hit?: boolean;
+    is_new?: boolean;
+  }) {
     const searchParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
