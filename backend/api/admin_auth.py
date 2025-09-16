@@ -26,16 +26,16 @@ class AdminTokenAuthentication(BaseAuthentication):
             
         try:
             # Ищем токен в базе данных
-            token = OperatorToken.objects.get(key=token_key)
-            operator = token.operator
+            token = Token.objects.get(key=token_key)
+            user = token.user
             
-            # Проверяем, что оператор является администратором
-            if not operator.is_staff:
+            # Проверяем, что пользователь является администратором
+            if not user.is_staff:
                 raise AuthenticationFailed('Недостаточно прав для доступа к админ-панели')
                 
-            return (operator, token)
+            return (user, token)
             
-        except OperatorToken.DoesNotExist:
+        except Token.DoesNotExist:
             raise AuthenticationFailed('Неверный токен аутентификации')
         except Exception as e:
             raise AuthenticationFailed(f'Ошибка аутентификации: {str(e)}')

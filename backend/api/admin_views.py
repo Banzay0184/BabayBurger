@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from app_operator.token_models import OperatorToken
+from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from app_operator.models import Operator
 from .admin_auth import AdminTokenAuthentication
@@ -131,8 +131,8 @@ class AdminAuthView(APIView):
         user = authenticate(username=username, password=password)
         
         if user and user.is_staff:
-            # Создаем или получаем токен для оператора
-            token, created = OperatorToken.objects.get_or_create(operator=user)
+            # Создаем или получаем токен для пользователя
+            token, created = Token.objects.get_or_create(user=user)
             
             return Response({
                 'success': True,
