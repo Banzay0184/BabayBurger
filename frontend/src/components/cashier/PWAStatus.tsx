@@ -14,7 +14,7 @@ export const PWAStatus: React.FC<PWAStatusProps> = ({ className = '' }) => {
     // Регистрируем Service Worker для кассира
     const registerServiceWorker = async () => {
       try {
-        await pwaManager.registerServiceWorker('/sw.js', '/cashier');
+        await pwaManager.registerServiceWorker('/cashier-sw.js', '/cashier');
         console.log('✅ Cashier Service Worker зарегистрирован через PWAStatus');
       } catch (error) {
         console.error('❌ Ошибка регистрации Service Worker в PWAStatus:', error);

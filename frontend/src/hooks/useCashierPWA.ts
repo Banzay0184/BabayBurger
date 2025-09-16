@@ -45,7 +45,7 @@ export const useCashierPWA = (): PWAState => {
 
     // Регистрируем Service Worker для кассира
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
+      navigator.serviceWorker.register('/cashier-sw.js')
         .then((registration) => {
           console.log('✅ Cashier Service Worker зарегистрирован:', registration);
           setState(prev => ({ ...prev, serviceWorkerStatus: 'active' }));

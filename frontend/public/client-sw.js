@@ -7,7 +7,8 @@ const STATIC_ASSETS = [
   '/',
   '/menu',
   '/cart',
-  '/client-manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
   '/logo.jpg'
 ];
 
