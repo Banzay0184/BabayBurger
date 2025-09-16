@@ -7,7 +7,7 @@ from app_operator.models import Operator
 class AdminTokenAuthentication(BaseAuthentication):
     """
     Кастомная аутентификация для админ-панели
-    Работает с кастомной моделью пользователя Operator
+    Работает с кастомной моделью пользователя Operator (AUTH_USER_MODEL)
     """
     
     def authenticate(self, request):

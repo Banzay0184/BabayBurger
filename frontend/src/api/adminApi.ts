@@ -103,6 +103,60 @@ class AdminApiClient {
     }
   }
 
+  // Специальный метод для FormData запросов
+  private async requestFormData<T>(
+    endpoint: string,
+    formData: FormData,
+    method: string = 'POST'
+  ): Promise<ApiResponse<T>> {
+    try {
+      const url = getAdminApiUrl(endpoint);
+      
+      // Получаем токен из localStorage
+      const token = localStorage.getItem('admin_token');
+      
+      // Отладочная информация
+      console.log('🔐 FormData API Request:', {
+        url,
+        token: token ? `${token.substring(0, 10)}...` : 'No token',
+        endpoint,
+        method
+      });
+      
+      const headers: any = {};
+      
+      // Добавляем токен аутентификации если он есть
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      console.log('📤 FormData Request headers:', headers);
+      console.log('🔐 Authorization header:', headers.Authorization);
+      
+      const response = await fetch(url, {
+        method,
+        headers,
+        body: formData, // Не устанавливаем Content-Type для FormData
+      });
+
+      console.log('📥 FormData Response status:', response.status, response.statusText);
+      
+      const data = await response.json();
+      console.log('📥 FormData Response data:', data);
+
+      if (!response.ok) {
+        console.error('❌ FormData API Error:', data);
+        return { error: data.error || 'Ошибка сервера' };
+      }
+
+      console.log('✅ FormData API Success:', data);
+      return { data, success: true };
+    } catch (error) {
+      console.error('❌ FormData Network Error:', error);
+      return { error: 'Ошибка сети' };
+    }
+  }
+
   // Прямой запрос без admin-panel префикса
   private async requestDirect<T>(
     endpoint: string,
@@ -200,23 +254,33 @@ class AdminApiClient {
   async createMenuItem(data: any) {
     // Если это FormData, отправляем как есть, иначе JSON
     const isFormData = data instanceof FormData;
-    return this.request('menu/', {
-      method: 'POST',
-      body: isFormData ? data : JSON.stringify(data),
-      // Для FormData не передаем заголовки, чтобы не перезаписать Authorization
-      headers: isFormData ? undefined : { 'Content-Type': 'application/json' }
-    });
+    
+    if (isFormData) {
+      // Для FormData используем специальный метод, который корректно передает токен
+      return this.requestFormData('menu/', data);
+    } else {
+      return this.request('menu/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
   }
 
   async updateMenuItem(id: number, data: any) {
     // Если это FormData, отправляем как есть, иначе JSON
     const isFormData = data instanceof FormData;
-    return this.request(`menu/${id}/`, {
-      method: 'PUT',
-      body: isFormData ? data : JSON.stringify(data),
-      // Для FormData не передаем заголовки, чтобы не перезаписать Authorization
-      headers: isFormData ? undefined : { 'Content-Type': 'application/json' }
-    });
+    
+    if (isFormData) {
+      // Для FormData используем специальный метод, который корректно передает токен
+      return this.requestFormData(`menu/${id}/`, data, 'PUT');
+    } else {
+      return this.request(`menu/${id}/`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
   }
 
   async deleteMenuItem(id: number) {

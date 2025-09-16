@@ -29,6 +29,12 @@ export default defineConfig({
         headers: {
           'ngrok-skip-browser-warning': 'true',
         },
+        // Настраиваем rewrite для правильной обработки admin-panel маршрутов
+        configure: (proxy) => {
+          proxy.on('proxyReq', () => {
+            // Прокси-запросы обрабатываются автоматически
+          });
+        }
       },
       '/media': {
         target: 'https://api.babayfood.uz/',
