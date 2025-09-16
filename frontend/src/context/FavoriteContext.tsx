@@ -46,7 +46,7 @@ export const FavoriteProvider: React.FC<{ children: ReactNode }> = ({ children }
         return;
       }
       
-      const response = await apiClient.get(`/favorites/?telegram_id=${telegramId}`);
+      const response = await apiClient.get(`favorites/?telegram_id=${telegramId}`);
       console.log('🤍 FavoriteContext - Favorites response:', response.data);
       
       setFavorites(response.data.favorites || []);
@@ -86,7 +86,7 @@ export const FavoriteProvider: React.FC<{ children: ReactNode }> = ({ children }
 
       if (isCurrentlyFavorite) {
         // Удаляем из избранного
-        await apiClient.delete('/favorites/', {
+        await apiClient.delete('favorites/', {
           data: {
             telegram_id: telegramId,
             menu_item_id: menuItem.id
@@ -101,7 +101,7 @@ export const FavoriteProvider: React.FC<{ children: ReactNode }> = ({ children }
           console.log('🤍 FavoriteContext - Sending POST request to add favorite...');
           
           // Добавляем в избранное
-          const response = await apiClient.post('/favorites/', {
+          const response = await apiClient.post('favorites/', {
             telegram_id: telegramId,
             menu_item_id: menuItem.id
           });
