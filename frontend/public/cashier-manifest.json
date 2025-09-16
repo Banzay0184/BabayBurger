@@ -3,7 +3,7 @@
   "name": "Babay Burger - Кассир",
   "short_name": "Babay Кассир",
   "description": "Интерфейс кассира для ресторана Babay Burger",
-  "start_url": "/cashier",
+  "start_url": "/cashier/login",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#f97316",
