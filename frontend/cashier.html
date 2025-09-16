@@ -455,6 +455,65 @@
 
       console.log('💰 Cashier PWA: Initialized successfully');
       
+      // Добавляем кнопку принудительной установки
+      function addForceInstallButton() {
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+          console.log('✅ Already running as PWA');
+          return;
+        }
+
+        const button = document.createElement('button');
+        button.innerHTML = '📱 Установить PWA';
+        button.style.cssText = `
+          position: fixed;
+          top: 10px;
+          left: 10px;
+          z-index: 10000;
+          background: #f97316;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-size: 12px;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        `;
+        
+        button.onclick = () => {
+          // Показываем инструкцию для ручной установки
+          const isChrome = /Chrome/.test(navigator.userAgent);
+          
+          if (isChrome) {
+            alert(`
+📱 Для установки PWA в Chrome:
+
+1. Нажмите на иконку ⊕ в адресной строке
+2. Или: Меню (⋮) → "Установить Babay Кассир"  
+3. Подтвердите установку
+
+Если иконки нет:
+- Попробуйте обновить страницу
+- Или откройте в режиме инкогнито
+- Проверьте DevTools > Application > Manifest
+            `);
+          } else {
+            alert('Для установки PWA рекомендуется использовать Chrome или Edge браузер');
+          }
+        };
+        
+        document.body.appendChild(button);
+        
+        // Скрываем кнопку через 30 секунд
+        setTimeout(() => {
+          if (button.parentNode) {
+            button.parentNode.removeChild(button);
+          }
+        }, 30000);
+      }
+
+      // Добавляем кнопку через 2 секунды
+      setTimeout(addForceInstallButton, 2000);
+
       // Загружаем тестовый скрипт для отладки (только в dev режиме)
       if (location.hostname === 'localhost') {
         const script = document.createElement('script');

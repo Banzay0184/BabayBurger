@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { CashierPWAInstallPrompt } from '../../components/cashier/PWAInstallPrompt';
 import { CashierPWAStatus } from '../../components/cashier/PWAStatus';
+import { PWAForceInstall } from '../../components/cashier/PWAForceInstall';
 
 import { cashierApi, type CashierLoginData } from '../../api/cashierApi';
 import { universalStorage } from '../../utils/storage';
@@ -90,6 +91,9 @@ export const CashierLoginPage: React.FC = () => {
             Система управления заказами
           </p>
         </div>
+
+        {/* PWA Installation */}
+        <PWAForceInstall />
 
         <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6">
           {error && (

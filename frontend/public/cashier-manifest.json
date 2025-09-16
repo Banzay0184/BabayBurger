@@ -4,6 +4,7 @@
   "description": "Интерфейс кассира для ресторана Babay Burger",
   "start_url": "/cashier.html",
   "display": "standalone",
+  "id": "/cashier.html",
   "background_color": "#f8fafc",
   "theme_color": "#f97316",
   "orientation": "portrait-primary",
