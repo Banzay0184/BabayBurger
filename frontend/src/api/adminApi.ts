@@ -289,6 +289,74 @@ class AdminApiClient {
     const queryString = searchParams.toString();
     return this.request(`delivery-zones/${queryString ? `?${queryString}` : ''}`);
   }
+
+  // Добавки (AddOns)
+  async getAddOns(params?: { category?: string; is_active?: boolean }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = searchParams.toString();
+    return this.request(`add-ons/${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async createAddOn(data: { name: string; price: number; available_for_categories?: number[]; is_active?: boolean }) {
+    return this.request('add-ons/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateAddOn(id: number, data: { name?: string; price?: number; available_for_categories?: number[]; is_active?: boolean }) {
+    return this.request(`add-ons/${id}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteAddOn(id: number) {
+    return this.request(`add-ons/${id}/`, { method: 'DELETE' });
+  }
+
+  // Размеры (SizeOptions)
+  async getSizeOptions(params?: { menu_item?: number; is_active?: boolean }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = searchParams.toString();
+    return this.request(`size-options/${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async createSizeOption(data: { name: string; price_modifier: number; description?: string; menu_item?: number; is_active?: boolean }) {
+    return this.request('size-options/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateSizeOption(id: number, data: { name?: string; price_modifier?: number; description?: string; menu_item?: number; is_active?: boolean }) {
+    return this.request(`size-options/${id}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteSizeOption(id: number) {
+    return this.request(`size-options/${id}/`, { method: 'DELETE' });
+  }
 }
 
 export const adminApi = new AdminApiClient();

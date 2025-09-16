@@ -278,7 +278,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       {/* Основной контент */}
       <main className="flex-1 p-2 sm:p-4 overflow-y-auto">
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto">
           <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-lg border border-gray-200/50 p-2 sm:p-4">
             {children}
           </div>

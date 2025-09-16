@@ -31,7 +31,27 @@ export const AdminMenuPage: React.FC = () => {
     is_hit: false,
     is_new: false,
     is_active: true,
-    priority: 0
+    priority: 0,
+    size_options: [] as number[],
+    add_on_options: [] as number[]
+  });
+
+  // Состояния для добавок и размеров
+  const [addOns, setAddOns] = React.useState<any[]>([]);
+  const [sizeOptions, setSizeOptions] = React.useState<any[]>([]);
+  const [showAddOnModal, setShowAddOnModal] = React.useState(false);
+  const [showSizeModal, setShowSizeModal] = React.useState(false);
+  const [addOnFormData, setAddOnFormData] = React.useState({
+    name: '',
+    price: '',
+    available_for_categories: [] as number[],
+    is_active: true
+  });
+  const [sizeFormData, setSizeFormData] = React.useState({
+    name: '',
+    price_modifier: '',
+    description: '',
+    is_active: true
   });
 
   const loadData = async (page: number = currentPage) => {
@@ -49,6 +69,24 @@ export const AdminMenuPage: React.FC = () => {
           console.log('✅ Категории загружены:', categoriesRes.data);
         } else {
           setError(categoriesRes.error?.message || 'Ошибка загрузки категорий');
+        }
+      }
+      
+      // Загружаем добавки только один раз
+      if (addOns.length === 0) {
+        const addOnsRes = await adminApi.getAddOns();
+        if (addOnsRes.success) {
+          setAddOns(addOnsRes.data as any[] || []);
+          console.log('✅ Добавки загружены:', addOnsRes.data);
+        }
+      }
+      
+      // Загружаем размеры только один раз
+      if (sizeOptions.length === 0) {
+        const sizesRes = await adminApi.getSizeOptions();
+        if (sizesRes.success) {
+          setSizeOptions(sizesRes.data as any[] || []);
+          console.log('✅ Размеры загружены:', sizesRes.data);
         }
       }
       
@@ -116,7 +154,9 @@ export const AdminMenuPage: React.FC = () => {
       is_hit: false,
       is_new: false,
       is_active: true,
-      priority: 0
+      priority: 0,
+      size_options: [],
+      add_on_options: []
     });
     setEditingItem(null);
   };
@@ -136,7 +176,9 @@ export const AdminMenuPage: React.FC = () => {
       is_hit: item.is_hit || false,
       is_new: item.is_new || false,
       is_active: item.is_active !== false,
-      priority: item.priority || 0
+      priority: item.priority || 0,
+      size_options: item.size_options?.map((s: any) => s.id) || [],
+      add_on_options: item.add_on_options?.map((a: any) => a.id) || []
     });
     setEditingItem(item);
     setShowForm(true);
@@ -155,6 +197,84 @@ export const AdminMenuPage: React.FC = () => {
     setFormData(prev => ({ ...prev, image: file }));
   };
 
+  // Функции для работы с добавками
+  const handleAddOnChange = (addOnId: number, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      add_on_options: checked 
+        ? [...prev.add_on_options, addOnId]
+        : prev.add_on_options.filter(id => id !== addOnId)
+    }));
+  };
+
+  const handleCreateAddOn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const response = await adminApi.createAddOn({
+        name: addOnFormData.name,
+        price: parseFloat(addOnFormData.price),
+        available_for_categories: addOnFormData.available_for_categories,
+        is_active: addOnFormData.is_active
+      });
+
+      if (response.success) {
+        setShowAddOnModal(false);
+        setAddOnFormData({ name: '', price: '', available_for_categories: [], is_active: true });
+        // Перезагружаем добавки
+        const addOnsRes = await adminApi.getAddOns();
+        if (addOnsRes.success) {
+          setAddOns(addOnsRes.data as any[] || []);
+        }
+      } else {
+        setError(response.error || 'Ошибка создания добавки');
+      }
+    } catch (err) {
+      setError('Ошибка создания добавки');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Функции для работы с размерами
+  const handleSizeChange = (sizeId: number, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      size_options: checked 
+        ? [...prev.size_options, sizeId]
+        : prev.size_options.filter(id => id !== sizeId)
+    }));
+  };
+
+  const handleCreateSize = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const response = await adminApi.createSizeOption({
+        name: sizeFormData.name,
+        price_modifier: parseFloat(sizeFormData.price_modifier),
+        description: sizeFormData.description,
+        is_active: sizeFormData.is_active
+      });
+
+      if (response.success) {
+        setShowSizeModal(false);
+        setSizeFormData({ name: '', price_modifier: '', description: '', is_active: true });
+        // Перезагружаем размеры
+        const sizesRes = await adminApi.getSizeOptions();
+        if (sizesRes.success) {
+          setSizeOptions(sizesRes.data as any[] || []);
+        }
+      } else {
+        setError(response.error || 'Ошибка создания размера');
+      }
+    } catch (err) {
+      setError('Ошибка создания размера');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -170,6 +290,16 @@ export const AdminMenuPage: React.FC = () => {
       submitData.append('is_new', formData.is_new.toString());
       submitData.append('is_active', formData.is_active.toString());
       submitData.append('priority', formData.priority.toString());
+      
+      // Добавляем размеры
+      formData.size_options.forEach(sizeId => {
+        submitData.append('size_options', sizeId.toString());
+      });
+      
+      // Добавляем добавки
+      formData.add_on_options.forEach(addOnId => {
+        submitData.append('add_on_options', addOnId.toString());
+      });
       
       if (formData.image) {
         submitData.append('image', formData.image);
@@ -197,27 +327,27 @@ export const AdminMenuPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Заголовок и табы */}
-      <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-8 text-white shadow-xl">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-              <span className="text-3xl">🍽️</span>
+      <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-xl p-4 text-white shadow-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+              <span className="text-lg">🍽️</span>
             </div>
             <div>
-              <h2 className="text-3xl font-bold">Управление меню</h2>
-              <p className="text-orange-100 text-lg">Создавайте и редактируйте блюда для вашего ресторана</p>
+              <h2 className="text-xl font-bold">Управление меню</h2>
+              <p className="text-orange-100 text-sm">Создавайте и редактируйте блюда для вашего ресторана</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="flex gap-2 bg-white/20 backdrop-blur-sm rounded-xl p-1">
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1 bg-white/20 backdrop-blur-sm rounded-lg p-1">
               <button 
                 onClick={() => setActiveTab('categories')}
-                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                className={`px-3 py-2 rounded-md font-semibold transition-all duration-200 text-sm ${
                   activeTab === 'categories' 
-                    ? 'bg-white text-orange-600 shadow-lg' 
+                    ? 'bg-white text-orange-600 shadow-md' 
                     : 'text-white hover:bg-white/20'
                 }`}
               >
@@ -225,9 +355,9 @@ export const AdminMenuPage: React.FC = () => {
               </button>
               <button 
                 onClick={() => setActiveTab('items')}
-                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                className={`px-3 py-2 rounded-md font-semibold transition-all duration-200 text-sm ${
                   activeTab === 'items' 
-                    ? 'bg-white text-orange-600 shadow-lg' 
+                    ? 'bg-white text-orange-600 shadow-md' 
                     : 'text-white hover:bg-white/20'
                 }`}
               >
@@ -240,7 +370,7 @@ export const AdminMenuPage: React.FC = () => {
 
       {/* Категории */}
       {activeTab === 'categories' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-gray-200/50 shadow-lg overflow-hidden">
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -282,7 +412,7 @@ export const AdminMenuPage: React.FC = () => {
 
       {/* Товары */}
       {activeTab === 'items' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {loading && (
             <div className="flex items-center justify-center py-12">
               <div className="flex items-center space-x-3">
@@ -354,7 +484,7 @@ export const AdminMenuPage: React.FC = () => {
             </div>
             
             {menuItems.length > 0 ? (
-              <div className="overflow-x-auto max-h-96 overflow-y-auto">
+              <div className="overflow-x-auto max-h-[calc(100vh-200px)] overflow-y-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10">
                     <tr>
@@ -520,273 +650,450 @@ export const AdminMenuPage: React.FC = () => {
 
       {/* Форма товара */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-          <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 w-full max-w-3xl max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-300">
-            {/* Заголовок с градиентом */}
-            <div className="bg-gradient-to-br from-orange-500 to-red-500 px-6 py-4 text-white">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+            {/* Заголовок */}
+            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                    <span className="text-lg">
-                      {editingItem ? '✏️' : '➕'}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold">
-                      {editingItem ? 'Редактировать товар' : 'Добавить товар'}
-                    </h3>
-                    <p className="text-blue-100 text-xs">
-                      {editingItem ? 'Обновите информацию о товаре' : 'Создайте новый товар для меню'}
-                    </p>
-                  </div>
-                </div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {editingItem ? 'Редактировать товар' : 'Добавить товар'}
+                </h3>
                 <button
                   onClick={() => setShowForm(false)}
-                  className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-all duration-200 group"
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <span className="text-lg group-hover:scale-110 transition-transform">×</span>
+                  <span className="text-xl">×</span>
                 </button>
               </div>
             </div>
             
             {/* Контент формы */}
-            <div className="p-6 overflow-y-auto max-h-[calc(85vh-100px)]">
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Основная информация */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-                    <h4 className="text-base font-semibold text-gray-800 mb-3 flex items-center">
-                      <span className="w-6 h-6 bg-blue-500 rounded-lg flex items-center justify-center text-white text-xs mr-2">📝</span>
-                      Основная информация
-                    </h4>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Название товара *
-                        </label>
-                        <input 
-                          type="text" 
-                          name="name"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
-                          placeholder="Введите название товара"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Описание
-                        </label>
-                        <textarea 
-                          name="description"
-                          value={formData.description}
-                          onChange={handleInputChange}
-                          rows={2}
-                          className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm resize-none"
-                          placeholder="Описание товара"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Цена (сум) *
-                        </label>
-                        <div className="relative">
-                          <input 
-                            type="number" 
-                            name="price"
-                            value={formData.price}
-                            onChange={handleInputChange}
-                            min="0"
-                            step="0.01"
-                            className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 pl-10 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
-                            placeholder="0.00"
-                            required
-                          />
-                          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-sm">₽</div>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Категория *
-                        </label>
-                        <select 
-                          name="category"
-                          value={formData.category}
-                          onChange={handleInputChange}
-                          className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
-                          required
-                        >
-                          <option value="">Выберите категорию</option>
-                          {categories.map(c => (
-                            <option key={c.id} value={c.id}>
-                              {c.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  {/* Загрузка изображения */}
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
-                    <h4 className="text-base font-semibold text-gray-800 mb-3 flex items-center">
-                      <span className="w-6 h-6 bg-purple-500 rounded-lg flex items-center justify-center text-white text-xs mr-2">📷</span>
-                      Изображение товара
-                    </h4>
-                    
-                    <div className="border-2 border-dashed border-purple-200 rounded-lg p-4 text-center bg-white/60 backdrop-blur-sm hover:border-purple-300 transition-all duration-200 group">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                      <label
-                        htmlFor="image-upload"
-                        className="cursor-pointer flex flex-col items-center space-y-2"
-                      >
-                        <div className="text-3xl text-purple-400 group-hover:text-purple-500 transition-colors">📷</div>
-                        <div className="text-xs font-medium text-gray-700">
-                          {formData.image ? formData.image.name : 'Нажмите для загрузки изображения'}
-                        </div>
-                        <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                          JPG, PNG, GIF до 10MB
-                        </div>
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Основная информация */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Название товара *
                       </label>
+                      <input 
+                        type="text" 
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        placeholder="Введите название товара"
+                        required
+                      />
                     </div>
                     
-                    {editingItem?.image && !formData.image && (
-                      <div className="mt-3 p-3 bg-white/80 rounded-lg border border-gray-200">
-                        <div className="text-xs font-medium text-gray-700 mb-1">Текущее изображение:</div>
-                        <img 
-                          src={editingItem.image} 
-                          alt={editingItem.name}
-                          className="w-16 h-16 object-cover rounded-lg shadow-sm"
-                        />
-                      </div>
-                    )}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Описание
+                      </label>
+                      <textarea 
+                        name="description"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        rows={3}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none"
+                        placeholder="Описание товара"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Цена (₽) *
+                      </label>
+                      <input 
+                        type="number" 
+                        name="price"
+                        value={formData.price}
+                        onChange={handleInputChange}
+                        min="0"
+                        step="0.01"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        placeholder="0.00"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Категория *
+                      </label>
+                      <select 
+                        name="category"
+                        value={formData.category}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        required
+                      >
+                        <option value="">Выберите категорию</option>
+                        {categories.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   
-                  {/* Порядок отображения */}
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-                    <h4 className="text-base font-semibold text-gray-800 mb-3 flex items-center">
-                      <span className="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center text-white text-xs mr-2">🔢</span>
-                      Порядок отображения
-                    </h4>
+                  <div className="space-y-4">
+                    {/* Изображение */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Изображение товара
+                      </label>
+                      <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <label
+                          htmlFor="image-upload"
+                          className="cursor-pointer flex flex-col items-center space-y-2"
+                        >
+                          <span className="text-2xl">📷</span>
+                          <span className="text-sm text-gray-600">
+                            {formData.image ? formData.image.name : 'Нажмите для загрузки изображения'}
+                          </span>
+                        </label>
+                      </div>
+                      
+                      {editingItem?.image && !formData.image && (
+                        <div className="mt-2 p-2 bg-gray-50 rounded-md">
+                          <div className="text-xs text-gray-600 mb-1">Текущее изображение:</div>
+                          <img 
+                            src={editingItem.image} 
+                            alt={editingItem.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                        </div>
+                      )}
+                    </div>
                     
-                    <div className="relative">
+                    {/* Порядок отображения */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Порядок отображения
+                      </label>
                       <input 
                         type="number" 
                         name="priority"
                         value={formData.priority}
                         onChange={handleInputChange}
                         min="0"
-                        className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         placeholder="0"
                       />
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                        <span className="text-xs">#</span>
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1 bg-green-100 px-2 py-1 rounded-full inline-block">
-                      Чем меньше число, тем выше в списке
+                      <p className="text-xs text-gray-500 mt-1">Чем меньше число, тем выше в списке</p>
                     </div>
                   </div>
                 </div>
+                
+                {/* Размеры */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Размеры товара
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowSizeModal(true)}
+                      className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                    >
+                      + Добавить размер
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {sizeOptions.map(size => (
+                      <label key={size.id} className="flex items-center space-x-2 p-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.size_options.includes(size.id)}
+                          onChange={(e) => handleSizeChange(size.id, e.target.checked)}
+                          className="rounded"
+                        />
+                        <span className="text-sm">
+                          {size.name} ({size.price_modifier > 0 ? '+' : ''}{size.price_modifier} ₽)
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Добавки */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Добавки к товару
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddOnModal(true)}
+                      className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                    >
+                      + Добавить добавку
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {addOns.map(addOn => (
+                      <label key={addOn.id} className="flex items-center space-x-2 p-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.add_on_options.includes(addOn.id)}
+                          onChange={(e) => handleAddOnChange(addOn.id, e.target.checked)}
+                          className="rounded"
+                        />
+                        <span className="text-sm">
+                          {addOn.name} ({addOn.price} ₽)
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Настройки */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Настройки товара
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        name="is_hit"
+                        checked={formData.is_hit}
+                        onChange={handleInputChange}
+                        className="rounded"
+                      />
+                      <span className="text-sm">🔥 Хит продаж</span>
+                    </label>
+                    
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        name="is_new"
+                        checked={formData.is_new}
+                        onChange={handleInputChange}
+                        className="rounded"
+                      />
+                      <span className="text-sm">🆕 Новинка</span>
+                    </label>
+                    
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        name="is_active"
+                        checked={formData.is_active}
+                        onChange={handleInputChange}
+                        className="rounded"
+                      />
+                      <span className="text-sm">✅ Активен</span>
+                    </label>
+                  </div>
+                </div>
+                
+                {/* Кнопки */}
+                <div className="flex gap-3 pt-4 border-t border-gray-200">
+                  <button 
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    Отмена
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {loading ? 'Сохранение...' : (editingItem ? 'Сохранить изменения' : 'Добавить товар')}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно для добавления добавки */}
+      {showAddOnModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Добавить добавку</h3>
+                <button
+                  onClick={() => setShowAddOnModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <span className="text-xl">×</span>
+                </button>
+              </div>
+            </div>
+            
+            <form onSubmit={handleCreateAddOn} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Название добавки *
+                </label>
+                <input 
+                  type="text" 
+                  value={addOnFormData.name}
+                  onChange={(e) => setAddOnFormData(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  placeholder="Например: Сыр"
+                  required
+                />
               </div>
               
-              {/* Настройки */}
-              <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-orange-100">
-                <h4 className="text-base font-semibold text-gray-800 mb-4 flex items-center">
-                  <span className="w-6 h-6 bg-orange-500 rounded-lg flex items-center justify-center text-white text-xs mr-2">⚙️</span>
-                  Настройки товара
-                </h4>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <label className="flex items-center space-x-3 p-3 bg-white/80 rounded-lg border border-orange-200 hover:bg-white hover:shadow-md transition-all duration-200 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      name="is_hit"
-                      checked={formData.is_hit}
-                      onChange={handleInputChange}
-                      className="w-4 h-4 text-orange-600 border-orange-300 rounded focus:ring-orange-500 focus:ring-1"
-                    />
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">🔥</span>
-                      <span className="text-xs font-semibold text-gray-700 group-hover:text-orange-600 transition-colors">Хит продаж</span>
-                    </div>
-                  </label>
-                  
-                  <label className="flex items-center space-x-3 p-3 bg-white/80 rounded-lg border border-orange-200 hover:bg-white hover:shadow-md transition-all duration-200 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      name="is_new"
-                      checked={formData.is_new}
-                      onChange={handleInputChange}
-                      className="w-4 h-4 text-orange-600 border-orange-300 rounded focus:ring-orange-500 focus:ring-1"
-                    />
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">🆕</span>
-                      <span className="text-xs font-semibold text-gray-700 group-hover:text-orange-600 transition-colors">Новинка</span>
-                    </div>
-                  </label>
-                  
-                  <label className="flex items-center space-x-3 p-3 bg-white/80 rounded-lg border border-orange-200 hover:bg-white hover:shadow-md transition-all duration-200 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      name="is_active"
-                      checked={formData.is_active}
-                      onChange={handleInputChange}
-                      className="w-4 h-4 text-orange-600 border-orange-300 rounded focus:ring-orange-500 focus:ring-1"
-                    />
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">✅</span>
-                      <span className="text-xs font-semibold text-gray-700 group-hover:text-orange-600 transition-colors">Активен</span>
-                    </div>
-                  </label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Цена (₽) *
+                </label>
+                <input 
+                  type="number" 
+                  value={addOnFormData.price}
+                  onChange={(e) => setAddOnFormData(prev => ({ ...prev, price: e.target.value }))}
+                  min="0"
+                  step="0.01"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Доступно для категорий
+                </label>
+                <div className="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
+                  {categories.map(category => (
+                    <label key={category.id} className="flex items-center space-x-2 mb-1">
+                      <input
+                        type="checkbox"
+                        checked={addOnFormData.available_for_categories.includes(category.id)}
+                        onChange={(e) => {
+                          const categoryId = category.id;
+                          setAddOnFormData(prev => ({
+                            ...prev,
+                            available_for_categories: e.target.checked
+                              ? [...prev.available_for_categories, categoryId]
+                              : prev.available_for_categories.filter(id => id !== categoryId)
+                          }));
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-sm">{category.name}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
               
-              {/* Кнопки */}
               <div className="flex gap-3 pt-4">
                 <button 
                   type="button"
-                  onClick={() => setShowForm(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-semibold text-gray-700 group"
+                  onClick={() => setShowAddOnModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                 >
-                  <span className="group-hover:scale-105 transition-transform inline-block">❌</span>
-                  <span className="ml-2">Отмена</span>
+                  Отмена
                 </button>
                 <button 
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-lg hover:shadow-xl group"
+                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {loading ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Сохранение...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center space-x-2">
-                      <span className="group-hover:scale-110 transition-transform">{editingItem ? '💾' : '➕'}</span>
-                      <span>{editingItem ? 'Сохранить изменения' : 'Добавить товар'}</span>
-                    </div>
-                  )}
+                  {loading ? 'Создание...' : 'Создать'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно для добавления размера */}
+      {showSizeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Добавить размер</h3>
+                <button
+                  onClick={() => setShowSizeModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <span className="text-xl">×</span>
+                </button>
+              </div>
             </div>
+            
+            <form onSubmit={handleCreateSize} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Название размера *
+                </label>
+                <input 
+                  type="text" 
+                  value={sizeFormData.name}
+                  onChange={(e) => setSizeFormData(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Например: Большая"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Модификатор цены (₽) *
+                </label>
+                <input 
+                  type="number" 
+                  value={sizeFormData.price_modifier}
+                  onChange={(e) => setSizeFormData(prev => ({ ...prev, price_modifier: e.target.value }))}
+                  step="0.01"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="0.00"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">Положительное число увеличивает цену, отрицательное - уменьшает</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Описание размера
+                </label>
+                <textarea 
+                  value={sizeFormData.description}
+                  onChange={(e) => setSizeFormData(prev => ({ ...prev, description: e.target.value }))}
+                  rows={2}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                  placeholder="Например: 30 см, 8 кусочков"
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button 
+                  type="button"
+                  onClick={() => setShowSizeModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Отмена
+                </button>
+                <button 
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {loading ? 'Создание...' : 'Создать'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
