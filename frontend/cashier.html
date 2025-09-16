@@ -48,7 +48,7 @@
     <meta property="og:title" content="Babay Burger - Кассир" />
     <meta property="og:description" content="Интерфейс кассира для ресторана Babay Burger" />
     <meta property="og:image" content="https://babayburger.com/logo.jpg" />
-    
+
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://babayburger.com/cashier" />
@@ -78,7 +78,7 @@
         display: flex;
         flex-direction: column;
       }
-      
+
       /* Офлайн индикатор */
       .offline-indicator {
         position: fixed;
@@ -95,11 +95,11 @@
         transform: translateY(-100%);
         transition: transform 0.3s ease;
       }
-      
+
       .offline-indicator.show {
         transform: translateY(0);
       }
-      
+
       /* PWA Install Prompt */
       .pwa-install-prompt {
         position: fixed;
@@ -115,11 +115,11 @@
         display: none;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
       }
-      
+
       .pwa-install-prompt.show {
         display: block;
       }
-      
+
       .pwa-install-prompt button {
         background: #f97316;
         color: white;
@@ -132,7 +132,7 @@
         cursor: pointer;
         transition: all 0.2s ease;
       }
-      
+
       .pwa-install-prompt button:hover {
         background: rgba(255, 255, 255, 0.3);
         transform: translateY(-1px);
@@ -297,7 +297,7 @@
         
         // Показываем наш кастомный промпт
         setTimeout(() => {
-          showInstallPrompt();
+            showInstallPrompt();
         }, 3000);
       });
 
@@ -446,11 +446,11 @@
           <p style="margin-bottom: 16px; font-size: 14px; opacity: 0.9;">Для установки приложения откройте ссылку в обычном браузере</p>
           <button onclick="this.parentElement.remove()" style="
             background: #f97316;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
+                  color: white;
+                  border: none;
+                  padding: 8px 16px;
+                  border-radius: 6px;
+                  cursor: pointer;
           ">Понятно</button>
         `;
         
@@ -524,7 +524,7 @@
       // Функция принудительной установки (для тестирования)
       function addForceInstallButton() {
         if (isInstalled) return;
-        
+
         const button = document.createElement('button');
         button.textContent = '🔧 Принудительная установка';
         button.style.cssText = `

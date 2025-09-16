@@ -1,7 +1,7 @@
 import { cashierApi as unifiedCashierApi } from './unifiedClient';
 import { universalStorage } from '../utils/storage';
 
-const API_BASE_URL = 'cashier';
+const API_BASE_URL = 'api/cashier/';
 
 export interface CashierLoginData {
   username: string;
