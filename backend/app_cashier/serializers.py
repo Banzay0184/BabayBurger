@@ -177,6 +177,7 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     promo_code_info = serializers.SerializerMethodField()
     cashier_processing_status = serializers.SerializerMethodField()
+    cashier_processing_details = serializers.SerializerMethodField()
     
     class Meta:
         model = Order
@@ -185,7 +186,7 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
             'final_price', 'delivery_fee', 'discount_amount', 'status', 'status_display',
             'service_type', 'payment_method', 'address_info', 'phone', 'notes', 
             'promo_code_info', 'created_at', 'updated_at', 'cashier_processing_status',
-            'operator_order_number'
+            'cashier_processing_details', 'operator_order_number'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
     
@@ -249,6 +250,14 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
     
     def get_cashier_processing_status(self, obj):
         """Получить статус обработки заказа кассиром"""
+        try:
+            processing = obj.cashier_processing
+            return processing.get_status_display()
+        except OrderProcessing.DoesNotExist:
+            return None
+    
+    def get_cashier_processing_details(self, obj):
+        """Получить детальную информацию о статусе обработки заказа кассиром"""
         try:
             processing = obj.cashier_processing
             return {
