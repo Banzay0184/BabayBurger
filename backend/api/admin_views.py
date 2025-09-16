@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from app_operator.models import Operator
+from .admin_auth import AdminTokenAuthentication
 from django.db.models import Count, Sum, Avg, Q, F
 from django.utils import timezone
 from datetime import datetime, timedelta
@@ -97,7 +98,8 @@ class AdminAuthView(APIView):
 
 class AdminDashboardView(generics.GenericAPIView):
     """Главная панель админки с общей статистикой"""
-    permission_classes = []  # Временно отключаем аутентификацию для тестирования
+    authentication_classes = [AdminTokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     
     def get(self, request):
         today = timezone.now().date()
