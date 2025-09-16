@@ -255,14 +255,25 @@
       const isTelegramWebApp = !!(window.Telegram && window.Telegram.WebApp);
       const isInWebView = window.self !== window.top;
       
+      console.log('🔍 TELEGRAM DETECTION:');
+      console.log('- window.Telegram exists:', !!window.Telegram);
+      console.log('- window.Telegram.WebApp exists:', !!(window.Telegram && window.Telegram.WebApp));
+      console.log('- isTelegramWebApp:', isTelegramWebApp);
+      console.log('- isInWebView:', isInWebView);
+      console.log('- window.self !== window.top:', window.self !== window.top);
+      
       if (isTelegramWebApp || isInWebView) {
-        console.warn('⚠️ PWA не работает в Telegram WebApp или WebView!');
-        console.log('📱 Для установки PWA откройте ссылку в обычном браузере');
+        console.warn('🚨 PWA НЕ РАБОТАЕТ В TELEGRAM WEBAPP ИЛИ WEBVIEW!');
+        console.log('📱 ДЛЯ УСТАНОВКИ PWA ОТКРОЙТЕ ССЫЛКУ В ОБЫЧНОМ БРАУЗЕРЕ');
+        console.log('🔗 Скопируйте ссылку:', window.location.href);
         
         // Показываем предупреждение
         setTimeout(() => {
+          console.log('⚠️ Показываем предупреждение о Telegram WebApp...');
           showTelegramWarning();
         }, 1000);
+      } else {
+        console.log('✅ НЕ TELEGRAM WEBAPP - PWA МОЖЕТ РАБОТАТЬ');
       }
       
       // Переменные для PWA
