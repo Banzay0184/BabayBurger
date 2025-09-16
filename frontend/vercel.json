@@ -1,15 +1,4 @@
 {
-  "routes": [
-    { "src": "/cashier.html", "dest": "/cashier.html" },
-    { "src": "/operator.html", "dest": "/operator.html" },
-    { "src": "/client.html", "dest": "/client.html" },
-    { "src": "/cashier-manifest.json", "dest": "/cashier-manifest.json" },
-    { "src": "/cashier-sw.js", "dest": "/cashier-sw.js" },
-    { "src": "/cashier-icon-([^/]+)\\.png", "dest": "/cashier-icon-$1.png" },
-    { "src": "/logo.jpg", "dest": "/logo.jpg" },
-    { "src": "/logobabay.png", "dest": "/logobabay.png" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ],
   "redirects": [
     {
       "source": "/media/:path*",
@@ -37,6 +26,15 @@
         {
           "key": "Service-Worker-Allowed",
           "value": "/"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).html",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/html; charset=utf-8"
         }
       ]
     }
