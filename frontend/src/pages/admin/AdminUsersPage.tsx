@@ -34,7 +34,8 @@ export const AdminUsersPage: React.FC = () => {
         console.error('❌ Ошибка загрузки пользователей:', response.error);
         setError(response.error);
       } else if (response.data) {
-        const usersData = Array.isArray(response.data) ? response.data : [];
+        // API возвращает {count: X, results: [...]}, нужно извлечь results
+        const usersData = Array.isArray((response.data as any)?.results) ? (response.data as any).results : [];
         setUsers(usersData);
         console.log('✅ Пользователи загружены:', usersData);
       }

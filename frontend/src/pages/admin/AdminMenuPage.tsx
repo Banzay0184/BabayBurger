@@ -30,7 +30,8 @@ export const AdminMenuPage: React.FC = () => {
         console.log('✅ Категории загружены:', categoriesRes.data);
       }
       if (itemsRes.success) {
-        const items = Array.isArray(itemsRes.data) ? itemsRes.data : [];
+        // API возвращает {count: X, results: [...]}, нужно извлечь results
+        const items = Array.isArray((itemsRes.data as any)?.results) ? (itemsRes.data as any).results : [];
         setMenuItems(items);
         console.log('✅ Товары загружены:', items);
       }
@@ -97,7 +98,7 @@ export const AdminMenuPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {categories.map((c) => (
               <div key={c.id} className="bg-white border rounded-lg p-4 shadow-sm">
-                <div className="font-medium text-lg">{c.name}</div>
+                <div className="font-medium text-lg text-gray-900">{c.name}</div>
                 <div className="text-sm text-gray-600 mt-1 line-clamp-2">{c.description}</div>
                 <div className="mt-3 flex gap-2">
                   <button className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200">

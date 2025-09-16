@@ -67,7 +67,8 @@ export const AdminOrdersPage: React.FC = () => {
         console.error('❌ Ошибка загрузки заказов:', response.error);
         setError(response.error);
       } else if (response.data) {
-        const ordersData = Array.isArray(response.data) ? response.data : [];
+        // API возвращает {count: X, results: [...]}, нужно извлечь results
+        const ordersData = Array.isArray((response.data as any)?.results) ? (response.data as any).results : [];
         setOrders(ordersData);
         console.log('✅ Заказы загружены:', ordersData);
       }
