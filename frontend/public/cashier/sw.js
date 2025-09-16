@@ -1,8 +1,9 @@
 // Service Worker для интерфейса кассира Babay Burger
 // Версия: 1.0.0
 
-const CACHE_NAME = 'babay-cashier-v1.0.0';
+const CACHE_NAME = 'babay-cashier-v1.0.1';
 const CACHE_URLS = [
+  '/cashier/login',
   '/cashier/',
   '/cashier/manifest.json',
   '/cashier/cashier-icon-192.png',
@@ -115,6 +116,29 @@ async function networkFirstStrategy(request) {
     return networkResponse;
   } catch (error) {
     console.log('💰 Cashier SW: Network failed, trying cache:', error.message);
+    
+    // Специальная обработка для маршрутов кассира
+    if (request.mode === 'navigate') {
+      const url = new URL(request.url);
+      
+      // Если запрашивается /cashier, перенаправляем на /cashier/login
+      if (url.pathname === '/cashier' || url.pathname === '/cashier/') {
+        const loginUrl = new URL('/cashier/login', url.origin);
+        const cachedLoginResponse = await caches.match(loginUrl);
+        if (cachedLoginResponse) {
+          return cachedLoginResponse;
+        }
+      }
+      
+      // Если запрашивается /cashier/login, возвращаем кэшированную версию
+      if (url.pathname === '/cashier/login') {
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+      }
+    }
+    
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;

@@ -229,9 +229,14 @@
       // Проверяем и обрабатываем конфликты с внешними библиотеками
       let tronWeb;
       
+      // Предотвращаем конфликты с TronLink и TronWeb
       if (window.tronLink && window.tronLink.ready) {
         console.log('✅ TronLink detected and ready - using TronLink TronWeb instance');
         tronWeb = window.tronLink.tronWeb;
+        // Предотвращаем перезапись TronWeb
+        if (window.TronWeb && window.TronWeb !== tronWeb) {
+          console.log('⚠️ Preventing TronWeb conflict - using TronLink instance');
+        }
       } else if (window.TronWeb) {
         console.log('⚠️ TronWeb detected - this might be from browser extension');
         tronWeb = window.TronWeb;
@@ -253,6 +258,23 @@
       if (window.tronLink) {
         console.log('🔗 TronLink extension detected');
         // Не перезаписываем существующий TronLink
+      }
+      
+      // Дополнительная защита от конфликтов
+      if (window.tronLink && !window.tronLink.ready) {
+        console.log('⏳ TronLink detected but not ready - waiting...');
+        // Ждем готовности TronLink
+        const checkTronLink = setInterval(() => {
+          if (window.tronLink && window.tronLink.ready) {
+            console.log('✅ TronLink is now ready');
+            clearInterval(checkTronLink);
+          }
+        }, 1000);
+        
+        // Очищаем интервал через 10 секунд
+        setTimeout(() => {
+          clearInterval(checkTronLink);
+        }, 10000);
       }
       
       // PWA Диагностика
