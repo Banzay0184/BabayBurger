@@ -79,7 +79,7 @@ export interface OrderForOperator {
   user_info: UserInfo;
   address_info: AddressInfo | null;
   restaurant_info?: RestaurantInfo;
-  items_details: OrderItemDetail[];
+  items_details: OrderItemDetail[] | undefined;
   delivery_zone_info?: DeliveryZoneInfo;
 }
 

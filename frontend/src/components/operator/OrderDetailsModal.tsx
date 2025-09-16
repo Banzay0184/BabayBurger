@@ -280,10 +280,10 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               {/* Позиции заказа */}
               <div className="bg-gray-700 rounded-lg p-4">
                 <h3 className="text-white font-medium mb-3">
-                  Позиции заказа ({order.items_details.length})
+                  Позиции заказа ({order.items_details?.length || 0})
                 </h3>
                 <div className="space-y-3">
-                  {order.items_details.map((item, index) => (
+                  {order.items_details?.map((item, index) => (
                     <div key={index} className="border-b border-gray-600 pb-2 last:border-b-0">
                       <div className="flex justify-between items-start mb-1">
                         <span className="text-white font-medium">{item.menu_item_name}</span>
@@ -296,7 +296,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         {item.size_option_name && (
                           <span className="ml-2">• Размер: {item.size_option_name}</span>
                         )}
-                        {item.add_ons_names.length > 0 && (
+                        {item.add_ons_names && item.add_ons_names.length > 0 && (
                           <span className="ml-2">• Дополнения: {item.add_ons_names.join(', ')}</span>
                         )}
                       </div>
