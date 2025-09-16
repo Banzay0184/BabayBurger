@@ -303,14 +303,14 @@ export const AdminMenuPage: React.FC = () => {
           
           <div className="bg-white rounded-2xl border border-gray-200/50 shadow-xl overflow-hidden">
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center">
-                  <span className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center text-white text-sm mr-3">🍔</span>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-bold text-gray-800 flex items-center">
+                  <span className="w-6 h-6 bg-gradient-to-br from-orange-500 to-red-500 rounded-md flex items-center justify-center text-white text-xs mr-2">🍔</span>
                   Список товаров ({paginationInfo.count} всего)
                 </h3>
                 <button
                   onClick={openAddForm}
-                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex items-center space-x-2 group"
+                  className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-md hover:from-green-600 hover:to-emerald-600 transition-all duration-200 font-semibold shadow-sm hover:shadow-md flex items-center space-x-1 group text-sm"
                 >
                   <span className="group-hover:scale-110 transition-transform">➕</span>
                   <span>Добавить товар</span>
@@ -318,9 +318,9 @@ export const AdminMenuPage: React.FC = () => {
               </div>
               
               {/* Фильтры */}
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">🔍 Поиск товаров</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">🔍 Поиск товаров</label>
                   <input
                     type="text"
                     value={searchTerm}
@@ -329,18 +329,18 @@ export const AdminMenuPage: React.FC = () => {
                       setCurrentPage(1); // Сброс на первую страницу при поиске
                     }}
                     placeholder="Поиск по названию или описанию..."
-                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 bg-white/80 backdrop-blur-sm text-sm"
                   />
                 </div>
-                <div className="sm:w-64">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">📂 Категория</label>
+                <div className="sm:w-48">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">📂 Категория</label>
                   <select
                     value={selectedCategory}
                     onChange={(e) => {
                       setSelectedCategory(e.target.value);
                       setCurrentPage(1); // Сброс на первую страницу при смене категории
                     }}
-                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 bg-white/80 backdrop-blur-sm text-sm"
                   >
                     <option value="">Все категории</option>
                     {categories.map(category => (
@@ -354,76 +354,76 @@ export const AdminMenuPage: React.FC = () => {
             </div>
             
             {menuItems.length > 0 ? (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto max-h-96 overflow-y-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Товар</th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Цена</th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Категория</th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Статус</th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Действия</th>
+                      <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Товар</th>
+                      <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Цена</th>
+                      <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Категория</th>
+                      <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Статус</th>
+                      <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Действия</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
                     {menuItems.map((item, index) => (
                     <tr key={item.id} className={`hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="flex items-center space-x-3">
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div className="flex items-center space-x-2">
                           {item.image && (
                             <img 
                               src={item.image} 
                               alt={item.name}
-                              className="w-10 h-10 object-cover rounded-lg shadow-sm"
+                              className="w-8 h-8 object-cover rounded-md shadow-sm"
                             />
                           )}
                           <div>
-                            <div className="text-sm font-bold text-gray-900">{item.name}</div>
+                            <div className="text-xs font-bold text-gray-900">{item.name}</div>
                             <div className="text-xs text-gray-500 max-w-xs truncate">{item.description}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
                           {item.price} ₽
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="text-xs font-semibold text-gray-700 bg-blue-50 px-2 py-1 rounded-lg">
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div className="text-xs font-semibold text-gray-700 bg-blue-50 px-2 py-1 rounded-md">
                           {categories.find(c => c.id === item.category)?.name || 'Неизвестно'}
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-3 py-2 whitespace-nowrap">
                         <div className="flex space-x-1">
                           {item.is_hit && (
-                            <span className="inline-flex px-2 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200">
+                            <span className="inline-flex px-1 py-0.5 text-xs font-bold rounded-full bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200">
                               🔥
                             </span>
                           )}
                           {item.is_new && (
-                            <span className="inline-flex px-2 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-200">
+                            <span className="inline-flex px-1 py-0.5 text-xs font-bold rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-200">
                               🆕
                             </span>
                           )}
                           {!item.is_hit && !item.is_new && (
-                            <span className="inline-flex px-2 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300">
+                            <span className="inline-flex px-1 py-0.5 text-xs font-bold rounded-full bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300">
                               📦
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
+                      <td className="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                        <div className="flex space-x-1">
                           <button 
                             onClick={() => openEditForm(item)}
-                            className="px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-200 font-semibold shadow-sm hover:shadow-md flex items-center space-x-1 group text-xs"
+                            className="px-2 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-md hover:from-orange-600 hover:to-red-600 transition-all duration-200 font-semibold shadow-sm hover:shadow-md flex items-center space-x-1 group text-xs"
                           >
                             <span className="group-hover:scale-110 transition-transform">✏️</span>
                             <span>Изменить</span>
                           </button>
                           <button 
                             onClick={() => handleDeleteItem(item.id)}
-                            className="px-3 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition-all duration-200 font-semibold shadow-sm hover:shadow-md flex items-center space-x-1 group text-xs"
+                            className="px-2 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-md hover:from-red-600 hover:to-pink-600 transition-all duration-200 font-semibold shadow-sm hover:shadow-md flex items-center space-x-1 group text-xs"
                           >
                             <span className="group-hover:scale-110 transition-transform">🗑️</span>
                             <span>Удалить</span>
@@ -459,17 +459,17 @@ export const AdminMenuPage: React.FC = () => {
             
             {/* Пагинация */}
             {paginationInfo.total_pages > 1 && (
-              <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+              <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-700">
+                  <div className="text-xs text-gray-700">
                     Страница {currentPage} из {paginationInfo.total_pages} ({paginationInfo.count} товаров)
                   </div>
                   
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1">
                     <button
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                       disabled={!paginationInfo.has_previous}
-                      className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="px-2 py-1 text-xs bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       ← Назад
                     </button>
@@ -491,7 +491,7 @@ export const AdminMenuPage: React.FC = () => {
                           <button
                             key={pageNum}
                             onClick={() => setCurrentPage(pageNum)}
-                            className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                            className={`px-2 py-1 text-xs rounded-md transition-colors ${
                               currentPage === pageNum
                                 ? 'bg-orange-500 text-white'
                                 : 'bg-white border border-gray-300 hover:bg-gray-50'
@@ -506,7 +506,7 @@ export const AdminMenuPage: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(prev => Math.min(prev + 1, paginationInfo.total_pages))}
                       disabled={!paginationInfo.has_next}
-                      className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="px-2 py-1 text-xs bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       Вперед →
                     </button>
