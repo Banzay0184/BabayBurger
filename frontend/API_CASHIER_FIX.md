@@ -3,10 +3,12 @@
 ## Проблема
 
 API запросы кассира отправлялись на неправильный URL:
-- **Неправильно:** `https://api.babayfood.uz/cashier/auth/login/`
-- **Правильно:** `https://api.babayfood.uz/api/cashier/auth/login/`
+- **Первая проблема:** `https://api.babayfood.uz/cashier/auth/login/` (отсутствует префикс `/api/`)
+- **Вторая проблема:** `https://api.babayfood.uz/api/cashier//auth/login/` (двойной слеш)
 
-Это приводило к ошибке 404 Not Found, так как Django URL patterns ожидают префикс `/api/` для всех API маршрутов.
+Правильный URL должен быть: `https://api.babayfood.uz/api/cashier/auth/login/`
+
+Это приводило к ошибке 404 Not Found, так как Django URL patterns ожидают префикс `/api/` для всех API маршрутов и не допускают двойных слешей.
 
 ## Причина
 
@@ -19,7 +21,14 @@ const API_BASE_URL = 'cashier';  // ❌ Неправильно
 
 Исправлен URL в файле `src/api/cashierApi.ts`:
 ```typescript
-const API_BASE_URL = 'api/cashier/';  // ✅ Правильно
+const API_BASE_URL = 'api/cashier';  // ✅ Правильно (без слеша в конце)
+```
+
+И добавлена правильная обработка URL в методе `request`:
+```typescript
+// Правильно формируем URL, избегая двойных слешей
+const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+const url = `${API_BASE_URL}/${cleanEndpoint}`;
 ```
 
 ## Django URL Patterns
@@ -111,12 +120,21 @@ api/cashier/  # Основной маршрут для кассира
 }
 ```
 
-Вместо неправильного:
+Вместо неправильных вариантов:
 ```
+// ❌ Первая проблема - отсутствует префикс /api/
 🌐 API запрос: {
   method: 'POST', 
   url: 'auth/login/', 
   baseURL: 'https://api.babayfood.uz/cashier/', 
-  fullURL: 'https://api.babayfood.uz/cashier/auth/login/'  // ❌ 404 ошибка
+  fullURL: 'https://api.babayfood.uz/cashier/auth/login/'  // 404 ошибка
+}
+
+// ❌ Вторая проблема - двойной слеш
+🌐 API запрос: {
+  method: 'POST', 
+  url: 'auth/login/', 
+  baseURL: 'https://api.babayfood.uz/api/cashier/', 
+  fullURL: 'https://api.babayfood.uz/api/cashier//auth/login/'  // 404 ошибка
 }
 ```
