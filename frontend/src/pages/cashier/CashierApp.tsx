@@ -2,8 +2,9 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { CashierLoginPage } from './CashierLoginPage';
 import CashierDashboardPage from './CashierDashboardPage';
-import PWADiagnostics from '../../components/PWADiagnostics';
-import { CashierPWAInstallPrompt } from '../../components/cashier/PWAInstallPrompt';
+// PWA компоненты удалены
+// import PWADiagnostics from '../../components/PWADiagnostics';
+// import { CashierPWAInstallPrompt } from '../../components/cashier/PWAInstallPrompt';
 
 export const CashierApp: React.FC = () => {
   return (
@@ -14,11 +15,9 @@ export const CashierApp: React.FC = () => {
         <Route path="/" element={<Navigate to="/cashier/login" replace />} />
       </Routes>
       
-      {/* PWA Диагностика - показывается на всех страницах кассира */}
-      <PWADiagnostics />
-      
-      {/* PWA Установка - показывается когда доступна */}
-      <CashierPWAInstallPrompt />
+      {/* PWA компоненты удалены */}
+      {/* <PWADiagnostics /> */}
+      {/* <CashierPWAInstallPrompt /> */}
     </div>
   );
 };
