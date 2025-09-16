@@ -46,7 +46,10 @@ export const getAdminApiUrl = (endpoint: string = ''): string => {
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
   const baseUrl = API_CONFIG.ADMIN_BASE_URL;
   
-  return cleanEndpoint ? `${baseUrl}/${cleanEndpoint}` : baseUrl;
+  // Всегда добавляем слеш в конце baseUrl для консистентности
+  const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  
+  return cleanEndpoint ? `${normalizedBaseUrl}${cleanEndpoint}` : normalizedBaseUrl.slice(0, -1);
 };
 
 // Функция для получения URL авторизации

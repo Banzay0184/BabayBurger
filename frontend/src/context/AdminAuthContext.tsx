@@ -33,7 +33,7 @@ type AdminAuthAction =
 
 const initialState: AdminAuthState = {
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: true, // Начинаем с загрузки для проверки сохраненной сессии
   user: null,
   error: null,
 };
@@ -102,8 +102,9 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       if (response.ok && data.success) {
         dispatch({ type: 'LOGIN_SUCCESS', payload: data.user });
-        // Сохраняем токен в localStorage для будущего использования
+        // Сохраняем токен и данные пользователя в localStorage
         localStorage.setItem('admin_token', 'authenticated');
+        localStorage.setItem('admin_user', JSON.stringify(data.user));
         return true;
       } else {
         dispatch({ type: 'LOGIN_FAILURE', payload: data.error || 'Ошибка авторизации' });
@@ -118,6 +119,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const logout = (): void => {
     dispatch({ type: 'LOGOUT' });
     localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
   };
 
   const clearError = (): void => {
@@ -127,10 +129,21 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Проверяем сохраненную сессию при загрузке
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
-    if (token) {
-      // Здесь можно добавить проверку токена на сервере
-      // Пока просто считаем, что если токен есть, то пользователь авторизован
-      // В реальном приложении нужно проверить токен на сервере
+    const savedUser = localStorage.getItem('admin_user');
+    
+    if (token && savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        dispatch({ type: 'LOGIN_SUCCESS', payload: user });
+      } catch (error) {
+        // Если данные повреждены, очищаем localStorage
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        dispatch({ type: 'LOGIN_FAILURE', payload: 'Сессия истекла' });
+      }
+    } else {
+      // Если нет сохраненной сессии, завершаем загрузку
+      dispatch({ type: 'LOGIN_FAILURE', payload: '' });
     }
   }, []);
 

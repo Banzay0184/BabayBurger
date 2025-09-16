@@ -16,9 +16,26 @@ import { AdminLoginPage } from './AdminLoginPage';
 
 const AdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { state } = useAdminAuth();
+  
+  // Показываем загрузку во время проверки аутентификации
+  if (state.isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+          <div className="text-center">
+            <div className="text-4xl mb-4 animate-bounce">🍔</div>
+            <div className="text-lg font-medium text-gray-700 mb-4">Проверка авторизации...</div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   if (!state.isAuthenticated) {
     return <Navigate to="/admin/login" replace />;
   }
+  
   return <>{children}</>;
 };
 

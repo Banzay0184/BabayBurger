@@ -1,8 +1,5 @@
 import { getAdminApiUrl } from '../config/api';
 
-// Конфигурация API для админ-панели
-const API_BASE_URL = getAdminApiUrl();
-
 interface ApiResponse<T> {
   data?: T;
   error?: string;
@@ -44,10 +41,8 @@ interface AnalyticsResponse {
 }
 
 class AdminApiClient {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = API_BASE_URL) {
-    this.baseUrl = baseUrl;
+  constructor() {
+    // Не храним baseUrl, используем getAdminApiUrl() для каждого запроса
   }
 
   private async request<T>(
@@ -55,7 +50,7 @@ class AdminApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     try {
-      const url = `${this.baseUrl}${endpoint}`;
+      const url = getAdminApiUrl(endpoint);
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
