@@ -192,6 +192,7 @@ class AdminDashboardView(generics.GenericAPIView):
 
 class AdminMenuViewSet(viewsets.ModelViewSet):
     """Управление меню"""
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = MenuItem.objects.all()
     serializer_class = MenuItemSerializer
@@ -253,6 +254,7 @@ class AdminMenuViewSet(viewsets.ModelViewSet):
 
 class AdminCategoryViewSet(viewsets.ModelViewSet):
     """Управление категориями"""
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -271,6 +273,7 @@ class AdminCategoryViewSet(viewsets.ModelViewSet):
 
 class AdminOrderViewSet(viewsets.ModelViewSet):
     """Управление заказами"""
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
@@ -347,6 +350,7 @@ class AdminOrderViewSet(viewsets.ModelViewSet):
 
 class AdminUserViewSet(viewsets.ReadOnlyModelViewSet):
     """Просмотр пользователей"""
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = Operator.objects.all()
     serializer_class = UserSerializer
@@ -370,6 +374,7 @@ class AdminUserViewSet(viewsets.ReadOnlyModelViewSet):
 
 class AdminPromoCodeViewSet(viewsets.ModelViewSet):
     """Управление промокодами"""
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = PromoCode.objects.all()
     serializer_class = PromoCodeSerializer
@@ -400,6 +405,7 @@ class AdminPromoCodeViewSet(viewsets.ModelViewSet):
 
 class AdminDeliveryZoneViewSet(viewsets.ModelViewSet):
     """Управление зонами доставки"""
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = DeliveryZone.objects.all()
     serializer_class = DeliveryZoneSerializer
@@ -420,6 +426,7 @@ class AdminDeliveryZoneViewSet(viewsets.ModelViewSet):
 
 class AdminRestaurantViewSet(viewsets.ModelViewSet):
     """Управление ресторанами"""
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
@@ -440,6 +447,7 @@ class AdminRestaurantViewSet(viewsets.ModelViewSet):
 
 class AdminCashierViewSet(viewsets.ModelViewSet):
     """Управление кассирами"""
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = Cashier.objects.all()
     serializer_class = CashierSerializer
@@ -460,6 +468,7 @@ class AdminCashierViewSet(viewsets.ModelViewSet):
 
 class AdminOperatorViewSet(viewsets.ModelViewSet):
     """Управление операторами"""
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = Operator.objects.all()
     serializer_class = OperatorSerializer
@@ -476,6 +485,7 @@ class AdminOperatorViewSet(viewsets.ModelViewSet):
 
 class AdminDeliveryDriverViewSet(viewsets.ModelViewSet):
     """Управление курьерами"""
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = DeliveryDriver.objects.all()
     serializer_class = DeliveryDriverSerializer
@@ -496,6 +506,7 @@ class AdminDeliveryDriverViewSet(viewsets.ModelViewSet):
 
 class AdminAnalyticsView(generics.GenericAPIView):
     """Аналитика для админки"""
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     
     def get(self, request):
