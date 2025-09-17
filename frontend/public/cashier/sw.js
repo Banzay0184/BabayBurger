@@ -1,7 +1,7 @@
 // Service Worker для интерфейса кассира Babay Burger
-// Версия: 1.0.0
+// Версия: 1.0.2
 
-const CACHE_NAME = 'babay-cashier-v1.0.1';
+const CACHE_NAME = 'babay-cashier-v1.0.2';
 const CACHE_URLS = [
   '/cashier/login',
   '/cashier/',
@@ -14,16 +14,12 @@ const CACHE_URLS = [
 
 // Установка Service Worker
 self.addEventListener('install', (event) => {
-  console.log('💰 Cashier Service Worker: Installing...');
-  
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('💰 Cashier Service Worker: Caching app shell');
         return cache.addAll(CACHE_URLS);
       })
       .then(() => {
-        console.log('💰 Cashier Service Worker: App shell cached');
         return self.skipWaiting();
       })
   );
@@ -31,20 +27,16 @@ self.addEventListener('install', (event) => {
 
 // Активация Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('💰 Cashier Service Worker: Activating...');
-  
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME && cacheName.startsWith('babay-cashier-')) {
-            console.log('💰 Cashier Service Worker: Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     }).then(() => {
-      console.log('💰 Cashier Service Worker: Activated');
       return self.clients.claim();
     })
   );
@@ -100,7 +92,6 @@ async function cacheFirstStrategy(request) {
     }
     return networkResponse;
   } catch (error) {
-    console.error('💰 Cashier SW: Cache first strategy failed:', error);
     return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
   }
 }
@@ -115,8 +106,6 @@ async function networkFirstStrategy(request) {
     }
     return networkResponse;
   } catch (error) {
-    console.log('💰 Cashier SW: Network failed, trying cache:', error.message);
-    
     // Специальная обработка для маршрутов кассира
     if (request.mode === 'navigate') {
       const url = new URL(request.url);
@@ -152,7 +141,6 @@ async function networkOnlyStrategy(request) {
   try {
     return await fetch(request);
   } catch (error) {
-    console.error('💰 Cashier SW: Network only strategy failed:', error);
     return new Response('Network Error', { status: 503, statusText: 'Service Unavailable' });
   }
 }
@@ -169,74 +157,30 @@ function isStaticResource(request) {
 
 // Обработка push уведомлений
 self.addEventListener('push', (event) => {
-  console.log('💰 Cashier SW: Push message received');
-  
-  if (!event.data) {
-    return;
-  }
-
-  const data = event.data.json();
   const options = {
-    body: data.body || 'Новое уведомление для кассира',
-    icon: '/cashier-icon-192.png',
-    badge: '/cashier-icon-96.png',
+    body: 'Новый заказ поступил в систему',
+    icon: '/cashier/cashier-icon-192.png',
+    badge: '/cashier/cashier-icon-72.png',
     tag: 'cashier-notification',
-    requireInteraction: true,
-    actions: [
-      {
-        action: 'open',
-        title: 'Открыть',
-        icon: '/cashier-icon-96.png'
-      },
-      {
-        action: 'close',
-        title: 'Закрыть'
-      }
-    ],
-    data: {
-      url: data.url || '/cashier.html#/dashboard',
-      timestamp: Date.now()
-    }
+    requireInteraction: true
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Babay Кассир', options)
+    self.registration.showNotification('Babay Burger - Кассир', options)
   );
 });
 
 // Обработка кликов по уведомлениям
 self.addEventListener('notificationclick', (event) => {
-  console.log('💰 Cashier SW: Notification click received');
-  
   event.notification.close();
-
-  if (event.action === 'close') {
-    return;
-  }
-
-  const urlToOpen = event.notification.data?.url || '/cashier.html#/dashboard';
-
+  
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Ищем открытое окно кассира
-      for (const client of clientList) {
-        if (client.url.includes('/cashier.html') && 'focus' in client) {
-          client.navigate(urlToOpen);
-          return client.focus();
-        }
-      }
-      
-      // Если окно не найдено, открываем новое
-      if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
-      }
-    })
+    clients.openWindow('/cashier/login')
   );
 });
 
 // Обработка фоновой синхронизации
 self.addEventListener('sync', (event) => {
-  console.log('💰 Cashier SW: Background sync:', event.tag);
   
   if (event.tag === 'cashier-data-sync') {
     event.waitUntil(syncCashierData());
@@ -246,7 +190,6 @@ self.addEventListener('sync', (event) => {
 // Синхронизация данных кассира
 async function syncCashierData() {
   try {
-    console.log('💰 Cashier SW: Syncing cashier data...');
     
     // Здесь можно добавить логику синхронизации данных
     // Например, отправка отложенных заказов, обновление статистики и т.д.
@@ -262,13 +205,11 @@ async function syncCashierData() {
     
     console.log('💰 Cashier SW: Data sync completed');
   } catch (error) {
-    console.error('💰 Cashier SW: Data sync failed:', error);
   }
 }
 
 // Обработка сообщений от клиента
 self.addEventListener('message', (event) => {
-  console.log('💰 Cashier SW: Message received:', event.data);
   
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();

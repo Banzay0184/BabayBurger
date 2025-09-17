@@ -22,9 +22,9 @@ if [ ! -f ".env.production" ]; then
     cat > .env.production << EOF
 # Production Environment Variables
 VITE_API_URL=https://api.babayfood.uz/
-VITE_API_BASE_URL=https://api.babayfood.uz
+VITE_API_BASE_URL=https://api.babayfood.uz/api/
 VITE_WEBSOCKET_URL=api.babayfood.uz
-VITE_TELEGRAM_AUTH_URL=https://api.babayfood.uz/auth/telegram-widget/
+VITE_TELEGRAM_AUTH_URL=https://api.babayfood.uz/api/auth/telegram-widget/
 
 # Production settings
 VITE_APP_ENV=production

@@ -162,77 +162,19 @@
     <script>
       console.log('💰 Cashier PWA: Initializing...');
       
-      // Проверяем и обрабатываем конфликты с внешними библиотеками
-      let tronWeb;
-      
-      // Предотвращаем конфликты с TronLink и TronWeb
+      // Предотвращаем конфликты с внешними библиотеками
       if (window.tronLink && window.tronLink.ready) {
-        console.log('✅ TronLink detected and ready - using TronLink TronWeb instance');
-        tronWeb = window.tronLink.tronWeb;
-        // Предотвращаем перезапись TronWeb
-        if (window.TronWeb && window.TronWeb !== tronWeb) {
-          console.log('⚠️ Preventing TronWeb conflict - using TronLink instance');
-        }
-      } else if (window.TronWeb) {
-        console.log('⚠️ TronWeb detected - this might be from browser extension');
-        tronWeb = window.TronWeb;
-        // Не перезаписываем существующий TronWeb
-      } else {
-        console.log('ℹ️ No TronWeb detected - application will work without TronWeb');
-      }
-      
-      // Проверяем другие возможные конфликты
-      if (window.ethereum) {
-        console.log('⚠️ Ethereum provider detected');
-      }
-      
-      if (window.bitcoin) {
-        console.log('⚠️ Bitcoin provider detected');
-      }
-      
-      // Предотвращаем конфликты с TronLink
-      if (window.tronLink) {
-        console.log('🔗 TronLink extension detected');
-        // Не перезаписываем существующий TronLink
-      }
-      
-      // Дополнительная защита от конфликтов
-      if (window.tronLink && !window.tronLink.ready) {
-        console.log('⏳ TronLink detected but not ready - waiting...');
-        // Ждем готовности TronLink
-        const checkTronLink = setInterval(() => {
-          if (window.tronLink && window.tronLink.ready) {
-            console.log('✅ TronLink is now ready');
-            clearInterval(checkTronLink);
-          }
-        }, 1000);
-        
-        // Очищаем интервал через 10 секунд
-        setTimeout(() => {
-          clearInterval(checkTronLink);
-        }, 10000);
+        // Используем TronLink экземпляр если доступен
       }
       
       // PWA Диагностика
-      console.log('💰 PWA Diagnostics:');
-      console.log('- User Agent:', navigator.userAgent);
-      console.log('- HTTPS:', location.protocol === 'https:');
-      console.log('- Service Worker Support:', 'serviceWorker' in navigator);
-      console.log('- Manifest Support:', 'manifest' in document.createElement('link'));
-      console.log('- Current URL:', location.href);
-      console.log('- Display Mode:', window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser');
-      console.log('- Is Mobile:', /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
-      console.log('- Is Tablet:', /iPad|Android.*(?=.*Tablet)|Android.*(?=.*Tab)/i.test(navigator.userAgent));
-      console.log('- Screen Size:', window.screen.width + 'x' + window.screen.height);
-      console.log('- Viewport Size:', window.innerWidth + 'x' + window.innerHeight);
-      console.log('- Is Telegram WebApp:', !!(window.Telegram && window.Telegram.WebApp));
-      console.log('- In iframe/WebView:', window.self !== window.top);
+      console.log('💰 PWA: Initializing...');
       
       // Проверяем манифест
       fetch('/cashier/manifest.json')
         .then(response => response.json())
-        .then(manifest => {
-          console.log('💰 PWA: Manifest loaded successfully:', manifest);
+        .then(() => {
+          console.log('💰 PWA: Manifest loaded successfully');
         })
         .catch(error => {
           console.error('💰 PWA: Manifest loading failed:', error);
@@ -242,25 +184,11 @@
       const isTelegramWebApp = !!(window.Telegram && window.Telegram.WebApp);
       const isInWebView = window.self !== window.top;
       
-      console.log('🔍 TELEGRAM DETECTION:');
-      console.log('- window.Telegram exists:', !!window.Telegram);
-      console.log('- window.Telegram.WebApp exists:', !!(window.Telegram && window.Telegram.WebApp));
-      console.log('- isTelegramWebApp:', isTelegramWebApp);
-      console.log('- isInWebView:', isInWebView);
-      console.log('- window.self !== window.top:', window.self !== window.top);
-      
       if (isTelegramWebApp || isInWebView) {
-        console.warn('🚨 PWA НЕ РАБОТАЕТ В TELEGRAM WEBAPP ИЛИ WEBVIEW!');
-        console.log('📱 ДЛЯ УСТАНОВКИ PWA ОТКРОЙТЕ ССЫЛКУ В ОБЫЧНОМ БРАУЗЕРЕ');
-        console.log('🔗 Скопируйте ссылку:', window.location.href);
-        
-        // Показываем предупреждение
+        console.warn('🚨 PWA НЕ РАБОТАЕТ В TELEGRAM WEBAPP!');
         setTimeout(() => {
-          console.log('⚠️ Показываем предупреждение о Telegram WebApp...');
           showTelegramWarning();
         }, 1000);
-      } else {
-        console.log('✅ НЕ TELEGRAM WEBAPP - PWA МОЖЕТ РАБОТАТЬ');
       }
       
       // Переменные для PWA
@@ -284,18 +212,8 @@
 
       // PWA Install Events
       window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('💰 PWA: beforeinstallprompt fired');
-        console.log('💰 PWA: Event details:', e);
-        console.log('💰 PWA: Platforms:', e.platforms);
-        
-        // Предотвращаем автоматический показ баннера
         e.preventDefault();
-        console.log('💰 PWA: Banner prevented - will show custom prompt');
-        
-        // Сохраняем событие для показа позже
         deferredPrompt = e;
-        
-        // Показываем наш кастомный промпт
         setTimeout(() => {
             showInstallPrompt();
         }, 3000);
@@ -303,7 +221,6 @@
 
       // Обработка установки
       window.addEventListener('appinstalled', () => {
-        console.log('💰 PWA: App installed successfully');
         isInstalled = true;
         hideInstallPrompt();
       });
@@ -323,22 +240,14 @@
           if (installBtn) {
             installBtn.onclick = () => {
               if (deferredPrompt) {
-                console.log('💰 PWA: Calling deferredPrompt.prompt()');
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choiceResult) => {
-                  console.log('💰 PWA: User choice:', choiceResult.outcome);
-                  if (choiceResult.outcome === 'accepted') {
-                    console.log('💰 PWA: User accepted the install prompt');
-                  } else {
-                    console.log('💰 PWA: User dismissed the install prompt');
-                  }
                   deferredPrompt = null;
                 }).catch((error) => {
                   console.error('💰 PWA: Error during user choice:', error);
                   deferredPrompt = null;
                 });
               } else {
-                console.log('💰 PWA: No deferredPrompt available, showing manual instructions');
                 showManualInstallInstructions();
               }
               hideInstallPrompt();
@@ -365,150 +274,40 @@
       function showManualInstallInstructions() {
         const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const isChrome = /Chrome/i.test(navigator.userAgent);
-        const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
         
         let instructions = '';
         
-        if (isMobile) {
-          if (isChrome) {
-            instructions = `
-📱 Установка PWA на мобильном устройстве (Chrome):
-
-1. Нажмите на меню браузера (⋮)
-2. Найдите "Добавить на главный экран" или "Установить приложение"
-3. Подтвердите установку
-
-Альтернативно:
-1. Откройте в Chrome
-2. Найдите кнопку "Добавить на главный экран"
-3. Подтвердите установку
-            `;
-          } else if (isSafari) {
-            instructions = `
-📱 Установка PWA на iOS (Safari):
-
-1. Нажмите кнопку "Поделиться" (квадрат со стрелкой)
-2. Выберите "На экран Домой"
-3. Подтвердите установку
-            `;
-          } else {
-            instructions = `
-📱 Установка PWA на мобильном устройстве:
-
-1. Откройте в Chrome
-2. Найдите кнопку "Добавить на главный экран"
-3. Подтвердите установку
-            `;
-          }
+        if (isMobile && isChrome) {
+          instructions = '📱 Нажмите на меню браузера (⋮) и выберите "Добавить на главный экран"';
+        } else if (isChrome) {
+          instructions = '💻 Нажмите на иконку ⊕ в адресной строке или меню (⋮) → "Установить Babay Кассир"';
         } else {
-          if (isChrome) {
-            instructions = `
-💻 Установка PWA на компьютере (Chrome):
-
-1. Нажмите на иконку ⊕ в адресной строке
-2. Или: Меню (⋮) → "Установить Babay Кассир"  
-3. Подтвердите установку
-
-Если иконки нет:
-- Попробуйте обновить страницу
-- Или откройте в режиме инкогнито
-- Проверьте DevTools > Application > Manifest
-            `;
-          } else {
-            instructions = 'Для установки PWA рекомендуется использовать Chrome или Edge браузер';
-          }
+          instructions = 'Для установки PWA рекомендуется использовать Chrome или Edge браузер';
         }
         
-        alert(instructions.trim());
+        alert(instructions);
       }
 
       // Функция показа предупреждения о Telegram
       function showTelegramWarning() {
-        const warning = document.createElement('div');
-        warning.style.cssText = `
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background: rgba(0, 0, 0, 0.9);
-          color: white;
-          padding: 20px;
-          border-radius: 12px;
-          text-align: center;
-          z-index: 10000;
-          max-width: 90%;
-          backdrop-filter: blur(10px);
-        `;
-        
-        warning.innerHTML = `
-          <h3 style="margin-bottom: 12px; color: #f97316;">⚠️ Telegram WebApp</h3>
-          <p style="margin-bottom: 16px;">PWA не работает в Telegram WebApp</p>
-          <p style="margin-bottom: 16px; font-size: 14px; opacity: 0.9;">Для установки приложения откройте ссылку в обычном браузере</p>
-          <button onclick="this.parentElement.remove()" style="
-            background: #f97316;
-                  color: white;
-                  border: none;
-                  padding: 8px 16px;
-                  border-radius: 6px;
-                  cursor: pointer;
-          ">Понятно</button>
-        `;
-        
-        document.body.appendChild(warning);
-        
-        // Автоматически скрываем через 10 секунд
-        setTimeout(() => {
-          if (warning.parentNode) {
-            warning.parentNode.removeChild(warning);
-          }
-        }, 10000);
+        alert('⚠️ PWA не работает в Telegram WebApp. Откройте ссылку в обычном браузере для установки приложения.');
       }
 
       // Проверка критериев установки
       function checkInstallCriteria() {
-        console.log('💰 PWA: Install criteria check:');
-        
-        // Проверяем Service Worker
         const hasServiceWorker = 'serviceWorker' in navigator;
-        console.log('- Service Worker registered:', hasServiceWorker);
-        
-        // Проверяем манифест
-        const manifestLink = document.querySelector('link[rel="manifest"]');
-        const hasManifest = !!manifestLink;
-        console.log('- Manifest linked:', hasManifest);
-        
-        // Проверяем HTTPS
+        const hasManifest = !!document.querySelector('link[rel="manifest"]');
         const isSecure = location.protocol === 'https:' || location.hostname === 'localhost';
-        console.log('- HTTPS or localhost:', isSecure);
-        
-        // Проверяем иконки
         const hasIcons = document.querySelectorAll('link[rel*="icon"], link[rel*="apple-touch-icon"]').length > 0;
-        console.log('- Has icons:', hasIcons);
         
         return hasServiceWorker && hasManifest && isSecure && hasIcons;
       }
 
       // Регистрация Service Worker
       if ('serviceWorker' in navigator) {
-        console.log('💰 PWA: Registering Service Worker...');
-        
         navigator.serviceWorker.register('/cashier/sw.js')
           .then((registration) => {
-            console.log('💰 PWA: Service Worker registered successfully:', registration);
-            console.log('💰 PWA: Registration scope:', registration.scope);
-            console.log('💰 PWA: Registration state:', registration.active ? 'installed' : 'installing');
-            
-            // Проверяем состояние Service Worker
-            if (registration.active) {
-              console.log('💰 PWA: Service Worker is ready and active');
-            } else if (registration.installing) {
-              console.log('💰 PWA: Service Worker is installing...');
-              registration.installing.addEventListener('statechange', () => {
-                if (registration.installing.state === 'activated') {
-                  console.log('💰 PWA: Service Worker activated');
-                }
-              });
-            }
+            console.log('💰 PWA: Service Worker registered successfully');
           })
           .catch((error) => {
             console.error('💰 PWA: Service Worker registration failed:', error);
@@ -517,90 +316,9 @@
 
       // Проверяем критерии установки после загрузки DOM
       document.addEventListener('DOMContentLoaded', () => {
-        console.log('💰 PWA: DOM loaded, checking install criteria...');
         checkInstallCriteria();
       });
 
-      // Функция принудительной установки (для тестирования)
-      function addForceInstallButton() {
-        if (isInstalled) return;
-
-        const button = document.createElement('button');
-        button.textContent = '🔧 Принудительная установка';
-        button.style.cssText = `
-          position: fixed;
-          bottom: 80px;
-          right: 20px;
-          background: rgba(0, 0, 0, 0.8);
-          color: white;
-          border: none;
-          padding: 8px 12px;
-          border-radius: 6px;
-          font-size: 12px;
-          cursor: pointer;
-          z-index: 1000;
-          backdrop-filter: blur(10px);
-        `;
-        
-        button.onclick = () => {
-          let instructions = '';
-          
-          const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-          const isChrome = /Chrome/i.test(navigator.userAgent);
-          
-          if (isMobile) {
-            if (isChrome) {
-              instructions = `
-📱 Установка PWA на мобильном устройстве (Chrome):
-
-1. Откройте в Chrome
-2. Найдите кнопку "Добавить на главный экран"
-3. Подтвердите установку
-              `;
-            }
-          } else {
-            if (isChrome) {
-              instructions = `
-💻 Установка PWA на компьютере (Chrome):
-
-1. Нажмите на иконку ⊕ в адресной строке
-2. Или: Меню (⋮) → "Установить Babay Кассир"  
-3. Подтвердите установку
-
-Если иконки нет:
-- Попробуйте обновить страницу
-- Или откройте в режиме инкогнито
-- Проверьте DevTools > Application > Manifest
-              `;
-            } else {
-              instructions = 'Для установки PWA рекомендуется использовать Chrome или Edge браузер';
-            }
-          }
-          
-          alert(instructions.trim());
-        };
-        
-        document.body.appendChild(button);
-        
-        // Скрываем кнопку через 30 секунд
-        setTimeout(() => {
-          if (button.parentNode) {
-            button.parentNode.removeChild(button);
-          }
-        }, 30000);
-      }
-
-      // Добавляем кнопку через 2 секунды
-      setTimeout(addForceInstallButton, 2000);
-
-      // Загружаем тестовый скрипт для отладки (только в dev режиме)
-      if (location.hostname === 'localhost') {
-        const script = document.createElement('script');
-        script.src = '/pwa-test.js';
-        document.head.appendChild(script);
-        console.log('🧪 PWA Test script loaded. Use testPWA() in console for diagnostics.');
-      }
-      
       // Определяем режим работы
       if (isTelegramWebApp || isInWebView) {
         console.log('💰 PWA: Running in Telegram WebApp/WebView - PWA features disabled');

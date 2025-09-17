@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { MenuItem } from '../types/menu';
-import apiClient from '../api/client';
+import { clientApi } from '../api/unifiedClient';
 import { useAuth } from './AuthContext';
 
 interface FavoriteItem {
@@ -46,10 +46,10 @@ export const FavoriteProvider: React.FC<{ children: ReactNode }> = ({ children }
         return;
       }
       
-      const response = await apiClient.get(`favorites/?telegram_id=${telegramId}`);
-      console.log('🤍 FavoriteContext - Favorites response:', response.data);
+      const response = await clientApi.get<{favorites: FavoriteItem[]}>(`favorites/?telegram_id=${telegramId}`);
+      console.log('🤍 FavoriteContext - Favorites response:', response);
       
-      setFavorites(response.data.favorites || []);
+      setFavorites(response.favorites || []);
     } catch (error) {
       console.error('🤍 FavoriteContext - Error fetching favorites:', error);
       setFavorites([]);
@@ -86,7 +86,7 @@ export const FavoriteProvider: React.FC<{ children: ReactNode }> = ({ children }
 
       if (isCurrentlyFavorite) {
         // Удаляем из избранного
-        await apiClient.delete('favorites/', {
+        await clientApi.delete('favorites/', {
           data: {
             telegram_id: telegramId,
             menu_item_id: menuItem.id
@@ -101,21 +101,21 @@ export const FavoriteProvider: React.FC<{ children: ReactNode }> = ({ children }
           console.log('🤍 FavoriteContext - Sending POST request to add favorite...');
           
           // Добавляем в избранное
-          const response = await apiClient.post('favorites/', {
+          const response = await clientApi.post<FavoriteItem>('favorites/', {
             telegram_id: telegramId,
             menu_item_id: menuItem.id
           });
           
-          console.log('🤍 FavoriteContext - POST response received:', response.status, response.data);
+          console.log('🤍 FavoriteContext - POST response received:', response);
           
           // Обновляем локальное состояние
-          setFavorites(prev => [response.data, ...prev]);
+          setFavorites(prev => [response, ...prev]);
           console.log('🤍 FavoriteContext - Added to favorites:', menuItem.name);
         } catch (postError: any) {
-          console.log('🤍 FavoriteContext - POST error:', postError.response?.status, postError.response?.data);
+          console.log('🤍 FavoriteContext - POST error:', postError.code, postError.details);
           
           // Если товар уже в избранном, обновляем состояние
-          if (postError.response?.status === 400 && postError.response?.data?.error === 'Item already in favorites') {
+          if (postError.code === '400' && postError.details?.error === 'Item already in favorites') {
             console.log('🤍 FavoriteContext - Item already in favorites, refreshing...');
             await refreshFavorites();
           } else {
@@ -128,7 +128,7 @@ export const FavoriteProvider: React.FC<{ children: ReactNode }> = ({ children }
       console.error('🤍 FavoriteContext - Error toggling favorite:', error);
       
       // Обработка специфических ошибок для удаления
-      if (error.response?.status === 400 && error.response?.data?.error === 'Item not in favorites') {
+      if (error.code === '400' && error.details?.error === 'Item not in favorites') {
         console.log('🤍 FavoriteContext - Item not in favorites, refreshing...');
         await refreshFavorites();
       } else {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Restaurant } from '../types/yandex-maps';
-import client from '../api/client';
+import { clientApi } from '../api/unifiedClient';
 
 export const useRestaurants = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -13,8 +13,8 @@ export const useRestaurants = () => {
         setLoading(true);
         setError(null);
         
-        const response = await client.get('/restaurants/');
-        setRestaurants(response.data);
+        const response = await clientApi.get('/restaurants/');
+        setRestaurants(response);
       } catch (err) {
         console.error('Ошибка загрузки ресторанов:', err);
         setError('Не удалось загрузить список ресторанов');

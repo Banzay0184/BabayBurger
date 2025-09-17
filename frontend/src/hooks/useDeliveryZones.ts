@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import apiClient from '../api/client';
+import { clientApi } from '../api/unifiedClient';
 import type { DeliveryZone } from '../types/yandex-maps';
 
 export const useDeliveryZones = () => {
@@ -12,13 +12,13 @@ export const useDeliveryZones = () => {
       setIsLoading(true);
       setError(null);
       console.log('🗺️ 🔍 useDeliveryZones: Fetching zones...');
-      const response = await apiClient.get('/delivery-zones/');
-      console.log('🗺️ 🔍 useDeliveryZones: API response:', response.data);
-      setZones(response.data);
+      const response = await clientApi.get('/delivery-zones/');
+      console.log('🗺️ 🔍 useDeliveryZones: API response:', response);
+      setZones(response);
       console.log('🗺️ 🔍 useDeliveryZones: Zones set to state');
     } catch (error: any) {
       console.error('Error fetching delivery zones:', error);
-      setError(error.response?.data?.error || 'Ошибка загрузки зон доставки');
+      setError(error.details?.error || 'Ошибка загрузки зон доставки');
     } finally {
       setIsLoading(false);
     }
