@@ -949,43 +949,59 @@ export const AdminMenuPage: React.FC = () => {
                     </div>
                   )}
                   
-                  {/* Показываем только добавки, которые уже привязаны к блюду */}
+                  {/* Показываем добавки для редактирования или все доступные для нового товара */}
                   {(() => {
                     console.log('🔍 Проверяем добавки для отображения:', {
                       editingItem: editingItem,
                       add_on_options: editingItem?.add_on_options,
-                      length: editingItem?.add_on_options?.length
+                      length: editingItem?.add_on_options?.length,
+                      addOns: addOns,
+                      addOnsLength: addOns.length
                     });
-                    return editingItem && editingItem.add_on_options && editingItem.add_on_options.length > 0;
-                  })() ? (
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-gray-700 mb-2">Доступные добавки для этого блюда:</p>
-                      {editingItem.add_on_options.map((addon: any) => (
-                        <div key={addon.id} className="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              checked={formData.add_on_options.includes(addon.id)}
-                              onChange={(e) => handleAddOnChange(addon.id, e.target.checked)}
-                              className="rounded"
-                            />
-                            <span className="text-xs font-medium text-gray-900">{addon.name}</span>
-                            <span className="text-xs text-gray-600">({addon.description || 'Без описания'})</span>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-xs font-bold text-green-600">
-                              {addon.price} сум
-                            </span>
-                          </div>
+                    
+                    // Определяем какие добавки показывать
+                    const addonsToShow = editingItem && editingItem.add_on_options && editingItem.add_on_options.length > 0 
+                      ? editingItem.add_on_options 
+                      : addOns;
+                    
+                    const title = editingItem && editingItem.add_on_options && editingItem.add_on_options.length > 0
+                      ? "Доступные добавки для этого блюда:"
+                      : "Доступные добавки:";
+                    
+                    if (addonsToShow && addonsToShow.length > 0) {
+                      return (
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-gray-700 mb-2">{title}</p>
+                          {addonsToShow.map((addon: any) => (
+                            <div key={addon.id} className="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200">
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.add_on_options.includes(addon.id)}
+                                  onChange={(e) => handleAddOnChange(addon.id, e.target.checked)}
+                                  className="rounded"
+                                />
+                                <span className="text-xs font-medium text-gray-900">{addon.name}</span>
+                                <span className="text-xs text-gray-600">({addon.description || 'Без описания'})</span>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-xs font-bold text-green-600">
+                                  {addon.price} сум
+                                </span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-xs text-gray-500 mb-2">Нет добавок для этого блюда</p>
-                      <p className="text-xs text-gray-400">Добавки настраиваются на уровне конкретного блюда</p>
-                    </div>
-                  )}
+                      );
+                    } else {
+                      return (
+                        <div className="text-center py-4">
+                          <p className="text-xs text-gray-500 mb-2">Нет добавок для этого блюда</p>
+                          <p className="text-xs text-gray-400">Добавки настраиваются на уровне конкретного блюда</p>
+                        </div>
+                      );
+                    }
+                  })()}
                 </div>
                 
                 {/* Настройки */}
