@@ -114,7 +114,9 @@ class AdminApiClient {
       
       console.log('📤 Request headers:', headers);
       console.log('🔐 Authorization header:', headers.Authorization);
+      console.log('🔐 Полный токен в заголовке:', headers.Authorization);
       console.log('📋 Content-Type header:', headers['Content-Type']);
+      console.log('📋 Request body:', options.body);
       
       const response = await fetch(url, {
         headers,
@@ -177,6 +179,11 @@ class AdminApiClient {
       
       console.log('📤 FormData Request headers:', headers);
       console.log('🔐 Authorization header:', headers.Authorization);
+      console.log('🔐 Полный токен в заголовке:', headers.Authorization);
+      console.log('📋 FormData содержимое:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}:`, value);
+      }
       
       const response = await fetch(url, {
         method,

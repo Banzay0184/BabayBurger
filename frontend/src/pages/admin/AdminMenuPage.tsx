@@ -296,6 +296,8 @@ export const AdminMenuPage: React.FC = () => {
       // Проверяем токен перед отправкой
       const token = localStorage.getItem('admin_token');
       console.log('🔐 Токен в localStorage:', token ? `${token.substring(0, 10)}...` : 'No token');
+      console.log('🔐 Полный токен:', token);
+      console.log('🔐 Длина токена:', token ? token.length : 0);
       
       if (!token) {
         setError('Токен аутентификации не найден. Пожалуйста, войдите в систему заново.');
