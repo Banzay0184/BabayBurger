@@ -233,13 +233,14 @@ export const AdminMenuPage: React.FC = () => {
 
   const handleCreateSize = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     try {
       setLoading(true);
       const response = await adminApi.createSizeOption({
         name: sizeFormData.name,
         price_modifier: parseFloat(sizeFormData.price_modifier),
         description: sizeFormData.description,
-        menu_item: editingItem?.id || null,
+        menu_item: null, // Создаем размер без привязки
         is_active: sizeFormData.is_active
       });
 
@@ -1072,14 +1073,20 @@ export const AdminMenuPage: React.FC = () => {
       <Modal
         isOpen={showSizeModal}
         onClose={() => setShowSizeModal(false)}
-        title={editingItem ? `Создать размер для "${editingItem.name}"` : "Создать новый размер"}
+        title={editingItem ? `Создать размер для "${editingItem.name}"` : "Создать размер (будет привязан при сохранении)"}
         size="sm"
       >
         <div className="p-3 sm:p-4">
-          {editingItem && (
+          {editingItem ? (
             <div className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-200">
               <p className="text-xs font-medium text-blue-800">
                 Создаете размер для блюда: <span className="font-bold">{editingItem.name}</span>
+              </p>
+            </div>
+          ) : (
+            <div className="mb-4 p-3 bg-yellow-50 rounded-md border border-yellow-200">
+              <p className="text-xs font-medium text-yellow-800">
+                Размер будет создан и автоматически привязан к товару при сохранении
               </p>
             </div>
           )}
