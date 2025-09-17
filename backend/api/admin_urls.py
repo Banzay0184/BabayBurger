@@ -3,7 +3,7 @@ from .admin_views import (
     AdminAuthView, AdminDashboardView, AdminMenuViewSet, AdminCategoryViewSet,
     AdminOrderViewSet, AdminUserViewSet, AdminPromoCodeViewSet, AdminDeliveryZoneViewSet,
     AdminRestaurantViewSet, AdminCashierViewSet, AdminOperatorViewSet,
-    AdminDeliveryDriverViewSet, AdminAnalyticsView
+    AdminDeliveryDriverViewSet, AdminDeliveryAssignmentsView, AdminAnalyticsView
 )
 from rest_framework.routers import DefaultRouter
 
@@ -23,4 +23,5 @@ urlpatterns = [
     path('auth/', AdminAuthView.as_view(), name='admin-auth'),
     path('dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
     path('analytics/', AdminAnalyticsView.as_view(), name='admin-analytics'),
+    path('delivery-assignments/', AdminDeliveryAssignmentsView.as_view(), name='admin-delivery-assignments'),
 ] + router.urls

@@ -10,6 +10,7 @@ import { AdminRestaurantsPage } from './AdminRestaurantsPage';
 import { AdminCashiersPage } from './AdminCashiersPage';
 import { AdminOperatorsPage } from './AdminOperatorsPage';
 import { AdminDeliveryDriversPage } from './AdminDeliveryDriversPage';
+import AdminDeliveryAssignmentsPage from './AdminDeliveryAssignmentsPage';
 import { AdminAnalyticsPage } from './AdminAnalyticsPage';
 import { AdminAuthProvider, useAdminAuth } from '../../context/AdminAuthContext';
 import { AdminLoginPage } from './AdminLoginPage';
@@ -244,6 +245,21 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             Курьеры
           </NavLink>
           
+          <NavLink 
+            to="/admin/delivery-assignments" 
+            onClick={closeMobileMenu} 
+            className={({ isActive }) => 
+              `flex items-center px-2 py-1.5 lg:px-3 lg:py-2 rounded-md text-xs font-medium transition-all duration-200 ${
+                isActive 
+                  ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md shadow-orange-500/25' 
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm'
+              }`
+            }
+          >
+            <span className="mr-2 text-sm">📦</span>
+            Назначения
+          </NavLink>
+          
           <div className="border-t border-gray-200 my-2"></div>
           
           <NavLink 
@@ -390,6 +406,16 @@ export const AdminApp: React.FC = () => {
             <AdminGuard>
               <AdminLayout>
                 <AdminDeliveryDriversPage />
+              </AdminLayout>
+            </AdminGuard>
+          )}
+        />
+        <Route
+          path="delivery-assignments"
+          element={(
+            <AdminGuard>
+              <AdminLayout>
+                <AdminDeliveryAssignmentsPage />
               </AdminLayout>
             </AdminGuard>
           )}

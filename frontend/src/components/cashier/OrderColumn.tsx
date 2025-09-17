@@ -175,7 +175,7 @@ export const OrderColumn: React.FC<OrderColumnProps> = ({
                       order.items_details.slice(0, 2).map((item, index) => (
                         <div key={index} className="text-xs text-gray-700 bg-gray-50/50 px-1.5 sm:px-2 py-0.5 rounded flex justify-between">
                           <span>
-                            <span className="font-medium">{item.quantity}x</span> {item.menu_item_name}
+                            <span className="font-medium">{item.quantity}x</span> {item.menu_item_name || 'Товар'}
                             {item.size_option_name && <span className="text-gray-500"> ({item.size_option_name})</span>}
                           </span>
                           <span className="font-bold text-gray-900">
@@ -184,7 +184,9 @@ export const OrderColumn: React.FC<OrderColumnProps> = ({
                         </div>
                       ))
                     ) : (
-                      <p className="text-xs text-gray-500">Нет товаров</p>
+                      <div className="text-xs text-gray-500 bg-yellow-50 px-1.5 sm:px-2 py-0.5 rounded">
+                        ⏳ Загрузка товаров...
+                      </div>
                     )}
                     {order.items_details && order.items_details.length > 2 && (
                       <p className="text-xs text-blue-600 font-medium">
@@ -209,7 +211,12 @@ export const OrderColumn: React.FC<OrderColumnProps> = ({
                     </div>
                     <div className="text-right">
                       <span className="font-bold text-green-700 text-xs sm:text-sm block">
-                        {formatCurrency(order.final_price)}
+                        {order.final_price && parseFloat(order.final_price) > 0 
+                          ? formatCurrency(Number(order.final_price))
+                          : order.total_price && parseFloat(order.total_price) > 0
+                            ? formatCurrency(Number(order.total_price))
+                            : '⏳ Загрузка...'
+                        }
                       </span>
                       {(order.discount_amount || 0) > 0 && (
                         <span className="text-xs text-green-600">

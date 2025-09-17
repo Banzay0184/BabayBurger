@@ -175,7 +175,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       <div key={index} className="bg-white rounded-lg p-3 border border-gray-200">
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900">{item.menu_item_name}</h4>
+                            <h4 className="font-semibold text-gray-900">{item.menu_item_name || 'Товар'}</h4>
                             {item.size_option_name && (
                               <p className="text-sm text-gray-600">Размер: {item.size_option_name}</p>
                             )}
@@ -204,7 +204,10 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500 text-center py-4">Нет товаров в заказе</p>
+                    <div className="text-center py-4">
+                      <div className="text-gray-500 mb-2">⏳ Загрузка товаров...</div>
+                      <p className="text-sm text-gray-400">Товары будут отображены после загрузки</p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -215,7 +218,12 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Сумма заказа:</span>
-                    <span className="font-medium">{(order.total_price || 0).toLocaleString()} сум</span>
+                    <span className="font-medium">
+                      {order.total_price && parseFloat(order.total_price) > 0 
+                        ? `${Number(order.total_price).toLocaleString()} сум`
+                        : '⏳ Загрузка...'
+                      }
+                    </span>
                   </div>
                   
                   {(order.delivery_fee || 0) > 0 && (
@@ -243,7 +251,14 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   
                   <div className="flex justify-between text-lg font-bold">
                     <span>Итого к оплате:</span>
-                    <span className="text-green-600">{(order.final_price || 0).toLocaleString()} сум</span>
+                    <span className="text-green-600">
+                      {order.final_price && parseFloat(order.final_price) > 0 
+                        ? `${Number(order.final_price).toLocaleString()} сум`
+                        : order.total_price && parseFloat(order.total_price) > 0
+                          ? `${Number(order.total_price).toLocaleString()} сум`
+                          : '⏳ Загрузка...'
+                      }
+                    </span>
                   </div>
                   
                   <div className="flex items-center space-x-2 mt-3">

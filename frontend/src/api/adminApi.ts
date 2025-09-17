@@ -491,6 +491,78 @@ class AdminApiClient {
   async deleteSizeOption(id: number) {
     return this.request(`size-options/${id}/`, { method: 'DELETE' });
   }
+
+  // Курьеры доставки
+  async getDeliveryDrivers(params?: {
+    status?: string;
+    is_active?: boolean;
+    page?: number;
+    page_size?: number;
+  }): Promise<ApiResponse<any>> {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = searchParams.toString();
+    return this.request(`delivery-drivers/${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getDeliveryDriver(id: number) {
+    return this.request(`delivery-drivers/${id}/`);
+  }
+
+  async updateDeliveryDriver(id: number, data: any) {
+    return this.request(`delivery-drivers/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getDeliveryDriverAssignments(id: number, params?: {
+    status?: string;
+    date_from?: string;
+    date_to?: string;
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = searchParams.toString();
+    return this.request(`delivery-drivers/${id}/assignments/${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getDeliveryDriverStats(id: number, period: string = 'week') {
+    return this.request(`delivery-drivers/${id}/stats/?period=${period}`);
+  }
+
+  // Назначения доставки
+  async getDeliveryAssignments(params?: {
+    status?: string;
+    driver_id?: number;
+    date_from?: string;
+    date_to?: string;
+    page?: number;
+    page_size?: number;
+  }): Promise<ApiResponse<any>> {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = searchParams.toString();
+    return this.request(`delivery-assignments/${queryString ? `?${queryString}` : ''}`);
+  }
 }
 
 export const adminApi = new AdminApiClient();

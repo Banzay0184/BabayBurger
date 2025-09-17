@@ -50,6 +50,20 @@ export const CashierDashboardPage: React.FC = () => {
 
   const handleOrderCreated = useCallback((newOrder: Order) => {
     console.log('🆕 New order received via WebSocket:', newOrder);
+    
+    // Проверяем, есть ли полные данные заказа (товары и сумма)
+    const hasCompleteData = newOrder.items_details && 
+                           newOrder.items_details.length > 0 && 
+                           newOrder.total_price && 
+                           parseFloat(newOrder.total_price) > 0;
+    
+    if (!hasCompleteData) {
+      console.log('⚠️ Данные заказа неполные, загружаем через API...');
+      // Загружаем полные данные заказа через API
+      fetchOrderDetails(newOrder.id);
+      return;
+    }
+    
     setOrders(prevOrders => {
       // Проверяем, нет ли уже такого заказа
       const existingOrder = prevOrders.find(order => order.id === newOrder.id);
@@ -59,7 +73,7 @@ export const CashierDashboardPage: React.FC = () => {
       // Добавляем новый заказ в начало списка
       return [newOrder, ...prevOrders];
     });
-  }, []);
+  }, [fetchOrderDetails]);
 
   const handleOrderUpdated = useCallback((orderId: number, updatedOrder: Order | undefined, status: string | undefined) => {
     console.log('🔄 Order updated via WebSocket:', orderId, status);

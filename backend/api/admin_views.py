@@ -88,30 +88,129 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         return instance
 class DeliveryDriverSerializer(serializers.ModelSerializer):
     """Сериализатор для курьеров доставки"""
-    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
-    user_phone = serializers.CharField(source='user.phone', read_only=True)
+    user_name = serializers.SerializerMethodField()
+    user_phone = serializers.CharField(source='phone', read_only=True)
+    restaurants_names = serializers.SerializerMethodField()
+    current_assignments = serializers.SerializerMethodField()
     
     class Meta:
         model = DeliveryDriver
         fields = [
-            'id', 'user', 'user_name', 'user_phone', 'telegram_id', 'status',
-            'is_active', 'vehicle_type', 'license_plate', 'created_at', 'updated_at'
+            'id', 'user', 'user_name', 'user_phone', 'telegram_id', 'phone', 'status',
+            'is_active', 'max_orders', 'current_orders_count', 'rating', 'total_deliveries',
+            'restaurants', 'restaurants_names', 'current_assignments', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'current_orders_count', 'total_deliveries']
+    
+    def get_user_name(self, obj):
+        """Получить полное имя пользователя"""
+        if obj.user.first_name and obj.user.last_name:
+            return f"{obj.user.first_name} {obj.user.last_name}".strip()
+        elif obj.user.first_name:
+            return obj.user.first_name
+        elif obj.user.username:
+            return obj.user.username
+        return f"Пользователь #{obj.user.id}"
+    
+    def get_restaurants_names(self, obj):
+        """Получить названия ресторанов"""
+        return [restaurant.name for restaurant in obj.restaurants.all()]
+    
+    def get_current_assignments(self, obj):
+        """Получить текущие назначения"""
+        current_assignments = DeliveryAssignment.objects.filter(
+            driver=obj,
+            status__in=['assigned', 'accepted', 'picked_up', 'delivering']
+        ).select_related('order', 'order__user', 'order__address')
+        
+        return [
+            {
+                'id': assignment.id,
+                'order_id': assignment.order.id,
+                'status': assignment.status,
+                'status_display': assignment.get_status_display(),
+                'assigned_at': assignment.assigned_at,
+                'accepted_at': assignment.accepted_at,
+                'picked_up_at': assignment.picked_up_at,
+                'delivered_at': assignment.delivered_at,
+                'customer_name': assignment.order.user.first_name,
+                'customer_phone': assignment.order.phone,
+                'address': assignment.order.address.full_address if assignment.order.address else 'Адрес не указан',
+                'total_price': float(assignment.order.final_price),
+                'payment_method': assignment.order.get_payment_method_display(),
+                'receipt_photo': assignment.receipt_photo.url if assignment.receipt_photo else None,
+            }
+            for assignment in current_assignments
+        ]
 
 
 class DeliveryAssignmentSerializer(serializers.ModelSerializer):
     """Сериализатор для назначений доставки"""
-    driver_name = serializers.CharField(source='driver.user.get_full_name', read_only=True)
+    driver_name = serializers.SerializerMethodField()
     order_id = serializers.IntegerField(source='order.id', read_only=True)
+    customer_name = serializers.SerializerMethodField()
+    customer_phone = serializers.SerializerMethodField()
+    address = serializers.SerializerMethodField()
+    total_price = serializers.SerializerMethodField()
+    payment_method = serializers.SerializerMethodField()
+    receipt_photo_url = serializers.SerializerMethodField()
+    delivery_time = serializers.SerializerMethodField()
     
     class Meta:
         model = DeliveryAssignment
         fields = [
             'id', 'order', 'order_id', 'driver', 'driver_name', 'assigned_at',
-            'accepted_at', 'picked_up_at', 'delivered_at', 'status', 'notes'
+            'accepted_at', 'picked_up_at', 'delivered_at', 'status', 'notes',
+            'customer_name', 'customer_phone', 'address', 'total_price', 
+            'payment_method', 'receipt_photo', 'receipt_photo_url', 'delivery_time'
         ]
         read_only_fields = ['id', 'assigned_at']
+    
+    def get_driver_name(self, obj):
+        """Получить имя курьера"""
+        if obj.driver.user.first_name and obj.driver.user.last_name:
+            return f"{obj.driver.user.first_name} {obj.driver.user.last_name}".strip()
+        elif obj.driver.user.first_name:
+            return obj.driver.user.first_name
+        return f"Курьер #{obj.driver.id}"
+    
+    def get_customer_name(self, obj):
+        """Получить имя клиента"""
+        return obj.order.user.first_name or f"Клиент #{obj.order.user.id}"
+    
+    def get_customer_phone(self, obj):
+        """Получить телефон клиента"""
+        return obj.order.phone
+    
+    def get_address(self, obj):
+        """Получить адрес доставки"""
+        if obj.order.address:
+            return obj.order.address.full_address
+        return 'Адрес не указан'
+    
+    def get_total_price(self, obj):
+        """Получить общую стоимость заказа"""
+        return float(obj.order.final_price)
+    
+    def get_payment_method(self, obj):
+        """Получить способ оплаты"""
+        return obj.order.get_payment_method_display()
+    
+    def get_receipt_photo_url(self, obj):
+        """Получить URL фото чека"""
+        if obj.receipt_photo:
+            return obj.receipt_photo.url
+        return None
+    
+    def get_delivery_time(self, obj):
+        """Получить время доставки"""
+        if obj.accepted_at and obj.delivered_at:
+            delivery_time = obj.delivered_at - obj.accepted_at
+            total_seconds = int(delivery_time.total_seconds())
+            minutes = total_seconds // 60
+            seconds = total_seconds % 60
+            return f"{minutes}м {seconds}с"
+        return None
 
 
 class AdminAuthView(APIView):
@@ -594,6 +693,153 @@ class AdminDeliveryDriverViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(is_active=is_active.lower() == 'true')
         
         return queryset.order_by('-created_at')
+    
+    @action(detail=True, methods=['get'])
+    def assignments(self, request, pk=None):
+        """Получить назначения курьера"""
+        driver = self.get_object()
+        assignments = DeliveryAssignment.objects.filter(
+            driver=driver
+        ).select_related('order', 'order__user', 'order__address').order_by('-assigned_at')
+        
+        # Фильтрация по статусу
+        status_filter = request.query_params.get('status')
+        if status_filter:
+            assignments = assignments.filter(status=status_filter)
+        
+        # Фильтрация по дате
+        date_from = request.query_params.get('date_from')
+        if date_from:
+            assignments = assignments.filter(assigned_at__date__gte=date_from)
+        
+        date_to = request.query_params.get('date_to')
+        if date_to:
+            assignments = assignments.filter(assigned_at__date__lte=date_to)
+        
+        serializer = DeliveryAssignmentSerializer(assignments, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def stats(self, request, pk=None):
+        """Получить статистику курьера"""
+        driver = self.get_object()
+        
+        # Период для статистики
+        period = request.query_params.get('period', 'week')
+        if period == 'day':
+            start_date = timezone.now().date()
+            end_date = start_date
+        elif period == 'week':
+            end_date = timezone.now().date()
+            start_date = end_date - timedelta(days=7)
+        elif period == 'month':
+            end_date = timezone.now().date()
+            start_date = end_date - timedelta(days=30)
+        else:
+            start_date = timezone.now().date() - timedelta(days=7)
+            end_date = timezone.now().date()
+        
+        assignments = DeliveryAssignment.objects.filter(
+            driver=driver,
+            assigned_at__date__range=[start_date, end_date]
+        )
+        
+        stats = {
+            'total_assignments': assignments.count(),
+            'completed': assignments.filter(status='delivered').count(),
+            'cancelled': assignments.filter(status='cancelled').count(),
+            'in_progress': assignments.filter(
+                status__in=['assigned', 'accepted', 'picked_up', 'delivering']
+            ).count(),
+            'avg_delivery_time': None,
+            'total_revenue': 0,
+            'rating': float(driver.rating),
+            'period': period,
+            'start_date': start_date.strftime('%Y-%m-%d'),
+            'end_date': end_date.strftime('%Y-%m-%d'),
+        }
+        
+        # Среднее время доставки
+        completed_assignments = assignments.filter(
+            status='delivered',
+            delivered_at__isnull=False,
+            accepted_at__isnull=False
+        )
+        
+        if completed_assignments.exists():
+            total_time = 0
+            count = 0
+            for assignment in completed_assignments:
+                if assignment.accepted_at and assignment.delivered_at:
+                    delivery_time = assignment.delivered_at - assignment.accepted_at
+                    total_time += delivery_time.total_seconds()
+                    count += 1
+            
+            if count > 0:
+                avg_seconds = total_time / count
+                stats['avg_delivery_time'] = {
+                    'minutes': int(avg_seconds // 60),
+                    'seconds': int(avg_seconds % 60)
+                }
+        
+        # Общая выручка
+        completed_orders = assignments.filter(status='delivered').values_list('order__final_price', flat=True)
+        stats['total_revenue'] = sum(completed_orders) if completed_orders else 0
+        
+        return Response(stats)
+
+
+class AdminDeliveryAssignmentsView(generics.GenericAPIView):
+    """Управление назначениями доставки"""
+    authentication_classes = [AdminTokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    
+    def get(self, request):
+        """Получить все назначения доставки"""
+        assignments = DeliveryAssignment.objects.select_related(
+            'order', 'order__user', 'order__address', 'driver', 'driver__user'
+        ).order_by('-assigned_at')
+        
+        # Фильтрация по статусу
+        status_filter = request.query_params.get('status')
+        if status_filter:
+            assignments = assignments.filter(status=status_filter)
+        
+        # Фильтрация по курьеру
+        driver_id = request.query_params.get('driver_id')
+        if driver_id:
+            assignments = assignments.filter(driver_id=driver_id)
+        
+        # Фильтрация по дате
+        date_from = request.query_params.get('date_from')
+        if date_from:
+            assignments = assignments.filter(assigned_at__date__gte=date_from)
+        
+        date_to = request.query_params.get('date_to')
+        if date_to:
+            assignments = assignments.filter(assigned_at__date__lte=date_to)
+        
+        # Пагинация
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 20))
+        
+        total_count = assignments.count()
+        offset = (page - 1) * page_size
+        assignments_page = assignments[offset:offset + page_size]
+        
+        serializer = DeliveryAssignmentSerializer(assignments_page, many=True)
+        
+        total_pages = (total_count + page_size - 1) // page_size
+        
+        return Response({
+            'count': total_count,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages,
+            'has_next': page < total_pages,
+            'has_previous': page > 1,
+            'results': serializer.data
+        })
 
 
 class AdminAnalyticsView(generics.GenericAPIView):

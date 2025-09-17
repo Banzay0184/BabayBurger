@@ -60,7 +60,7 @@ export interface Order {
     phone: string;
   };
   items_details: OrderItem[];
-  total_price: number;
+  total_price: string;
   status: string;
   service_type: 'delivery' | 'pickup';
   payment_method: string;
@@ -77,7 +77,7 @@ export interface Order {
   updated_at: string;
   delivery_fee: number;
   discount_amount: number;
-  final_price: number;
+  final_price: string;
   notes: string;
   cashier_processing_status?: string;
   cashier_processing_details?: {
