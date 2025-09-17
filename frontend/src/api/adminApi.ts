@@ -151,20 +151,29 @@ class AdminApiClient {
       // Получаем токен из localStorage
       const token = localStorage.getItem('admin_token');
       
+      // Проверяем токен перед отправкой
+      if (!token) {
+        console.error('❌ No token found for FormData request');
+        // Очищаем данные авторизации и перенаправляем
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        if (typeof window !== 'undefined') {
+          window.location.href = '/admin/login';
+        }
+        return { error: 'Токен аутентификации не найден. Пожалуйста, войдите в систему заново.' };
+      }
+      
       // Отладочная информация
       console.log('🔐 FormData API Request:', {
         url,
-        token: token ? `${token.substring(0, 10)}...` : 'No token',
+        token: `${token.substring(0, 10)}...`,
         endpoint,
         method
       });
       
-      const headers: any = {};
-      
-      // Добавляем токен аутентификации если он есть
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
+      const headers: any = {
+        'Authorization': `Bearer ${token}`
+      };
       
       console.log('📤 FormData Request headers:', headers);
       console.log('🔐 Authorization header:', headers.Authorization);
@@ -182,6 +191,13 @@ class AdminApiClient {
 
       if (!response.ok) {
         console.error('❌ FormData API Error:', data);
+        
+        // Обрабатываем ошибку авторизации
+        if (response.status === 401) {
+          this.handleAuthError(response, data);
+          return { error: 'Сессия истекла. Пожалуйста, войдите в систему заново.' };
+        }
+        
         return { error: data.error || 'Ошибка сервера' };
       }
 
