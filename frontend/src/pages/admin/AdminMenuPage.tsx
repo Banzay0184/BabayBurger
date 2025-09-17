@@ -713,6 +713,16 @@ export const AdminMenuPage: React.FC = () => {
                       <label className="block text-xs font-medium text-black mb-1">
                         Цена (сум) <span className="text-red-500">*</span>
                       </label>
+                      
+                      {/* Отображение текущей цены при редактировании */}
+                      {editingItem && (
+                        <div className="mb-2 p-2 bg-blue-50 rounded border border-blue-200">
+                          <p className="text-xs text-blue-700">
+                            <span className="font-medium">Текущая цена:</span> {editingItem.price} сум
+                          </p>
+                        </div>
+                      )}
+                      
                       <input 
                         type="number" 
                         name="price"
@@ -808,6 +818,29 @@ export const AdminMenuPage: React.FC = () => {
                   <label className="block text-xs font-medium text-black mb-2">
                     Размеры товара
                   </label>
+                  
+                  {/* Отображение выбранных размеров */}
+                  {editingItem && editingItem.size_options && editingItem.size_options.length > 0 && (
+                    <div className="mb-3">
+                      <p className="text-xs font-medium text-gray-700 mb-2">Текущие размеры:</p>
+                      <div className="space-y-2">
+                        {editingItem.size_options.map((size: any) => (
+                          <div key={size.id} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-xs font-medium text-gray-900">{size.name}</span>
+                              <span className="text-xs text-gray-600">({size.description || 'Без описания'})</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-xs font-bold text-green-600">
+                                {size.price_modifier > 0 ? `+${size.price_modifier}` : size.price_modifier} сум
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   <button
                     type="button"
                     onClick={() => setShowSizeModal(true)}
@@ -825,6 +858,29 @@ export const AdminMenuPage: React.FC = () => {
                   <label className="block text-xs font-medium text-black mb-2">
                     Добавки к товару
                   </label>
+                  
+                  {/* Отображение выбранных добавок */}
+                  {editingItem && editingItem.add_on_options && editingItem.add_on_options.length > 0 && (
+                    <div className="mb-3">
+                      <p className="text-xs font-medium text-gray-700 mb-2">Текущие добавки:</p>
+                      <div className="space-y-2">
+                        {editingItem.add_on_options.map((addon: any) => (
+                          <div key={addon.id} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-xs font-medium text-gray-900">{addon.name}</span>
+                              <span className="text-xs text-gray-600">({addon.description || 'Без описания'})</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-xs font-bold text-green-600">
+                                {addon.price} сум
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5">
                     {Array.isArray(addOns) && addOns.map(addOn => (
                       <label key={addOn.id} className="flex text-black items-center space-x-2 p-1.5 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">
