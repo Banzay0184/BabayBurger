@@ -239,7 +239,7 @@ export const AdminMenuPage: React.FC = () => {
         name: sizeFormData.name,
         price_modifier: parseFloat(sizeFormData.price_modifier),
         description: sizeFormData.description,
-        menu_item: null,
+        menu_item: editingItem?.id || null,
         is_active: sizeFormData.is_active
       });
 
@@ -1072,10 +1072,17 @@ export const AdminMenuPage: React.FC = () => {
       <Modal
         isOpen={showSizeModal}
         onClose={() => setShowSizeModal(false)}
-        title="Создать новый размер"
+        title={editingItem ? `Создать размер для "${editingItem.name}"` : "Создать новый размер"}
         size="sm"
       >
         <div className="p-3 sm:p-4">
+          {editingItem && (
+            <div className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-200">
+              <p className="text-xs font-medium text-blue-800">
+                Создаете размер для блюда: <span className="font-bold">{editingItem.name}</span>
+              </p>
+            </div>
+          )}
           <form onSubmit={handleCreateSize} className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-black mb-1">
