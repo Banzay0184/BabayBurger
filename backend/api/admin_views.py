@@ -35,16 +35,18 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
     size_options = serializers.SerializerMethodField()
     add_on_options = serializers.SerializerMethodField()
     
-    # Поля для записи - используем только одно поле для каждого many-to-many
-    size_options_write = serializers.ListField(
-        child=serializers.IntegerField(),
+    # Поля для записи - используем прямые many-to-many поля
+    size_options_write = serializers.PrimaryKeyRelatedField(
+        queryset=SizeOption.objects.all(),
+        many=True,
         write_only=True,
         required=False,
         allow_empty=True,
         source='size_options'
     )
-    add_on_options_write = serializers.ListField(
-        child=serializers.IntegerField(),
+    add_on_options_write = serializers.PrimaryKeyRelatedField(
+        queryset=AddOn.objects.all(),
+        many=True,
         write_only=True,
         required=False,
         allow_empty=True,
