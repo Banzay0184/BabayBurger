@@ -33,7 +33,7 @@ export const AdminMenuPage: React.FC = () => {
     is_new: false,
     is_active: true,
     priority: 0,
-    size_options: [] as number[],
+    size_options: [] as any[],
     add_on_options: [] as number[]
   });
 
@@ -41,9 +41,6 @@ export const AdminMenuPage: React.FC = () => {
   const [addOns, setAddOns] = React.useState<any[]>([]);
   const [sizeOptions, setSizeOptions] = React.useState<any[]>([]);
   const [showSizeModal, setShowSizeModal] = React.useState(false);
-  const [showSizeCreationModal, setShowSizeCreationModal] = React.useState(false);
-  const [showAddOnCreationModal, setShowAddOnCreationModal] = React.useState(false);
-  const [savedMenuItem, setSavedMenuItem] = React.useState<any>(null);
   const [sizeFormData, setSizeFormData] = React.useState({
     name: '',
     price_modifier: '',
@@ -170,6 +167,7 @@ export const AdminMenuPage: React.FC = () => {
       size_options: [],
       add_on_options: []
     });
+    setSizeFormData({ name: '', price_modifier: '', description: '', is_active: true });
     setEditingItem(null);
   };
 
@@ -225,14 +223,6 @@ export const AdminMenuPage: React.FC = () => {
 
 
   // Функции для работы с размерами
-  const handleSizeChange = (sizeId: number, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      size_options: checked 
-        ? [...prev.size_options, sizeId]
-        : prev.size_options.filter(id => id !== sizeId)
-    }));
-  };
 
   const handleCreateSize = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -275,95 +265,6 @@ export const AdminMenuPage: React.FC = () => {
     }
   };
 
-  const handleCreateSizeForSavedItem = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!savedMenuItem) {
-      setError('Нет информации о сохраненном товаре');
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      const response = await adminApi.createSizeOption({
-        name: sizeFormData.name,
-        price_modifier: parseFloat(sizeFormData.price_modifier),
-        description: sizeFormData.description,
-        menu_item: savedMenuItem.id, // Привязываем к сохраненному товару
-        is_active: sizeFormData.is_active
-      });
-
-      if (response.success) {
-        setShowSizeCreationModal(false);
-        setSizeFormData({ name: '', price_modifier: '', description: '', is_active: true });
-        
-        // Перезагружаем размеры и данные
-        const sizesRes = await adminApi.getSizeOptions();
-        if (sizesRes.success) {
-          setSizeOptions(sizesRes.data as any[] || []);
-        }
-        
-        // Перезагружаем данные меню
-        loadData(currentPage);
-        
-        // Показываем успешное сообщение
-        alert(`Размер "${sizeFormData.name}" успешно создан и привязан к товару "${savedMenuItem.name}"!`);
-        
-        // Показываем модальное окно для создания добавок
-        setShowAddOnCreationModal(true);
-      } else {
-        setError(response.error || 'Ошибка создания размера');
-      }
-    } catch (err) {
-      console.error('💥 Ошибка создания размера:', err);
-      setError('Ошибка создания размера');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateAddOnForSavedItem = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!savedMenuItem) {
-      setError('Нет информации о сохраненном товаре');
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      const response = await adminApi.createAddOn({
-        name: sizeFormData.name, // Используем те же поля формы
-        price: parseFloat(sizeFormData.price_modifier),
-        is_active: sizeFormData.is_active
-      });
-
-      if (response.success) {
-        setShowAddOnCreationModal(false);
-        setSizeFormData({ name: '', price_modifier: '', description: '', is_active: true });
-        setSavedMenuItem(null);
-        
-        // Перезагружаем добавки и данные
-        const addOnsRes = await adminApi.getAddOns();
-        if (addOnsRes.success) {
-          setAddOns(addOnsRes.data as any[] || []);
-        }
-        
-        // Перезагружаем данные меню
-        loadData(currentPage);
-        
-        // Показываем успешное сообщение
-        alert(`Добавка "${sizeFormData.name}" успешно создана!`);
-      } else {
-        setError(response.error || 'Ошибка создания добавки');
-      }
-    } catch (err) {
-      console.error('💥 Ошибка создания добавки:', err);
-      setError('Ошибка создания добавки');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -459,19 +360,34 @@ export const AdminMenuPage: React.FC = () => {
       console.log('📥 Ответ сервера:', response);
 
       if (response.success) {
-        // Сохраняем информацию о созданном товаре
-        const createdItem = response.data;
-        setSavedMenuItem(createdItem);
+        const createdItem = response.data as any;
+        
+        // Создаем размеры для товара, если они есть
+        if (formData.size_options && formData.size_options.length > 0) {
+          for (const sizeData of formData.size_options) {
+            try {
+              await adminApi.createSizeOption({
+                name: sizeData.name,
+                price_modifier: sizeData.price_modifier,
+                description: sizeData.description,
+                menu_item: createdItem.id, // Привязываем к созданному товару
+                is_active: sizeData.is_active
+              });
+            } catch (err) {
+              console.error('Ошибка создания размера:', err);
+            }
+          }
+        }
         
         // Закрываем форму товара
         setShowForm(false);
         resetForm();
         
-        // Показываем модальное окно с вопросом о создании размеров
-        setShowSizeCreationModal(true);
-        
         // Перезагружаем данные
         loadData(currentPage);
+        
+        // Показываем успешное сообщение
+        alert(`Товар "${createdItem.name}" успешно создан!`);
       } else {
         setError(response.error || 'Ошибка сохранения');
       }
@@ -976,70 +892,131 @@ export const AdminMenuPage: React.FC = () => {
                     Размеры товара
                   </label>
                   
-                  {/* Показываем размеры для редактирования или все доступные для нового товара */}
-                  {(() => {
-                    console.log('🔍 Проверяем размеры для отображения:', {
-                      editingItem: editingItem,
-                      size_options: editingItem?.size_options,
-                      length: editingItem?.size_options?.length,
-                      sizeOptions: sizeOptions,
-                      sizeOptionsLength: sizeOptions.length
-                    });
+                  {/* Форма создания размера */}
+                  <div className="space-y-3 p-3 bg-gray-50 rounded-md border">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-black mb-1">
+                          Название размера <span className="text-red-500">*</span>
+                        </label>
+                        <input 
+                          type="text" 
+                          value={sizeFormData.name}
+                          onChange={(e) => setSizeFormData(prev => ({ ...prev, name: e.target.value }))}
+                          className="w-full text-black border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Например: Большая"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-medium text-black mb-1">
+                          Модификатор цены (сум) <span className="text-red-500">*</span>
+                        </label>
+                        <input 
+                          type="number" 
+                          value={sizeFormData.price_modifier}
+                          onChange={(e) => setSizeFormData(prev => ({ ...prev, price_modifier: e.target.value }))}
+                          step="0.01"
+                          className="w-full text-black border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
                     
-                    // Определяем какие размеры показывать
-                    const sizesToShow = editingItem && editingItem.size_options && editingItem.size_options.length > 0 
-                      ? editingItem.size_options 
-                      : sizeOptions;
+                    <div>
+                      <label className="block text-xs font-medium text-black mb-1">
+                        Описание размера
+                      </label>
+                      <textarea 
+                        value={sizeFormData.description}
+                        onChange={(e) => setSizeFormData(prev => ({ ...prev, description: e.target.value }))}
+                        className="w-full text-black border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Описание размера (необязательно)"
+                        rows={2}
+                      />
+                    </div>
                     
-                    const title = editingItem && editingItem.size_options && editingItem.size_options.length > 0
-                      ? "Доступные размеры для этого блюда:"
-                      : "Доступные размеры:";
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="is_active_size_inline"
+                        checked={sizeFormData.is_active}
+                        onChange={(e) => setSizeFormData(prev => ({ ...prev, is_active: e.target.checked }))}
+                        className="rounded"
+                      />
+                      <label htmlFor="is_active_size_inline" className="text-xs font-medium text-black">
+                        Активный размер
+                      </label>
+                    </div>
                     
-                    if (sizesToShow && sizesToShow.length > 0) {
-                      return (
-                        <div className="space-y-2">
-                          <p className="text-xs font-medium text-gray-700 mb-2">{title}</p>
-                          {sizesToShow.map((size: any) => (
-                            <div key={size.id} className="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200">
-                              <div className="flex items-center space-x-2">
-                                <input
-                                  type="checkbox"
-                                  checked={formData.size_options.includes(size.id)}
-                                  onChange={(e) => handleSizeChange(size.id, e.target.checked)}
-                                  className="rounded"
-                                />
-                                <span className="text-xs font-medium text-gray-900">{size.name}</span>
-                                <span className="text-xs text-gray-600">({size.description || 'Без описания'})</span>
-                              </div>
-                              <div className="text-right">
-                                <span className="text-xs font-bold text-green-600">
-                                  {size.price_modifier > 0 ? `+${size.price_modifier}` : size.price_modifier} сум
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    } else {
-                      return (
-                        <div className="text-center py-4">
-                          <p className="text-xs text-gray-500 mb-2">Нет размеров для этого блюда</p>
-                          <p className="text-xs text-gray-400">Размеры настраиваются на уровне конкретного блюда</p>
-                        </div>
-                      );
-                    }
-                  })()}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!sizeFormData.name.trim()) {
+                          alert('Введите название размера');
+                          return;
+                        }
+                        if (!sizeFormData.price_modifier) {
+                          alert('Введите модификатор цены');
+                          return;
+                        }
+                        
+                        // Добавляем размер в список для сохранения
+                        const newSize = {
+                          id: Date.now(), // Временный ID
+                          name: sizeFormData.name,
+                          price_modifier: parseFloat(sizeFormData.price_modifier),
+                          description: sizeFormData.description,
+                          is_active: sizeFormData.is_active
+                        };
+                        
+                        setFormData(prev => ({
+                          ...prev,
+                          size_options: [...prev.size_options, newSize]
+                        }));
+                        
+                        // Очищаем форму
+                        setSizeFormData({ name: '', price_modifier: '', description: '', is_active: true });
+                      }}
+                      className="px-3 py-2 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                    >
+                      + Добавить размер
+                    </button>
+                  </div>
                   
-                  <button
-                    type="button"
-                    onClick={() => setShowSizeModal(true)}
-                    className="px-3 py-2 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors mt-3"
-                  >
-                    + Создать новый размер
-                  </button>
-                  <p className="text-xs text-black mt-2">
-                    Создавайте размеры для каждого товара отдельно
-                  </p>
+                  {/* Список добавленных размеров */}
+                  {formData.size_options && formData.size_options.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-xs font-medium text-gray-700 mb-2">Добавленные размеры:</p>
+                      <div className="space-y-2">
+                        {formData.size_options.map((size: any, index: number) => (
+                          <div key={size.id || index} className="flex items-center justify-between p-2 bg-green-50 rounded border border-green-200">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-xs font-medium text-gray-900">{size.name}</span>
+                              <span className="text-xs text-gray-600">({size.description || 'Без описания'})</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-xs font-bold text-green-600">
+                                {size.price_modifier > 0 ? `+${size.price_modifier}` : size.price_modifier} сум
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    size_options: prev.size_options.filter((_, i) => i !== index)
+                                  }));
+                                }}
+                                className="text-red-500 hover:text-red-700 text-xs"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 {/* Добавки */}
@@ -1273,195 +1250,6 @@ export const AdminMenuPage: React.FC = () => {
         </div>
       </Modal>
 
-      {/* Модальное окно с вопросом о создании размеров */}
-      <Modal
-        isOpen={showSizeCreationModal}
-        onClose={() => {
-          setShowSizeCreationModal(false);
-          setSavedMenuItem(null);
-        }}
-        title="Создать размер для товара?"
-        size="sm"
-      >
-        <div className="p-3 sm:p-4">
-          {savedMenuItem && (
-            <div className="mb-4 p-3 bg-green-50 rounded-md border border-green-200">
-              <p className="text-xs font-medium text-green-800">
-                Товар <span className="font-bold">"{savedMenuItem.name}"</span> успешно сохранен!
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                Хотите создать размер для этого товара?
-              </p>
-            </div>
-          )}
-          
-          <form onSubmit={handleCreateSizeForSavedItem} className="space-y-3">
-            <div>
-              <label className="block text-xs font-medium text-black mb-1">
-                Название размера <span className="text-red-500">*</span>
-              </label>
-              <input 
-                type="text" 
-                value={sizeFormData.name}
-                onChange={(e) => setSizeFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full text-black border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Например: Большая"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-xs font-medium text-black mb-1">
-                Модификатор цены (сум) <span className="text-red-500">*</span>
-              </label>
-              <input 
-                type="number" 
-                value={sizeFormData.price_modifier}
-                onChange={(e) => setSizeFormData(prev => ({ ...prev, price_modifier: e.target.value }))}
-                step="0.01"
-                className="w-full text-black border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="0"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-xs font-medium text-black mb-1">
-                Описание
-              </label>
-              <textarea 
-                value={sizeFormData.description}
-                onChange={(e) => setSizeFormData(prev => ({ ...prev, description: e.target.value }))}
-                className="w-full text-black border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Описание размера (необязательно)"
-                rows={2}
-              />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="is_active_size"
-                checked={sizeFormData.is_active}
-                onChange={(e) => setSizeFormData(prev => ({ ...prev, is_active: e.target.checked }))}
-                className="rounded"
-              />
-              <label htmlFor="is_active_size" className="text-xs font-medium text-black">
-                Активный размер
-              </label>
-            </div>
-            
-            <div className="flex gap-2 pt-3 border-t border-gray-200">
-              <button 
-                type="button"
-                onClick={() => {
-                  setShowSizeCreationModal(false);
-                  setShowAddOnCreationModal(true);
-                }}
-                className="flex-1 text-black px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-xs sm:text-sm"
-              >
-                Завершить
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs sm:text-sm"
-              >
-                {loading ? 'Создание...' : 'Создать размер'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </Modal>
-
-      {/* Модальное окно с вопросом о создании добавок */}
-      <Modal
-        isOpen={showAddOnCreationModal}
-        onClose={() => {
-          setShowAddOnCreationModal(false);
-          setSavedMenuItem(null);
-        }}
-        title="Создать добавку для товара?"
-        size="sm"
-      >
-        <div className="p-3 sm:p-4">
-          {savedMenuItem && (
-            <div className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-200">
-              <p className="text-xs font-medium text-blue-800">
-                Товар <span className="font-bold">"{savedMenuItem.name}"</span> готов!
-              </p>
-              <p className="text-xs text-blue-600 mt-1">
-                Хотите создать добавку для этого товара?
-              </p>
-            </div>
-          )}
-          
-          <form onSubmit={handleCreateAddOnForSavedItem} className="space-y-3">
-            <div>
-              <label className="block text-xs font-medium text-black mb-1">
-                Название добавки <span className="text-red-500">*</span>
-              </label>
-              <input 
-                type="text" 
-                value={sizeFormData.name}
-                onChange={(e) => setSizeFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full text-black border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Например: Сыр"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-xs font-medium text-black mb-1">
-                Цена (сум) <span className="text-red-500">*</span>
-              </label>
-              <input 
-                type="number" 
-                value={sizeFormData.price_modifier}
-                onChange={(e) => setSizeFormData(prev => ({ ...prev, price_modifier: e.target.value }))}
-                step="0.01"
-                className="w-full text-black border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="0"
-                required
-              />
-            </div>
-            
-            
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="is_active_addon"
-                checked={sizeFormData.is_active}
-                onChange={(e) => setSizeFormData(prev => ({ ...prev, is_active: e.target.checked }))}
-                className="rounded"
-              />
-              <label htmlFor="is_active_addon" className="text-xs font-medium text-black">
-                Активная добавка
-              </label>
-            </div>
-            
-            <div className="flex gap-2 pt-3 border-t border-gray-200">
-              <button 
-                type="button"
-                onClick={() => {
-                  setShowAddOnCreationModal(false);
-                  setSavedMenuItem(null);
-                }}
-                className="flex-1 text-black px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-xs sm:text-sm"
-              >
-                Завершить
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs sm:text-sm"
-              >
-                {loading ? 'Создание...' : 'Создать добавку'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </Modal>
     </div>
   );
 };
