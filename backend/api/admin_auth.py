@@ -13,15 +13,21 @@ class AdminTokenAuthentication(BaseAuthentication):
     def authenticate(self, request):
         auth_header = request.META.get('HTTP_AUTHORIZATION')
         
+        print(f"🔐 AdminTokenAuthentication: {request.method} {request.path}")
+        print(f"🔐 Auth header: {auth_header}")
+        
         if not auth_header:
+            print("🔐 No auth header")
             return None
             
         try:
             # Проверяем формат "Bearer <token>"
             auth_type, token_key = auth_header.split(' ', 1)
             if auth_type.lower() != 'bearer':
+                print(f"🔐 Invalid auth type: {auth_type}")
                 return None
         except ValueError:
+            print("🔐 Invalid auth header format")
             return None
             
         try:
@@ -29,15 +35,21 @@ class AdminTokenAuthentication(BaseAuthentication):
             token = Token.objects.get(key=token_key)
             user = token.user
             
+            print(f"🔐 Token found: {token_key[:10]}... User: {user.username} (is_staff: {user.is_staff})")
+            
             # Проверяем, что пользователь является администратором
             if not user.is_staff:
+                print("🔐 User is not staff")
                 raise AuthenticationFailed('Недостаточно прав для доступа к админ-панели')
                 
+            print("🔐 Authentication successful")
             return (user, token)
             
         except Token.DoesNotExist:
+            print(f"🔐 Token not found: {token_key[:10]}...")
             raise AuthenticationFailed('Неверный токен аутентификации')
         except Exception as e:
+            print(f"🔐 Authentication error: {str(e)}")
             raise AuthenticationFailed(f'Ошибка аутентификации: {str(e)}')
     
     def authenticate_header(self, request):
