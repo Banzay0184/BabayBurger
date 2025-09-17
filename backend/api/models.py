@@ -666,13 +666,16 @@ class Category(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
+    priority = models.PositiveIntegerField(default=0, help_text='Чем меньше число, тем выше в списке', verbose_name='Порядок отображения')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         indexes = [
             models.Index(fields=['name']),  # Для поиска по названию
             models.Index(fields=['created_at']),  # Для сортировки по дате создания
+            models.Index(fields=['priority']),  # Для сортировки по приоритету
         ]
+        ordering = ['priority', '-created_at']
     
     def __str__(self):
         return self.name

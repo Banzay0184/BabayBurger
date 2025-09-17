@@ -32,26 +32,45 @@ from app_operator.serializers import OperatorSerializer, OperatorSessionSerializ
 # Простые сериализаторы для админки
 class AdminMenuItemSerializer(serializers.ModelSerializer):
     """Специальный сериализатор для админки с поддержкой FormData"""
-    size_options = serializers.ListField(
+    size_options = serializers.SerializerMethodField()
+    add_on_options = serializers.SerializerMethodField()
+    
+    # Поля для записи
+    size_options_ids = serializers.ListField(
         child=serializers.IntegerField(),
         write_only=True,
         required=False,
-        allow_empty=True
+        allow_empty=True,
+        source='size_options'
     )
-    add_on_options = serializers.ListField(
+    add_on_options_ids = serializers.ListField(
         child=serializers.IntegerField(),
         write_only=True,
         required=False,
-        allow_empty=True
+        allow_empty=True,
+        source='add_on_options'
     )
     
     class Meta:
         model = MenuItem
         fields = [
             'id', 'name', 'description', 'price', 'category', 'image', 'created_at',
-            'is_hit', 'is_new', 'is_active', 'priority', 'size_options', 'add_on_options'
+            'is_hit', 'is_new', 'is_active', 'priority', 'size_options', 'add_on_options',
+            'size_options_ids', 'add_on_options_ids'
         ]
         read_only_fields = ['id', 'created_at']
+    
+    def get_size_options(self, obj):
+        """Возвращает размеры товара с полной информацией"""
+        from .serializers import SizeOptionSerializer
+        active_sizes = obj.size_options.filter(is_active=True)
+        return SizeOptionSerializer(active_sizes, many=True).data
+    
+    def get_add_on_options(self, obj):
+        """Возвращает добавки товара с полной информацией"""
+        from .serializers import AddOnSerializer
+        active_addons = obj.add_on_options.filter(is_active=True)
+        return AddOnSerializer(active_addons, many=True).data
     
     def create(self, validated_data):
         # Извлекаем данные для many-to-many полей

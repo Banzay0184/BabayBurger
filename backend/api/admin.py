@@ -8,10 +8,11 @@ from .models import User, MenuItem, Order, OrderItem, Category, Address, AddOn, 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description', 'item_count', 'created_at']
+    list_display = ['name', 'priority', 'description', 'item_count', 'created_at']
     list_filter = ['created_at']
     search_fields = ['name', 'description']
-    ordering = ['name']
+    ordering = ['priority', '-created_at']
+    list_editable = ['priority']
     
     def item_count(self, obj):
         return obj.menuitem_set.count()

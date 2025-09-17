@@ -78,7 +78,7 @@ class AddressCreateSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name', 'description', 'image']
+        fields = ['id', 'name', 'description', 'image', 'priority']
 
 class AddOnSerializer(serializers.ModelSerializer):
     available_for_categories = serializers.PrimaryKeyRelatedField(
