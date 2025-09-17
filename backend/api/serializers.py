@@ -92,7 +92,7 @@ class AddOnSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'price', 'available_for_categories', 'is_active']
 
 class SizeOptionSerializer(serializers.ModelSerializer):
-    menu_item = serializers.PrimaryKeyRelatedField(queryset=MenuItem.objects.all(), required=False, allow_null=True)
+    menu_item = serializers.IntegerField(required=False, allow_null=True)
     
     class Meta:
         model = SizeOption
