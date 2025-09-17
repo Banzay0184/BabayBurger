@@ -124,9 +124,16 @@ class MenuItemSerializer(serializers.ModelSerializer):
         ]
     
     def get_size_options(self, obj):
-        # Фильтруем только активные размеры
-        active_sizes = obj.size_options.filter(is_active=True)
-        return SizeOptionSerializer(active_sizes, many=True).data
+        # Получаем размеры из many-to-many связи
+        many_to_many_sizes = obj.size_options.filter(is_active=True)
+        
+        # Получаем размеры из прямой связи (menu_item)
+        direct_sizes = SizeOption.objects.filter(menu_item=obj, is_active=True)
+        
+        # Объединяем размеры и убираем дубликаты
+        all_sizes = (many_to_many_sizes | direct_sizes).distinct()
+        
+        return SizeOptionSerializer(all_sizes, many=True).data
     
     def get_add_on_options(self, obj):
         # Фильтруем только активные дополнения
