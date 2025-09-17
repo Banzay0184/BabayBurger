@@ -142,6 +142,32 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       try {
         const user = JSON.parse(savedUser);
         dispatch({ type: 'LOGIN_SUCCESS', payload: user });
+        
+        // Проверяем валидность токена через API
+        const verifyToken = async () => {
+          try {
+            const { getAdminApiUrl } = await import('../config/api');
+            const response = await fetch(getAdminApiUrl('auth/verify/'), {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            });
+            
+            if (!response.ok) {
+              // Токен недействителен
+              localStorage.removeItem('admin_token');
+              localStorage.removeItem('admin_user');
+              dispatch({ type: 'LOGIN_FAILURE', payload: 'Сессия истекла' });
+            }
+          } catch (error) {
+            console.error('Ошибка проверки токена:', error);
+            // В случае ошибки сети, оставляем пользователя авторизованным
+          }
+        };
+        
+        verifyToken();
       } catch (error) {
         // Если данные повреждены, очищаем localStorage
         localStorage.removeItem('admin_token');

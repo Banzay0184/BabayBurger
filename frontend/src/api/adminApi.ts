@@ -45,6 +45,41 @@ class AdminApiClient {
     // Не храним baseUrl, используем getAdminApiUrl() для каждого запроса
   }
 
+  private handleAuthError(response: Response, _data: any): void {
+    // Если получили 401, токен недействителен
+    if (response.status === 401) {
+      console.log('🔐 Token expired or invalid, clearing auth data');
+      localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_user');
+      
+      // Перенаправляем на страницу входа
+      if (typeof window !== 'undefined') {
+        window.location.href = '/admin/login';
+      }
+    }
+  }
+
+  // Метод для проверки валидности токена
+  async verifyToken(): Promise<boolean> {
+    try {
+      const token = localStorage.getItem('admin_token');
+      if (!token) return false;
+
+      const response = await fetch(getAdminApiUrl('auth/verify/'), {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Ошибка проверки токена:', error);
+      return false;
+    }
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
@@ -93,6 +128,7 @@ class AdminApiClient {
 
       if (!response.ok) {
         console.error('❌ API Error:', data);
+        this.handleAuthError(response, data);
         return { error: data.error || 'Ошибка сервера' };
       }
 
@@ -197,6 +233,7 @@ class AdminApiClient {
 
       if (!response.ok) {
         console.error('❌ API Error:', data);
+        this.handleAuthError(response, data);
         return { error: data.error || 'Ошибка сервера' };
       }
 
