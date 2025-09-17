@@ -51,6 +51,18 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         allow_empty=True
     )
     
+    def to_internal_value(self, data):
+        """Переопределяем для поддержки оригинальных ключей фронтенда"""
+        # Если данные приходят с оригинальными ключами, преобразуем их
+        if 'size_options' in data and 'size_options_write' not in data:
+            data = data.copy()
+            data['size_options_write'] = data.pop('size_options', [])
+        if 'add_on_options' in data and 'add_on_options_write' not in data:
+            data = data.copy()
+            data['add_on_options_write'] = data.pop('add_on_options', [])
+        
+        return super().to_internal_value(data)
+    
     class Meta:
         model = MenuItem
         fields = [
