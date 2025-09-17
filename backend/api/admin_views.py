@@ -35,22 +35,20 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
     size_options = serializers.SerializerMethodField()
     add_on_options = serializers.SerializerMethodField()
     
-    # Поля для записи - используем прямые many-to-many поля
+    # Поля для записи - используем прямые many-to-many поля без source
     size_options_write = serializers.PrimaryKeyRelatedField(
         queryset=SizeOption.objects.all(),
         many=True,
         write_only=True,
         required=False,
-        allow_empty=True,
-        source='size_options'
+        allow_empty=True
     )
     add_on_options_write = serializers.PrimaryKeyRelatedField(
         queryset=AddOn.objects.all(),
         many=True,
         write_only=True,
         required=False,
-        allow_empty=True,
-        source='add_on_options'
+        allow_empty=True
     )
     
     class Meta:
@@ -79,8 +77,8 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         print(f"🔍 AdminMenuItemSerializer.create - validated_data keys: {list(validated_data.keys())}")
         
         # Извлекаем данные для many-to-many полей
-        size_options_data = validated_data.pop('size_options', [])
-        add_on_options_data = validated_data.pop('add_on_options', [])
+        size_options_data = validated_data.pop('size_options_write', [])
+        add_on_options_data = validated_data.pop('add_on_options_write', [])
         
         print(f"🔍 Размеры для сохранения: {size_options_data}")
         print(f"🔍 Добавки для сохранения: {add_on_options_data}")
