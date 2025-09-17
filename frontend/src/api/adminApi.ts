@@ -565,7 +565,7 @@ class AdminApiClient {
     return this.requestDirect(`api/size-options/${queryString ? `?${queryString}` : ''}`);
   }
 
-  async createSizeOption(data: { name: string; price_modifier: number; description?: string; menu_item?: number; is_active?: boolean }) {
+  async createSizeOption(data: { name: string; price_modifier: number; description?: string; menu_item?: number | null; is_active?: boolean }) {
     return this.requestDirect('api/size-options/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -573,7 +573,7 @@ class AdminApiClient {
     });
   }
 
-  async updateSizeOption(id: number, data: { name?: string; price_modifier?: number; description?: string; menu_item?: number; is_active?: boolean }) {
+  async updateSizeOption(id: number, data: { name?: string; price_modifier?: number; description?: string; menu_item?: number | null; is_active?: boolean }) {
     return this.request(`size-options/${id}/`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },

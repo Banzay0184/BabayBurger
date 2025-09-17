@@ -239,6 +239,7 @@ export const AdminMenuPage: React.FC = () => {
         name: sizeFormData.name,
         price_modifier: parseFloat(sizeFormData.price_modifier),
         description: sizeFormData.description,
+        menu_item: null,
         is_active: sizeFormData.is_active
       });
 
