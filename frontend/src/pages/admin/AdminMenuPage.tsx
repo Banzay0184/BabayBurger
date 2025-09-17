@@ -344,7 +344,7 @@ export const AdminMenuPage: React.FC = () => {
           is_new: formData.is_new,
           is_active: formData.is_active,
           priority: parseInt(formData.priority.toString()) || 0,
-          size_options: formData.size_options,
+          size_options: [], // Не отправляем размеры в основном запросе
           add_on_options: formData.add_on_options
         };
 
