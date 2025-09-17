@@ -10,7 +10,7 @@ import type {
 } from '../types/operator';
 import { operatorApi as unifiedOperatorApi } from './unifiedClient';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api/';
 
 // Упрощенные функции для совместимости
 // const getAuthToken = (): string | null => {
@@ -121,7 +121,7 @@ export const operatorOrdersApi = {
     if (filters.date) params.append('date', filters.date);
     if (filters.search) params.append('search', filters.search);
 
-    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/?${params}`, {
+    const response = await fetch(`${API_BASE_URL}operator/operator-orders/?${params}`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -144,7 +144,7 @@ export const operatorOrdersApi = {
 
   // Получение деталей заказа
   getOrder: async (orderId: number): Promise<OrderForOperator> => {
-    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/`, {
+    const response = await fetch(`${API_BASE_URL}operator/operator-orders/${orderId}/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -162,7 +162,7 @@ export const operatorOrdersApi = {
       return [];
     }
 
-    const response = await fetch(`${API_BASE_URL}/operator/search-suggestions/?q=${encodeURIComponent(query)}`, {
+    const response = await fetch(`${API_BASE_URL}operator/search-suggestions/?q=${encodeURIComponent(query)}`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -177,7 +177,7 @@ export const operatorOrdersApi = {
 
   // Назначить заказ себе
   assignToMe: async (orderId: number): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/assign_to_me/`, {
+    const response = await fetch(`${API_BASE_URL}operator/operator-orders/${orderId}/assign_to_me/`, {
       method: 'POST',
       headers: getHeaders()
     });
@@ -192,7 +192,7 @@ export const operatorOrdersApi = {
 
   // Отметить звонок клиенту
   callCustomer: async (orderId: number): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/call_customer/`, {
+    const response = await fetch(`${API_BASE_URL}operator/operator-orders/${orderId}/call_customer/`, {
       method: 'POST',
       headers: getHeaders()
     });
@@ -206,7 +206,7 @@ export const operatorOrdersApi = {
 
   // Обновить результат звонка
   updateCallResult: async (orderId: number, callResult: CallResultUpdate): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/update_call_result/`, {
+    const response = await fetch(`${API_BASE_URL}operator/operator-orders/${orderId}/update_call_result/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(callResult)
@@ -221,7 +221,7 @@ export const operatorOrdersApi = {
 
   // Добавить заметки к заказу
   addNotes: async (orderId: number, notes: OperatorNotes): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/add_notes/`, {
+    const response = await fetch(`${API_BASE_URL}operator/operator-orders/${orderId}/add_notes/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(notes)
@@ -237,8 +237,8 @@ export const operatorOrdersApi = {
   // Получить список ресторанов
   getRestaurants: async (orderId?: number): Promise<{ restaurants: Array<{ id: number; name: string; city: string; address: string }> }> => {
     const url = orderId 
-      ? `${API_BASE_URL}/operator/operator-orders/restaurants/?order_id=${orderId}`
-      : `${API_BASE_URL}/operator/operator-orders/restaurants/`;
+      ? `${API_BASE_URL}operator/operator-orders/restaurants/?order_id=${orderId}`
+      : `${API_BASE_URL}operator/operator-orders/restaurants/`;
       
     const response = await fetch(url, {
       method: 'GET',
@@ -254,7 +254,7 @@ export const operatorOrdersApi = {
 
   // Подтвердить заказ
   confirmOrder: async (orderId: number, customerName?: string, restaurantId?: number): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/confirm_order/`, {
+    const response = await fetch(`${API_BASE_URL}operator/operator-orders/${orderId}/confirm_order/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ 
@@ -272,7 +272,7 @@ export const operatorOrdersApi = {
 
   // Отклонить заказ
   rejectOrder: async (orderId: number, reason?: string, customerName?: string): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/reject_order/`, {
+    const response = await fetch(`${API_BASE_URL}operator/operator-orders/${orderId}/reject_order/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ reason, customer_name: customerName })
@@ -287,7 +287,7 @@ export const operatorOrdersApi = {
 
   // Обновить имя клиента
   updateCustomerName: async (orderId: number, customerName: string): Promise<{ message: string; order: OrderForOperator }> => {
-    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/update_customer_name/`, {
+    const response = await fetch(`${API_BASE_URL}operator/operator-orders/${orderId}/update_customer_name/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ customer_name: customerName })
@@ -302,7 +302,7 @@ export const operatorOrdersApi = {
 
   // Обновление корзины заказа
   updateOrderCart: async (orderId: number, cartData: { items: Array<{ menu_item_id: number; quantity: number; size_option_id?: number | null; addon_ids?: number[] }> }): Promise<OrderForOperator> => {
-    const response = await fetch(`${API_BASE_URL}/operator/operator-orders/${orderId}/update_cart/`, {
+    const response = await fetch(`${API_BASE_URL}operator/operator-orders/${orderId}/update_cart/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(cartData)
@@ -320,7 +320,7 @@ export const operatorOrdersApi = {
 export const operatorProfileApi = {
   // Получение профиля текущего оператора
   getProfile: async (): Promise<Operator> => {
-    const response = await fetch(`${API_BASE_URL}/operator/profile/me/`, {
+    const response = await fetch(`${API_BASE_URL}operator/profile/me/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -334,7 +334,7 @@ export const operatorProfileApi = {
 
   // Обновление профиля
   updateProfile: async (profileData: Partial<Operator>): Promise<Operator> => {
-    const response = await fetch(`${API_BASE_URL}/operator/profile/update_profile/`, {
+    const response = await fetch(`${API_BASE_URL}operator/profile/update_profile/`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify(profileData)
@@ -352,7 +352,7 @@ export const operatorProfileApi = {
 export const operatorNotificationsApi = {
   // Получение уведомлений
   getNotifications: async (): Promise<OperatorNotification[]> => {
-    const response = await fetch(`${API_BASE_URL}/operator/notifications/`, {
+    const response = await fetch(`${API_BASE_URL}operator/notifications/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -366,7 +366,7 @@ export const operatorNotificationsApi = {
 
   // Отметить уведомление как прочитанное
   markAsRead: async (notificationId: number): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/operator/notifications/mark_read/`, {
+    const response = await fetch(`${API_BASE_URL}operator/notifications/mark_read/`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ notification_id: notificationId })
@@ -379,7 +379,7 @@ export const operatorNotificationsApi = {
 
   // Получить количество непрочитанных уведомлений
   getUnreadCount: async (): Promise<{ count: number }> => {
-    const response = await fetch(`${API_BASE_URL}/operator/notifications/unread_count/`, {
+    const response = await fetch(`${API_BASE_URL}operator/notifications/unread_count/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -396,7 +396,7 @@ export const operatorNotificationsApi = {
 export const operatorAnalyticsApi = {
   // Получение дневной аналитики
   getDailyAnalytics: async (date: string): Promise<any> => {
-    const response = await fetch(`${API_BASE_URL}/operator/analytics/daily/?date=${date}`, {
+    const response = await fetch(`${API_BASE_URL}operator/analytics/daily/?date=${date}`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -410,7 +410,7 @@ export const operatorAnalyticsApi = {
 
   // Получение сводной аналитики
   getSummary: async (): Promise<any> => {
-    const response = await fetch(`${API_BASE_URL}/operator/analytics/summary/`, {
+    const response = await fetch(`${API_BASE_URL}operator/analytics/summary/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -426,7 +426,7 @@ export const operatorAnalyticsApi = {
   // Получение меню для добавления блюд
   getMenuItems: async (): Promise<any[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/menu-items/`, {
+      const response = await fetch(`${API_BASE_URL}menu-items/`, {
         method: 'GET',
         headers: getHeaders()
       });
@@ -449,7 +449,7 @@ export const operatorAnalyticsApi = {
 export const operatorDeliveryZonesApi = {
   // Получение зон доставки оператора
   getZones: async (): Promise<DeliveryZone[]> => {
-    const response = await fetch(`${API_BASE_URL}/operator/delivery-zones/`, {
+    const response = await fetch(`${API_BASE_URL}operator/delivery-zones/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -466,7 +466,7 @@ export const operatorDeliveryZonesApi = {
 export const operatorMapApi = {
   // Получение заказов для карты
   getOrdersForMap: async (): Promise<OrderForOperator[]> => {
-    const response = await fetch(`${API_BASE_URL}/operator/map/`, {
+    const response = await fetch(`${API_BASE_URL}operator/map/`, {
       method: 'GET',
       headers: getHeaders()
     });
@@ -480,7 +480,7 @@ export const operatorMapApi = {
 
   // Получение маршрута до заказа
   getRoute: async (orderId: number): Promise<any> => {
-    const response = await fetch(`${API_BASE_URL}/operator/map/${orderId}/route/`, {
+    const response = await fetch(`${API_BASE_URL}operator/map/${orderId}/route/`, {
       method: 'GET',
       headers: getHeaders()
     });

@@ -61,7 +61,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
           
           // Загружаем меню
           try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api';
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api/';
             const token = localStorage.getItem('operator_token');
             const headers: Record<string, string> = {
               'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
               headers['Authorization'] = `Token ${token}`;
             }
 
-            const response = await fetch(`${API_BASE_URL}/menu/`, {
+            const response = await fetch(`${API_BASE_URL}menu/`, {
               method: 'GET',
               headers
             });
@@ -123,7 +123,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
                 categoriesArray = menu.categories;
               } else {
                 // Fallback: загружаем категории отдельно
-                const categoriesResponse = await fetch(`${API_BASE_URL}/categories/`, {
+                const categoriesResponse = await fetch(`${API_BASE_URL}categories/`, {
                   method: 'GET',
                   headers
                 });

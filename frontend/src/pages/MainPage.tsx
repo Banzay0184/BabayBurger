@@ -66,8 +66,8 @@ export const MainPage: React.FC = () => {
   const loadAddresses = async () => {
     try {
       const telegramId = state.user?.telegram_id?.toString() || '908758841';
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api';
-      const response = await fetch(`${apiBaseUrl}/addresses/?telegram_id=${telegramId}`, {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api/';
+      const response = await fetch(`${apiBaseUrl}addresses/?telegram_id=${telegramId}`, {
         headers: {
           'Accept': 'application/json',
           'ngrok-skip-browser-warning': 'true'

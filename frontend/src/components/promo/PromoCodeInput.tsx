@@ -45,8 +45,8 @@ export const PromoCodeInput: React.FC<PromoCodeInputProps> = ({
     setSuccess(null);
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api';
-      const url = `${apiBaseUrl}/promo-codes/validate/`;
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api/';
+      const url = `${apiBaseUrl}promo-codes/validate/`;
       
       const response = await fetch(url, {
         method: 'POST',
