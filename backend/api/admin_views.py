@@ -35,17 +35,15 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
     size_options = serializers.SerializerMethodField()
     add_on_options = serializers.SerializerMethodField()
     
-    # Поля для записи - используем прямые many-to-many поля без source
-    size_options_write = serializers.PrimaryKeyRelatedField(
-        queryset=SizeOption.objects.all(),
-        many=True,
+    # Поля для записи - используем ListField для поддержки FormData
+    size_options_write = serializers.ListField(
+        child=serializers.IntegerField(),
         write_only=True,
         required=False,
         allow_empty=True
     )
-    add_on_options_write = serializers.PrimaryKeyRelatedField(
-        queryset=AddOn.objects.all(),
-        many=True,
+    add_on_options_write = serializers.ListField(
+        child=serializers.IntegerField(),
         write_only=True,
         required=False,
         allow_empty=True
@@ -85,26 +83,22 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         return AddOnSerializer(active_addons, many=True).data
     
     def create(self, validated_data):
-        # Отладочная информация
-        print(f"🔍 AdminMenuItemSerializer.create - validated_data keys: {list(validated_data.keys())}")
-        
         # Извлекаем данные для many-to-many полей (поддерживаем оба варианта ключей)
-        size_options_data = validated_data.pop('size_options_write', []) or validated_data.pop('size_options', [])
-        add_on_options_data = validated_data.pop('add_on_options_write', []) or validated_data.pop('add_on_options', [])
-        
-        print(f"🔍 Размеры для сохранения: {size_options_data}")
-        print(f"🔍 Добавки для сохранения: {add_on_options_data}")
+        size_options_ids = validated_data.pop('size_options_write', []) or validated_data.pop('size_options', [])
+        add_on_options_ids = validated_data.pop('add_on_options_write', []) or validated_data.pop('add_on_options', [])
         
         # Создаем объект
         menu_item = MenuItem.objects.create(**validated_data)
         
         # Устанавливаем связи
-        if size_options_data:
-            print(f"🔍 Устанавливаем размеры: {size_options_data}")
-            menu_item.size_options.set(size_options_data)
-        if add_on_options_data:
-            print(f"🔍 Устанавливаем добавки: {add_on_options_data}")
-            menu_item.add_on_options.set(add_on_options_data)
+        if size_options_ids:
+            # Получаем объекты SizeOption по ID
+            size_options = SizeOption.objects.filter(id__in=size_options_ids)
+            menu_item.size_options.set(size_options)
+        if add_on_options_ids:
+            # Получаем объекты AddOn по ID
+            add_on_options = AddOn.objects.filter(id__in=add_on_options_ids)
+            menu_item.add_on_options.set(add_on_options)
         
         return menu_item
     
