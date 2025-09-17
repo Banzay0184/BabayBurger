@@ -176,6 +176,10 @@ export const AdminMenuPage: React.FC = () => {
   };
 
   const openEditForm = (item: any) => {
+    console.log('🔍 Открываем форму редактирования для товара:', item);
+    console.log('📏 Размеры товара:', item.size_options);
+    console.log('➕ Добавки товара:', item.add_on_options);
+    
     setFormData({
       name: item.name || '',
       description: item.description || '',
@@ -866,7 +870,14 @@ export const AdminMenuPage: React.FC = () => {
                   </label>
                   
                   {/* Показываем только размеры, которые уже привязаны к блюду */}
-                  {editingItem && editingItem.size_options && editingItem.size_options.length > 0 ? (
+                  {(() => {
+                    console.log('🔍 Проверяем размеры для отображения:', {
+                      editingItem: editingItem,
+                      size_options: editingItem?.size_options,
+                      length: editingItem?.size_options?.length
+                    });
+                    return editingItem && editingItem.size_options && editingItem.size_options.length > 0;
+                  })() ? (
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-gray-700 mb-2">Доступные размеры для этого блюда:</p>
                       {editingItem.size_options.map((size: any) => (
@@ -937,7 +948,14 @@ export const AdminMenuPage: React.FC = () => {
                   )}
                   
                   {/* Показываем только добавки, которые уже привязаны к блюду */}
-                  {editingItem && editingItem.add_on_options && editingItem.add_on_options.length > 0 ? (
+                  {(() => {
+                    console.log('🔍 Проверяем добавки для отображения:', {
+                      editingItem: editingItem,
+                      add_on_options: editingItem?.add_on_options,
+                      length: editingItem?.add_on_options?.length
+                    });
+                    return editingItem && editingItem.add_on_options && editingItem.add_on_options.length > 0;
+                  })() ? (
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-gray-700 mb-2">Доступные добавки для этого блюда:</p>
                       {editingItem.add_on_options.map((addon: any) => (
