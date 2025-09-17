@@ -35,7 +35,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
     size_options = serializers.SerializerMethodField()
     add_on_options = serializers.SerializerMethodField()
     
-    # Поля для записи (поддерживаем старые имена для совместимости)
+    # Поля для записи - используем только одно поле для каждого many-to-many
     size_options_write = serializers.ListField(
         child=serializers.IntegerField(),
         write_only=True,
@@ -51,28 +51,12 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         source='add_on_options'
     )
     
-    # Дополнительные поля для совместимости с фронтендом
-    size_options_ids = serializers.ListField(
-        child=serializers.IntegerField(),
-        write_only=True,
-        required=False,
-        allow_empty=True,
-        source='size_options'
-    )
-    add_on_options_ids = serializers.ListField(
-        child=serializers.IntegerField(),
-        write_only=True,
-        required=False,
-        allow_empty=True,
-        source='add_on_options'
-    )
-    
     class Meta:
         model = MenuItem
         fields = [
             'id', 'name', 'description', 'price', 'category', 'image', 'created_at',
             'is_hit', 'is_new', 'is_active', 'priority', 'size_options', 'add_on_options',
-            'size_options_write', 'add_on_options_write', 'size_options_ids', 'add_on_options_ids'
+            'size_options_write', 'add_on_options_write'
         ]
         read_only_fields = ['id', 'created_at']
     
