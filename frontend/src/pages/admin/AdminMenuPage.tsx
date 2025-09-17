@@ -42,6 +42,7 @@ export const AdminMenuPage: React.FC = () => {
   const [sizeOptions, setSizeOptions] = React.useState<any[]>([]);
   const [showSizeModal, setShowSizeModal] = React.useState(false);
   const [showSizeCreationModal, setShowSizeCreationModal] = React.useState(false);
+  const [showAddOnCreationModal, setShowAddOnCreationModal] = React.useState(false);
   const [savedMenuItem, setSavedMenuItem] = React.useState<any>(null);
   const [sizeFormData, setSizeFormData] = React.useState({
     name: '',
@@ -295,7 +296,6 @@ export const AdminMenuPage: React.FC = () => {
       if (response.success) {
         setShowSizeCreationModal(false);
         setSizeFormData({ name: '', price_modifier: '', description: '', is_active: true });
-        setSavedMenuItem(null);
         
         // Перезагружаем размеры и данные
         const sizesRes = await adminApi.getSizeOptions();
@@ -308,12 +308,58 @@ export const AdminMenuPage: React.FC = () => {
         
         // Показываем успешное сообщение
         alert(`Размер "${sizeFormData.name}" успешно создан и привязан к товару "${savedMenuItem.name}"!`);
+        
+        // Показываем модальное окно для создания добавок
+        setShowAddOnCreationModal(true);
       } else {
         setError(response.error || 'Ошибка создания размера');
       }
     } catch (err) {
       console.error('💥 Ошибка создания размера:', err);
       setError('Ошибка создания размера');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateAddOnForSavedItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!savedMenuItem) {
+      setError('Нет информации о сохраненном товаре');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const response = await adminApi.createAddOn({
+        name: sizeFormData.name, // Используем те же поля формы
+        price: parseFloat(sizeFormData.price_modifier),
+        is_active: sizeFormData.is_active
+      });
+
+      if (response.success) {
+        setShowAddOnCreationModal(false);
+        setSizeFormData({ name: '', price_modifier: '', description: '', is_active: true });
+        setSavedMenuItem(null);
+        
+        // Перезагружаем добавки и данные
+        const addOnsRes = await adminApi.getAddOns();
+        if (addOnsRes.success) {
+          setAddOns(addOnsRes.data as any[] || []);
+        }
+        
+        // Перезагружаем данные меню
+        loadData(currentPage);
+        
+        // Показываем успешное сообщение
+        alert(`Добавка "${sizeFormData.name}" успешно создана!`);
+      } else {
+        setError(response.error || 'Ошибка создания добавки');
+      }
+    } catch (err) {
+      console.error('💥 Ошибка создания добавки:', err);
+      setError('Ошибка создания добавки');
     } finally {
       setLoading(false);
     }
@@ -1310,11 +1356,11 @@ export const AdminMenuPage: React.FC = () => {
                 type="button"
                 onClick={() => {
                   setShowSizeCreationModal(false);
-                  setSavedMenuItem(null);
+                  setShowAddOnCreationModal(true);
                 }}
                 className="flex-1 text-black px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-xs sm:text-sm"
               >
-                Пропустить
+                Завершить
               </button>
               <button
                 type="submit"
@@ -1322,6 +1368,95 @@ export const AdminMenuPage: React.FC = () => {
                 className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs sm:text-sm"
               >
                 {loading ? 'Создание...' : 'Создать размер'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </Modal>
+
+      {/* Модальное окно с вопросом о создании добавок */}
+      <Modal
+        isOpen={showAddOnCreationModal}
+        onClose={() => {
+          setShowAddOnCreationModal(false);
+          setSavedMenuItem(null);
+        }}
+        title="Создать добавку для товара?"
+        size="sm"
+      >
+        <div className="p-3 sm:p-4">
+          {savedMenuItem && (
+            <div className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-200">
+              <p className="text-xs font-medium text-blue-800">
+                Товар <span className="font-bold">"{savedMenuItem.name}"</span> готов!
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                Хотите создать добавку для этого товара?
+              </p>
+            </div>
+          )}
+          
+          <form onSubmit={handleCreateAddOnForSavedItem} className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-black mb-1">
+                Название добавки <span className="text-red-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                value={sizeFormData.name}
+                onChange={(e) => setSizeFormData(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full text-black border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Например: Сыр"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-black mb-1">
+                Цена (сум) <span className="text-red-500">*</span>
+              </label>
+              <input 
+                type="number" 
+                value={sizeFormData.price_modifier}
+                onChange={(e) => setSizeFormData(prev => ({ ...prev, price_modifier: e.target.value }))}
+                step="0.01"
+                className="w-full text-black border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="0"
+                required
+              />
+            </div>
+            
+            
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="is_active_addon"
+                checked={sizeFormData.is_active}
+                onChange={(e) => setSizeFormData(prev => ({ ...prev, is_active: e.target.checked }))}
+                className="rounded"
+              />
+              <label htmlFor="is_active_addon" className="text-xs font-medium text-black">
+                Активная добавка
+              </label>
+            </div>
+            
+            <div className="flex gap-2 pt-3 border-t border-gray-200">
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowAddOnCreationModal(false);
+                  setSavedMenuItem(null);
+                }}
+                className="flex-1 text-black px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-xs sm:text-sm"
+              >
+                Завершить
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs sm:text-sm"
+              >
+                {loading ? 'Создание...' : 'Создать добавку'}
               </button>
             </div>
           </form>
