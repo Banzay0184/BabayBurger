@@ -13,7 +13,7 @@ export const useRestaurants = () => {
         setLoading(true);
         setError(null);
         
-        const response = await clientApi.get('/restaurants/');
+        const response = await clientApi.get<Restaurant[]>('/restaurants/');
         setRestaurants(response);
       } catch (err) {
         console.error('Ошибка загрузки ресторанов:', err);

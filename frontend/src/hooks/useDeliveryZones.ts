@@ -12,7 +12,7 @@ export const useDeliveryZones = () => {
       setIsLoading(true);
       setError(null);
       console.log('🗺️ 🔍 useDeliveryZones: Fetching zones...');
-      const response = await clientApi.get('/delivery-zones/');
+      const response = await clientApi.get<DeliveryZone[]>('/delivery-zones/');
       console.log('🗺️ 🔍 useDeliveryZones: API response:', response);
       setZones(response);
       console.log('🗺️ 🔍 useDeliveryZones: Zones set to state');
