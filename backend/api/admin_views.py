@@ -76,9 +76,9 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         # Отладочная информация
         print(f"🔍 AdminMenuItemSerializer.create - validated_data keys: {list(validated_data.keys())}")
         
-        # Извлекаем данные для many-to-many полей
-        size_options_data = validated_data.pop('size_options_write', [])
-        add_on_options_data = validated_data.pop('add_on_options_write', [])
+        # Извлекаем данные для many-to-many полей (поддерживаем оба варианта ключей)
+        size_options_data = validated_data.pop('size_options_write', []) or validated_data.pop('size_options', [])
+        add_on_options_data = validated_data.pop('add_on_options_write', []) or validated_data.pop('add_on_options', [])
         
         print(f"🔍 Размеры для сохранения: {size_options_data}")
         print(f"🔍 Добавки для сохранения: {add_on_options_data}")
