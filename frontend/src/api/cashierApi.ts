@@ -1,8 +1,6 @@
 import { cashierApi as unifiedCashierApi } from './unifiedClient';
 import { universalStorage } from '../utils/storage';
 
-const API_BASE_URL = 'api/cashier';
-
 export interface CashierLoginData {
   username: string;
   password: string;
@@ -204,7 +202,7 @@ class CashierApiClient {
     const method = options.method || 'GET';
     // Правильно формируем URL, избегая двойных слешей
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-    const url = `${API_BASE_URL}/${cleanEndpoint}`;
+    const url = `cashier/${cleanEndpoint}`;
     
     try {
       let response: T;
