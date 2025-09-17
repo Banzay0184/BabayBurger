@@ -200,7 +200,10 @@ class AdminApiClient {
   ): Promise<ApiResponse<T>> {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || 'https://api.babayfood.uz';
-      const url = `${baseUrl}/${endpoint}`;
+      // Убираем лишние слеши для правильного формирования URL
+      const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+      const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+      const url = `${cleanBaseUrl}/${cleanEndpoint}`;
       
       // Получаем токен из localStorage
       const token = localStorage.getItem('admin_token');
