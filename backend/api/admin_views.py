@@ -7,6 +7,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from app_operator.models import Operator
 from .admin_auth import AdminTokenAuthentication
+from rest_framework.authentication import TokenAuthentication
 from django.db.models import Count, Sum, Avg, Q, F
 from django.utils import timezone
 from datetime import datetime, timedelta
@@ -419,7 +420,7 @@ class AdminDashboardView(generics.GenericAPIView):
 
 class AdminMenuViewSet(viewsets.ModelViewSet):
     """Управление меню"""
-    authentication_classes = [AdminTokenAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = MenuItem.objects.all()
     serializer_class = AdminMenuItemSerializer
