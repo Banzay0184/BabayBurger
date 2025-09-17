@@ -49,13 +49,16 @@ class AdminApiClient {
     // Если получили 401, токен недействителен
     if (response.status === 401) {
       console.log('🔐 Token expired or invalid, clearing auth data');
-      localStorage.removeItem('admin_token');
-      localStorage.removeItem('admin_user');
+      console.log('🚨 ВРЕМЕННО ОТКЛЮЧЕНО: Автоматическое перенаправление на страницу входа');
+      
+      // ВРЕМЕННО ОТКЛЮЧАЕМ автоматическое перенаправление для отладки
+      // localStorage.removeItem('admin_token');
+      // localStorage.removeItem('admin_user');
       
       // Перенаправляем на страницу входа
-      if (typeof window !== 'undefined') {
-        window.location.href = '/admin/login';
-      }
+      // if (typeof window !== 'undefined') {
+      //   window.location.href = '/admin/login';
+      // }
     }
   }
   
@@ -171,12 +174,14 @@ class AdminApiClient {
       // Проверяем токен перед отправкой
       if (!token) {
         console.error('❌ No token found for FormData request');
-        // Очищаем данные авторизации и перенаправляем
-        localStorage.removeItem('admin_token');
-        localStorage.removeItem('admin_user');
-        if (typeof window !== 'undefined') {
-          window.location.href = '/admin/login';
-        }
+        console.log('🚨 ВРЕМЕННО ОТКЛЮЧЕНО: Автоматическое перенаправление на страницу входа');
+        
+        // ВРЕМЕННО ОТКЛЮЧАЕМ автоматическое перенаправление для отладки
+        // localStorage.removeItem('admin_token');
+        // localStorage.removeItem('admin_user');
+        // if (typeof window !== 'undefined') {
+        //   window.location.href = '/admin/login';
+        // }
         return { error: 'Токен аутентификации не найден. Пожалуйста, войдите в систему заново.' };
       }
       
