@@ -89,17 +89,25 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         return AddOnSerializer(active_addons, many=True).data
     
     def create(self, validated_data):
+        # Отладочная информация
+        print(f"🔍 AdminMenuItemSerializer.create - validated_data keys: {list(validated_data.keys())}")
+        
         # Извлекаем данные для many-to-many полей
         size_options_data = validated_data.pop('size_options', [])
         add_on_options_data = validated_data.pop('add_on_options', [])
+        
+        print(f"🔍 Размеры для сохранения: {size_options_data}")
+        print(f"🔍 Добавки для сохранения: {add_on_options_data}")
         
         # Создаем объект
         menu_item = MenuItem.objects.create(**validated_data)
         
         # Устанавливаем связи
         if size_options_data:
+            print(f"🔍 Устанавливаем размеры: {size_options_data}")
             menu_item.size_options.set(size_options_data)
         if add_on_options_data:
+            print(f"🔍 Устанавливаем добавки: {add_on_options_data}")
             menu_item.add_on_options.set(add_on_options_data)
         
         return menu_item

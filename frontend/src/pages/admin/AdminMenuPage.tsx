@@ -873,43 +873,59 @@ export const AdminMenuPage: React.FC = () => {
                     Размеры товара
                   </label>
                   
-                  {/* Показываем только размеры, которые уже привязаны к блюду */}
+                  {/* Показываем размеры для редактирования или все доступные для нового товара */}
                   {(() => {
                     console.log('🔍 Проверяем размеры для отображения:', {
                       editingItem: editingItem,
                       size_options: editingItem?.size_options,
-                      length: editingItem?.size_options?.length
+                      length: editingItem?.size_options?.length,
+                      sizeOptions: sizeOptions,
+                      sizeOptionsLength: sizeOptions.length
                     });
-                    return editingItem && editingItem.size_options && editingItem.size_options.length > 0;
-                  })() ? (
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-gray-700 mb-2">Доступные размеры для этого блюда:</p>
-                      {editingItem.size_options.map((size: any) => (
-                        <div key={size.id} className="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              checked={formData.size_options.includes(size.id)}
-                              onChange={(e) => handleSizeChange(size.id, e.target.checked)}
-                              className="rounded"
-                            />
-                            <span className="text-xs font-medium text-gray-900">{size.name}</span>
-                            <span className="text-xs text-gray-600">({size.description || 'Без описания'})</span>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-xs font-bold text-green-600">
-                              {size.price_modifier > 0 ? `+${size.price_modifier}` : size.price_modifier} сум
-                            </span>
-                          </div>
+                    
+                    // Определяем какие размеры показывать
+                    const sizesToShow = editingItem && editingItem.size_options && editingItem.size_options.length > 0 
+                      ? editingItem.size_options 
+                      : sizeOptions;
+                    
+                    const title = editingItem && editingItem.size_options && editingItem.size_options.length > 0
+                      ? "Доступные размеры для этого блюда:"
+                      : "Доступные размеры:";
+                    
+                    if (sizesToShow && sizesToShow.length > 0) {
+                      return (
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-gray-700 mb-2">{title}</p>
+                          {sizesToShow.map((size: any) => (
+                            <div key={size.id} className="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200">
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.size_options.includes(size.id)}
+                                  onChange={(e) => handleSizeChange(size.id, e.target.checked)}
+                                  className="rounded"
+                                />
+                                <span className="text-xs font-medium text-gray-900">{size.name}</span>
+                                <span className="text-xs text-gray-600">({size.description || 'Без описания'})</span>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-xs font-bold text-green-600">
+                                  {size.price_modifier > 0 ? `+${size.price_modifier}` : size.price_modifier} сум
+                                </span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-xs text-gray-500 mb-2">Нет размеров для этого блюда</p>
-                      <p className="text-xs text-gray-400">Размеры настраиваются на уровне конкретного блюда</p>
-                    </div>
-                  )}
+                      );
+                    } else {
+                      return (
+                        <div className="text-center py-4">
+                          <p className="text-xs text-gray-500 mb-2">Нет размеров для этого блюда</p>
+                          <p className="text-xs text-gray-400">Размеры настраиваются на уровне конкретного блюда</p>
+                        </div>
+                      );
+                    }
+                  })()}
                   
                   <button
                     type="button"
