@@ -21,6 +21,7 @@ router.register(r'delivery-drivers', AdminDeliveryDriverViewSet)
 
 urlpatterns = [
     path('auth/', AdminAuthView.as_view(), name='admin-auth'),
+    path('auth/verify/', AdminAuthView.as_view(), name='admin-auth-verify'),
     path('dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
     path('analytics/', AdminAnalyticsView.as_view(), name='admin-analytics'),
     path('delivery-assignments/', AdminDeliveryAssignmentsView.as_view(), name='admin-delivery-assignments'),

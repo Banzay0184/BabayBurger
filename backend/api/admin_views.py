@@ -284,6 +284,45 @@ class AdminAuthView(APIView):
                 {'error': 'Неверные учетные данные или недостаточно прав'}, 
                 status=status.HTTP_401_UNAUTHORIZED
             )
+    
+    def get(self, request):
+        """Проверка валидности токена"""
+        auth_header = request.headers.get('Authorization')
+        
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return Response(
+                {'error': 'Токен не предоставлен'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        token_key = auth_header.split(' ')[1]
+        
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+            
+            if not user.is_staff:
+                return Response(
+                    {'error': 'Недостаточно прав'}, 
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            
+            return Response({
+                'success': True,
+                'valid': True,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'is_staff': user.is_staff,
+                    'is_superuser': user.is_superuser,
+                }
+            })
+        except Token.DoesNotExist:
+            return Response(
+                {'error': 'Недействительный токен'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
 
 class AdminDashboardView(generics.GenericAPIView):

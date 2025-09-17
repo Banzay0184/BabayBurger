@@ -58,6 +58,16 @@ class AdminApiClient {
       }
     }
   }
+  
+  private logAuthError(token: string | null, url: string, headers: any, options?: any): void {
+    console.error('🚨 401 UNAUTHORIZED ERROR DETECTED!');
+    console.error('🔐 Token used:', token ? `${token.substring(0, 10)}...` : 'No token');
+    console.error('🌐 URL:', url);
+    console.error('📋 Headers sent:', headers);
+    if (options) {
+      console.error('📤 Request options:', options);
+    }
+  }
 
   // Метод для проверки валидности токена
   async verifyToken(): Promise<boolean> {
@@ -127,6 +137,11 @@ class AdminApiClient {
       
       const data = await response.json();
       console.log('📥 Response data:', data);
+      
+      // Дополнительная информация для отладки 401 ошибок
+      if (response.status === 401) {
+        this.logAuthError(token, url, headers, options);
+      }
 
       if (!response.ok) {
         console.error('❌ API Error:', data);
@@ -195,6 +210,11 @@ class AdminApiClient {
       
       const data = await response.json();
       console.log('📥 FormData Response data:', data);
+      
+      // Дополнительная информация для отладки 401 ошибок
+      if (response.status === 401) {
+        this.logAuthError(token, url, headers, { method });
+      }
 
       if (!response.ok) {
         console.error('❌ FormData API Error:', data);
@@ -256,6 +276,11 @@ class AdminApiClient {
       
       const data = await response.json();
       console.log('📥 Response data:', data);
+      
+      // Дополнительная информация для отладки 401 ошибок
+      if (response.status === 401) {
+        this.logAuthError(token, url, headers, options);
+      }
 
       if (!response.ok) {
         console.error('❌ API Error:', data);
