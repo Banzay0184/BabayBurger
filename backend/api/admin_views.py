@@ -36,16 +36,18 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
     size_options = serializers.SerializerMethodField()
     add_on_options = serializers.SerializerMethodField()
     
-    # Поля для записи - используем CharField для поддержки FormData
-    size_options_write = serializers.CharField(
+    # Поля для записи - используем ListField для поддержки FormData
+    size_options_write = serializers.ListField(
+        child=serializers.CharField(),
         write_only=True,
         required=False,
-        allow_blank=True
+        allow_empty=True
     )
-    add_on_options_write = serializers.CharField(
+    add_on_options_write = serializers.ListField(
+        child=serializers.CharField(),
         write_only=True,
         required=False,
-        allow_blank=True
+        allow_empty=True
     )
     
     def to_internal_value(self, data):
@@ -66,18 +68,8 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
             size_options = data['size_options_write']
             print(f"🔍 size_options_write received: {size_options} (type: {type(size_options)})")
             
-            if isinstance(size_options, str) and size_options.strip():
-                # Если это строка, разделяем по запятой и конвертируем в числа
-                try:
-                    # Убираем пробелы и разделяем по запятой
-                    size_list = [int(x.strip()) for x in size_options.split(',') if x.strip()]
-                    data['size_options_write'] = size_list
-                    print(f"🔍 size_options_write processed from string: {size_list}")
-                except (ValueError, TypeError) as e:
-                    print(f"❌ Error parsing size_options_write: {e}")
-                    data['size_options_write'] = []
-            elif isinstance(size_options, list) and len(size_options) > 0:
-                # Если это список (FormData приходит как массив), обрабатываем первый элемент
+            if isinstance(size_options, list) and len(size_options) > 0:
+                # FormData приходит как массив, обрабатываем первый элемент
                 try:
                     first_item = size_options[0]
                     print(f"🔍 First item in size_options list: {first_item} (type: {type(first_item)})")
@@ -101,18 +93,8 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
             add_on_options = data['add_on_options_write']
             print(f"🔍 add_on_options_write received: {add_on_options} (type: {type(add_on_options)})")
             
-            if isinstance(add_on_options, str) and add_on_options.strip():
-                # Если это строка, разделяем по запятой и конвертируем в числа
-                try:
-                    # Убираем пробелы и разделяем по запятой
-                    addon_list = [int(x.strip()) for x in add_on_options.split(',') if x.strip()]
-                    data['add_on_options_write'] = addon_list
-                    print(f"🔍 add_on_options_write processed from string: {addon_list}")
-                except (ValueError, TypeError) as e:
-                    print(f"❌ Error parsing add_on_options_write: {e}")
-                    data['add_on_options_write'] = []
-            elif isinstance(add_on_options, list) and len(add_on_options) > 0:
-                # Если это список (FormData приходит как массив), обрабатываем первый элемент
+            if isinstance(add_on_options, list) and len(add_on_options) > 0:
+                # FormData приходит как массив, обрабатываем первый элемент
                 try:
                     first_item = add_on_options[0]
                     print(f"🔍 First item in add_on_options list: {first_item} (type: {type(first_item)})")
