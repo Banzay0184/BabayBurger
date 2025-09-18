@@ -269,6 +269,10 @@ export const AdminMenuPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('📤 Отправляем форму с данными:', formData);
+    console.log('📏 Размеры в форме:', formData.size_options);
+    console.log('➕ Добавки в форме:', formData.add_on_options);
+    
     try {
       setLoading(true);
       
@@ -316,20 +320,19 @@ export const AdminMenuPage: React.FC = () => {
         formDataToSend.append('priority', formData.priority.toString());
         formDataToSend.append('image', formData.image);
         
-        // Добавляем размеры
+        // Добавляем размеры как JSON строку
         console.log('📏 Размеры для отправки:', formData.size_options);
-        formData.size_options.forEach(size => {
-          const sizeId = typeof size === 'object' ? size.id : size;
-          console.log('📏 Добавляем размер:', sizeId);
-          formDataToSend.append('size_options_write', sizeId.toString());
-        });
+        if (formData.size_options.length > 0) {
+          formDataToSend.append('size_options_write', JSON.stringify(formData.size_options));
+          console.log('📏 Добавляем размеры как JSON:', JSON.stringify(formData.size_options));
+        }
         
-        // Добавляем добавки
+        // Добавляем добавки как JSON строку
         console.log('➕ Добавки для отправки:', formData.add_on_options);
-        formData.add_on_options.forEach(addOnId => {
-          console.log('➕ Добавляем добавку:', addOnId);
-          formDataToSend.append('add_on_options_write', addOnId.toString());
-        });
+        if (formData.add_on_options.length > 0) {
+          formDataToSend.append('add_on_options_write', JSON.stringify(formData.add_on_options));
+          console.log('➕ Добавляем добавки как JSON:', JSON.stringify(formData.add_on_options));
+        }
 
         console.log('📤 Отправляем FormData с изображением');
         
@@ -349,7 +352,7 @@ export const AdminMenuPage: React.FC = () => {
           is_new: formData.is_new,
           is_active: formData.is_active,
           priority: parseInt(formData.priority.toString()) || 0,
-          size_options_write: formData.size_options.map(size => typeof size === 'object' ? size.id : size),
+          size_options_write: formData.size_options,
           add_on_options_write: formData.add_on_options
         };
 
@@ -367,22 +370,9 @@ export const AdminMenuPage: React.FC = () => {
       if (response.success) {
         const createdItem = response.data as any;
         
-        // Создаем размеры для товара, если они есть
-        if (formData.size_options && formData.size_options.length > 0) {
-          for (const sizeData of formData.size_options) {
-            try {
-              await adminApi.createSizeOption({
-                name: sizeData.name,
-                price_modifier: sizeData.price_modifier,
-                description: sizeData.description,
-                menu_item: createdItem.id, // Привязываем к созданному товару
-                is_active: sizeData.is_active
-              });
-            } catch (err) {
-              console.error('Ошибка создания размера:', err);
-            }
-          }
-        }
+        // Размеры уже обработаны сервером при использовании FormData
+        // или переданы в JSON при использовании JSON
+        console.log('✅ Товар создан успешно:', createdItem);
         
         // Закрываем форму товара
         setShowForm(false);
@@ -574,7 +564,7 @@ export const AdminMenuPage: React.FC = () => {
                                   <span className="text-gray-600">Размеры: </span>
                                   {item.size_options.slice(0, 2).map((size: any, index: number) => (
                                     <span key={index} className="text-green-600 font-medium">
-                                      {size.name} ({size.price_modifier > 0 ? `+${size.price_modifier}` : size.price_modifier} сум)
+                                      {size.name} ({size.price_modifier > 0 ? `${size.price_modifier + Number(item.price)}` : size.price_modifier + Number(item.price)} сум)
                                       {index < Math.min(item.size_options.length, 2) - 1 ? ', ' : ''}
                                     </span>
                                   ))}
@@ -956,7 +946,7 @@ export const AdminMenuPage: React.FC = () => {
                     
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={async () => {
                         if (!sizeFormData.name.trim()) {
                           alert('Введите название размера');
                           return;
@@ -966,19 +956,36 @@ export const AdminMenuPage: React.FC = () => {
                           return;
                         }
                         
-                        // Добавляем размер в список для сохранения
-                        const newSize = {
-                          id: Date.now(), // Временный ID
-                          name: sizeFormData.name,
-                          price_modifier: parseFloat(sizeFormData.price_modifier),
-                          description: sizeFormData.description,
-                          is_active: sizeFormData.is_active
-                        };
-                        
-                        setFormData(prev => ({
-                          ...prev,
-                          size_options: [...prev.size_options, newSize]
-                        }));
+                        // Создаем размер в базе данных
+                        try {
+                          const response = await adminApi.createSizeOption({
+                            name: sizeFormData.name,
+                            price_modifier: parseFloat(sizeFormData.price_modifier),
+                            description: sizeFormData.description,
+                            menu_item: null, // Создаем размер без привязки
+                            is_active: sizeFormData.is_active
+                          });
+
+                          if (response.success) {
+                            const newSize = response.data as any;
+                            console.log('📏 Размер создан в БД:', newSize);
+                            
+                            setFormData(prev => {
+                              const newSizeOptions = [...prev.size_options, newSize.id];
+                              console.log('📏 Добавляем размер к товару:', newSize.id);
+                              console.log('📏 Новый список размеров:', newSizeOptions);
+                              return {
+                                ...prev,
+                                size_options: newSizeOptions
+                              };
+                            });
+                          } else {
+                            alert('Ошибка создания размера: ' + (response.error || 'Неизвестная ошибка'));
+                          }
+                        } catch (err) {
+                          console.error('Ошибка создания размера:', err);
+                          alert('Ошибка создания размера');
+                        }
                         
                         // Очищаем форму
                         setSizeFormData({ name: '', price_modifier: '', description: '', is_active: true });

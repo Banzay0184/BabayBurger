@@ -77,6 +77,8 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         
         if 'add_on_options_write' in data:
             add_on_options = data['add_on_options_write']
+            print(f"🔍 add_on_options_write received: {add_on_options} (type: {type(add_on_options)})")
+            
             if isinstance(add_on_options, str):
                 # Если это строка, пытаемся распарсить как JSON или разделить по запятой
                 try:
@@ -88,6 +90,8 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
             elif isinstance(add_on_options, list):
                 # Если это список, конвертируем все элементы в числа
                 data['add_on_options_write'] = [int(x) for x in add_on_options if str(x).strip()]
+            
+            print(f"🔍 add_on_options_write processed: {data['add_on_options_write']}")
         
         return super().to_internal_value(data)
     
@@ -117,9 +121,15 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         size_options_ids = validated_data.pop('size_options_write', []) or validated_data.pop('size_options', [])
         add_on_options_ids = validated_data.pop('add_on_options_write', []) or validated_data.pop('add_on_options', [])
         
+        print(f"🔍 create() - size_options_ids: {size_options_ids}")
+        print(f"🔍 create() - add_on_options_ids: {add_on_options_ids}")
+        
         # Фильтруем пустые значения и конвертируем в числа
         size_options_ids = [int(x) for x in size_options_ids if x and str(x).strip()]
         add_on_options_ids = [int(x) for x in add_on_options_ids if x and str(x).strip()]
+        
+        print(f"🔍 create() - processed size_options_ids: {size_options_ids}")
+        print(f"🔍 create() - processed add_on_options_ids: {add_on_options_ids}")
         
         # Создаем объект
         menu_item = MenuItem.objects.create(**validated_data)
