@@ -100,6 +100,8 @@ export const OrderSearch: React.FC<OrderSearchProps> = ({
         return 'text-gray-600 bg-gray-100';
       case 'cancelled':
         return 'text-red-600 bg-red-100';
+      case 'rejected':
+        return 'text-red-600 bg-red-100';
       default:
         return 'text-gray-600 bg-gray-100';
     }
@@ -117,6 +119,8 @@ export const OrderSearch: React.FC<OrderSearchProps> = ({
         return 'Завершен';
       case 'cancelled':
         return 'Отменен';
+      case 'rejected':
+        return 'Отклонен';
       default:
         return status;
     }
