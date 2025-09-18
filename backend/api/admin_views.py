@@ -131,6 +131,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         logger.info(f"🔍 Final data before super().to_internal_value(): {data}")
         logger.info(f"🔍 Final size_options_write: {data.get('size_options_write')} (type: {type(data.get('size_options_write'))})")
         logger.info(f"🔍 Final add_on_options_write: {data.get('add_on_options_write')} (type: {type(data.get('add_on_options_write'))})")
+        logger.info(f"🔍 Time restriction fields: use_time_restriction={data.get('use_time_restriction')}, from_time={data.get('available_from_time')}, to_time={data.get('available_to_time')}")
         
         result = super().to_internal_value(data)
         logger.info(f"🔍 Result from super().to_internal_value(): {result}")
