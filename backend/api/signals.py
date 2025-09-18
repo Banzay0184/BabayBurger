@@ -16,34 +16,42 @@ logger.info("🔥 API signals module loaded successfully!")
 def send_menu_update_notification(menu_item, action):
     """Отправляет WebSocket уведомление об изменении меню"""
     try:
+        logger.info(f"🔍 send_menu_update_notification called: {menu_item.name} - {action}")
         channel_layer = get_channel_layer()
+        logger.info(f"🔍 Channel layer: {channel_layer}")
         if channel_layer:
             # Проверяем доступность товара по времени
             try:
                 is_available_now = menu_item.is_available_now()
                 availability_status = menu_item.get_availability_status()
+                logger.info(f"🔍 Availability check: is_available_now={is_available_now}, status={availability_status}")
             except Exception as e:
                 logger.error(f"Error checking availability: {str(e)}")
                 is_available_now = True  # По умолчанию доступен
                 availability_status = "Доступен всегда"
             
+            message_data = {
+                'type': 'menu_item_updated',
+                'item_id': menu_item.id,
+                'item_name': menu_item.name,
+                'is_active': menu_item.is_active,
+                'is_available_now': is_available_now,
+                'availability_status': availability_status,
+                'use_time_restriction': menu_item.use_time_restriction,
+                'available_from_time': str(menu_item.available_from_time) if menu_item.available_from_time else None,
+                'available_to_time': str(menu_item.available_to_time) if menu_item.available_to_time else None,
+                'action': action,
+                'timestamp': timezone.now().isoformat()
+            }
+            logger.info(f"🔍 Sending WebSocket message: {message_data}")
+            
             async_to_sync(channel_layer.group_send)(
                 'menu_updates',
-                {
-                    'type': 'menu_item_updated',
-                    'item_id': menu_item.id,
-                    'item_name': menu_item.name,
-                    'is_active': menu_item.is_active,
-                    'is_available_now': is_available_now,
-                    'availability_status': availability_status,
-                    'use_time_restriction': menu_item.use_time_restriction,
-                    'available_from_time': str(menu_item.available_from_time) if menu_item.available_from_time else None,
-                    'available_to_time': str(menu_item.available_to_time) if menu_item.available_to_time else None,
-                    'action': action,
-                    'timestamp': timezone.now().isoformat()
-                }
+                message_data
             )
             logger.info(f"📡 Menu update notification sent: {menu_item.name} - {action} (available_now: {is_available_now})")
+        else:
+            logger.error("❌ Channel layer is None!")
     except Exception as e:
         logger.error(f"Error sending menu update notification: {str(e)}")
 
@@ -51,6 +59,7 @@ def send_menu_update_notification(menu_item, action):
 def clear_menu_cache_on_menu_item_change(sender, instance, created, **kwargs):
     """Очищает кэш меню при изменении элемента меню и отправляет WebSocket уведомление"""
     try:
+        logger.info(f"🔍 MenuItem signal triggered: {instance.name} - {'created' if created else 'updated'}")
         clear_menu_cache()
         
         # Определяем действие
