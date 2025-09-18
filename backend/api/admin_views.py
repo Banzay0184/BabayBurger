@@ -128,7 +128,13 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                 logger.error(f"❌ Error processing add_on_options_write: {e}")
                 data['add_on_options_write'] = []
         
-        return super().to_internal_value(data)
+        logger.info(f"🔍 Final data before super().to_internal_value(): {data}")
+        logger.info(f"🔍 Final size_options_write: {data.get('size_options_write')} (type: {type(data.get('size_options_write'))})")
+        logger.info(f"🔍 Final add_on_options_write: {data.get('add_on_options_write')} (type: {type(data.get('add_on_options_write'))})")
+        
+        result = super().to_internal_value(data)
+        logger.info(f"🔍 Result from super().to_internal_value(): {result}")
+        return result
     
     class Meta:
         model = MenuItem
