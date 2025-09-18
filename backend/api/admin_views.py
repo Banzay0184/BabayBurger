@@ -73,7 +73,11 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                     import json
                     parsed = json.loads(size_options)
                     print(f"🔍 JSON parsed size_options: {parsed}")
-                    data['size_options_write'] = parsed
+                    # Если парсинг дал число, оборачиваем в список
+                    if isinstance(parsed, int):
+                        data['size_options_write'] = [parsed]
+                    else:
+                        data['size_options_write'] = parsed
                 except (json.JSONDecodeError, ValueError):
                     # Если не JSON, разделяем по запятой и конвертируем в числа
                     data['size_options_write'] = [int(x.strip()) for x in size_options.split(',') if x.strip()]
@@ -93,7 +97,11 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                     import json
                     parsed = json.loads(add_on_options)
                     print(f"🔍 JSON parsed add_on_options: {parsed}")
-                    data['add_on_options_write'] = parsed
+                    # Если парсинг дал число, оборачиваем в список
+                    if isinstance(parsed, int):
+                        data['add_on_options_write'] = [parsed]
+                    else:
+                        data['add_on_options_write'] = parsed
                 except (json.JSONDecodeError, ValueError):
                     # Если не JSON, разделяем по запятой и конвертируем в числа
                     data['add_on_options_write'] = [int(x.strip()) for x in add_on_options.split(',') if x.strip()]
