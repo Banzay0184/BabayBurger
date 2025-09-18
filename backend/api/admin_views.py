@@ -76,7 +76,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                 if isinstance(size_options, str) and size_options.strip():
                     # Если это строка, разделяем по запятой
                     size_list = [int(x.strip()) for x in size_options.split(',') if x.strip()]
-                    data['size_options_write'] = size_list
+                    data['size_options_write'] = size_lis
                     logger.info(f"🔍 size_options_write processed from string: {size_list}")
                 elif isinstance(size_options, list) and len(size_options) > 0:
                     # Если это список, обрабатываем первый элемент
