@@ -317,12 +317,17 @@ export const AdminMenuPage: React.FC = () => {
         formDataToSend.append('image', formData.image);
         
         // Добавляем размеры
-        formData.size_options.forEach(sizeId => {
+        console.log('📏 Размеры для отправки:', formData.size_options);
+        formData.size_options.forEach(size => {
+          const sizeId = typeof size === 'object' ? size.id : size;
+          console.log('📏 Добавляем размер:', sizeId);
           formDataToSend.append('size_options_write', sizeId.toString());
         });
         
         // Добавляем добавки
+        console.log('➕ Добавки для отправки:', formData.add_on_options);
         formData.add_on_options.forEach(addOnId => {
+          console.log('➕ Добавляем добавку:', addOnId);
           formDataToSend.append('add_on_options_write', addOnId.toString());
         });
 
@@ -344,7 +349,7 @@ export const AdminMenuPage: React.FC = () => {
           is_new: formData.is_new,
           is_active: formData.is_active,
           priority: parseInt(formData.priority.toString()) || 0,
-          size_options_write: [], // Не отправляем размеры в основном запросе
+          size_options_write: formData.size_options.map(size => typeof size === 'object' ? size.id : size),
           add_on_options_write: formData.add_on_options
         };
 
@@ -972,7 +977,7 @@ export const AdminMenuPage: React.FC = () => {
                         
                         setFormData(prev => ({
                           ...prev,
-                          size_options: [...prev.size_options, newSize.id]
+                          size_options: [...prev.size_options, newSize]
                         }));
                         
                         // Очищаем форму
