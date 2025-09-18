@@ -63,17 +63,23 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         # Обрабатываем FormData - преобразуем строки в числа для списков
         if 'size_options_write' in data:
             size_options = data['size_options_write']
+            print(f"🔍 size_options_write received: {size_options} (type: {type(size_options)})")
+            
             if isinstance(size_options, str):
                 # Если это строка, пытаемся распарсить как JSON или разделить по запятой
                 try:
                     import json
-                    data['size_options_write'] = json.loads(size_options)
+                    parsed = json.loads(size_options)
+                    print(f"🔍 JSON parsed size_options: {parsed}")
+                    data['size_options_write'] = parsed
                 except (json.JSONDecodeError, ValueError):
                     # Если не JSON, разделяем по запятой и конвертируем в числа
                     data['size_options_write'] = [int(x.strip()) for x in size_options.split(',') if x.strip()]
             elif isinstance(size_options, list):
                 # Если это список, конвертируем все элементы в числа
                 data['size_options_write'] = [int(x) for x in size_options if str(x).strip()]
+            
+            print(f"🔍 size_options_write processed: {data['size_options_write']}")
         
         if 'add_on_options_write' in data:
             add_on_options = data['add_on_options_write']
@@ -83,7 +89,9 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                 # Если это строка, пытаемся распарсить как JSON или разделить по запятой
                 try:
                     import json
-                    data['add_on_options_write'] = json.loads(add_on_options)
+                    parsed = json.loads(add_on_options)
+                    print(f"🔍 JSON parsed add_on_options: {parsed}")
+                    data['add_on_options_write'] = parsed
                 except (json.JSONDecodeError, ValueError):
                     # Если не JSON, разделяем по запятой и конвертируем в числа
                     data['add_on_options_write'] = [int(x.strip()) for x in add_on_options.split(',') if x.strip()]
@@ -125,8 +133,8 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         print(f"🔍 create() - add_on_options_ids: {add_on_options_ids}")
         
         # Фильтруем пустые значения и конвертируем в числа
-        size_options_ids = [int(x) for x in size_options_ids if x and str(x).strip()]
-        add_on_options_ids = [int(x) for x in add_on_options_ids if x and str(x).strip()]
+        size_options_ids = [int(x) for x in size_options_ids if x is not None and str(x).strip()]
+        add_on_options_ids = [int(x) for x in add_on_options_ids if x is not None and str(x).strip()]
         
         print(f"🔍 create() - processed size_options_ids: {size_options_ids}")
         print(f"🔍 create() - processed add_on_options_ids: {add_on_options_ids}")
@@ -159,12 +167,12 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         # Обновляем связи если они переданы
         if size_options_data is not None:
             # Фильтруем пустые значения и конвертируем в числа
-            size_options_ids = [int(x) for x in size_options_data if x and str(x).strip()]
+            size_options_ids = [int(x) for x in size_options_data if x is not None and str(x).strip()]
             size_options = SizeOption.objects.filter(id__in=size_options_ids)
             instance.size_options.set(size_options)
         if add_on_options_data is not None:
             # Фильтруем пустые значения и конвертируем в числа
-            add_on_options_ids = [int(x) for x in add_on_options_data if x and str(x).strip()]
+            add_on_options_ids = [int(x) for x in add_on_options_data if x is not None and str(x).strip()]
             add_on_options = AddOn.objects.filter(id__in=add_on_options_ids)
             instance.add_on_options.set(add_on_options)
         
