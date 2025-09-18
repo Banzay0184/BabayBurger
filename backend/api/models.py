@@ -929,14 +929,25 @@ class MenuItem(models.Model):
             return True
             
         from django.utils import timezone
+        from datetime import time
         now = timezone.now().time()
         
+        # Убеждаемся, что у нас есть объекты time
+        from_time = self.available_from_time
+        to_time = self.available_to_time
+        
+        # Если это строки, конвертируем в time
+        if isinstance(from_time, str):
+            from_time = time.fromisoformat(from_time)
+        if isinstance(to_time, str):
+            to_time = time.fromisoformat(to_time)
+        
         # Если время начала меньше времени окончания (например, 08:00 - 22:00)
-        if self.available_from_time <= self.available_to_time:
-            return self.available_from_time <= now <= self.available_to_time
+        if from_time <= to_time:
+            return from_time <= now <= to_time
         else:
             # Если время переходит через полночь (например, 22:00 - 08:00)
-            return now >= self.available_from_time or now <= self.available_to_time
+            return now >= from_time or now <= to_time
     
     def get_availability_status(self):
         """
@@ -952,12 +963,23 @@ class MenuItem(models.Model):
             return "Доступен всегда"
             
         from django.utils import timezone
+        from datetime import time
         now = timezone.now().time()
         
+        # Убеждаемся, что у нас есть объекты time
+        from_time = self.available_from_time
+        to_time = self.available_to_time
+        
+        # Если это строки, конвертируем в time
+        if isinstance(from_time, str):
+            from_time = time.fromisoformat(from_time)
+        if isinstance(to_time, str):
+            to_time = time.fromisoformat(to_time)
+        
         if self.is_available_now():
-            return f"Доступен до {self.available_to_time.strftime('%H:%M')}"
+            return f"Доступен до {to_time.strftime('%H:%M')}"
         else:
-            return f"Доступен с {self.available_from_time.strftime('%H:%M')}"
+            return f"Доступен с {from_time.strftime('%H:%M')}"
 
 # --- ДОРАБОТКА OrderItem ---
 class OrderItem(models.Model):
