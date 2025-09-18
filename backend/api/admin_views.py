@@ -68,48 +68,52 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
             print(f"🔍 size_options_write received: {size_options} (type: {type(size_options)})")
             
             if isinstance(size_options, str):
-                # Если это строка, пытаемся распарсить как JSON или разделить по запятой
+                # Если это строка, разделяем по запятой и конвертируем в числа
                 try:
-                    import json
-                    parsed = json.loads(size_options)
-                    print(f"🔍 JSON parsed size_options: {parsed}")
-                    # Если парсинг дал число, оборачиваем в список
-                    if isinstance(parsed, int):
-                        data['size_options_write'] = [parsed]
-                    else:
-                        data['size_options_write'] = parsed
-                except (json.JSONDecodeError, ValueError):
-                    # Если не JSON, разделяем по запятой и конвертируем в числа
-                    data['size_options_write'] = [int(x.strip()) for x in size_options.split(',') if x.strip()]
+                    # Убираем пробелы и разделяем по запятой
+                    size_list = [int(x.strip()) for x in size_options.split(',') if x.strip()]
+                    data['size_options_write'] = size_list
+                    print(f"🔍 size_options_write processed from string: {size_list}")
+                except (ValueError, TypeError) as e:
+                    print(f"❌ Error parsing size_options_write: {e}")
+                    data['size_options_write'] = []
             elif isinstance(size_options, list):
                 # Если это список, конвертируем все элементы в числа
-                data['size_options_write'] = [int(x) for x in size_options if str(x).strip()]
-            
-            print(f"🔍 size_options_write processed: {data['size_options_write']}")
+                try:
+                    data['size_options_write'] = [int(x) for x in size_options if str(x).strip()]
+                    print(f"🔍 size_options_write processed from list: {data['size_options_write']}")
+                except (ValueError, TypeError) as e:
+                    print(f"❌ Error processing size_options_write list: {e}")
+                    data['size_options_write'] = []
+            else:
+                print(f"❌ Unexpected type for size_options_write: {type(size_options)}")
+                data['size_options_write'] = []
         
         if 'add_on_options_write' in data:
             add_on_options = data['add_on_options_write']
             print(f"🔍 add_on_options_write received: {add_on_options} (type: {type(add_on_options)})")
             
             if isinstance(add_on_options, str):
-                # Если это строка, пытаемся распарсить как JSON или разделить по запятой
+                # Если это строка, разделяем по запятой и конвертируем в числа
                 try:
-                    import json
-                    parsed = json.loads(add_on_options)
-                    print(f"🔍 JSON parsed add_on_options: {parsed}")
-                    # Если парсинг дал число, оборачиваем в список
-                    if isinstance(parsed, int):
-                        data['add_on_options_write'] = [parsed]
-                    else:
-                        data['add_on_options_write'] = parsed
-                except (json.JSONDecodeError, ValueError):
-                    # Если не JSON, разделяем по запятой и конвертируем в числа
-                    data['add_on_options_write'] = [int(x.strip()) for x in add_on_options.split(',') if x.strip()]
+                    # Убираем пробелы и разделяем по запятой
+                    addon_list = [int(x.strip()) for x in add_on_options.split(',') if x.strip()]
+                    data['add_on_options_write'] = addon_list
+                    print(f"🔍 add_on_options_write processed from string: {addon_list}")
+                except (ValueError, TypeError) as e:
+                    print(f"❌ Error parsing add_on_options_write: {e}")
+                    data['add_on_options_write'] = []
             elif isinstance(add_on_options, list):
                 # Если это список, конвертируем все элементы в числа
-                data['add_on_options_write'] = [int(x) for x in add_on_options if str(x).strip()]
-            
-            print(f"🔍 add_on_options_write processed: {data['add_on_options_write']}")
+                try:
+                    data['add_on_options_write'] = [int(x) for x in add_on_options if str(x).strip()]
+                    print(f"🔍 add_on_options_write processed from list: {data['add_on_options_write']}")
+                except (ValueError, TypeError) as e:
+                    print(f"❌ Error processing add_on_options_write list: {e}")
+                    data['add_on_options_write'] = []
+            else:
+                print(f"❌ Unexpected type for add_on_options_write: {type(add_on_options)}")
+                data['add_on_options_write'] = []
         
         return super().to_internal_value(data)
     
@@ -497,7 +501,21 @@ class AdminMenuViewSet(viewsets.ModelViewSet):
         print(f"🔍 AdminMenuViewSet.create() called")
         print(f"🔍 request.data: {request.data}")
         print(f"🔍 request.FILES: {request.FILES}")
-        return super().create(request, *args, **kwargs)
+        print(f"🔍 request.content_type: {request.content_type}")
+        
+        # Проверяем конкретные поля
+        if 'size_options_write' in request.data:
+            print(f"🔍 size_options_write in request.data: {request.data['size_options_write']} (type: {type(request.data['size_options_write'])})")
+        if 'add_on_options_write' in request.data:
+            print(f"🔍 add_on_options_write in request.data: {request.data['add_on_options_write']} (type: {type(request.data['add_on_options_write'])})")
+        
+        try:
+            result = super().create(request, *args, **kwargs)
+            print(f"✅ AdminMenuViewSet.create() success: {result.data}")
+            return result
+        except Exception as e:
+            print(f"❌ AdminMenuViewSet.create() error: {e}")
+            raise
     
     def get_queryset(self):
         queryset = MenuItem.objects.select_related('category').prefetch_related(
