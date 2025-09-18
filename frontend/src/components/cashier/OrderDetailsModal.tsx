@@ -5,12 +5,14 @@ interface OrderDetailsModalProps {
   order: Order | null;
   isOpen: boolean;
   onClose: () => void;
+  onShowReceiptPhotos?: (order: Order) => void;
 }
 
 export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   order,
   isOpen,
-  onClose
+  onClose,
+  onShowReceiptPhotos
 }) => {
   if (!isOpen || !order) return null;
 
@@ -57,6 +59,19 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       default:
         return status;
     }
+  };
+
+  const hasReceiptPhotos = () => {
+    const hasPhotos = order?.receipt_photos && order.receipt_photos.length > 0;
+    console.log('🔍 Receipt photos debug:', {
+      orderId: order?.id,
+      status: order?.status,
+      serviceType: order?.service_type,
+      receiptPhotos: order?.receipt_photos,
+      hasPhotos,
+      shouldShowButton: (order?.status === 'completed' || (order?.status === 'ready_for_delivery' && order?.service_type === 'pickup')) && hasPhotos && onShowReceiptPhotos
+    });
+    return hasPhotos;
   };
 
   return (
@@ -318,13 +333,45 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
         {/* Футер модального окна */}
         <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-          <div className="flex justify-end">
-            <button
-              onClick={onClose}
-              className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-            >
-              Закрыть
-            </button>
+          <div className="flex justify-between items-center">
+            {/* Кнопка для просмотра фотографий чека (только для завершенных заказов с фотографиями) */}
+            {(order.status === 'completed' || (order.status === 'ready_for_delivery' && order.service_type === 'pickup')) && 
+             hasReceiptPhotos() && onShowReceiptPhotos && (
+              <button
+                onClick={() => onShowReceiptPhotos(order)}
+                className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg flex items-center space-x-2"
+              >
+                <span>📷</span>
+                <span>Фото чека</span>
+              </button>
+            )}
+            
+            {/* Временная кнопка для отладки - показываем всегда если есть фотографии */}
+            {hasReceiptPhotos() && onShowReceiptPhotos && (
+              <button
+                onClick={() => onShowReceiptPhotos(order)}
+                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg flex items-center space-x-2"
+              >
+                <span>🔍</span>
+                <span>Отладка: Фото чека</span>
+              </button>
+            )}
+            
+            {/* Информация для отладки */}
+            <div className="text-xs text-gray-500">
+              Статус: {order.status} | Тип: {order.service_type} | 
+              Фото: {order.receipt_photos?.length || 0} | 
+              Показать: {(order.status === 'completed' || (order.status === 'ready_for_delivery' && order.service_type === 'pickup')) ? 'Да' : 'Нет'}
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={onClose}
+                className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Закрыть
+              </button>
+            </div>
           </div>
         </div>
       </div>

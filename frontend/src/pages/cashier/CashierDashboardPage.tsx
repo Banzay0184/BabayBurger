@@ -555,6 +555,7 @@ export const CashierDashboardPage: React.FC = () => {
         order={selectedOrder}
         isOpen={isDetailsModalOpen}
         onClose={handleCloseDetails}
+        onShowReceiptPhotos={handleShowReceiptPhotos}
       />
 
       {/* Модальное окно с фотографиями чека */}

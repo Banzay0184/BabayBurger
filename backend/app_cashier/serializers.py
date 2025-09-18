@@ -319,6 +319,9 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
         try:
             from api.models import DeliveryAssignment
             from django.conf import settings
+            import logging
+            
+            logger = logging.getLogger(__name__)
             
             # Получаем назначения доставки для этого заказа
             assignments = DeliveryAssignment.objects.filter(
@@ -326,20 +329,29 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
                 receipt_photo__isnull=False
             ).exclude(receipt_photo='')
             
+            logger.info(f"🔍 Receipt photos debug for order {obj.id}:")
+            logger.info(f"  - Found {assignments.count()} assignments with receipt photos")
+            
             photos = []
             for assignment in assignments:
                 if assignment.receipt_photo:
                     # Формируем полный URL для фотографии
                     photo_url = f"{settings.MEDIA_URL}{assignment.receipt_photo}"
-                    photos.append({
+                    photo_data = {
                         'id': assignment.id,
                         'photo_url': photo_url,
                         'delivered_at': assignment.delivered_at,
                         'driver_name': f"{assignment.driver.user.first_name} {assignment.driver.user.last_name}".strip() if assignment.driver.user.first_name else f"Курьер #{assignment.driver.id}"
-                    })
+                    }
+                    photos.append(photo_data)
+                    logger.info(f"  - Added photo: {photo_data}")
             
+            logger.info(f"  - Returning {len(photos)} photos")
             return photos
         except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"❌ Error getting receipt photos for order {obj.id}: {str(e)}")
             # В случае ошибки возвращаем пустой список
             return []
 
