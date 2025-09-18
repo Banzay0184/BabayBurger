@@ -36,6 +36,8 @@ class AdminTokenAuthentication(BaseAuthentication):
             user = token.user
             
             print(f"🔐 Token found: {token_key[:10]}... User: {user.username} (is_staff: {user.is_staff})")
+            print(f"🔐 User type: {type(user)}")
+            print(f"🔐 User ID: {user.id}")
             
             # Проверяем, что пользователь является администратором
             if not user.is_staff:
@@ -47,6 +49,9 @@ class AdminTokenAuthentication(BaseAuthentication):
             
         except Token.DoesNotExist:
             print(f"🔐 Token not found: {token_key[:10]}...")
+            # Давайте проверим все токены для отладки
+            all_tokens = Token.objects.all()
+            print(f"🔐 Available tokens: {[t.key[:10] + '...' for t in all_tokens]}")
             raise AuthenticationFailed('Неверный токен аутентификации')
         except Exception as e:
             print(f"🔐 Authentication error: {str(e)}")

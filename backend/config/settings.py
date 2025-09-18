@@ -362,6 +362,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Настройки REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'api.admin_auth.AdminTokenAuthentication',  # Наш кастомный класс для админки
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],

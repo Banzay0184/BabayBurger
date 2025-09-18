@@ -51,6 +51,11 @@ class RequestLoggingMiddleware(MiddlewareMixin):
             'user_agent': request.META.get('HTTP_USER_AGENT', ''),
         }
         
+        # Добавляем информацию о заголовках авторизации для отладки
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        if auth_header:
+            log_data['auth_header'] = auth_header[:20] + '...' if len(auth_header) > 20 else auth_header
+        
         # Добавляем параметры запроса
         if request.GET:
             log_data['query_params'] = dict(request.GET)
