@@ -320,18 +320,18 @@ export const AdminMenuPage: React.FC = () => {
         formDataToSend.append('priority', formData.priority.toString());
         formDataToSend.append('image', formData.image);
         
-        // Добавляем размеры как JSON строку
+        // Добавляем размеры как строку, разделенную запятыми
         console.log('📏 Размеры для отправки:', formData.size_options);
         if (formData.size_options.length > 0) {
-          formDataToSend.append('size_options_write', JSON.stringify(formData.size_options));
-          console.log('📏 Добавляем размеры как JSON:', JSON.stringify(formData.size_options));
+          formDataToSend.append('size_options_write', formData.size_options.join(','));
+          console.log('📏 Добавляем размеры как строку:', formData.size_options.join(','));
         }
         
-        // Добавляем добавки как JSON строку
+        // Добавляем добавки как строку, разделенную запятыми
         console.log('➕ Добавки для отправки:', formData.add_on_options);
         if (formData.add_on_options.length > 0) {
-          formDataToSend.append('add_on_options_write', JSON.stringify(formData.add_on_options));
-          console.log('➕ Добавляем добавки как JSON:', JSON.stringify(formData.add_on_options));
+          formDataToSend.append('add_on_options_write', formData.add_on_options.join(','));
+          console.log('➕ Добавляем добавки как строку:', formData.add_on_options.join(','));
         }
 
         console.log('📤 Отправляем FormData с изображением');

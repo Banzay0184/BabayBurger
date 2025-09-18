@@ -52,6 +52,8 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
     
     def to_internal_value(self, data):
         """Переопределяем для поддержки оригинальных ключей фронтенда и FormData"""
+        print(f"🔍 to_internal_value called with data: {data}")
+        print(f"🔍 data type: {type(data)}")
         data = data.copy()
         
         # Если данные приходят с оригинальными ключами, преобразуем их
@@ -125,6 +127,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         return AddOnSerializer(active_addons, many=True).data
     
     def create(self, validated_data):
+        print(f"🔍 create() called with validated_data: {validated_data}")
         # Извлекаем данные для many-to-many полей (поддерживаем оба варианта ключей)
         size_options_ids = validated_data.pop('size_options_write', []) or validated_data.pop('size_options', [])
         add_on_options_ids = validated_data.pop('add_on_options_write', []) or validated_data.pop('add_on_options', [])
@@ -481,6 +484,12 @@ class AdminMenuViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = MenuItem.objects.all()
     serializer_class = AdminMenuItemSerializer
+    
+    def create(self, request, *args, **kwargs):
+        print(f"🔍 AdminMenuViewSet.create() called")
+        print(f"🔍 request.data: {request.data}")
+        print(f"🔍 request.FILES: {request.FILES}")
+        return super().create(request, *args, **kwargs)
     
     def get_queryset(self):
         queryset = MenuItem.objects.select_related('category').prefetch_related(
