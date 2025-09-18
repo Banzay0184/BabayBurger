@@ -191,7 +191,7 @@ export const AdminMenuPage: React.FC = () => {
       is_new: item.is_new || false,
       is_active: item.is_active !== false,
       priority: item.priority || 0,
-      size_options: item.size_options?.map((s: any) => s.id) || [],
+      size_options: item.size_options || [],
       add_on_options: item.add_on_options?.map((a: any) => a.id) || []
     });
     setEditingItem(item);
@@ -323,8 +323,9 @@ export const AdminMenuPage: React.FC = () => {
         // Добавляем размеры как строку, разделенную запятыми
         console.log('📏 Размеры для отправки:', formData.size_options);
         if (formData.size_options.length > 0) {
-          formDataToSend.append('size_options_write', formData.size_options.join(','));
-          console.log('📏 Добавляем размеры как строку:', formData.size_options.join(','));
+          const sizeIds = formData.size_options.map((size: any) => typeof size === 'object' ? size.id : size);
+          formDataToSend.append('size_options_write', sizeIds.join(','));
+          console.log('📏 Добавляем размеры как строку:', sizeIds.join(','));
         }
         
         // Добавляем добавки как строку, разделенную запятыми
@@ -352,7 +353,7 @@ export const AdminMenuPage: React.FC = () => {
           is_new: formData.is_new,
           is_active: formData.is_active,
           priority: parseInt(formData.priority.toString()) || 0,
-          size_options_write: formData.size_options,
+          size_options_write: formData.size_options.map((size: any) => typeof size === 'object' ? size.id : size),
           add_on_options_write: formData.add_on_options
         };
 
