@@ -76,7 +76,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                 if isinstance(size_options, str) and size_options.strip():
                     # Если это строка, разделяем по запятой
                     size_list = [int(x.strip()) for x in size_options.split(',') if x.strip()]
-                    data.setlist('size_options_write', size_list)
+                    data['size_options_write'] = size_list
                     logger.info(f"🔍 size_options_write processed from string: {size_list}")
                 elif isinstance(size_options, list) and len(size_options) > 0:
                     # Если это список, обрабатываем первый элемент
@@ -85,15 +85,15 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                     if isinstance(first_item, str) and first_item.strip():
                         # Разделяем по запятой если это строка с несколькими значениями
                         size_list = [int(x.strip()) for x in first_item.split(',') if x.strip()]
-                        data.setlist('size_options_write', size_list)
+                        data['size_options_write'] = size_list
                         logger.info(f"🔍 size_options_write processed from FormData list: {size_list}")
                     else:
                         # Если это уже числа
-                        data.setlist('size_options_write', [int(x) for x in size_options if str(x).strip()])
+                        data['size_options_write'] = [int(x) for x in size_options if str(x).strip()]
                         logger.info(f"🔍 size_options_write processed from number list: {data['size_options_write']}")
                 else:
                     logger.info(f"🔍 size_options_write empty or invalid, setting to empty list")
-                    data.setlist('size_options_write', [])
+                    data['size_options_write'] = []
             except (ValueError, TypeError) as e:
                 logger.error(f"❌ Error processing size_options_write: {e}")
                 data['size_options_write'] = []
@@ -106,7 +106,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                 if isinstance(add_on_options, str) and add_on_options.strip():
                     # Если это строка, разделяем по запятой
                     addon_list = [int(x.strip()) for x in add_on_options.split(',') if x.strip()]
-                    data.setlist('add_on_options_write', addon_list)
+                    data['add_on_options_write'] = addon_list
                     logger.info(f"🔍 add_on_options_write processed from string: {addon_list}")
                 elif isinstance(add_on_options, list) and len(add_on_options) > 0:
                     # Если это список, обрабатываем первый элемент
@@ -115,15 +115,15 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                     if isinstance(first_item, str) and first_item.strip():
                         # Разделяем по запятой если это строка с несколькими значениями
                         addon_list = [int(x.strip()) for x in first_item.split(',') if x.strip()]
-                        data.setlist('add_on_options_write', addon_list)
+                        data['add_on_options_write'] = addon_list
                         logger.info(f"🔍 add_on_options_write processed from FormData list: {addon_list}")
                     else:
                         # Если это уже числа
-                        data.setlist('add_on_options_write', [int(x) for x in add_on_options if str(x).strip()])
+                        data['add_on_options_write'] = [int(x) for x in add_on_options if str(x).strip()]
                         logger.info(f"🔍 add_on_options_write processed from number list: {data['add_on_options_write']}")
                 else:
                     logger.info(f"🔍 add_on_options_write empty or invalid, setting to empty list")
-                    data.setlist('add_on_options_write', [])
+                    data['add_on_options_write'] = []
             except (ValueError, TypeError) as e:
                 logger.error(f"❌ Error processing add_on_options_write: {e}")
                 data['add_on_options_write'] = []
