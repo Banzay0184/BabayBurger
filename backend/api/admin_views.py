@@ -52,6 +52,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         """Переопределяем для поддержки оригинальных ключей фронтенда и FormData"""
         print(f"🔍 to_internal_value called with data: {data}")
         print(f"🔍 data type: {type(data)}")
+        print(f"🔍 data keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
         data = data.copy()
         
         # Если данные приходят с оригинальными ключами, преобразуем их
@@ -79,6 +80,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                 # Если это список (FormData приходит как массив), обрабатываем первый элемент
                 try:
                     first_item = size_options[0]
+                    print(f"🔍 First item in size_options list: {first_item} (type: {type(first_item)})")
                     if isinstance(first_item, str) and first_item.strip():
                         # Разделяем по запятой если это строка с несколькими значениями
                         size_list = [int(x.strip()) for x in first_item.split(',') if x.strip()]
@@ -113,6 +115,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                 # Если это список (FormData приходит как массив), обрабатываем первый элемент
                 try:
                     first_item = add_on_options[0]
+                    print(f"🔍 First item in add_on_options list: {first_item} (type: {type(first_item)})")
                     if isinstance(first_item, str) and first_item.strip():
                         # Разделяем по запятой если это строка с несколькими значениями
                         addon_list = [int(x.strip()) for x in first_item.split(',') if x.strip()]
