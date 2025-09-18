@@ -75,11 +75,19 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                 except (ValueError, TypeError) as e:
                     print(f"❌ Error parsing size_options_write: {e}")
                     data['size_options_write'] = []
-            elif isinstance(size_options, list):
-                # Если это список, конвертируем все элементы в числа
+            elif isinstance(size_options, list) and len(size_options) > 0:
+                # Если это список (FormData приходит как массив), обрабатываем первый элемент
                 try:
-                    data['size_options_write'] = [int(x) for x in size_options if str(x).strip()]
-                    print(f"🔍 size_options_write processed from list: {data['size_options_write']}")
+                    first_item = size_options[0]
+                    if isinstance(first_item, str) and first_item.strip():
+                        # Разделяем по запятой если это строка с несколькими значениями
+                        size_list = [int(x.strip()) for x in first_item.split(',') if x.strip()]
+                        data['size_options_write'] = size_list
+                        print(f"🔍 size_options_write processed from FormData list: {size_list}")
+                    else:
+                        # Если это уже числа
+                        data['size_options_write'] = [int(x) for x in size_options if str(x).strip()]
+                        print(f"🔍 size_options_write processed from number list: {data['size_options_write']}")
                 except (ValueError, TypeError) as e:
                     print(f"❌ Error processing size_options_write list: {e}")
                     data['size_options_write'] = []
@@ -101,11 +109,19 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                 except (ValueError, TypeError) as e:
                     print(f"❌ Error parsing add_on_options_write: {e}")
                     data['add_on_options_write'] = []
-            elif isinstance(add_on_options, list):
-                # Если это список, конвертируем все элементы в числа
+            elif isinstance(add_on_options, list) and len(add_on_options) > 0:
+                # Если это список (FormData приходит как массив), обрабатываем первый элемент
                 try:
-                    data['add_on_options_write'] = [int(x) for x in add_on_options if str(x).strip()]
-                    print(f"🔍 add_on_options_write processed from list: {data['add_on_options_write']}")
+                    first_item = add_on_options[0]
+                    if isinstance(first_item, str) and first_item.strip():
+                        # Разделяем по запятой если это строка с несколькими значениями
+                        addon_list = [int(x.strip()) for x in first_item.split(',') if x.strip()]
+                        data['add_on_options_write'] = addon_list
+                        print(f"🔍 add_on_options_write processed from FormData list: {addon_list}")
+                    else:
+                        # Если это уже числа
+                        data['add_on_options_write'] = [int(x) for x in add_on_options if str(x).strip()]
+                        print(f"🔍 add_on_options_write processed from number list: {data['add_on_options_write']}")
                 except (ValueError, TypeError) as e:
                     print(f"❌ Error processing add_on_options_write list: {e}")
                     data['add_on_options_write'] = []
