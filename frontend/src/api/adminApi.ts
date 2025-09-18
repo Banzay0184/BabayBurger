@@ -111,10 +111,10 @@ class AdminApiClient {
       });
       
       const headers: any = {
-        // Добавляем токен аутентификации если он есть
-        ...(token && { 'Authorization': `Bearer ${token}` }),
-        // Передаем заголовки из options в конце, чтобы они могли перезаписать наши
+        // Передаем заголовки из options сначала
         ...options.headers,
+        // Добавляем токен аутентификации если он есть (перезаписываем если нужно)
+        ...(token && { 'Authorization': `Bearer ${token}` }),
       };
       
       // Добавляем Content-Type только если он не передан в options и это не FormData

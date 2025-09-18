@@ -211,7 +211,7 @@ export const AdminMenuPage: React.FC = () => {
       is_new: item.is_new || false,
       is_active: item.is_active !== false,
       priority: item.priority || 0,
-      size_options: item.size_options?.map((s: any) => s.id) || [],
+      size_options: item.size_options || [],
       add_on_options: item.add_on_options?.map((a: any) => a.id) || []
     });
     setEditingItem(item);
