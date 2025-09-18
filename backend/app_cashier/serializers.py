@@ -323,14 +323,22 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
             
             logger = logging.getLogger('api.app_cashier')
             
+            logger.info(f"🔍 DEBUG: get_receipt_photos called for order {obj.id}")
+            
+            # Получаем ВСЕ назначения доставки для этого заказа
+            all_assignments = DeliveryAssignment.objects.filter(order=obj)
+            logger.info(f"🔍 DEBUG: Found {all_assignments.count()} total assignments for order {obj.id}")
+            
+            for assignment in all_assignments:
+                logger.info(f"🔍 DEBUG: Assignment {assignment.id}: status={assignment.status}, receipt_photo='{assignment.receipt_photo}'")
+            
             # Получаем назначения доставки для этого заказа
             assignments = DeliveryAssignment.objects.filter(
                 order=obj,
                 receipt_photo__isnull=False
             ).exclude(receipt_photo='')
             
-            logger.info(f"🔍 Receipt photos debug for order {obj.id}:")
-            logger.info(f"  - Found {assignments.count()} assignments with receipt photos")
+            logger.info(f"🔍 DEBUG: Found {assignments.count()} assignments with receipt photos")
             
             photos = []
             for assignment in assignments:
@@ -344,9 +352,9 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
                         'driver_name': f"{assignment.driver.user.first_name} {assignment.driver.user.last_name}".strip() if assignment.driver.user.first_name else f"Курьер #{assignment.driver.id}"
                     }
                     photos.append(photo_data)
-                    logger.info(f"  - Added photo: {photo_data}")
+                    logger.info(f"🔍 DEBUG: Added photo: {photo_data}")
             
-            logger.info(f"  - Returning {len(photos)} photos")
+            logger.info(f"🔍 DEBUG: Returning {len(photos)} photos for order {obj.id}")
             return photos
         except Exception as e:
             import logging

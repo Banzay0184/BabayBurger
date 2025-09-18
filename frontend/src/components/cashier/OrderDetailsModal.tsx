@@ -339,10 +339,32 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
              hasReceiptPhotos() && onShowReceiptPhotos && (
               <button
                 onClick={() => onShowReceiptPhotos(order)}
-                className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg flex items-center space-x-2"
+                className="px-6 text-black py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg flex items-center space-x-2"
               >
                 <span>📷</span>
                 <span>Фото чека</span>
+              </button>
+            )}
+            
+            {/* Временная кнопка для заказа #102 - показываем всегда */}
+            {order.id === 102 && onShowReceiptPhotos && (
+              <button
+                onClick={() => onShowReceiptPhotos(order)}
+                className="px-6 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg flex items-center space-x-2"
+              >
+                <span>🔴</span>
+                <span>ТЕСТ: Фото чека #102</span>
+              </button>
+            )}
+            
+            {/* Простая кнопка для тестирования - показываем всегда */}
+            {onShowReceiptPhotos && (
+              <button
+                onClick={() => onShowReceiptPhotos(order)}
+                className="px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg flex items-center space-x-2"
+              >
+                <span>🟣</span>
+                <span>ТЕСТ: Всегда показать</span>
               </button>
             )}
             
@@ -358,10 +380,13 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             )}
             
             {/* Информация для отладки */}
-            <div className="text-xs text-gray-500">
-              Статус: {order.status} | Тип: {order.service_type} | 
-              Фото: {order.receipt_photos?.length || 0} | 
-              Показать: {(order.status === 'completed' || (order.status === 'ready_for_delivery' && order.service_type === 'pickup')) ? 'Да' : 'Нет'}
+            <div className="text-xs text-gray-500 mb-2">
+              <div>Статус: {order.status} | Тип: {order.service_type}</div>
+              <div>Фото: {order.receipt_photos?.length || 0}</div>
+              <div>hasReceiptPhotos(): {hasReceiptPhotos() ? 'Да' : 'Нет'}</div>
+              <div>onShowReceiptPhotos: {onShowReceiptPhotos ? 'Есть' : 'Нет'}</div>
+              <div>Условие: {(order.status === 'completed' || (order.status === 'ready_for_delivery' && order.service_type === 'pickup')) ? 'Да' : 'Нет'}</div>
+              <div>receipt_photos: {JSON.stringify(order.receipt_photos)}</div>
             </div>
             
             <div className="flex space-x-3">
