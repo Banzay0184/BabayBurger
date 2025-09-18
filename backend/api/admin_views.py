@@ -93,7 +93,11 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                         logger.info(f"🔍 size_options_write processed from number list: {data['size_options_write']}")
                 else:
                     logger.info(f"🔍 size_options_write empty or invalid, setting to empty list")
+<<<<<<< HEAD
                     data["size_options_write"] = []
+=======
+                    data['size_options_write'] = []
+>>>>>>> ef3c7f21c3ccc19f4b43fdb97c9be0cd37d757e6
             except (ValueError, TypeError) as e:
                 logger.error(f"❌ Error processing size_options_write: {e}")
                 data["size_options_write"] = []
