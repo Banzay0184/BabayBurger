@@ -420,11 +420,10 @@ class AdminDashboardView(generics.GenericAPIView):
 
 class AdminMenuViewSet(viewsets.ModelViewSet):
     """Управление меню"""
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = MenuItem.objects.all()
     serializer_class = AdminMenuItemSerializer
-    pagination_class = None  # Отключаем стандартную пагинацию DRF
     
     def get_queryset(self):
         queryset = MenuItem.objects.select_related('category').prefetch_related(
