@@ -642,19 +642,23 @@ class AdminApiClient {
     driver_id?: number;
     date_from?: string;
     date_to?: string;
+    order_id?: string;
     page?: number;
     page_size?: number;
   }): Promise<ApiResponse<any>> {
     const searchParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
+        if (value !== undefined && value !== null && value !== '') {
           searchParams.append(key, String(value));
         }
       });
     }
     const queryString = searchParams.toString();
-    return this.request(`delivery-assignments/${queryString ? `?${queryString}` : ''}`);
+    const url = `delivery-assignments/${queryString ? `?${queryString}` : ''}`;
+    console.log('🌐 API URL:', url);
+    console.log('📋 Параметры:', params);
+    return this.request(url);
   }
 }
 

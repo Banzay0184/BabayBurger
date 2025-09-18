@@ -1019,6 +1019,8 @@ class AdminDeliveryAssignmentsView(generics.GenericAPIView):
     
     def get(self, request):
         """Получить все назначения доставки"""
+        print(f"🔍 AdminDeliveryAssignmentsView - Query params: {request.query_params}")
+        
         assignments = DeliveryAssignment.objects.select_related(
             'order', 'order__user', 'order__address', 'driver', 'driver__user'
         ).order_by('-assigned_at')
@@ -1026,12 +1028,20 @@ class AdminDeliveryAssignmentsView(generics.GenericAPIView):
         # Фильтрация по статусу
         status_filter = request.query_params.get('status')
         if status_filter:
+            print(f"📊 Фильтр по статусу: {status_filter}")
             assignments = assignments.filter(status=status_filter)
         
         # Фильтрация по курьеру
         driver_id = request.query_params.get('driver_id')
         if driver_id:
+            print(f"🚚 Фильтр по курьеру: {driver_id}")
             assignments = assignments.filter(driver_id=driver_id)
+        
+        # Фильтрация по номеру заказа
+        order_id = request.query_params.get('order_id')
+        if order_id:
+            print(f"📦 Фильтр по заказу: {order_id}")
+            assignments = assignments.filter(order_id=order_id)
         
         # Фильтрация по дате
         date_from = request.query_params.get('date_from')
@@ -1047,6 +1057,8 @@ class AdminDeliveryAssignmentsView(generics.GenericAPIView):
         page_size = int(request.query_params.get('page_size', 20))
         
         total_count = assignments.count()
+        print(f"📈 Всего назначений после фильтрации: {total_count}")
+        
         offset = (page - 1) * page_size
         assignments_page = assignments[offset:offset + page_size]
         
