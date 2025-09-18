@@ -174,7 +174,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
       'in_transit': 'В пути',
       'delivering': 'Доставляется',
       'completed': 'Выполнен',
-      'cancelled': 'Отменен'
+      'cancelled': 'Отменен',
+      'rejected': 'Отклонен'
     };
     return statusMap[status] || status;
   };
@@ -206,7 +207,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
       'in_transit': 'bg-cyan-600/20 text-cyan-400 border-cyan-600/50',
       'delivering': 'bg-purple-600/20 text-purple-400 border-purple-600/50',
       'completed': 'bg-green-600/20 text-green-400 border-green-600/50',
-      'cancelled': 'bg-red-600/20 text-red-400 border-red-600/50'
+      'cancelled': 'bg-red-600/20 text-red-400 border-red-600/50',
+      'rejected': 'bg-red-600/20 text-red-400 border-red-600/50'
     };
     return styleMap[status] || 'bg-gray-600/20 text-gray-400 border-gray-600/50';
   };
@@ -220,7 +222,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
       'in_transit': '🚛',
       'delivering': '🚚',
       'completed': '✅',
-      'cancelled': '❌'
+      'cancelled': '❌',
+      'rejected': '🚫'
     };
     return iconMap[status] || '❓';
   };

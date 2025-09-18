@@ -37,6 +37,10 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         return 'bg-orange-100 text-orange-800';
       case 'completed':
         return 'bg-gray-100 text-gray-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -54,6 +58,10 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         return 'Доставляется';
       case 'completed':
         return 'Завершен';
+      case 'cancelled':
+        return 'Отменен';
+      case 'rejected':
+        return 'Отклонен';
       default:
         return status;
     }
