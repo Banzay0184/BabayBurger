@@ -333,6 +333,11 @@ class ClientConsumer(AsyncWebsocketConsumer):
             'item_id': event['item_id'],
             'item_name': event['item_name'],
             'is_active': event['is_active'],
+            'is_available_now': event.get('is_available_now'),
+            'availability_status': event.get('availability_status'),
+            'use_time_restriction': event.get('use_time_restriction'),
+            'available_from_time': event.get('available_from_time'),
+            'available_to_time': event.get('available_to_time'),
             'action': event['action'],
             'timestamp': event.get('timestamp')
         }, cls=DjangoJSONEncoder))
