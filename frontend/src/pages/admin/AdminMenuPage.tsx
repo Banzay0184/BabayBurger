@@ -612,16 +612,17 @@ export const AdminMenuPage: React.FC = () => {
                               {item.price} сум • {categories.find(c => c.id === item.category)?.name || 'Неизвестно'}
                               {item.size_options && item.size_options.length > 0 && (
                                 <div className="mt-1">
-                                  <span className="text-gray-600">Размеры: </span>
-                                  {item.size_options.slice(0, 2).map((size: any, index: number) => (
-                                    <span key={index} className="text-green-600 font-medium">
-                                      {size.name} ({size.price_modifier > 0 ? `${size.price_modifier + Number(item.price)}` : size.price_modifier + Number(item.price)} сум)
-                                      {index < Math.min(item.size_options.length, 2) - 1 ? ', ' : ''}
-                                    </span>
-                                  ))}
-                                  {item.size_options.length > 2 && (
-                                    <span className="text-blue-600"> +{item.size_options.length - 2} еще</span>
-                                  )}
+                                  <div className="text-gray-600 text-xs">Размеры:</div>
+                                  <div className="space-y-1">
+                                    {item.size_options.slice(0, 2).map((size: any, index: number) => (
+                                      <div key={index} className="text-green-600 font-medium text-xs">
+                                        {size.name} {size.price_modifier > 0 ? `+${size.price_modifier}` : size.price_modifier} сум
+                                      </div>
+                                    ))}
+                                    {item.size_options.length > 2 && (
+                                      <div className="text-blue-600 text-xs">+{item.size_options.length - 2} еще</div>
+                                    )}
+                                  </div>
                                 </div>
                               )}
                             </div>
