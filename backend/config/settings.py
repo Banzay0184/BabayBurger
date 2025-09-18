@@ -208,6 +208,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'api.admin_views': {
+            'handlers': ['console', 'api_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
         'django.db.backends': {
             'handlers': ['console'],
             'level': 'DEBUG',
