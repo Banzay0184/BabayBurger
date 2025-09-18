@@ -8,6 +8,7 @@ interface OrdersPageProps {
   icon: React.ReactNode;
   onOrderAction: (orderId: number, action: string) => void;
   onShowDetails: (order: Order) => void;
+  onShowReceipts?: (order: Order) => void;
   emptyMessage: string;
   emptyIcon: string;
 }
@@ -17,6 +18,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
   color,
   onOrderAction,
   onShowDetails,
+  onShowReceipts,
   emptyMessage,
   emptyIcon
 }) => {
@@ -115,6 +117,18 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                     >
                       Подробнее
                     </button>
+                    
+                    {/* Кнопка показать чек для завершенных заказов с чеками */}
+                    {(order.status === 'completed' || 
+                      (order.status === 'ready_for_delivery' && order.service_type === 'pickup')) && 
+                     order.receipt_photos && order.receipt_photos.length > 0 && onShowReceipts && (
+                      <button
+                        onClick={() => onShowReceipts(order)}
+                        className="flex-1 px-3 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        🧾 Чек ({order.receipt_photos.length})
+                      </button>
+                    )}
                     
                     {/* Кнопки действий в зависимости от статуса */}
                     {order.status === 'pending' && (

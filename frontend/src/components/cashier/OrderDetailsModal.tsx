@@ -5,14 +5,12 @@ interface OrderDetailsModalProps {
   order: Order | null;
   isOpen: boolean;
   onClose: () => void;
-  onShowReceiptPhotos?: (order: Order) => void;
 }
 
 export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   order,
   isOpen,
-  onClose,
-  onShowReceiptPhotos
+  onClose
 }) => {
   if (!isOpen || !order) return null;
 
@@ -59,19 +57,6 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       default:
         return status;
     }
-  };
-
-  const hasReceiptPhotos = () => {
-    const hasPhotos = order?.receipt_photos && order.receipt_photos.length > 0;
-    console.log('🔍 Receipt photos debug:', {
-      orderId: order?.id,
-      status: order?.status,
-      serviceType: order?.service_type,
-      receiptPhotos: order?.receipt_photos,
-      hasPhotos,
-      shouldShowButton: (order?.status === 'completed' || (order?.status === 'ready_for_delivery' && order?.service_type === 'pickup')) && hasPhotos && onShowReceiptPhotos
-    });
-    return hasPhotos;
   };
 
   return (
@@ -333,70 +318,13 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
         {/* Футер модального окна */}
         <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-          <div className="flex justify-between items-center">
-            {/* Кнопка для просмотра фотографий чека (только для завершенных заказов с фотографиями) */}
-            {(order.status === 'completed' || (order.status === 'ready_for_delivery' && order.service_type === 'pickup')) && 
-             hasReceiptPhotos() && onShowReceiptPhotos && (
-              <button
-                onClick={() => onShowReceiptPhotos(order)}
-                className="px-6 text-black py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg flex items-center space-x-2"
-              >
-                <span>📷</span>
-                <span>Фото чека</span>
-              </button>
-            )}
-            
-            {/* Временная кнопка для заказа #102 - показываем всегда */}
-            {order.id === 102 && onShowReceiptPhotos && (
-              <button
-                onClick={() => onShowReceiptPhotos(order)}
-                className="px-6 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg flex items-center space-x-2"
-              >
-                <span>🔴</span>
-                <span>ТЕСТ: Фото чека #102</span>
-              </button>
-            )}
-            
-            {/* Простая кнопка для тестирования - показываем всегда */}
-            {onShowReceiptPhotos && (
-              <button
-                onClick={() => onShowReceiptPhotos(order)}
-                className="px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg flex items-center space-x-2"
-              >
-                <span>🟣</span>
-                <span>ТЕСТ: Всегда показать</span>
-              </button>
-            )}
-            
-            {/* Временная кнопка для отладки - показываем всегда если есть фотографии */}
-            {hasReceiptPhotos() && onShowReceiptPhotos && (
-              <button
-                onClick={() => onShowReceiptPhotos(order)}
-                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg flex items-center space-x-2"
-              >
-                <span>🔍</span>
-                <span>Отладка: Фото чека</span>
-              </button>
-            )}
-            
-            {/* Информация для отладки */}
-            <div className="text-xs text-gray-500 mb-2">
-              <div>Статус: {order.status} | Тип: {order.service_type}</div>
-              <div>Фото: {order.receipt_photos?.length || 0}</div>
-              <div>hasReceiptPhotos(): {hasReceiptPhotos() ? 'Да' : 'Нет'}</div>
-              <div>onShowReceiptPhotos: {onShowReceiptPhotos ? 'Есть' : 'Нет'}</div>
-              <div>Условие: {(order.status === 'completed' || (order.status === 'ready_for_delivery' && order.service_type === 'pickup')) ? 'Да' : 'Нет'}</div>
-              <div>receipt_photos: {JSON.stringify(order.receipt_photos)}</div>
-            </div>
-            
-            <div className="flex space-x-3">
-              <button
-                onClick={onClose}
-                className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-              >
-                Закрыть
-              </button>
-            </div>
+          <div className="flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+            >
+              Закрыть
+            </button>
           </div>
         </div>
       </div>

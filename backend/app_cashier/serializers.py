@@ -315,53 +315,23 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
         return float(obj.final_price) if obj.final_price is not None else float(obj.total_price)
     
     def get_receipt_photos(self, obj):
-        """Получить фотографии чека из назначений доставки"""
-        try:
-            from api.models import DeliveryAssignment
-            from django.conf import settings
-            import logging
-            
-            logger = logging.getLogger('api.app_cashier')
-            
-            logger.info(f"🔍 DEBUG: get_receipt_photos called for order {obj.id}")
-            
-            # Получаем ВСЕ назначения доставки для этого заказа
-            all_assignments = DeliveryAssignment.objects.filter(order=obj)
-            logger.info(f"🔍 DEBUG: Found {all_assignments.count()} total assignments for order {obj.id}")
-            
-            for assignment in all_assignments:
-                logger.info(f"🔍 DEBUG: Assignment {assignment.id}: status={assignment.status}, receipt_photo='{assignment.receipt_photo}'")
-            
-            # Получаем назначения доставки для этого заказа
-            assignments = DeliveryAssignment.objects.filter(
-                order=obj,
-                receipt_photo__isnull=False
-            ).exclude(receipt_photo='')
-            
-            logger.info(f"🔍 DEBUG: Found {assignments.count()} assignments with receipt photos")
-            
-            photos = []
-            for assignment in assignments:
-                if assignment.receipt_photo:
-                    # Формируем полный URL для фотографии
-                    photo_url = f"{settings.MEDIA_URL}{assignment.receipt_photo}"
-                    photo_data = {
-                        'id': assignment.id,
-                        'photo_url': photo_url,
-                        'delivered_at': assignment.delivered_at,
-                        'driver_name': f"{assignment.driver.user.first_name} {assignment.driver.user.last_name}".strip() if assignment.driver.user.first_name else f"Курьер #{assignment.driver.id}"
-                    }
-                    photos.append(photo_data)
-                    logger.info(f"🔍 DEBUG: Added photo: {photo_data}")
-            
-            logger.info(f"🔍 DEBUG: Returning {len(photos)} photos for order {obj.id}")
-            return photos
-        except Exception as e:
-            import logging
-            logger = logging.getLogger('api.app_cashier')
-            logger.error(f"❌ Error getting receipt photos for order {obj.id}: {str(e)}")
-            # В случае ошибки возвращаем пустой список
-            return []
+        """Получить фотографии чеков из назначений доставки"""
+        receipt_photos = []
+        
+        # Получаем все назначения доставки для этого заказа
+        delivery_assignments = obj.delivery_assignments.all()
+        
+        for assignment in delivery_assignments:
+            if assignment.receipt_photo:
+                receipt_photos.append({
+                    'id': assignment.id,
+                    'photo_url': assignment.receipt_photo.url,
+                    'driver_name': f"{assignment.driver.user.first_name} {assignment.driver.user.last_name}".strip(),
+                    'delivered_at': assignment.delivered_at,
+                    'status': assignment.status
+                })
+        
+        return receipt_photos
 
 
 class CashierProfileSerializer(serializers.ModelSerializer):

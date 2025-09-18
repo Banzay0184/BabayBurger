@@ -47,8 +47,9 @@ export interface OrderItem {
 export interface ReceiptPhoto {
   id: number;
   photo_url: string;
-  delivered_at: string;
   driver_name: string;
+  delivered_at: string;
+  status: string;
 }
 
 export interface Order {

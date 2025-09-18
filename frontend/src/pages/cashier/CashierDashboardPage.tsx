@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { cashierApi, type CashierData, type Order } from '../../api/cashierApi';
 import { OrderColumn } from '../../components/cashier/OrderColumn';
 import { OrderDetailsModal } from '../../components/cashier/OrderDetailsModal';
-import { ReceiptPhotosModal } from '../../components/cashier/ReceiptPhotosModal';
 import { OrderSearch } from '../../components/cashier/OrderSearch';
 import { CashierNavigation, type CashierViewType } from '../../components/cashier/CashierNavigation';
 import { OrdersPage } from '../../components/cashier/OrdersPage';
 import { CashierInfo } from '../../components/cashier/CashierInfo';
 import { StopListModal } from '../../components/cashier/StopListModal';
 import { AddOnManagementModal } from '../../components/cashier/AddOnManagementModal';
+import { ReceiptPhotosModal } from '../../components/cashier/ReceiptPhotosModal';
 import { useCashierWebSocket } from '../../hooks/useCashierWebSocket';
 
 
@@ -21,12 +21,13 @@ export const CashierDashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isReceiptPhotosModalOpen, setIsReceiptPhotosModalOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<Order[]>([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [activeView, setActiveView] = useState<CashierViewType>('preparing');
   const [isStopListModalOpen, setIsStopListModalOpen] = useState(false);
   const [isAddOnManagementModalOpen, setIsAddOnManagementModalOpen] = useState(false);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [selectedOrderForReceipts, setSelectedOrderForReceipts] = useState<Order | null>(null);
   const navigate = useNavigate();
 
   // WebSocket обработчики
@@ -304,14 +305,14 @@ export const CashierDashboardPage: React.FC = () => {
     setSelectedOrder(null);
   }, []);
 
-  const handleShowReceiptPhotos = useCallback((order: Order) => {
-    setSelectedOrder(order);
-    setIsReceiptPhotosModalOpen(true);
+  const handleShowReceipts = useCallback((order: Order) => {
+    setSelectedOrderForReceipts(order);
+    setIsReceiptModalOpen(true);
   }, []);
 
-  const handleCloseReceiptPhotos = useCallback(() => {
-    setIsReceiptPhotosModalOpen(false);
-    setSelectedOrder(null);
+  const handleCloseReceipts = useCallback(() => {
+    setIsReceiptModalOpen(false);
+    setSelectedOrderForReceipts(null);
   }, []);
 
   // Группируем заказы по статусам
@@ -458,7 +459,7 @@ export const CashierDashboardPage: React.FC = () => {
                 orders={searchResults.filter(order => order.status === 'preparing')}
                 onOrderAction={handleOrderAction}
                 onShowDetails={handleShowDetails}
-                onShowReceiptPhotos={handleShowReceiptPhotos}
+                onShowReceipts={handleShowReceipts}
                 color="#3b82f6"
                 icon={
                   <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -474,7 +475,7 @@ export const CashierDashboardPage: React.FC = () => {
                 )}
                 onOrderAction={handleOrderAction}
                 onShowDetails={handleShowDetails}
-                onShowReceiptPhotos={handleShowReceiptPhotos}
+                onShowReceipts={handleShowReceipts}
                 color="#f59e0b"
                 icon={
                   <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -490,7 +491,7 @@ export const CashierDashboardPage: React.FC = () => {
                 )}
                 onOrderAction={handleOrderAction}
                 onShowDetails={handleShowDetails}
-                onShowReceiptPhotos={handleShowReceiptPhotos}
+                onShowReceipts={handleShowReceipts}
                 color="#10b981"
                 icon={
                   <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -535,6 +536,7 @@ export const CashierDashboardPage: React.FC = () => {
               }
               onOrderAction={handleOrderAction}
               onShowDetails={handleShowDetails}
+              onShowReceipts={handleShowReceipts}
               emptyMessage={
                 activeView === 'preparing' ? 'Нет заказов в приготовлении' :
                 activeView === 'ready' ? 'Нет готовых заказов' :
@@ -555,14 +557,6 @@ export const CashierDashboardPage: React.FC = () => {
         order={selectedOrder}
         isOpen={isDetailsModalOpen}
         onClose={handleCloseDetails}
-        onShowReceiptPhotos={handleShowReceiptPhotos}
-      />
-
-      {/* Модальное окно с фотографиями чека */}
-      <ReceiptPhotosModal
-        order={selectedOrder}
-        isOpen={isReceiptPhotosModalOpen}
-        onClose={handleCloseReceiptPhotos}
       />
 
       {/* Модальное окно стоп-листа */}
@@ -575,6 +569,14 @@ export const CashierDashboardPage: React.FC = () => {
       <AddOnManagementModal
         isOpen={isAddOnManagementModalOpen}
         onClose={() => setIsAddOnManagementModalOpen(false)}
+      />
+
+      {/* Модальное окно с фотографиями чеков */}
+      <ReceiptPhotosModal
+        isOpen={isReceiptModalOpen}
+        onClose={handleCloseReceipts}
+        receiptPhotos={selectedOrderForReceipts?.receipt_photos || []}
+        orderId={selectedOrderForReceipts?.id || 0}
       />
     </div>
   );

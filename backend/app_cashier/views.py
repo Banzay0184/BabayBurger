@@ -104,7 +104,8 @@ class CashierOrderViewSet(viewsets.ModelViewSet):
             'user', 'address', 'restaurant'
         ).prefetch_related(
             'orderitem_set__menu_item',
-            'cashier_processing'
+            'cashier_processing',
+            'delivery_assignments__driver__user'
         ).order_by('-created_at')
     
     @action(detail=False, methods=['get'])
@@ -154,7 +155,8 @@ class CashierOrderViewSet(viewsets.ModelViewSet):
             'user', 'address', 'restaurant'
         ).prefetch_related(
             'orderitem_set__menu_item',
-            'cashier_processing'
+            'cashier_processing',
+            'delivery_assignments__driver__user'
         ).order_by('-created_at')
         
         # Сериализуем результаты
