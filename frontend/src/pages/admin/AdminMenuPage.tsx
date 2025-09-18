@@ -8,7 +8,7 @@ export const AdminMenuPage: React.FC = () => {
   const [categories, setCategories] = React.useState<any[]>([]);
   const [menuItems, setMenuItems] = React.useState<any[]>([]);
   const [error, setError] = React.useState<string | null>(null);
-  const [activeTab, setActiveTab] = React.useState<'categories' | 'items'>('categories');
+  const [activeTab, setActiveTab] = React.useState<'categories' | 'items' | 'time_restrictions'>('categories');
   const [showForm, setShowForm] = React.useState(false);
   const [editingItem, setEditingItem] = React.useState<any>(null);
   
@@ -470,6 +470,16 @@ export const AdminMenuPage: React.FC = () => {
           >
             Товары
           </button>
+          <button 
+            onClick={() => setActiveTab('time_restrictions')}
+            className={`px-3 lg:px-4 py-1.5 lg:py-2 rounded-md text-xs lg:text-sm font-medium transition-colors ${
+              activeTab === 'time_restrictions' 
+                ? 'bg-white text-gray-900 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            ⏰ Временные ограничения
+          </button>
         </div>
       </div>
 
@@ -783,6 +793,85 @@ export const AdminMenuPage: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Временные ограничения */}
+      {activeTab === 'time_restrictions' && (
+        <div className="bg-white rounded-lg lg:rounded-xl shadow-md border border-gray-200/50 overflow-hidden">
+          {/* Заголовок */}
+          <div className="px-3 lg:px-4 py-3 lg:py-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-red-50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h3 className="text-base lg:text-lg font-bold text-gray-900 flex items-center">
+                <span className="w-5 h-5 lg:w-6 lg:h-6 bg-gradient-to-br from-orange-500 to-red-500 rounded-md flex items-center justify-center text-white text-xs mr-2">⏰</span>
+                Товары с временными ограничениями ({menuItems.filter(item => item.use_time_restriction).length})
+              </h3>
+            </div>
+          </div>
+          
+          <div className="p-3 lg:p-4">
+            {loading && <div className="text-center py-6 text-black text-sm">Загрузка...</div>}
+            {error && <div className="text-red-600 bg-red-50 p-3 rounded-md mb-3 text-sm">{error}</div>}
+            
+            {/* Список товаров с временными ограничениями */}
+            <div className="space-y-3">
+              {menuItems.filter(item => item.use_time_restriction).map((item) => (
+                <div key={item.id} className="border border-gray-200 rounded-md lg:rounded-lg p-3 lg:p-4 hover:border-gray-300 hover:shadow-sm transition-all duration-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-semibold text-gray-900 text-sm">{item.name}</h4>
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          item.is_active 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {item.is_active ? 'Активен' : 'Неактивен'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 mb-2">{item.description}</p>
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-md">
+                          📅 {item.category?.name || 'Без категории'}
+                        </span>
+                        <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-md">
+                          ⏰ {item.available_from_time || '00:00'} - {item.available_to_time || '23:59'}
+                        </span>
+                        <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-md">
+                          💰 {item.price} сум
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-1.5">
+                      <button 
+                        onClick={() => openEditForm(item)}
+                        className="px-2 lg:px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                      >
+                        Редактировать
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setItemToDelete(item);
+                          setShowDeleteConfirm(true);
+                        }}
+                        className="px-2 lg:px-3 py-1.5 text-xs bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+                      >
+                        Удалить
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {menuItems.filter(item => item.use_time_restriction).length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="text-4xl mb-2">⏰</div>
+                  <p className="text-sm">Нет товаров с временными ограничениями</p>
+                  <p className="text-xs text-gray-400 mt-1">Добавьте временные ограничения к товарам в разделе "Товары"</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
