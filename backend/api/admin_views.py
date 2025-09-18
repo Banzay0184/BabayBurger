@@ -141,7 +141,8 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'description', 'price', 'category', 'image', 'created_at',
             'is_hit', 'is_new', 'is_active', 'priority', 'size_options', 'add_on_options',
-            'size_options_write', 'add_on_options_write'
+            'size_options_write', 'add_on_options_write', 'use_time_restriction',
+            'available_from_time', 'available_to_time'
         ]
         read_only_fields = ['id', 'created_at']
     

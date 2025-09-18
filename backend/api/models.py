@@ -866,6 +866,25 @@ class MenuItem(models.Model):
         help_text="Чем меньше число, тем выше в списке"
     )
     
+    # Время доступности товара
+    available_from_time = models.TimeField(
+        null=True, 
+        blank=True, 
+        verbose_name="Доступен с",
+        help_text="Время начала доступности (например, 08:00)"
+    )
+    available_to_time = models.TimeField(
+        null=True, 
+        blank=True, 
+        verbose_name="Доступен до",
+        help_text="Время окончания доступности (например, 22:00)"
+    )
+    use_time_restriction = models.BooleanField(
+        default=False, 
+        verbose_name="Использовать ограничение по времени",
+        help_text="Если включено, товар будет скрыт вне указанного времени"
+    )
+    
     size_options = models.ManyToManyField(SizeOption, blank=True, verbose_name="Доступные размеры")
     add_on_options = models.ManyToManyField(AddOn, blank=True, verbose_name="Доступные дополнения")
 
@@ -895,6 +914,50 @@ class MenuItem(models.Model):
     @property
     def available_add_ons(self):
         return self.add_on_options.filter(is_active=True)
+    
+    def is_available_now(self):
+        """
+        Проверяет, доступен ли товар в текущее время
+        """
+        if not self.is_active:
+            return False
+            
+        if not self.use_time_restriction:
+            return True
+            
+        if not self.available_from_time or not self.available_to_time:
+            return True
+            
+        from django.utils import timezone
+        now = timezone.now().time()
+        
+        # Если время начала меньше времени окончания (например, 08:00 - 22:00)
+        if self.available_from_time <= self.available_to_time:
+            return self.available_from_time <= now <= self.available_to_time
+        else:
+            # Если время переходит через полночь (например, 22:00 - 08:00)
+            return now >= self.available_from_time or now <= self.available_to_time
+    
+    def get_availability_status(self):
+        """
+        Возвращает статус доступности товара
+        """
+        if not self.is_active:
+            return "Неактивен"
+            
+        if not self.use_time_restriction:
+            return "Доступен всегда"
+            
+        if not self.available_from_time or not self.available_to_time:
+            return "Доступен всегда"
+            
+        from django.utils import timezone
+        now = timezone.now().time()
+        
+        if self.is_available_now():
+            return f"Доступен до {self.available_to_time.strftime('%H:%M')}"
+        else:
+            return f"Доступен с {self.available_from_time.strftime('%H:%M')}"
 
 # --- ДОРАБОТКА OrderItem ---
 class OrderItem(models.Model):

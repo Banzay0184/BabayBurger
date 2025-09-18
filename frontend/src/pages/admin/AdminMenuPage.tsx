@@ -34,7 +34,10 @@ export const AdminMenuPage: React.FC = () => {
     is_active: true,
     priority: 0,
     size_options: [] as any[],
-    add_on_options: [] as number[]
+    add_on_options: [] as number[],
+    use_time_restriction: false,
+    available_from_time: '',
+    available_to_time: ''
   });
 
   // Состояния для добавок и размеров
@@ -185,7 +188,10 @@ export const AdminMenuPage: React.FC = () => {
       is_active: true,
       priority: 0,
       size_options: [],
-      add_on_options: []
+      add_on_options: [],
+      use_time_restriction: false,
+      available_from_time: '',
+      available_to_time: ''
     });
     setSizeFormData({ name: '', price_modifier: '', description: '', is_active: true });
     setEditingItem(null);
@@ -212,7 +218,10 @@ export const AdminMenuPage: React.FC = () => {
       is_active: item.is_active !== false,
       priority: item.priority || 0,
       size_options: item.size_options || [],
-      add_on_options: item.add_on_options?.map((a: any) => a.id) || []
+      add_on_options: item.add_on_options?.map((a: any) => a.id) || [],
+      use_time_restriction: item.use_time_restriction || false,
+      available_from_time: item.available_from_time || '',
+      available_to_time: item.available_to_time || ''
     });
     setEditingItem(item);
     setShowForm(true);
@@ -350,6 +359,11 @@ export const AdminMenuPage: React.FC = () => {
         formDataToSend.append('is_new', formData.is_new.toString());
         formDataToSend.append('is_active', formData.is_active.toString());
         formDataToSend.append('priority', formData.priority.toString());
+        formDataToSend.append('use_time_restriction', formData.use_time_restriction.toString());
+        if (formData.use_time_restriction) {
+          formDataToSend.append('available_from_time', formData.available_from_time);
+          formDataToSend.append('available_to_time', formData.available_to_time);
+        }
         formDataToSend.append('image', formData.image);
         
         // Добавляем размеры как строку, разделенную запятыми
@@ -386,7 +400,10 @@ export const AdminMenuPage: React.FC = () => {
           is_active: formData.is_active,
           priority: parseInt(formData.priority.toString()) || 0,
           size_options_write: formData.size_options.map((size: any) => typeof size === 'object' ? size.id : size),
-          add_on_options_write: formData.add_on_options
+          add_on_options_write: formData.add_on_options,
+          use_time_restriction: formData.use_time_restriction,
+          available_from_time: formData.use_time_restriction ? formData.available_from_time : null,
+          available_to_time: formData.use_time_restriction ? formData.available_to_time : null
         };
 
         console.log('📤 Отправляем JSON данные:', submitData);
@@ -654,13 +671,13 @@ export const AdminMenuPage: React.FC = () => {
                             </span>
                           )}
                           {item.is_active && (
-                            <span className="inline-flex px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-                              Неактивен
+                            <span className="inline-flex px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                              Активен
                             </span>
                           )}
                           {!item.is_active && (
-                            <span className="inline-flex px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                              Активен
+                            <span className="inline-flex px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                              Неактивен
                             </span>
                           )}
                         </div>
@@ -920,37 +937,6 @@ export const AdminMenuPage: React.FC = () => {
                     Размеры товара
                   </label>
                   
-                  {/* Выбор существующих размеров */}
-                  <div className="mb-4">
-                    <p className="text-xs font-medium text-gray-700 mb-2">Выберите размеры:</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-32 overflow-y-auto border border-gray-200 rounded-md p-2">
-                      {sizeOptions.map((size: any) => (
-                        <label key={size.id} className="flex items-center space-x-2 text-xs">
-                          <input
-                            type="checkbox"
-                            checked={formData.size_options.some((s: any) => s.id === size.id)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setFormData(prev => ({
-                                  ...prev,
-                                  size_options: [...prev.size_options, size]
-                                }));
-                              } else {
-                                setFormData(prev => ({
-                                  ...prev,
-                                  size_options: prev.size_options.filter((s: any) => s.id !== size.id)
-                                }));
-                              }
-                            }}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="text-gray-900">{size.name}</span>
-                          <span className="text-gray-500">({size.price_modifier > 0 ? `+${size.price_modifier}` : size.price_modifier} сум)</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  
                   {/* Форма создания размера */}
                   <div className="space-y-3 p-3 bg-gray-50 rounded-md border">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1179,7 +1165,7 @@ export const AdminMenuPage: React.FC = () => {
                   <label className="block text-xs font-medium text-black mb-2">
                     Настройки товара
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
                     <label className="flex  items-center space-x-2">
                       <input
                         type="checkbox"
@@ -1212,6 +1198,56 @@ export const AdminMenuPage: React.FC = () => {
                       />
                       <span className="text-xs text-black">Активен</span>
                     </label>
+                  </div>
+                  
+                  {/* Время доступности */}
+                  <div className="border border-gray-200 rounded-md p-3 bg-gray-50">
+                    <label className="flex items-center space-x-2 mb-3">
+                      <input
+                        type="checkbox"
+                        name="use_time_restriction"
+                        checked={formData.use_time_restriction}
+                        onChange={handleInputChange}
+                        className="rounded"
+                      />
+                      <span className="text-xs font-medium text-black">Ограничить время доступности</span>
+                    </label>
+                    
+                    {formData.use_time_restriction && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-black mb-1">
+                            Доступен с
+                          </label>
+                          <input
+                            type="time"
+                            name="available_from_time"
+                            value={formData.available_from_time}
+                            onChange={handleInputChange}
+                            className="w-full border text-black border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-black mb-1">
+                            Доступен до
+                          </label>
+                          <input
+                            type="time"
+                            name="available_to_time"
+                            value={formData.available_to_time}
+                            onChange={handleInputChange}
+                            className="w-full border text-black border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {formData.use_time_restriction && (
+                      <div className="mt-2 text-xs text-gray-600">
+                        <p>💡 Товар будет автоматически скрыт вне указанного времени</p>
+                        <p>💡 Поддерживается переход через полночь (например, 22:00 - 08:00)</p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 

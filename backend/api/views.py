@@ -651,7 +651,17 @@ class MenuView(APIView):
                 items = MenuItem.objects.filter(category=category, is_active=True).prefetch_related(
                     'size_options', 'add_on_options'
                 ).order_by('priority', '-created_at')
-                items_serializer = MenuItemSerializer(items, many=True)
+                
+                # Фильтруем товары по времени доступности
+                from django.utils import timezone
+                current_time = timezone.now().time()
+                available_items = []
+                
+                for item in items:
+                    if item.is_available_now():
+                        available_items.append(item)
+                
+                items_serializer = MenuItemSerializer(available_items, many=True)
                 
                 categories_data.append({
                     'id': category.id,
@@ -666,7 +676,14 @@ class MenuView(APIView):
             all_items = MenuItem.objects.filter(is_active=True).select_related('category').prefetch_related(
                 'size_options', 'add_on_options'
             ).order_by('priority', '-created_at')
-            all_items_serializer = MenuItemSerializer(all_items, many=True)
+            
+            # Фильтруем товары по времени доступности
+            available_all_items = []
+            for item in all_items:
+                if item.is_available_now():
+                    available_all_items.append(item)
+            
+            all_items_serializer = MenuItemSerializer(available_all_items, many=True)
             
             # Формируем структурированный ответ
             data = {
