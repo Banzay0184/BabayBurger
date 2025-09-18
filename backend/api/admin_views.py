@@ -53,7 +53,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         """Переопределяем для поддержки оригинальных ключей фронтенда и FormData"""
         import logging
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger('api')
         
         logger.info(f"🔍 to_internal_value called with data: {data}")
         logger.info(f"🔍 data type: {type(data)}")
@@ -142,7 +142,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         import logging
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger('api')
         
         logger.info(f"🔍 create() called with validated_data: {validated_data}")
         # Извлекаем данные для many-to-many полей (поддерживаем оба варианта ключей)
@@ -504,7 +504,7 @@ class AdminMenuViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         import logging
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger('api')
         
         logger.info(f"🔍 AdminMenuViewSet.create() called")
         logger.info(f"🔍 request.data: {request.data}")
