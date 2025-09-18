@@ -201,7 +201,7 @@ class AdminApiClient {
       console.log('🔐 Authorization header:', headers.Authorization);
       console.log('🔐 Полный токен в заголовке:', headers.Authorization);
       console.log('📋 FormData содержимое:');
-      for (let [key, value] of formData.entries()) {
+      for (const [key, value] of formData.entries()) {
         console.log(`  ${key}:`, value);
       }
       

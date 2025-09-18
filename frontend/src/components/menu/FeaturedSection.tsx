@@ -32,11 +32,6 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
     canScrollRight
   });
 
-  if (!items || items.length === 0) {
-    console.log(`🎠 FeaturedSection "${title}": No items to display`);
-    return null;
-  }
-
   // Проверяем возможность скролла и активную позицию
   const checkScroll = () => {
     if (scrollContainerRef.current) {
@@ -84,6 +79,11 @@ export const FeaturedSection: React.FC<FeaturedSectionProps> = ({
       window.removeEventListener('resize', checkScroll);
     };
   }, [items, title]);
+
+  if (!items || items.length === 0) {
+    console.log(`🎠 FeaturedSection "${title}": No items to display`);
+    return null;
+  }
 
   return (
     <div className="mb-8">

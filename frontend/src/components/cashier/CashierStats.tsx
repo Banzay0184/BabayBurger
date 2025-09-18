@@ -1,5 +1,5 @@
 import React from 'react';
-import  { type DashboardStats } from '../../api/cashierApi';
+import { type DashboardStats } from '../../api/cashierApi';
 
 interface CashierStatsProps {
   stats: DashboardStats;

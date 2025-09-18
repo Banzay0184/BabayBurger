@@ -629,7 +629,7 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         for order in delivery_orders:
             # Проверяем, находится ли адрес в какой-либо зоне оператора
             for zone in operator_zones:
-                if zone.is_address_in_zone(order.address.latitude, order.address.longitude):
+                if order.address and order.address.latitude and order.address.longitude and zone.is_address_in_zone(order.address.latitude, order.address.longitude):
                     delivery_orders_in_zones.append(order.id)
                     break
         
@@ -727,7 +727,7 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         
         for order in base_orders.filter(service_type='delivery'):
             for zone in operator_zones:
-                if zone.is_address_in_zone(order.address.latitude, order.address.longitude):
+                if order.address and order.address.latitude and order.address.longitude and zone.is_address_in_zone(order.address.latitude, order.address.longitude):
                     delivery_orders_in_zones.append(order.id)
                     break
         
@@ -1238,7 +1238,7 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
                             can_deliver = False
                             if order.address and order.address.latitude and order.address.longitude:
                                 for zone in delivery_zones:
-                                    if zone.is_address_in_zone(order.address.latitude, order.address.longitude):
+                                    if order.address and order.address.latitude and order.address.longitude and zone.is_address_in_zone(order.address.latitude, order.address.longitude):
                                         can_deliver = True
                                         break
                             

@@ -804,8 +804,8 @@ class OrderView(APIView):
                     'payment_method': order.payment_method,
                     'status': order.status,
                     'status_display': order.get_status_display(),
-                    'address': order.address.full_address,
-                    'phone_number': order.phone or order.address.phone_number or '',
+                    'address': order.address.full_address if order.address else '',
+                    'phone_number': order.phone or (order.address.phone_number if order.address else '') or '',
                     'created_at': order.created_at.isoformat(),
                     'discount_percent': order.promo_code.discount_percent if order.promo_code else None,
                     'discount_amount': str(order.discount_amount),
@@ -840,6 +840,7 @@ class OrderView(APIView):
             
         except Exception as e:
             logger.error(f"Error getting orders: {str(e)}", exc_info=True)
+            logger.error(f"Request data: {request.query_params}")
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def patch(self, request, order_id=None):

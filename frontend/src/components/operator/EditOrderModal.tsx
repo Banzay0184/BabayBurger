@@ -217,7 +217,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
     }
 
     // Рассчитываем цену с учетом размера и добавок
-    let basePrice = Number(selectedMenuItem.price);
+    const basePrice = Number(selectedMenuItem.price);
     let sizeModifier = 0;
     let addonsPrice = 0;
 
