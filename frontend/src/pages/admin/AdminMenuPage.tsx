@@ -920,6 +920,37 @@ export const AdminMenuPage: React.FC = () => {
                     Размеры товара
                   </label>
                   
+                  {/* Выбор существующих размеров */}
+                  <div className="mb-4">
+                    <p className="text-xs font-medium text-gray-700 mb-2">Выберите размеры:</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-32 overflow-y-auto border border-gray-200 rounded-md p-2">
+                      {sizeOptions.map((size: any) => (
+                        <label key={size.id} className="flex items-center space-x-2 text-xs">
+                          <input
+                            type="checkbox"
+                            checked={formData.size_options.some((s: any) => s.id === size.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  size_options: [...prev.size_options, size]
+                                }));
+                              } else {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  size_options: prev.size_options.filter((s: any) => s.id !== size.id)
+                                }));
+                              }
+                            }}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-gray-900">{size.name}</span>
+                          <span className="text-gray-500">({size.price_modifier > 0 ? `+${size.price_modifier}` : size.price_modifier} сум)</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  
                   {/* Форма создания размера */}
                   <div className="space-y-3 p-3 bg-gray-50 rounded-md border">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

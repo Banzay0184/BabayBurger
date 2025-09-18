@@ -132,8 +132,8 @@ class AdminApiClient {
       console.log('📋 Request body:', options.body);
       
       const response = await fetch(url, {
-        headers,
         ...options,
+        headers,
       });
 
       console.log('📥 Response status:', response.status, response.statusText);
@@ -273,8 +273,8 @@ class AdminApiClient {
       console.log('📤 Request headers:', headers);
       
       const response = await fetch(url, {
-        headers,
         ...options,
+        headers,
       });
 
       console.log('📥 Response status:', response.status, response.statusText);
