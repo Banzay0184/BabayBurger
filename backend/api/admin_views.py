@@ -192,9 +192,16 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         return menu_item
     
     def update(self, instance, validated_data):
+        import logging
+        logger = logging.getLogger('api.admin_views')
+        
+        logger.info(f"🔍 update() called with validated_data: {validated_data}")
         # Извлекаем данные для many-to-many полей (поддерживаем оба варианта ключей)
         size_options_data = validated_data.pop('size_options_write', None) or validated_data.pop('size_options', None)
         add_on_options_data = validated_data.pop('add_on_options_write', None) or validated_data.pop('add_on_options', None)
+        
+        logger.info(f"🔍 update() - size_options_data: {size_options_data}")
+        logger.info(f"🔍 update() - add_on_options_data: {add_on_options_data}")
         
         # Обновляем основные поля
         for attr, value in validated_data.items():
@@ -202,16 +209,22 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         instance.save()
         
         # Обновляем связи если они переданы
-        if size_options_data is not None:
+        if 'size_options_write' in validated_data:
+            logger.info(f"🔍 Updating size_options with data: {size_options_data}")
             # Фильтруем пустые значения и конвертируем в числа
             size_options_ids = [int(x) for x in size_options_data if x is not None and str(x).strip()]
+            logger.info(f"🔍 Processed size_options_ids: {size_options_ids}")
             size_options = SizeOption.objects.filter(id__in=size_options_ids)
             instance.size_options.set(size_options)
-        if add_on_options_data is not None:
+            logger.info(f"✅ Size options updated: {list(size_options.values_list('id', flat=True))}")
+        if 'add_on_options_write' in validated_data:
+            logger.info(f"🔍 Updating add_on_options with data: {add_on_options_data}")
             # Фильтруем пустые значения и конвертируем в числа
             add_on_options_ids = [int(x) for x in add_on_options_data if x is not None and str(x).strip()]
+            logger.info(f"🔍 Processed add_on_options_ids: {add_on_options_ids}")
             add_on_options = AddOn.objects.filter(id__in=add_on_options_ids)
             instance.add_on_options.set(add_on_options)
+            logger.info(f"✅ Add-on options updated: {list(add_on_options.values_list('id', flat=True))}")
         
         return instance
 class DeliveryDriverSerializer(serializers.ModelSerializer):
