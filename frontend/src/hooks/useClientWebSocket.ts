@@ -90,6 +90,8 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
   // Обработчик сообщений WebSocket
   const handleMessage = useCallback((message: WebSocketMessage) => {
     console.log('📨 Client WebSocket message:', message);
+    console.log('📨 Full WebSocket message keys:', Object.keys(message));
+    console.log('📨 WebSocket message values:', JSON.stringify(message, null, 2));
 
     switch (message.type) {
       case 'order_status_update':
