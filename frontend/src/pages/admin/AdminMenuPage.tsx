@@ -642,11 +642,11 @@ export const AdminMenuPage: React.FC = () => {
                           {item.size_options && item.size_options.length > 0 ? (
                             <div className="space-y-1">
                               {item.size_options.slice(0, 2).map((size: any, index: number) => (
-                                <div key={index} className="flex items-center justify-between">
-                                  <span className="font-medium">{size.name}</span>
-                                  <span className="text-green-600 font-bold">
+                                <div key={index} className="text-xs">
+                                  <div className="font-medium text-gray-900">{size.name}</div>
+                                  <div className="text-green-600 font-bold">
                                     {size.price_modifier > 0 ? `+${size.price_modifier}` : size.price_modifier} сум
-                                  </span>
+                                  </div>
                                 </div>
                               ))}
                               {item.size_options.length > 2 && (
