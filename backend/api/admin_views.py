@@ -36,18 +36,16 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
     size_options = serializers.SerializerMethodField()
     add_on_options = serializers.SerializerMethodField()
     
-    # Поля для записи - используем ListField для поддержки FormData
-    size_options_write = serializers.ListField(
-        child=serializers.IntegerField(),
+    # Поля для записи - используем CharField для поддержки FormData
+    size_options_write = serializers.CharField(
         write_only=True,
         required=False,
-        allow_empty=True
+        allow_blank=True
     )
-    add_on_options_write = serializers.ListField(
-        child=serializers.IntegerField(),
+    add_on_options_write = serializers.CharField(
         write_only=True,
         required=False,
-        allow_empty=True
+        allow_blank=True
     )
     
     def to_internal_value(self, data):
@@ -62,12 +60,12 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         if 'add_on_options' in data and 'add_on_options_write' not in data:
             data['add_on_options_write'] = data.pop('add_on_options', [])
         
-        # Обрабатываем FormData - преобразуем строки в числа для списков
+        # Обрабатываем FormData - преобразуем строки в списки чисел
         if 'size_options_write' in data:
             size_options = data['size_options_write']
             print(f"🔍 size_options_write received: {size_options} (type: {type(size_options)})")
             
-            if isinstance(size_options, str):
+            if isinstance(size_options, str) and size_options.strip():
                 # Если это строка, разделяем по запятой и конвертируем в числа
                 try:
                     # Убираем пробелы и разделяем по запятой
@@ -86,14 +84,14 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                     print(f"❌ Error processing size_options_write list: {e}")
                     data['size_options_write'] = []
             else:
-                print(f"❌ Unexpected type for size_options_write: {type(size_options)}")
+                print(f"🔍 size_options_write empty or invalid, setting to empty list")
                 data['size_options_write'] = []
         
         if 'add_on_options_write' in data:
             add_on_options = data['add_on_options_write']
             print(f"🔍 add_on_options_write received: {add_on_options} (type: {type(add_on_options)})")
             
-            if isinstance(add_on_options, str):
+            if isinstance(add_on_options, str) and add_on_options.strip():
                 # Если это строка, разделяем по запятой и конвертируем в числа
                 try:
                     # Убираем пробелы и разделяем по запятой
@@ -112,7 +110,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                     print(f"❌ Error processing add_on_options_write list: {e}")
                     data['add_on_options_write'] = []
             else:
-                print(f"❌ Unexpected type for add_on_options_write: {type(add_on_options)}")
+                print(f"🔍 add_on_options_write empty or invalid, setting to empty list")
                 data['add_on_options_write'] = []
         
         return super().to_internal_value(data)
