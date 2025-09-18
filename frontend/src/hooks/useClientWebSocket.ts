@@ -21,12 +21,18 @@ export interface ClientWebSocketMessage extends WebSocketMessage {
   size_id?: number;
   size_name?: string;
   reason?: string;
+  // Новые поля для времени доступности
+  is_available_now?: boolean;
+  availability_status?: string;
+  use_time_restriction?: boolean;
+  available_from_time?: string;
+  available_to_time?: string;
 }
 
 export interface UseClientWebSocketOptions {
   onOrderStatusUpdate?: (orderId: number, status: string, statusDisplay: string, updatedAt: string) => void;
   onOrderDetailsUpdate?: (order: Order) => void;
-  onMenuUpdate?: (itemId: number, itemName: string, isActive: boolean, action: string) => void;
+  onMenuUpdate?: (itemId: number, itemName: string, isActive: boolean, action: string, isAvailableNow?: boolean, availabilityStatus?: string, useTimeRestriction?: boolean) => void;
   onAddonUpdate?: (addonId: number, addonName: string, isActive: boolean, action: string) => void;
   onSizeUpdate?: (sizeId: number, sizeName: string, isActive: boolean, action: string) => void;
   onMenuRefreshRequired?: (reason: string) => void;
@@ -103,11 +109,19 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
       case 'menu_item_updated':
         if ((message as any).item_id && (message as any).item_name && onMenuUpdate) {
           console.log('🍽️ Menu item updated:', (message as any).item_name, (message as any).action);
+          console.log('🕐 Time availability info:', {
+            is_available_now: (message as any).is_available_now,
+            availability_status: (message as any).availability_status,
+            use_time_restriction: (message as any).use_time_restriction
+          });
           onMenuUpdate(
             (message as any).item_id,
             (message as any).item_name,
             (message as any).is_active,
-            (message as any).action
+            (message as any).action,
+            (message as any).is_available_now,
+            (message as any).availability_status,
+            (message as any).use_time_restriction
           );
         }
         break;

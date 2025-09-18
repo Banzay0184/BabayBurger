@@ -55,6 +55,12 @@ export interface MenuItem {
   priority: number;
   size_options: SizeOption[];
   add_on_options: AddOn[];
+  // Новые поля для времени доступности
+  use_time_restriction?: boolean;
+  available_from_time?: string;
+  available_to_time?: string;
+  is_available_now?: boolean;
+  availability_status?: string;
 }
 
 export interface MenuCategory {

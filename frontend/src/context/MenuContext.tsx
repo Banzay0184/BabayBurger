@@ -20,7 +20,7 @@ type MenuAction =
   | { type: 'SET_PROMOTIONS'; payload: Promotion[] }
   | { type: 'SET_FILTERS'; payload: Partial<MenuFilters> }
   | { type: 'RESET_FILTERS' }
-  | { type: 'UPDATE_MENU_ITEM'; payload: { itemId: number; isActive: boolean } };
+  | { type: 'UPDATE_MENU_ITEM'; payload: { itemId: number; isActive: boolean; isAvailableNow?: boolean; availabilityStatus?: string; useTimeRestriction?: boolean } };
 
 const initialState: MenuState = {
   categories: [],
@@ -62,14 +62,26 @@ function menuReducer(state: MenuState, action: MenuAction): MenuState {
         ...state,
         items: state.items.map(item => 
           item.id === action.payload.itemId 
-            ? { ...item, is_active: action.payload.isActive }
+            ? { 
+                ...item, 
+                is_active: action.payload.isActive,
+                is_available_now: action.payload.isAvailableNow,
+                availability_status: action.payload.availabilityStatus,
+                use_time_restriction: action.payload.useTimeRestriction
+              }
             : item
         ),
         categories: state.categories.map(category => ({
           ...category,
           items: category.items.map(item =>
             item.id === action.payload.itemId
-              ? { ...item, is_active: action.payload.isActive }
+              ? { 
+                  ...item, 
+                  is_active: action.payload.isActive,
+                  is_available_now: action.payload.isAvailableNow,
+                  availability_status: action.payload.availabilityStatus,
+                  use_time_restriction: action.payload.useTimeRestriction
+                }
               : item
           )
         }))
@@ -187,8 +199,9 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
   }, []);
 
   // Обработчик WebSocket уведомлений о меню
-  const handleMenuUpdate = useCallback((itemId: number, itemName: string, isActive: boolean, action: string) => {
+  const handleMenuUpdate = useCallback((itemId: number, itemName: string, isActive: boolean, action: string, isAvailableNow?: boolean, availabilityStatus?: string, useTimeRestriction?: boolean) => {
     console.log('🍽️ Menu item updated via WebSocket:', { itemId, itemName, isActive, action });
+    console.log('🕐 Time availability info:', { isAvailableNow, availabilityStatus, useTimeRestriction });
     
     // Если товар был создан или удален, принудительно обновляем все данные меню
     if (action === 'created' || action === 'deleted') {
@@ -202,7 +215,10 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
       type: 'UPDATE_MENU_ITEM',
       payload: {
         itemId,
-        isActive
+        isActive,
+        isAvailableNow,
+        availabilityStatus,
+        useTimeRestriction
       }
     });
     
@@ -210,6 +226,10 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
     if (action === 'updated') {
       if (!isActive) {
         console.log(`🚫 Товар "${itemName}" деактивирован`);
+      } else if (useTimeRestriction && isAvailableNow === false) {
+        console.log(`⏰ Товар "${itemName}" скрыт по времени: ${availabilityStatus}`);
+      } else if (useTimeRestriction && isAvailableNow === true) {
+        console.log(`✅ Товар "${itemName}" доступен по времени: ${availabilityStatus}`);
       } else {
         console.log(`✅ Товар "${itemName}" активирован`);
       }

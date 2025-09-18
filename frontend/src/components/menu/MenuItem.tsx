@@ -26,6 +26,10 @@ export const MenuItem: React.FC<MenuItemProps> = ({
   const availableAddOns = item.add_on_options?.filter((addOn: AddOn) => addOn.is_active) || [];
   const currentCount = getItemCountForMenuItem(item.id);
 
+  // Проверяем доступность товара по времени
+  const isItemAvailable = !item.use_time_restriction || item.is_available_now !== false;
+  const isTimeRestricted = item.use_time_restriction && item.is_available_now === false;
+
   // Обработка клика по блюду
   const handleItemClick = () => {
     console.log('🔍 MenuItem - handleItemClick вызван:', {
@@ -35,8 +39,17 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       hasOptions: availableSizes.length > 0 || availableAddOns.length > 0,
       onSelect: !!onSelect,
       isCompact,
-      hideDescription
+      hideDescription,
+      isItemAvailable,
+      isTimeRestricted
     });
+
+    // Проверяем доступность по времени
+    if (isTimeRestricted) {
+      console.log('⏰ Товар недоступен по времени:', item.name);
+      showNotification(`⏰ ${item.name} недоступен в данное время: ${item.availability_status || 'Время истекло'}`);
+      return;
+    }
 
     // Всегда вызываем onSelect - MainPage сам решит что делать
     if (onSelect) {
@@ -137,7 +150,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   return (
     <>
-      <div className={`tg-card-modern p-2 ${isCompact ? 'max-w' : ''}`}>
+      <div className={`tg-card-modern p-2 ${isCompact ? 'max-w' : ''} ${isTimeRestricted ? 'opacity-60' : ''}`}>
         {/* Верхняя часть с изображением и быстрыми действиями */}
         <div className="relative mb-3">
           {/* Изображение блюда */}
@@ -195,6 +208,15 @@ export const MenuItem: React.FC<MenuItemProps> = ({
                   {tag.text}
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* Индикатор времени доступности */}
+          {isTimeRestricted && (
+            <div className="absolute top-2 left-2">
+              <span className="px-2 py-1 text-xs rounded-full bg-orange-500/90 text-white backdrop-blur-sm border border-orange-400/50">
+                ⏰ {item.availability_status || 'Недоступен'}
+              </span>
             </div>
           )}
         </div>
