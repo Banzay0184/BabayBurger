@@ -205,6 +205,7 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
     delivery_fee = serializers.SerializerMethodField()
     discount_amount = serializers.SerializerMethodField()
     final_price = serializers.SerializerMethodField()
+    receipt_photos = serializers.SerializerMethodField()
     
     class Meta:
         model = Order
@@ -213,7 +214,7 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
             'final_price', 'delivery_fee', 'discount_amount', 'status', 'status_display',
             'service_type', 'payment_method', 'address_info', 'phone', 'notes', 
             'promo_code_info', 'created_at', 'updated_at', 'cashier_processing_status',
-            'cashier_processing_details', 'operator_order_number'
+            'cashier_processing_details', 'operator_order_number', 'receipt_photos'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
     
@@ -312,6 +313,35 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
     def get_final_price(self, obj):
         """Получить итоговую стоимость с безопасным значением по умолчанию"""
         return float(obj.final_price) if obj.final_price is not None else float(obj.total_price)
+    
+    def get_receipt_photos(self, obj):
+        """Получить фотографии чека из назначений доставки"""
+        try:
+            from api.models import DeliveryAssignment
+            from django.conf import settings
+            
+            # Получаем назначения доставки для этого заказа
+            assignments = DeliveryAssignment.objects.filter(
+                order=obj,
+                receipt_photo__isnull=False
+            ).exclude(receipt_photo='')
+            
+            photos = []
+            for assignment in assignments:
+                if assignment.receipt_photo:
+                    # Формируем полный URL для фотографии
+                    photo_url = f"{settings.MEDIA_URL}{assignment.receipt_photo}"
+                    photos.append({
+                        'id': assignment.id,
+                        'photo_url': photo_url,
+                        'delivered_at': assignment.delivered_at,
+                        'driver_name': f"{assignment.driver.user.first_name} {assignment.driver.user.last_name}".strip() if assignment.driver.user.first_name else f"Курьер #{assignment.driver.id}"
+                    })
+            
+            return photos
+        except Exception as e:
+            # В случае ошибки возвращаем пустой список
+            return []
 
 
 class CashierProfileSerializer(serializers.ModelSerializer):

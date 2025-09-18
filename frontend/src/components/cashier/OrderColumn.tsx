@@ -8,6 +8,7 @@ interface OrderColumnProps {
   orders: Order[];
   onOrderAction: (orderId: number, action: string) => void;
   onShowDetails: (order: Order) => void;
+  onShowReceiptPhotos?: (order: Order) => void;
   color: string;
   icon: React.ReactNode;
 }
@@ -17,6 +18,7 @@ export const OrderColumn: React.FC<OrderColumnProps> = ({
   orders,
   onOrderAction,
   onShowDetails,
+  onShowReceiptPhotos,
   color,
   icon
 }) => {
@@ -84,6 +86,10 @@ export const OrderColumn: React.FC<OrderColumnProps> = ({
       hour: '2-digit', 
       minute: '2-digit' 
     });
+  };
+
+  const hasReceiptPhotos = (order: Order) => {
+    return order.receipt_photos && order.receipt_photos.length > 0;
   };
 
   return (
@@ -246,6 +252,16 @@ export const OrderColumn: React.FC<OrderColumnProps> = ({
                   >
                     📋 Подробности
                   </Button>
+                  {/* Кнопка для просмотра фотографий чека (только для завершенных заказов с фотографиями) */}
+                  {(order.status === 'completed' || (order.status === 'ready_for_delivery' && order.service_type === 'pickup')) && 
+                   hasReceiptPhotos(order) && onShowReceiptPhotos && (
+                    <Button
+                      onClick={() => onShowReceiptPhotos(order)}
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-xs py-1 sm:py-1.5 rounded font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                    >
+                      📷 Фото чека
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

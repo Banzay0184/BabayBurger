@@ -44,6 +44,13 @@ export interface OrderItem {
   total_price: number;
 }
 
+export interface ReceiptPhoto {
+  id: number;
+  photo_url: string;
+  delivered_at: string;
+  driver_name: string;
+}
+
 export interface Order {
   id: number;
   user_info: {
@@ -97,6 +104,7 @@ export interface Order {
     discount_percent: number;
     max_discount: number;
   };
+  receipt_photos?: ReceiptPhoto[];
 }
 
 export interface MenuItem {
