@@ -321,7 +321,7 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
             from django.conf import settings
             import logging
             
-            logger = logging.getLogger(__name__)
+            logger = logging.getLogger('api.app_cashier')
             
             # Получаем назначения доставки для этого заказа
             assignments = DeliveryAssignment.objects.filter(
@@ -350,7 +350,7 @@ class OrderForCashierSerializer(serializers.ModelSerializer):
             return photos
         except Exception as e:
             import logging
-            logger = logging.getLogger(__name__)
+            logger = logging.getLogger('api.app_cashier')
             logger.error(f"❌ Error getting receipt photos for order {obj.id}: {str(e)}")
             # В случае ошибки возвращаем пустой список
             return []
