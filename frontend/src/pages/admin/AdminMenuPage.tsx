@@ -972,8 +972,8 @@ export const AdminMenuPage: React.FC = () => {
                             console.log('📏 Размер создан в БД:', newSize);
                             
                             setFormData(prev => {
-                              const newSizeOptions = [...prev.size_options, newSize.id];
-                              console.log('📏 Добавляем размер к товару:', newSize.id);
+                              const newSizeOptions = [...prev.size_options, newSize];
+                              console.log('📏 Добавляем размер к товару:', newSize);
                               console.log('📏 Новый список размеров:', newSizeOptions);
                               return {
                                 ...prev,
@@ -1070,14 +1070,10 @@ export const AdminMenuPage: React.FC = () => {
                       addOnsLength: addOns.length
                     });
                     
-                    // Определяем какие добавки показывать
-                    const addonsToShow = editingItem && editingItem.add_on_options && editingItem.add_on_options.length > 0 
-                      ? editingItem.add_on_options 
-                      : addOns;
+                    // Всегда показываем все доступные добавки
+                    const addonsToShow = addOns;
                     
-                    const title = editingItem && editingItem.add_on_options && editingItem.add_on_options.length > 0
-                      ? "Доступные добавки для этого блюда:"
-                      : "Доступные добавки:";
+                    const title = "Доступные добавки:";
                     
                     if (addonsToShow && addonsToShow.length > 0) {
                       return (
