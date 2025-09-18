@@ -72,9 +72,14 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
             size_options = data['size_options_write']
             logger.info(f"🔍 size_options_write received: {size_options} (type: {type(size_options)})")
             
-            if isinstance(size_options, list) and len(size_options) > 0:
-                # FormData приходит как массив, обрабатываем первый элемент
-                try:
+            try:
+                if isinstance(size_options, str) and size_options.strip():
+                    # Если это строка, разделяем по запятой
+                    size_list = [int(x.strip()) for x in size_options.split(',') if x.strip()]
+                    data['size_options_write'] = size_list
+                    logger.info(f"🔍 size_options_write processed from string: {size_list}")
+                elif isinstance(size_options, list) and len(size_options) > 0:
+                    # Если это список, обрабатываем первый элемент
                     first_item = size_options[0]
                     logger.info(f"🔍 First item in size_options list: {first_item} (type: {type(first_item)})")
                     if isinstance(first_item, str) and first_item.strip():
@@ -86,20 +91,25 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                         # Если это уже числа
                         data['size_options_write'] = [int(x) for x in size_options if str(x).strip()]
                         logger.info(f"🔍 size_options_write processed from number list: {data['size_options_write']}")
-                except (ValueError, TypeError) as e:
-                    logger.error(f"❌ Error processing size_options_write list: {e}")
+                else:
+                    logger.info(f"🔍 size_options_write empty or invalid, setting to empty list")
                     data['size_options_write'] = []
-            else:
-                logger.info(f"🔍 size_options_write empty or invalid, setting to empty list")
+            except (ValueError, TypeError) as e:
+                logger.error(f"❌ Error processing size_options_write: {e}")
                 data['size_options_write'] = []
         
         if 'add_on_options_write' in data:
             add_on_options = data['add_on_options_write']
             logger.info(f"🔍 add_on_options_write received: {add_on_options} (type: {type(add_on_options)})")
             
-            if isinstance(add_on_options, list) and len(add_on_options) > 0:
-                # FormData приходит как массив, обрабатываем первый элемент
-                try:
+            try:
+                if isinstance(add_on_options, str) and add_on_options.strip():
+                    # Если это строка, разделяем по запятой
+                    addon_list = [int(x.strip()) for x in add_on_options.split(',') if x.strip()]
+                    data['add_on_options_write'] = addon_list
+                    logger.info(f"🔍 add_on_options_write processed from string: {addon_list}")
+                elif isinstance(add_on_options, list) and len(add_on_options) > 0:
+                    # Если это список, обрабатываем первый элемент
                     first_item = add_on_options[0]
                     logger.info(f"🔍 First item in add_on_options list: {first_item} (type: {type(first_item)})")
                     if isinstance(first_item, str) and first_item.strip():
@@ -111,11 +121,11 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                         # Если это уже числа
                         data['add_on_options_write'] = [int(x) for x in add_on_options if str(x).strip()]
                         logger.info(f"🔍 add_on_options_write processed from number list: {data['add_on_options_write']}")
-                except (ValueError, TypeError) as e:
-                    logger.error(f"❌ Error processing add_on_options_write list: {e}")
+                else:
+                    logger.info(f"🔍 add_on_options_write empty or invalid, setting to empty list")
                     data['add_on_options_write'] = []
-            else:
-                logger.info(f"🔍 add_on_options_write empty or invalid, setting to empty list")
+            except (ValueError, TypeError) as e:
+                logger.error(f"❌ Error processing add_on_options_write: {e}")
                 data['add_on_options_write'] = []
         
         return super().to_internal_value(data)
