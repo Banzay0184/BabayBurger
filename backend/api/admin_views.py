@@ -63,9 +63,9 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         
         # Если данные приходят с оригинальными ключами, преобразуем их
         if 'size_options' in data and 'size_options_write' not in data:
-            data['size_options_write'] = data.pop('size_options', []
+            data['size_options_write'] = data.pop('size_options', [])
         if 'add_on_options' in data and 'add_on_options_write' not in data:
-            data['add_on_options_write'] = data.pop('add_on_options', []
+            data['add_on_options_write'] = data.pop('add_on_options', [])
         
         # Обрабатываем FormData - преобразуем строки в списки чисел
         if 'size_options_write' in data:
@@ -76,7 +76,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                 if isinstance(size_options, str) and size_options.strip():
                     # Если это строка, разделяем по запятой
                     size_list = [int(x.strip()) for x in size_options.split(',') if x.strip()]
-                    data['size_options_write'] = size_lis
+                    data['size_options_write'] = size_list
                     logger.info(f"🔍 size_options_write processed from string: {size_list}")
                 elif isinstance(size_options, list) and len(size_options) > 0:
                     # Если это список, обрабатываем первый элемент
@@ -85,7 +85,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                     if isinstance(first_item, str) and first_item.strip():
                         # Разделяем по запятой если это строка с несколькими значениями
                         size_list = [int(x.strip()) for x in first_item.split(',') if x.strip()]
-                        data['size_options_write'] = size_list
+                        data['size_options_write'] = size_listt
                         logger.info(f"🔍 size_options_write processed from FormData list: {size_list}")
                     else:
                         # Если это уже числа
@@ -93,14 +93,10 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                         logger.info(f"🔍 size_options_write processed from number list: {data['size_options_write']}")
                 else:
                     logger.info(f"🔍 size_options_write empty or invalid, setting to empty list")
-<<<<<<< HEAD
-                    data["size_options_write"] = []
-=======
                     data['size_options_write'] = []
->>>>>>> ef3c7f21c3ccc19f4b43fdb97c9be0cd37d757e6
             except (ValueError, TypeError) as e:
                 logger.error(f"❌ Error processing size_options_write: {e}")
-                data["size_options_write"] = []
+                data['size_options_write'] = []
         
         if 'add_on_options_write' in data:
             add_on_options = data['add_on_options_write']
@@ -167,8 +163,8 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         
         logger.info(f"🔍 create() called with validated_data: {validated_data}")
         # Извлекаем данные для many-to-many полей (поддерживаем оба варианта ключей)
-        size_options_ids = validated_data.pop('size_options_write', [] or validated_data.pop('size_options', []
-        add_on_options_ids = validated_data.pop('add_on_options_write', [] or validated_data.pop('add_on_options', []
+        size_options_ids = validated_data.pop('size_options_write', []) or validated_data.pop('size_options', [])
+        add_on_options_ids = validated_data.pop('add_on_options_write', []) or validated_data.pop('add_on_options', [])
         
         logger.info(f"🔍 create() - size_options_ids: {size_options_ids}")
         logger.info(f"🔍 create() - add_on_options_ids: {add_on_options_ids}")
