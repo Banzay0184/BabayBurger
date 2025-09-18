@@ -930,7 +930,7 @@ class MenuItem(models.Model):
             
         from django.utils import timezone
         from datetime import time
-        now = timezone.now().time()
+        now = timezone.localtime().time()  # Используем локальное время вместо UTC
         
         # Убеждаемся, что у нас есть объекты time
         from_time = self.available_from_time
@@ -964,7 +964,7 @@ class MenuItem(models.Model):
             
         from django.utils import timezone
         from datetime import time
-        now = timezone.now().time()
+        now = timezone.localtime().time()  # Используем локальное время вместо UTC
         
         # Убеждаемся, что у нас есть объекты time
         from_time = self.available_from_time
