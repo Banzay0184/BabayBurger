@@ -19,8 +19,13 @@ def send_menu_update_notification(menu_item, action):
         channel_layer = get_channel_layer()
         if channel_layer:
             # Проверяем доступность товара по времени
-            is_available_now = menu_item.is_available_now()
-            availability_status = menu_item.get_availability_status()
+            try:
+                is_available_now = menu_item.is_available_now()
+                availability_status = menu_item.get_availability_status()
+            except Exception as e:
+                logger.error(f"Error checking availability: {str(e)}")
+                is_available_now = True  # По умолчанию доступен
+                availability_status = "Доступен всегда"
             
             async_to_sync(channel_layer.group_send)(
                 'menu_updates',
@@ -32,8 +37,8 @@ def send_menu_update_notification(menu_item, action):
                     'is_available_now': is_available_now,
                     'availability_status': availability_status,
                     'use_time_restriction': menu_item.use_time_restriction,
-                    'available_from_time': menu_item.available_from_time.isoformat() if menu_item.available_from_time else None,
-                    'available_to_time': menu_item.available_to_time.isoformat() if menu_item.available_to_time else None,
+                    'available_from_time': str(menu_item.available_from_time) if menu_item.available_from_time else None,
+                    'available_to_time': str(menu_item.available_to_time) if menu_item.available_to_time else None,
                     'action': action,
                     'timestamp': timezone.now().isoformat()
                 }
