@@ -202,8 +202,13 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         has_add_on_options = 'add_on_options_write' in validated_data
         
         # Извлекаем данные для many-to-many полей (поддерживаем оба варианта ключей)
-        size_options_data = validated_data.pop('size_options_write', None) or validated_data.pop('size_options', None)
-        add_on_options_data = validated_data.pop('add_on_options_write', None) or validated_data.pop('add_on_options', None)
+        size_options_data = validated_data.pop('size_options_write', None)
+        if size_options_data is None:
+            size_options_data = validated_data.pop('size_options', None)
+        
+        add_on_options_data = validated_data.pop('add_on_options_write', None)
+        if add_on_options_data is None:
+            add_on_options_data = validated_data.pop('add_on_options', None)
         
         logger.info(f"🔍 update() - has_size_options: {has_size_options}, size_options_data: {size_options_data}")
         logger.info(f"🔍 update() - has_add_on_options: {has_add_on_options}, add_on_options_data: {add_on_options_data}")
@@ -217,7 +222,10 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         if has_size_options:
             logger.info(f"🔍 Updating size_options with data: {size_options_data}")
             # Фильтруем пустые значения и конвертируем в числа
-            size_options_ids = [int(x) for x in size_options_data if x is not None and str(x).strip()]
+            if size_options_data is not None:
+                size_options_ids = [int(x) for x in size_options_data if x is not None and str(x).strip()]
+            else:
+                size_options_ids = []
             logger.info(f"🔍 Processed size_options_ids: {size_options_ids}")
             size_options = SizeOption.objects.filter(id__in=size_options_ids)
             instance.size_options.set(size_options)
@@ -225,7 +233,10 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         if has_add_on_options:
             logger.info(f"🔍 Updating add_on_options with data: {add_on_options_data}")
             # Фильтруем пустые значения и конвертируем в числа
-            add_on_options_ids = [int(x) for x in add_on_options_data if x is not None and str(x).strip()]
+            if add_on_options_data is not None:
+                add_on_options_ids = [int(x) for x in add_on_options_data if x is not None and str(x).strip()]
+            else:
+                add_on_options_ids = []
             logger.info(f"🔍 Processed add_on_options_ids: {add_on_options_ids}")
             add_on_options = AddOn.objects.filter(id__in=add_on_options_ids)
             instance.add_on_options.set(add_on_options)
