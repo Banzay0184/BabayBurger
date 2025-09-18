@@ -38,13 +38,13 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
     
     # Поля для записи - используем ListField для поддержки FormData
     size_options_write = serializers.ListField(
-        child=serializers.CharField(),
+        child=serializers.IntegerField(),
         write_only=True,
         required=False,
         allow_empty=True
     )
     add_on_options_write = serializers.ListField(
-        child=serializers.CharField(),
+        child=serializers.IntegerField(),
         write_only=True,
         required=False,
         allow_empty=True
