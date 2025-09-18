@@ -18,6 +18,7 @@ interface DashboardStats {
     preparing: number;
     completed: number;
     cancelled: number;
+    rejected: number;
   };
   revenue: {
     today: number;
@@ -203,7 +204,7 @@ export const AdminDashboard: React.FC = () => {
           <span className="w-5 h-5 lg:w-6 lg:h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md flex items-center justify-center text-white text-xs mr-2">📋</span>
           Статусы заказов
         </h3>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-3">
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-md lg:rounded-lg p-2 lg:p-3 hover:shadow-sm transition-shadow">
             <div className="flex items-center mb-1">
               <span className="text-sm lg:text-base mr-1.5">⏳</span>
@@ -231,6 +232,13 @@ export const AdminDashboard: React.FC = () => {
               <div className="text-red-800 font-semibold text-xs">Отменены</div>
             </div>
             <div className="text-lg lg:text-xl font-bold text-red-900">{stats.orders.cancelled}</div>
+          </div>
+          <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-200 rounded-md lg:rounded-lg p-2 lg:p-3 hover:shadow-sm transition-shadow">
+            <div className="flex items-center mb-1">
+              <span className="text-sm lg:text-base mr-1.5">🚫</span>
+              <div className="text-red-800 font-semibold text-xs">Отклонены</div>
+            </div>
+            <div className="text-lg lg:text-xl font-bold text-red-900">{stats.orders.rejected || 0}</div>
           </div>
         </div>
       </div>

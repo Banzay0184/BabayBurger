@@ -34,6 +34,7 @@ const statusLabels: { [key: string]: string } = {
   'preparing': '👨‍🍳 Готовятся',
   'completed': '✅ Завершены',
   'cancelled': '❌ Отменены',
+  'rejected': '🚫 Отклонены',
 };
 
 export const AdminAnalyticsPage: React.FC = () => {
