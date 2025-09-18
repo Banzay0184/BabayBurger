@@ -52,9 +52,12 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
     
     def to_internal_value(self, data):
         """Переопределяем для поддержки оригинальных ключей фронтенда и FormData"""
-        print(f"🔍 to_internal_value called with data: {data}")
-        print(f"🔍 data type: {type(data)}")
-        print(f"🔍 data keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        logger.info(f"🔍 to_internal_value called with data: {data}")
+        logger.info(f"🔍 data type: {type(data)}")
+        logger.info(f"🔍 data keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
         data = data.copy()
         
         # Если данные приходят с оригинальными ключами, преобразуем их
@@ -66,52 +69,52 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         # Обрабатываем FormData - преобразуем строки в списки чисел
         if 'size_options_write' in data:
             size_options = data['size_options_write']
-            print(f"🔍 size_options_write received: {size_options} (type: {type(size_options)})")
+            logger.info(f"🔍 size_options_write received: {size_options} (type: {type(size_options)})")
             
             if isinstance(size_options, list) and len(size_options) > 0:
                 # FormData приходит как массив, обрабатываем первый элемент
                 try:
                     first_item = size_options[0]
-                    print(f"🔍 First item in size_options list: {first_item} (type: {type(first_item)})")
+                    logger.info(f"🔍 First item in size_options list: {first_item} (type: {type(first_item)})")
                     if isinstance(first_item, str) and first_item.strip():
                         # Разделяем по запятой если это строка с несколькими значениями
                         size_list = [int(x.strip()) for x in first_item.split(',') if x.strip()]
                         data['size_options_write'] = size_list
-                        print(f"🔍 size_options_write processed from FormData list: {size_list}")
+                        logger.info(f"🔍 size_options_write processed from FormData list: {size_list}")
                     else:
                         # Если это уже числа
                         data['size_options_write'] = [int(x) for x in size_options if str(x).strip()]
-                        print(f"🔍 size_options_write processed from number list: {data['size_options_write']}")
+                        logger.info(f"🔍 size_options_write processed from number list: {data['size_options_write']}")
                 except (ValueError, TypeError) as e:
-                    print(f"❌ Error processing size_options_write list: {e}")
+                    logger.error(f"❌ Error processing size_options_write list: {e}")
                     data['size_options_write'] = []
             else:
-                print(f"🔍 size_options_write empty or invalid, setting to empty list")
+                logger.info(f"🔍 size_options_write empty or invalid, setting to empty list")
                 data['size_options_write'] = []
         
         if 'add_on_options_write' in data:
             add_on_options = data['add_on_options_write']
-            print(f"🔍 add_on_options_write received: {add_on_options} (type: {type(add_on_options)})")
+            logger.info(f"🔍 add_on_options_write received: {add_on_options} (type: {type(add_on_options)})")
             
             if isinstance(add_on_options, list) and len(add_on_options) > 0:
                 # FormData приходит как массив, обрабатываем первый элемент
                 try:
                     first_item = add_on_options[0]
-                    print(f"🔍 First item in add_on_options list: {first_item} (type: {type(first_item)})")
+                    logger.info(f"🔍 First item in add_on_options list: {first_item} (type: {type(first_item)})")
                     if isinstance(first_item, str) and first_item.strip():
                         # Разделяем по запятой если это строка с несколькими значениями
                         addon_list = [int(x.strip()) for x in first_item.split(',') if x.strip()]
                         data['add_on_options_write'] = addon_list
-                        print(f"🔍 add_on_options_write processed from FormData list: {addon_list}")
+                        logger.info(f"🔍 add_on_options_write processed from FormData list: {addon_list}")
                     else:
                         # Если это уже числа
                         data['add_on_options_write'] = [int(x) for x in add_on_options if str(x).strip()]
-                        print(f"🔍 add_on_options_write processed from number list: {data['add_on_options_write']}")
+                        logger.info(f"🔍 add_on_options_write processed from number list: {data['add_on_options_write']}")
                 except (ValueError, TypeError) as e:
-                    print(f"❌ Error processing add_on_options_write list: {e}")
+                    logger.error(f"❌ Error processing add_on_options_write list: {e}")
                     data['add_on_options_write'] = []
             else:
-                print(f"🔍 add_on_options_write empty or invalid, setting to empty list")
+                logger.info(f"🔍 add_on_options_write empty or invalid, setting to empty list")
                 data['add_on_options_write'] = []
         
         return super().to_internal_value(data)
@@ -138,20 +141,23 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         return AddOnSerializer(active_addons, many=True).data
     
     def create(self, validated_data):
-        print(f"🔍 create() called with validated_data: {validated_data}")
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        logger.info(f"🔍 create() called with validated_data: {validated_data}")
         # Извлекаем данные для many-to-many полей (поддерживаем оба варианта ключей)
         size_options_ids = validated_data.pop('size_options_write', []) or validated_data.pop('size_options', [])
         add_on_options_ids = validated_data.pop('add_on_options_write', []) or validated_data.pop('add_on_options', [])
         
-        print(f"🔍 create() - size_options_ids: {size_options_ids}")
-        print(f"🔍 create() - add_on_options_ids: {add_on_options_ids}")
+        logger.info(f"🔍 create() - size_options_ids: {size_options_ids}")
+        logger.info(f"🔍 create() - add_on_options_ids: {add_on_options_ids}")
         
         # Фильтруем пустые значения и конвертируем в числа
         size_options_ids = [int(x) for x in size_options_ids if x is not None and str(x).strip()]
         add_on_options_ids = [int(x) for x in add_on_options_ids if x is not None and str(x).strip()]
         
-        print(f"🔍 create() - processed size_options_ids: {size_options_ids}")
-        print(f"🔍 create() - processed add_on_options_ids: {add_on_options_ids}")
+        logger.info(f"🔍 create() - processed size_options_ids: {size_options_ids}")
+        logger.info(f"🔍 create() - processed add_on_options_ids: {add_on_options_ids}")
         
         # Создаем объект
         menu_item = MenuItem.objects.create(**validated_data)
@@ -497,23 +503,28 @@ class AdminMenuViewSet(viewsets.ModelViewSet):
     serializer_class = AdminMenuItemSerializer
     
     def create(self, request, *args, **kwargs):
-        print(f"🔍 AdminMenuViewSet.create() called")
-        print(f"🔍 request.data: {request.data}")
-        print(f"🔍 request.FILES: {request.FILES}")
-        print(f"🔍 request.content_type: {request.content_type}")
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        logger.info(f"🔍 AdminMenuViewSet.create() called")
+        logger.info(f"🔍 request.data: {request.data}")
+        logger.info(f"🔍 request.FILES: {request.FILES}")
+        logger.info(f"🔍 request.content_type: {request.content_type}")
         
         # Проверяем конкретные поля
         if 'size_options_write' in request.data:
-            print(f"🔍 size_options_write in request.data: {request.data['size_options_write']} (type: {type(request.data['size_options_write'])})")
+            logger.info(f"🔍 size_options_write in request.data: {request.data['size_options_write']} (type: {type(request.data['size_options_write'])})")
         if 'add_on_options_write' in request.data:
-            print(f"🔍 add_on_options_write in request.data: {request.data['add_on_options_write']} (type: {type(request.data['add_on_options_write'])})")
+            logger.info(f"🔍 add_on_options_write in request.data: {request.data['add_on_options_write']} (type: {type(request.data['add_on_options_write'])})")
         
         try:
             result = super().create(request, *args, **kwargs)
-            print(f"✅ AdminMenuViewSet.create() success: {result.data}")
+            logger.info(f"✅ AdminMenuViewSet.create() success: {result.data}")
             return result
         except Exception as e:
-            print(f"❌ AdminMenuViewSet.create() error: {e}")
+            logger.error(f"❌ AdminMenuViewSet.create() error: {e}")
+            logger.error(f"❌ Error type: {type(e)}")
+            logger.error(f"❌ Error args: {e.args}")
             raise
     
     def get_queryset(self):
