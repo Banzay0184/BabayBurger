@@ -210,6 +210,13 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
       return;
     }
     
+    // Если изменилась доступность по времени, принудительно обновляем меню
+    if (useTimeRestriction && action === 'updated') {
+      console.log('⏰ Принудительное обновление меню из-за изменения времени доступности');
+      refreshMenu();
+      return;
+    }
+    
     // Для обновлений существующих товаров обновляем только локальное состояние
     dispatch({
       type: 'UPDATE_MENU_ITEM',
