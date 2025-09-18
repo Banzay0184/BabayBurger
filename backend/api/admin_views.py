@@ -51,14 +51,43 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
     )
     
     def to_internal_value(self, data):
-        """Переопределяем для поддержки оригинальных ключей фронтенда"""
+        """Переопределяем для поддержки оригинальных ключей фронтенда и FormData"""
+        data = data.copy()
+        
         # Если данные приходят с оригинальными ключами, преобразуем их
         if 'size_options' in data and 'size_options_write' not in data:
-            data = data.copy()
             data['size_options_write'] = data.pop('size_options', [])
         if 'add_on_options' in data and 'add_on_options_write' not in data:
-            data = data.copy()
             data['add_on_options_write'] = data.pop('add_on_options', [])
+        
+        # Обрабатываем FormData - преобразуем строки в числа для списков
+        if 'size_options_write' in data:
+            size_options = data['size_options_write']
+            if isinstance(size_options, str):
+                # Если это строка, пытаемся распарсить как JSON или разделить по запятой
+                try:
+                    import json
+                    data['size_options_write'] = json.loads(size_options)
+                except (json.JSONDecodeError, ValueError):
+                    # Если не JSON, разделяем по запятой и конвертируем в числа
+                    data['size_options_write'] = [int(x.strip()) for x in size_options.split(',') if x.strip()]
+            elif isinstance(size_options, list):
+                # Если это список, конвертируем все элементы в числа
+                data['size_options_write'] = [int(x) for x in size_options if str(x).strip()]
+        
+        if 'add_on_options_write' in data:
+            add_on_options = data['add_on_options_write']
+            if isinstance(add_on_options, str):
+                # Если это строка, пытаемся распарсить как JSON или разделить по запятой
+                try:
+                    import json
+                    data['add_on_options_write'] = json.loads(add_on_options)
+                except (json.JSONDecodeError, ValueError):
+                    # Если не JSON, разделяем по запятой и конвертируем в числа
+                    data['add_on_options_write'] = [int(x.strip()) for x in add_on_options.split(',') if x.strip()]
+            elif isinstance(add_on_options, list):
+                # Если это список, конвертируем все элементы в числа
+                data['add_on_options_write'] = [int(x) for x in add_on_options if str(x).strip()]
         
         return super().to_internal_value(data)
     
@@ -88,6 +117,10 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         size_options_ids = validated_data.pop('size_options_write', []) or validated_data.pop('size_options', [])
         add_on_options_ids = validated_data.pop('add_on_options_write', []) or validated_data.pop('add_on_options', [])
         
+        # Фильтруем пустые значения и конвертируем в числа
+        size_options_ids = [int(x) for x in size_options_ids if x and str(x).strip()]
+        add_on_options_ids = [int(x) for x in add_on_options_ids if x and str(x).strip()]
+        
         # Создаем объект
         menu_item = MenuItem.objects.create(**validated_data)
         
@@ -104,9 +137,9 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         return menu_item
     
     def update(self, instance, validated_data):
-        # Извлекаем данные для many-to-many полей
-        size_options_data = validated_data.pop('size_options', None)
-        add_on_options_data = validated_data.pop('add_on_options', None)
+        # Извлекаем данные для many-to-many полей (поддерживаем оба варианта ключей)
+        size_options_data = validated_data.pop('size_options_write', None) or validated_data.pop('size_options', None)
+        add_on_options_data = validated_data.pop('add_on_options_write', None) or validated_data.pop('add_on_options', None)
         
         # Обновляем основные поля
         for attr, value in validated_data.items():
@@ -115,9 +148,15 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
         
         # Обновляем связи если они переданы
         if size_options_data is not None:
-            instance.size_options.set(size_options_data)
+            # Фильтруем пустые значения и конвертируем в числа
+            size_options_ids = [int(x) for x in size_options_data if x and str(x).strip()]
+            size_options = SizeOption.objects.filter(id__in=size_options_ids)
+            instance.size_options.set(size_options)
         if add_on_options_data is not None:
-            instance.add_on_options.set(add_on_options_data)
+            # Фильтруем пустые значения и конвертируем в числа
+            add_on_options_ids = [int(x) for x in add_on_options_data if x and str(x).strip()]
+            add_on_options = AddOn.objects.filter(id__in=add_on_options_ids)
+            instance.add_on_options.set(add_on_options)
         
         return instance
 class DeliveryDriverSerializer(serializers.ModelSerializer):

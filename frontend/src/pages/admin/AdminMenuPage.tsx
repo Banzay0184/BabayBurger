@@ -318,12 +318,12 @@ export const AdminMenuPage: React.FC = () => {
         
         // Добавляем размеры
         formData.size_options.forEach(sizeId => {
-          formDataToSend.append('size_options', sizeId.toString());
+          formDataToSend.append('size_options_write', sizeId.toString());
         });
         
         // Добавляем добавки
         formData.add_on_options.forEach(addOnId => {
-          formDataToSend.append('add_on_options', addOnId.toString());
+          formDataToSend.append('add_on_options_write', addOnId.toString());
         });
 
         console.log('📤 Отправляем FormData с изображением');
@@ -344,8 +344,8 @@ export const AdminMenuPage: React.FC = () => {
           is_new: formData.is_new,
           is_active: formData.is_active,
           priority: parseInt(formData.priority.toString()) || 0,
-          size_options: [], // Не отправляем размеры в основном запросе
-          add_on_options: formData.add_on_options
+          size_options_write: [], // Не отправляем размеры в основном запросе
+          add_on_options_write: formData.add_on_options
         };
 
         console.log('📤 Отправляем JSON данные:', submitData);
@@ -972,7 +972,7 @@ export const AdminMenuPage: React.FC = () => {
                         
                         setFormData(prev => ({
                           ...prev,
-                          size_options: [...prev.size_options, newSize]
+                          size_options: [...prev.size_options, newSize.id]
                         }));
                         
                         // Очищаем форму
