@@ -47,6 +47,12 @@ export const AdminMenuPage: React.FC = () => {
     description: '',
     is_active: true
   });
+  
+  // Состояния для модальных окон подтверждения
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+  const [showEditConfirm, setShowEditConfirm] = React.useState(false);
+  const [itemToDelete, setItemToDelete] = React.useState<any>(null);
+  const [itemToEdit, setItemToEdit] = React.useState<any>(null);
 
   const loadData = async (page: number = currentPage) => {
     setLoading(true);
@@ -142,14 +148,28 @@ export const AdminMenuPage: React.FC = () => {
     }
   }, [currentPage, selectedCategory, searchTerm, activeTab]);
 
-  const handleDeleteItem = async (id: number) => {
-    if (!confirm('Удалить товар?')) return;
+  const handleDeleteItem = async (item: any) => {
+    setItemToDelete(item);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
     
-    const res = await adminApi.deleteMenuItem(id);
-    if (res.success) {
-      loadData(currentPage); // Перезагружаем текущую страницу
-    } else {
-      alert('Ошибка удаления: ' + (res.error || 'Неизвестная ошибка'));
+    try {
+      setLoading(true);
+      const res = await adminApi.deleteMenuItem(itemToDelete.id);
+      if (res.success) {
+        setShowDeleteConfirm(false);
+        setItemToDelete(null);
+        loadData(currentPage); // Перезагружаем текущую страницу
+      } else {
+        alert('Ошибка удаления: ' + (res.error || 'Неизвестная ошибка'));
+      }
+    } catch (error) {
+      alert('Ошибка удаления: ' + error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -191,7 +211,7 @@ export const AdminMenuPage: React.FC = () => {
       is_new: item.is_new || false,
       is_active: item.is_active !== false,
       priority: item.priority || 0,
-      size_options: item.size_options || [],
+      size_options: item.size_options?.map((s: any) => s.id) || [],
       add_on_options: item.add_on_options?.map((a: any) => a.id) || []
     });
     setEditingItem(item);
@@ -269,6 +289,18 @@ export const AdminMenuPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Если редактируем товар, показываем подтверждение
+    if (editingItem) {
+      setItemToEdit(editingItem);
+      setShowEditConfirm(true);
+      return;
+    }
+    
+    // Если создаем новый товар, сразу отправляем
+    await submitForm();
+  };
+
+  const submitForm = async () => {
     console.log('📤 Отправляем форму с данными:', formData);
     console.log('📏 Размеры в форме:', formData.size_options);
     console.log('➕ Добавки в форме:', formData.add_on_options);
@@ -642,7 +674,7 @@ export const AdminMenuPage: React.FC = () => {
                             Изменить
                           </button>
                           <button 
-                            onClick={() => handleDeleteItem(item.id)}
+                            onClick={() => handleDeleteItem(item)}
                             className="text-red-600 hover:text-red-900 text-xs"
                           >
                             Удалить
@@ -1259,6 +1291,100 @@ export const AdminMenuPage: React.FC = () => {
         </div>
       </Modal>
 
+      {/* Модальное окно подтверждения удаления */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setItemToDelete(null);
+        }}
+        title="Подтверждение удаления"
+        size="sm"
+      >
+        <div className="p-4">
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+              <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Вы уверены?
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Вы действительно хотите удалить товар <strong>"{itemToDelete?.name}"</strong>? 
+              Это действие нельзя отменить.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setItemToDelete(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={loading}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+              >
+                {loading ? 'Удаление...' : 'Да, удалить'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Модальное окно подтверждения редактирования */}
+      <Modal
+        isOpen={showEditConfirm}
+        onClose={() => {
+          setShowEditConfirm(false);
+          setItemToEdit(null);
+        }}
+        title="Подтверждение сохранения"
+        size="sm"
+      >
+        <div className="p-4">
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+              <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Сохранить изменения?
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Вы хотите сохранить изменения для товара <strong>"{itemToEdit?.name}"</strong>?
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => {
+                  setShowEditConfirm(false);
+                  setItemToEdit(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={async () => {
+                  setShowEditConfirm(false);
+                  setItemToEdit(null);
+                  await submitForm();
+                }}
+                disabled={loading}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              >
+                {loading ? 'Сохранение...' : 'Да, сохранить'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
