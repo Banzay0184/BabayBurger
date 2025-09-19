@@ -80,7 +80,7 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                     else:
                         # Если это одно число как строка
                         size_list = [int(size_options.strip())]
-                    data['size_options_write'] = size_list
+                    data.setlist('size_options_write', size_list)
                     logger.info(f"🔍 size_options_write processed from string: {size_list}")
                 elif isinstance(size_options, list) and len(size_options) > 0:
                     # Если это список, обрабатываем первый элемент
@@ -89,22 +89,23 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                     if isinstance(first_item, str) and first_item.strip():
                         # Разделяем по запятой если это строка с несколькими значениями
                         size_list = [int(x.strip()) for x in first_item.split(',') if x.strip()]
-                        data['size_options_write'] = size_list
+                        data.setlist('size_options_write', size_list)
                         logger.info(f"🔍 size_options_write processed from FormData list: {size_list}")
                     else:
                         # Если это уже числа
-                        data['size_options_write'] = [int(x) for x in size_options if str(x).strip()]
-                        logger.info(f"🔍 size_options_write processed from number list: {data['size_options_write']}")
+                        size_list = [int(x) for x in size_options if str(x).strip()]
+                        data.setlist('size_options_write', size_list)
+                        logger.info(f"🔍 size_options_write processed from number list: {size_list}")
                 elif isinstance(size_options, (int, float)):
                     # Если это одно число
-                    data['size_options_write'] = [int(size_options)]
-                    logger.info(f"🔍 size_options_write processed from single number: {data['size_options_write']}")
+                    data.setlist('size_options_write', [int(size_options)])
+                    logger.info(f"🔍 size_options_write processed from single number: {[int(size_options)]}")
                 else:
                     logger.info(f"🔍 size_options_write empty or invalid, setting to empty list")
-                    data['size_options_write'] = []
+                    data.setlist('size_options_write', [])
             except (ValueError, TypeError) as e:
                 logger.error(f"❌ Error processing size_options_write: {e}")
-                data['size_options_write'] = []
+                data.setlist('size_options_write', [])
         
         if 'add_on_options_write' in data:
             add_on_options = data['add_on_options_write']
@@ -118,7 +119,8 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                     else:
                         # Если это одно число как строка
                         addon_list = [int(add_on_options.strip())]
-                    data['add_on_options_write'] = addon_list
+                    # Для QueryDict нужно установить каждый элемент отдельно
+                    data.setlist('add_on_options_write', addon_list)
                     logger.info(f"🔍 add_on_options_write processed from string: {addon_list}")
                 elif isinstance(add_on_options, list) and len(add_on_options) > 0:
                     # Если это список, обрабатываем первый элемент
@@ -127,22 +129,23 @@ class AdminMenuItemSerializer(serializers.ModelSerializer):
                     if isinstance(first_item, str) and first_item.strip():
                         # Разделяем по запятой если это строка с несколькими значениями
                         addon_list = [int(x.strip()) for x in first_item.split(',') if x.strip()]
-                        data['add_on_options_write'] = addon_list
+                        data.setlist('add_on_options_write', addon_list)
                         logger.info(f"🔍 add_on_options_write processed from FormData list: {addon_list}")
                     else:
                         # Если это уже числа
-                        data['add_on_options_write'] = [int(x) for x in add_on_options if str(x).strip()]
-                        logger.info(f"🔍 add_on_options_write processed from number list: {data['add_on_options_write']}")
+                        addon_list = [int(x) for x in add_on_options if str(x).strip()]
+                        data.setlist('add_on_options_write', addon_list)
+                        logger.info(f"🔍 add_on_options_write processed from number list: {addon_list}")
                 elif isinstance(add_on_options, (int, float)):
                     # Если это одно число
-                    data['add_on_options_write'] = [int(add_on_options)]
-                    logger.info(f"🔍 add_on_options_write processed from single number: {data['add_on_options_write']}")
+                    data.setlist('add_on_options_write', [int(add_on_options)])
+                    logger.info(f"🔍 add_on_options_write processed from single number: {[int(add_on_options)]}")
                 else:
                     logger.info(f"🔍 add_on_options_write empty or invalid, setting to empty list")
-                    data['add_on_options_write'] = []
+                    data.setlist('add_on_options_write', [])
             except (ValueError, TypeError) as e:
                 logger.error(f"❌ Error processing add_on_options_write: {e}")
-                data['add_on_options_write'] = []
+                data.setlist('add_on_options_write', [])
         
         logger.info(f"🔍 Final data before super().to_internal_value(): {data}")
         logger.info(f"🔍 Final size_options_write: {data.get('size_options_write')} (type: {type(data.get('size_options_write'))})")
