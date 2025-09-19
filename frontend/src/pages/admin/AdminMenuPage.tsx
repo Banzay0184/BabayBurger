@@ -237,6 +237,31 @@ export const AdminMenuPage: React.FC = () => {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
+    
+    if (file) {
+      // Проверяем размер файла (максимум 2MB)
+      const maxSize = 2 * 1024 * 1024; // 2MB в байтах
+      if (file.size > maxSize) {
+        alert(`Размер изображения слишком большой (${(file.size / 1024 / 1024).toFixed(1)}MB). Максимальный размер: 2MB`);
+        // Сбрасываем input
+        e.target.value = '';
+        return;
+      }
+      
+      // Проверяем тип файла
+      if (!file.type.startsWith('image/')) {
+        alert('Пожалуйста, выберите файл изображения');
+        e.target.value = '';
+        return;
+      }
+      
+      console.log('📷 Изображение выбрано:', {
+        name: file.name,
+        size: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
+        type: file.type
+      });
+    }
+    
     setFormData(prev => ({ ...prev, image: file }));
   };
 
@@ -916,7 +941,16 @@ export const AdminMenuPage: React.FC = () => {
                         >
                           <span className="text-lg">📷</span>
                           <span className="text-xs text-black">
-                            {formData.image ? formData.image.name : 'Нажмите для загрузки изображения'}
+                            {formData.image ? (
+                              <div className="text-center">
+                                <div>{formData.image.name}</div>
+                                <div className="text-gray-500">
+                                  {(formData.image.size / 1024 / 1024).toFixed(2)}MB
+                                </div>
+                              </div>
+                            ) : (
+                              'Нажмите для загрузки изображения'
+                            )}
                           </span>
                         </label>
                       </div>
