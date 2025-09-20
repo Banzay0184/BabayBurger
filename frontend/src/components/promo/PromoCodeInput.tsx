@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { getApiUrl } from '../../config/api';
 
 interface PromoCodeInputProps {
   orderAmount: number;
@@ -45,8 +46,7 @@ export const PromoCodeInput: React.FC<PromoCodeInputProps> = ({
     setSuccess(null);
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api/';
-      const url = `${apiBaseUrl}promo-codes/validate/`;
+      const url = getApiUrl('promo-codes/validate/');
       
       const response = await fetch(url, {
         method: 'POST',

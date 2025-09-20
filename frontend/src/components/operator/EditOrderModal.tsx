@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { OrderForOperator } from '../../types/operator';
 import { operatorOrdersApi } from '../../api/operatorApi';
+import { getApiUrl } from '../../config/api';
 
 interface EditOrderModalProps {
   order: OrderForOperator;
@@ -29,6 +30,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [menuItems, setMenuItems] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [showAddItem, setShowAddItem] = useState(false);
@@ -61,7 +63,6 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
           
           // Загружаем меню
           try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api/';
             const token = localStorage.getItem('operator_token');
             const headers: Record<string, string> = {
               'Content-Type': 'application/json',
@@ -72,7 +73,8 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
               headers['Authorization'] = `Token ${token}`;
             }
 
-            const response = await fetch(`${API_BASE_URL}menu/`, {
+            const url = getApiUrl('menu/');
+            const response = await fetch(url, {
               method: 'GET',
               headers
             });
@@ -123,7 +125,8 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
                 categoriesArray = menu.categories;
               } else {
                 // Fallback: загружаем категории отдельно
-                const categoriesResponse = await fetch(`${API_BASE_URL}categories/`, {
+                const categoriesUrl = getApiUrl('categories/');
+                const categoriesResponse = await fetch(categoriesUrl, {
                   method: 'GET',
                   headers
                 });
@@ -255,6 +258,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
     try {
       setIsLoadingItems(true);
       setError(null);
+      setSuccessMessage(null);
       
       // Подготавливаем данные для отправки на сервер
       const cartData = {
@@ -302,8 +306,31 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
       
       console.log('✅ Корзина обновлена:', updatedOrder);
       
+      // Обновляем локальное состояние корзины с данными с сервера
+      if (updatedOrder.items_details && Array.isArray(updatedOrder.items_details)) {
+        const updatedCartItems = updatedOrder.items_details.map((item: any) => ({
+          id: item.id,
+          name: item.menu_item_name,
+          price: parseFloat(item.menu_item_price || 0),
+          quantity: item.quantity,
+          size: item.size_option_name,
+          addons: item.add_ons_names || [],
+          total_price: parseFloat(item.total_price || 0)
+        }));
+        setCartItems(updatedCartItems);
+        console.log('🔄 Локальное состояние корзины обновлено:', updatedCartItems);
+      }
+      
+      // Обновляем родительский компонент
       onUpdate(updatedOrder);
-      onClose();
+      
+      // Показываем успешное сообщение перед закрытием
+      setError(null);
+      setSuccessMessage('✅ Корзина успешно обновлена!');
+      setTimeout(() => {
+        setSuccessMessage(null);
+        onClose();
+      }, 1500); // Даем время пользователю увидеть обновленные данные
       
     } catch (err) {
       setError('Ошибка сохранения изменений: ' + (err as Error).message);
@@ -338,6 +365,12 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
         {error && (
           <div className="bg-red-900/30 border border-red-600/50 rounded-lg p-4 mb-4">
             <p className="text-red-400">{error}</p>
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="bg-green-900/30 border border-green-600/50 rounded-lg p-4 mb-4">
+            <p className="text-green-400">{successMessage}</p>
           </div>
         )}
 

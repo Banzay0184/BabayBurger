@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoriteContext';
 import { useClientWebSocket } from '../hooks/useClientWebSocket';
 import { PageTransition } from '../components/common/PageTransition';
+import { getApiUrl } from '../config/api';
 
 interface Order {
   id: number;
@@ -81,8 +82,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
           return;
         }
 
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api/';
-        const url = `${apiBaseUrl}orders/?telegram_id=${telegramId}`;
+        const url = getApiUrl(`orders/?telegram_id=${telegramId}`);
         console.log('🌐 Запрос к API заказов:', url);
         
         const response = await fetch(url, {
@@ -129,8 +129,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onClose }) => {
             const telegramId = state.user?.telegram_id;
             if (!telegramId) return;
 
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api/';
-            const url = `${apiBaseUrl}orders/?telegram_id=${telegramId}`;
+            const url = getApiUrl(`orders/?telegram_id=${telegramId}`);
             
             const response = await fetch(url, {
               method: 'GET',

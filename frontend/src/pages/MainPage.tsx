@@ -18,6 +18,7 @@ import { OptionsPage } from './OptionsPage';
 import { ProfilePage } from './ProfilePage';
 import { CheckoutPage } from './CheckoutPage';
 import { WebSocketDebugger } from '../components/debug/WebSocketDebugger';
+import { getApiUrl } from '../config/api';
 import type { MenuItem, Promotion } from '../types/menu';
 import type { Address } from '../types/address';
 const logoUrl = '/logo.jpg';
@@ -66,8 +67,8 @@ export const MainPage: React.FC = () => {
   const loadAddresses = async () => {
     try {
       const telegramId = state.user?.telegram_id?.toString() || '908758841';
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api/';
-      const response = await fetch(`${apiBaseUrl}addresses/?telegram_id=${telegramId}`, {
+      const url = getApiUrl(`addresses/?telegram_id=${telegramId}`);
+      const response = await fetch(url, {
         headers: {
           'Accept': 'application/json',
           'ngrok-skip-browser-warning': 'true'
@@ -110,8 +111,8 @@ export const MainPage: React.FC = () => {
     // Настройки времени работы (можно легко изменить)
     // Чтобы изменить время открытия: измените значение OPEN_TIME
     // Например: OPEN_TIME = 9 для открытия в 9:00
-    const OPEN_TIME = 8; // 8:00 утра
-    const CLOSE_TIME = 8; // 4:00 утра следующего дня
+    const OPEN_TIME = 10; // 8:00 утра
+    const CLOSE_TIME = 3; // 4:00 утра следующего дня
     
     // Воскресенье - не работает
     // if (currentDay === 0) {
@@ -132,17 +133,17 @@ export const MainPage: React.FC = () => {
     if (currentHour >= OPEN_TIME) {
       // После 8:00 утра - ресторан открыт
       isOpen = true;
-      message = t('open_until_4am');
+      message = t('open_until_3am');
       timeLeft = t('open_all_night');
     } else if (currentHour < CLOSE_TIME) {
       // До 4:00 утра - ресторан еще работает (открылся вчера в 8:00)
       isOpen = true;
-      message = t('open_until_4am');
+      message = t('open_until_3am');
       timeLeft = t('open_all_night');
     } else {
       // Между 4:00 и 8:00 - ресторан закрыт
       isOpen = false;
-      message = t('opens_at_8');
+      message = t('opens_at_10');
       
       // Вычисляем время до открытия
       const hoursUntilOpen = OPEN_TIME - currentHour;
@@ -444,7 +445,7 @@ export const MainPage: React.FC = () => {
                           <div className="space-y-2 text-sm text-gray-400">
                             <div className="flex justify-between">
                               <span>{t('monday')} - {t('saturday')}:</span>
-                              <span className="text-gray-300">8:00 - 4:00</span>
+                              <span className="text-gray-300">10:00 - 3:00</span>
                             </div>
                             <div className="flex justify-between">
                               <span>{t('sunday')}:</span>

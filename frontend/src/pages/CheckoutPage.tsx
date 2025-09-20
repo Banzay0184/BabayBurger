@@ -8,6 +8,7 @@ import { useRestaurants } from '../hooks/useRestaurants';
 import { RestaurantPicker } from '../components/restaurant/RestaurantPicker';
 import { PromoCodeInput } from '../components/promo/PromoCodeInput';
 import { PageTransition } from '../components/common/PageTransition';
+import { getApiUrl } from '../config/api';
 
 interface CheckoutPageProps {
   onClose: () => void;
@@ -51,8 +52,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
     const loadAddresses = async () => {
       try {
         const telegramId = state.user?.telegram_id?.toString() || '908758841';
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api/';
-        const response = await fetch(`${apiBaseUrl}addresses/?telegram_id=${telegramId}`, {
+        const url = getApiUrl(`addresses/?telegram_id=${telegramId}`);
+        const response = await fetch(url, {
           headers: {
             'Accept': 'application/json',
             'ngrok-skip-browser-warning': 'true'
@@ -75,8 +76,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
 
     const loadDeliveryZones = async () => {
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api/';
-        const response = await fetch(`${apiBaseUrl}delivery-zones/`, {
+        const url = getApiUrl('delivery-zones/');
+        const response = await fetch(url, {
           headers: {
             'Accept': 'application/json',
             'ngrok-skip-browser-warning': 'true'
@@ -349,7 +350,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
 
     try {
       const telegramId = state.user?.telegram_id?.toString() || '908758841';
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.babayfood.uz/api/';
       
       let finalAddressId = selectedAddress?.id;
       
@@ -378,7 +378,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         
         console.log('📍 Данные адреса для сохранения:', addressData);
         
-        const addressResponse = await fetch(`${apiBaseUrl}addresses/`, {
+        const addressUrl = getApiUrl('addresses/');
+        const addressResponse = await fetch(addressUrl, {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
@@ -441,7 +442,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
       console.log('📦 Отправляем заказ:', orderData);
       console.log('📍 Финальный ID адреса:', finalAddressId);
 
-      const response = await fetch(`${apiBaseUrl}orders/create/`, {
+      const orderUrl = getApiUrl('orders/create/');
+      const response = await fetch(orderUrl, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
