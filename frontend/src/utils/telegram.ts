@@ -296,7 +296,7 @@ export const getStartParam = (): string => {
 
 // Создаем URL для перехода в Telegram бот
 export const createTelegramBotUrl = (command: string = '/start'): string => {
-  const botUsername = 'todobotuz_bot'; // Замените на реальный username бота
+  const botUsername = 'babayfooduzbot'; // Замените на реальный username бота
   return `https://t.me/${botUsername}?start=${command}`;
 };
 
