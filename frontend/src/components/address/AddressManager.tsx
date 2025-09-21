@@ -563,15 +563,16 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
     
     // Улучшенная обработка улицы
     let finalStreet = mapAddress.street || formData.street || '';
-    if (!finalStreet || finalStreet.trim() === '' || finalStreet === 'Улица не определена') {
-      // Если улица не определена, создаем описательное название
-      if (mapAddress.coordinates) {
-        const [lat, lon] = mapAddress.coordinates;
-        if (lat >= 39.76 && lat <= 39.78 && lon >= 64.39 && lon <= 64.42) {
-          finalStreet = 'Центр Бухары';
-        } else if (lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
-          finalStreet = 'Центр Кагана';
-        } else {
+      if (!finalStreet || finalStreet.trim() === '' || finalStreet === 'Улица не определена') {
+        // Если улица не определена, создаем описательное название
+        // ПРИОРИТЕТ: Каган имеет более высокий приоритет для пограничных областей
+        if (mapAddress.coordinates) {
+          const [lat, lon] = mapAddress.coordinates;
+          if (lat >= 39.72 && lat <= 39.8 && lon >= 64.54 && lon <= 64.58) {
+            finalStreet = 'Центр Кагана';
+          } else if (lat >= 39.76 && lat <= 39.78 && lon >= 64.39 && lon <= 64.42) {
+            finalStreet = 'Центр Бухары';
+          } else {
           // Создаем уникальное название на основе координат
           const latStr = lat.toFixed(4).replace('.', '');
           const lonStr = lon.toFixed(4).replace('.', '');

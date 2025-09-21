@@ -257,7 +257,7 @@ export const MainPage: React.FC = () => {
     // Чтобы изменить время открытия: измените значение OPEN_TIME
     // Например: OPEN_TIME = 9 для открытия в 9:00
     const OPEN_TIME = 10; // 8:00 утра
-    const CLOSE_TIME = 3; // 4:00 утра следующего дня
+    const CLOSE_TIME = 7; // 4:00 утра следующего дня
     
     // Воскресенье - не работает
     // if (currentDay === 0) {

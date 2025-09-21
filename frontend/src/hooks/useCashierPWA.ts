@@ -52,7 +52,7 @@ export const useCashierPWA = (): PWAState & PWAActions => {
     try {
       setState(prev => ({ ...prev, serviceWorkerStatus: 'installing' }));
       
-      const registration = await navigator.serviceWorker.register('/cashier-sw.js');
+      const registration = await navigator.serviceWorker.register('/cashier/sw.js');
       
       console.log('💰 PWA Hook: Service Worker registered successfully');
       setState(prev => ({ ...prev, serviceWorkerStatus: 'installed' }));

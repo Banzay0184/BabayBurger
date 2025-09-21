@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { websocketMonitor } from '../utils/websocketMonitor';
 
 export interface WebSocketMessage {
   type: string;
@@ -98,8 +99,26 @@ export const useUnifiedWebSocket = (options: UseUnifiedWebSocketOptions): UseUni
 
     try {
       const wsUrl = generateWebSocketUrl();
+      console.log(`🔌 Attempting to connect to WebSocket: ${wsUrl}`);
+      
+      // Проверяем доступность сервера перед подключением
+      const protocol = wsUrl.startsWith('wss:') ? 'https:' : 'http:';
+      const httpUrl = wsUrl.replace(/^wss?:/, protocol);
+      
+      // Простая проверка доступности сервера
+      fetch(`${httpUrl}/health/`, { 
+        method: 'HEAD',
+        mode: 'no-cors',
+        signal: AbortSignal.timeout(3000)
+      }).catch(() => {
+        console.warn(`⚠️ Server health check failed for ${httpUrl}, proceeding with WebSocket connection anyway`);
+      });
+      
       const ws = new WebSocket(wsUrl);
       socketRef.current = ws;
+      
+      // Регистрируем соединение в мониторе
+      websocketMonitor.registerConnection(wsUrl, ws);
 
       ws.onopen = () => {
         console.log(`🔌 ${authType} WebSocket connected:`, wsUrl);
@@ -170,7 +189,9 @@ export const useUnifiedWebSocket = (options: UseUnifiedWebSocketOptions): UseUni
 
       ws.onerror = (event) => {
         console.error(`❌ ${authType} WebSocket error:`, event);
-        setError('Ошибка WebSocket соединения');
+        console.error(`❌ WebSocket URL: ${wsUrl}`);
+        console.error(`❌ WebSocket readyState: ${ws.readyState}`);
+        setError(`Ошибка WebSocket соединения (${wsUrl})`);
         setIsConnecting(false);
         onError?.(event);
       };

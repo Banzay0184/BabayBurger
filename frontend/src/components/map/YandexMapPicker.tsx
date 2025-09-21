@@ -84,22 +84,24 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
     const [lat, lon] = coords;
     
     // Определяем примерное местоположение на основе координат
-    if (lat >= 39.76 && lat <= 39.78 && lon >= 64.39 && lon <= 64.42) {
-      return 'Бухара, центр города';
-    } else if (lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
+    // ПРИОРИТЕТ: Каган имеет более высокий приоритет для пограничных областей
+    if (lat >= 39.72 && lat <= 39.8 && lon >= 64.54 && lon <= 64.58) {
       return 'Каган, центр города';
+    } else if (lat >= 39.76 && lat <= 39.78 && lon >= 64.39 && lon <= 64.42) {
+      return 'Бухара, центр города';
     } else if (lat >= 39.75 && lat <= 39.8 && lon >= 64.3 && lon <= 64.6) {
-      // Более широкий диапазон для Бухары
-      return 'Бухара, город';
-    } else if (lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
-      // Более широкий диапазон для Кагана
-      return 'Каган, город';
+      // Проверяем, что координаты НЕ в зоне Кагана
+      if (!(lat >= 39.72 && lat <= 39.8 && lon >= 64.54 && lon <= 64.58)) {
+        return 'Бухара, город';
+      } else {
+        return 'Каган, город';
+      }
     } else {
       // Создаем более понятный адрес на основе координат
       const latStr = lat.toFixed(4).replace('.', '');
       const lonStr = lon.toFixed(4).replace('.', '');
       // Определяем город по координатам для fallback
-      if (lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
+      if (lat >= 39.72 && lat <= 39.8 && lon >= 64.54 && lon <= 64.58) {
         return `Каган, район ${latStr.slice(-2)}-${lonStr.slice(-2)}`;
       } else {
         return `Бухара, район ${latStr.slice(-2)}-${lonStr.slice(-2)}`;
@@ -410,12 +412,19 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
       let cityName = '';
       
       // Сначала проверяем координаты для точного определения города
-      if (lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
+      // ПРИОРИТЕТ: Каган имеет более высокий приоритет для пограничных областей
+      if (lat >= 39.72 && lat <= 39.8 && lon >= 64.54 && lon <= 64.58) {
         cityName = 'Каган';
         console.log('🗺️ ✅ City determined by coordinates: Каган');
       } else if (lat >= 39.75 && lat <= 39.8 && lon >= 64.3 && lon <= 64.6) {
-        cityName = 'Бухара';
-        console.log('🗺️ ✅ City determined by coordinates: Бухара');
+        // Проверяем, что координаты НЕ в зоне Кагана
+        if (!(lat >= 39.72 && lat <= 39.8 && lon >= 64.54 && lon <= 64.58)) {
+          cityName = 'Бухара';
+          console.log('🗺️ ✅ City determined by coordinates: Бухара');
+        } else {
+          cityName = 'Каган';
+          console.log('🗺️ ✅ City corrected to Каган (overlaps with Bukhara range)');
+        }
       } else {
         // Fallback: парсим адрес если координаты не дали результата
         if (address) {
@@ -448,7 +457,7 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
       }
       
       // Дополнительная проверка: если координаты в Кагане, но адрес говорит "Бухара", исправляем
-      if (cityName === 'Бухара' && lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
+      if (cityName === 'Бухара' && lat >= 39.72 && lat <= 39.8 && lon >= 64.54 && lon <= 64.58) {
         cityName = 'Каган';
         console.log('🗺️ 🔧 Corrected city from Бухара to Каган based on coordinates');
       }
@@ -470,14 +479,15 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
         
         if (streetPart) {
           finalStreet = streetPart;
-        } else {
-          // Если не нашли улицу, создаем описательное название на основе координат
-          const [lat, lon] = coords;
-          if (lat >= 39.76 && lat <= 39.78 && lon >= 64.39 && lon <= 64.42) {
-            finalStreet = 'Центр Бухары';
-          } else if (lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
-            finalStreet = 'Центр Кагана';
           } else {
+            // Если не нашли улицу, создаем описательное название на основе координат
+            // ПРИОРИТЕТ: Каган имеет более высокий приоритет для пограничных областей
+            const [lat, lon] = coords;
+            if (lat >= 39.72 && lat <= 39.8 && lon >= 64.54 && lon <= 64.58) {
+              finalStreet = 'Центр Кагана';
+            } else if (lat >= 39.76 && lat <= 39.78 && lon >= 64.39 && lon <= 64.42) {
+              finalStreet = 'Центр Бухары';
+            } else {
             // Создаем уникальное название на основе координат
             const latStr = lat.toFixed(4).replace('.', '');
             const lonStr = lon.toFixed(4).replace('.', '');
