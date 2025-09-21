@@ -599,7 +599,7 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Получение заказов для оператора"""
         import logging
-        logger = logging.getLogger(api.views)
+        logger = logging.getLogger(__name__)
         operator = self.request.user
         
         # Получаем зоны оператора
@@ -729,7 +729,7 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, pk=None):
         """Получение конкретного заказа с дополнительной диагностикой"""
         import logging
-        logger = logging.getLogger(api.views)
+        logger = logging.getLogger(__name__)
         
         try:
             # Сначала пытаемся получить заказ из нашего queryset
@@ -1001,6 +1001,8 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def update_cart(self, request, pk=None):
         """Обновить корзину заказа оператором"""
+        import logging
+        logger = logging.getLogger(__name__)
         order = get_object_or_404(Order, pk=pk)
         operator = request.user
         
@@ -1251,6 +1253,8 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def restaurants(self, request):
         """Получить список активных ресторанов"""
+        import logging
+        logger = logging.getLogger(__name__)
         from api.models import Restaurant
         
         # Получаем параметр order_id для фильтрации по зоне доставки
