@@ -685,7 +685,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
             .sort((_a, b) => (b.is_primary ? 1 : -1)) // Основной адрес сверху
             .map((address) => (
             <div
-              key={address.id}
+              key={`address-manager-${address.id}`}
               className={`p-3 sm:p-4 rounded-lg border ${
                 address.is_primary
                   ? 'border-primary-500 bg-primary-500/10'

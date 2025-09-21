@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import type { Address } from '../../types/address';
@@ -11,7 +11,7 @@ interface AutoLocationDetectorProps {
   existingAddresses?: Address[];
 }
 
-export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = ({
+export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.memo(({
   onAddressDetected,
   onShowMap,
   onClose,
@@ -27,6 +27,10 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = ({
     is_in_delivery_zone: boolean;
     message: string;
   } | null>(null);
+  
+  // Ref для предотвращения множественных вызовов
+  const hasDetectedRef = useRef(false);
+  const detectionTimeoutRef = useRef<number | null>(null);
 
   // Функция для получения местоположения через Telegram Web App
   const getTelegramLocation = useCallback(async (): Promise<[number, number] | null> => {
@@ -297,9 +301,32 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = ({
     }
   }, [onAddressDetected, onClose]);
 
-  // Автоматически запускаем определение при загрузке
+  // Мемоизируем существующие адреса для оптимизации
+  const memoizedExistingAddresses = useMemo(() => existingAddresses, [existingAddresses]);
+
+  // Автоматически запускаем определение при загрузке с дебаунсингом
   useEffect(() => {
-    detectLocation();
+    // Предотвращаем множественные вызовы
+    if (hasDetectedRef.current) return;
+    
+    // Очищаем предыдущий таймер
+    if (detectionTimeoutRef.current) {
+      clearTimeout(detectionTimeoutRef.current);
+    }
+    
+    // Запускаем с небольшой задержкой для оптимизации
+    detectionTimeoutRef.current = setTimeout(() => {
+      if (!hasDetectedRef.current) {
+        hasDetectedRef.current = true;
+        detectLocation();
+      }
+    }, 100);
+
+    return () => {
+      if (detectionTimeoutRef.current) {
+        clearTimeout(detectionTimeoutRef.current);
+      }
+    };
   }, [detectLocation]);
 
   return (
@@ -454,14 +481,14 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = ({
                   </div>
 
                   {/* Список существующих адресов */}
-                  {existingAddresses.length > 0 ? (
+                  {memoizedExistingAddresses.length > 0 ? (
                     <div className="space-y-2">
                       <h4 className="font-medium text-gray-800 mb-3">
                         📍 Ваши сохраненные адреса:
                       </h4>
-                      {existingAddresses.map((address) => (
+                      {memoizedExistingAddresses.map((address) => (
                         <div
-                          key={address.id}
+                          key={`auto-location-${address.id}`}
                           className="bg-gray-50 border border-gray-200 rounded-lg p-3 cursor-pointer hover:bg-gray-100 transition-colors"
                           onClick={() => selectExistingAddress(address)}
                         >
@@ -541,4 +568,4 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = ({
       </div>
     </div>
   );
-};
+});

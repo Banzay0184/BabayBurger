@@ -203,7 +203,10 @@ export const useClientWebSocket = (options: UseClientWebSocketOptions = {}): Use
   // WebSocket включен, но с fallback на polling при ошибках
   const [websocketFailed, setWebsocketFailed] = useState(false);
   const [errorCount, setErrorCount] = useState(0);
-  const shouldEnableWebSocket = enabled && !!authState.user && !!telegramId && !websocketFailed;
+  
+  // В dev режиме отключаем WebSocket если бэкенд не доступен
+  const isDevMode = import.meta.env.DEV;
+  const shouldEnableWebSocket = enabled && !!authState.user && !!telegramId && !websocketFailed && !isDevMode;
   
   // Логируем текущий счетчик ошибок для отладки
   console.log('🔍 WebSocket error count:', errorCount);

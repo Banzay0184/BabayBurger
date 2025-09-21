@@ -13,6 +13,7 @@ import { CashierApp } from './pages/cashier/CashierApp';
 import { TelegramWebAppOptimizer } from './components/common/TelegramWebAppOptimizer';
 import { AdminApp } from './pages/admin/AdminApp';
 import { LoadingScreen } from './components/common/LoadingScreen';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { initTelegramWebApp } from './utils/telegram';
 import './styles/telegram-optimization.css';
 
@@ -46,13 +47,15 @@ const ClientApp: React.FC = () => {
 
   // Если авторизован - показываем главную страницу с меню
   return (
-    <MenuProvider>
-      <FavoriteProvider>
-        <CartProvider>
-          <MainPage />
-        </CartProvider>
-      </FavoriteProvider>
-    </MenuProvider>
+    <ErrorBoundary>
+      <MenuProvider>
+        <FavoriteProvider>
+          <CartProvider>
+            <MainPage />
+          </CartProvider>
+        </FavoriteProvider>
+      </MenuProvider>
+    </ErrorBoundary>
   );
 };
 
@@ -73,44 +76,46 @@ const CashierInterface: React.FC = () => {
 // Главный компонент приложения с роутингом
 const App: React.FC = () => {
   return (
-    <TelegramWebAppOptimizer>
-      <LanguageProvider>
-        <Router>
-          <Routes>
-            {/* Основное приложение (клиент) */}
-            <Route 
-              path="/" 
-              element={
-                <AuthProvider>
-                  <ClientApp />
-                </AuthProvider>
-              } 
-            />
-            
-            {/* Операторский интерфейс */}
-            <Route 
-              path="/operator/*" 
-              element={<OperatorInterface />} 
-            />
-            
-            {/* Кассирский интерфейс */}
-            <Route 
-              path="/cashier/*" 
-              element={<CashierInterface />} 
-            />
-            
-            {/* Админский интерфейс */}
-            <Route 
-              path="/admin/*" 
-              element={<AdminApp />} 
-            />
-            
-            {/* Редирект на главную для неизвестных маршрутов */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
-      </LanguageProvider>
-    </TelegramWebAppOptimizer>
+    <ErrorBoundary>
+      <TelegramWebAppOptimizer>
+        <LanguageProvider>
+          <Router>
+            <Routes>
+              {/* Основное приложение (клиент) */}
+              <Route 
+                path="/" 
+                element={
+                  <AuthProvider>
+                    <ClientApp />
+                  </AuthProvider>
+                } 
+              />
+              
+              {/* Операторский интерфейс */}
+              <Route 
+                path="/operator/*" 
+                element={<OperatorInterface />} 
+              />
+              
+              {/* Кассирский интерфейс */}
+              <Route 
+                path="/cashier/*" 
+                element={<CashierInterface />} 
+              />
+              
+              {/* Админский интерфейс */}
+              <Route 
+                path="/admin/*" 
+                element={<AdminApp />} 
+              />
+              
+              {/* Редирект на главную для неизвестных маршрутов */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Router>
+        </LanguageProvider>
+      </TelegramWebAppOptimizer>
+    </ErrorBoundary>
   );
 };
 

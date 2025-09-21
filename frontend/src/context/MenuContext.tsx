@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import type { MenuItem, MenuCategory, MenuFilters, Promotion } from '../types/menu';
 import { menuApi } from '../api/menu';
@@ -112,10 +112,14 @@ const MenuContext = createContext<MenuContextType | undefined>(undefined);
 export const useMenu = () => {
   const context = useContext(MenuContext);
   if (!context) {
-    console.error('❌ useMenu: context not found');
+    if (import.meta.env.DEV) {
+      console.error('❌ useMenu: context not found');
+    }
     throw new Error('useMenu must be used within a MenuProvider');
   }
-  console.log('✅ useMenu: context found');
+  if (import.meta.env.DEV) {
+    console.log('✅ useMenu: context found');
+  }
   return context;
 };
 
@@ -383,7 +387,7 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
     dispatch({ type: 'RESET_FILTERS' });
   };
 
-  const getFilteredItems = (): MenuItem[] => {
+  const getFilteredItems = useCallback((): MenuItem[] => {
     let filtered = state.items || [];
 
     if (state.filters.search) {
@@ -415,30 +419,32 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
     }
 
     return filtered;
-  };
+  }, [state.items, state.filters, state.categories]);
 
-  const getCategoriesWithItems = (): MenuCategory[] => {
+  const getCategoriesWithItems = useCallback((): MenuCategory[] => {
     return (state.categories || []).map(category => ({
       ...category,
       items: (state.items || []).filter(item => item.category === category.id && item.is_active !== false)
     }));
-  };
+  }, [state.categories, state.items]);
 
-  const getAvailableCategories = (): MenuCategory[] => {
+  const getAvailableCategories = useCallback((): MenuCategory[] => {
     const categories = (state.categories || []).filter(category => 
       (state.items || []).some(item => item.category === category.id && item.is_active !== false)
     );
     
-    console.log('🔍 getAvailableCategories:', {
-      totalCategories: state.categories?.length || 0,
-      availableCategories: categories.length,
-      categories: categories.map(cat => ({ id: cat.id, name: cat.name }))
-    });
+    if (import.meta.env.DEV) {
+      console.log('🔍 getAvailableCategories:', {
+        totalCategories: state.categories?.length || 0,
+        availableCategories: categories.length,
+        categories: categories.map(cat => ({ id: cat.id, name: cat.name }))
+      });
+    }
     
     return categories;
-  };
+  }, [state.categories, state.items]);
 
-  const getActivePromotions = (): Promotion[] => {
+  const getActivePromotions = useCallback((): Promotion[] => {
     const now = new Date();
     const promotions = Array.isArray(state.promotions) ? state.promotions : [];
     
@@ -448,37 +454,41 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
       new Date(promotion.valid_to) >= now &&
       (!promotion.max_uses || promotion.usage_count < promotion.max_uses)
     );
-  };
+  }, [state.promotions]);
 
-  const getHits = (): MenuItem[] => {
+  const getHits = useCallback((): MenuItem[] => {
     const hits = (state.items || []).filter(item => item.is_hit && item.is_active !== false).sort((a, b) => a.priority - b.priority);
     
-    console.log('🔍 getHits:', {
-      totalItems: state.items?.length || 0,
-      hitItems: hits.length,
-      hits: hits.map(item => ({ id: item.id, name: item.name, is_hit: item.is_hit, is_active: item.is_active }))
-    });
+    if (import.meta.env.DEV) {
+      console.log('🔍 getHits:', {
+        totalItems: state.items?.length || 0,
+        hitItems: hits.length,
+        hits: hits.map(item => ({ id: item.id, name: item.name, is_hit: item.is_hit, is_active: item.is_active }))
+      });
+    }
     
     return hits;
-  };
+  }, [state.items]);
 
-  const getNewItems = (): MenuItem[] => {
+  const getNewItems = useCallback((): MenuItem[] => {
     const newItems = (state.items || []).filter(item => item.is_new && item.is_active !== false).sort((a, b) => a.priority - b.priority);
     
-    console.log('🔍 getNewItems:', {
-      totalItems: state.items?.length || 0,
-      newItemsCount: newItems.length,
-      newItems: newItems.map(item => ({ id: item.id, name: item.name, is_new: item.is_new, is_active: item.is_active }))
-    });
+    if (import.meta.env.DEV) {
+      console.log('🔍 getNewItems:', {
+        totalItems: state.items?.length || 0,
+        newItemsCount: newItems.length,
+        newItems: newItems.map(item => ({ id: item.id, name: item.name, is_new: item.is_new, is_active: item.is_active }))
+      });
+    }
     
     return newItems;
-  };
+  }, [state.items]);
 
-  const getMenuItemById = (id: number): MenuItem | undefined => {
+  const getMenuItemById = useCallback((id: number): MenuItem | undefined => {
     return (state.items || []).find(item => item.id === id);
-  };
+  }, [state.items]);
 
-  const value: MenuContextType = {
+  const value: MenuContextType = useMemo(() => ({
     state,
     fetchMenu,
     fetchPromotions,
@@ -492,7 +502,21 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
     getNewItems,
     getMenuItemById,
     refreshMenu
-  };
+  }), [
+    state,
+    fetchMenu,
+    fetchPromotions,
+    setFilters,
+    resetFilters,
+    getFilteredItems,
+    getCategoriesWithItems,
+    getAvailableCategories,
+    getActivePromotions,
+    getHits,
+    getNewItems,
+    getMenuItemById,
+    refreshMenu
+  ]);
 
   return (
     <MenuContext.Provider value={value}>

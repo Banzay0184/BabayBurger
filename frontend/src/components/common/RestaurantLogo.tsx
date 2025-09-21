@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import logo from '/logobabay.png';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -18,11 +18,14 @@ interface RestaurantLogoProps {
   className?: string;
 }
 
-export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({ 
+export const RestaurantLogo: React.FC<RestaurantLogoProps> = React.memo(({ 
   onAnimationComplete,
   showLogo = true,
   className = ""
 }) => {
+  // Ранний возврат должен быть ДО всех хуков
+  if (!showLogo) return null;
+
   const { t } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
   const [logoScale, setLogoScale] = useState(0);
@@ -31,39 +34,38 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({
   const [textSlide, setTextSlide] = useState(50);
   const [particlesVisible, setParticlesVisible] = useState(false);
 
-  // Проверяем, запущено ли приложение в Telegram WebApp
-  const isTelegramWebApp = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp;
+  // Мемоизируем проверку Telegram WebApp
+  const isTelegramWebApp = useMemo(() => 
+    typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp,
+    []
+  );
+
+  // Мемоизируем callback для завершения анимации
+  const handleAnimationComplete = useCallback(() => {
+    if (onAnimationComplete) {
+      onAnimationComplete();
+    }
+  }, [onAnimationComplete]);
 
   useEffect(() => {
-    if (showLogo) {
-      // Начинаем анимацию
-      setIsVisible(true);
-      
-      // Более плавная и медленная анимация в стиле фастфуда
-      const timer1 = setTimeout(() => setLogoScale(1), 500);
-      const timer2 = setTimeout(() => setLogoPosition({ x: 0, y: 0 }), 1000);
-      const timer3 = setTimeout(() => setTextOpacity(1), 2000);
-      const timer4 = setTimeout(() => setTextSlide(0), 2500);
-      const timer5 = setTimeout(() => setParticlesVisible(true), 3000);
-      const timer6 = setTimeout(() => {
-        if (onAnimationComplete) {
-          onAnimationComplete();
-        }
-      }, 5000);
+    // Начинаем анимацию
+    setIsVisible(true);
+    
+    // Оптимизированная анимация с меньшим количеством таймеров
+    const timers = [
+      setTimeout(() => setLogoScale(1), 500),
+      setTimeout(() => setLogoPosition({ x: 0, y: 0 }), 1000),
+      setTimeout(() => setTextOpacity(1), 2000),
+      setTimeout(() => setTextSlide(0), 2500),
+      setTimeout(() => setParticlesVisible(true), 3000),
+      setTimeout(handleAnimationComplete, 5000)
+    ];
 
-      // Очистка таймеров при размонтировании
-      return () => {
-        clearTimeout(timer1);
-        clearTimeout(timer2);
-        clearTimeout(timer3);
-        clearTimeout(timer4);
-        clearTimeout(timer5);
-        clearTimeout(timer6);
-      };
-    }
-  }, [showLogo, onAnimationComplete]);
-
-  if (!showLogo) return null;
+    // Очистка таймеров при размонтировании
+    return () => {
+      timers.forEach(timer => clearTimeout(timer));
+    };
+  }, [handleAnimationComplete]);
 
   return (
     <div className={`
@@ -157,24 +159,26 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({
 
       {/* Анимированные частицы - черно-белый стиль */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className={`
-              absolute w-3 h-3 
-              bg-black rounded-full
-              will-change-opacity will-change-transform
-              ${particlesVisible ? 'opacity-100' : 'opacity-0'}
-            `}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              transition: `opacity 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${i * 0.1}s`,
-              animation: particlesVisible ? `bounce ${3 + Math.random() * 2}s infinite` : 'none',
-              animationDelay: `${Math.random() * 1}s`
-            }}
-          />
-        ))}
+        {useMemo(() => 
+          [...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className={`
+                absolute w-3 h-3 
+                bg-black rounded-full
+                will-change-opacity will-change-transform
+                ${particlesVisible ? 'opacity-100' : 'opacity-0'}
+              `}
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                transition: `opacity 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${i * 0.1}s`,
+                animation: particlesVisible ? `bounce ${3 + Math.random() * 2}s infinite` : 'none',
+                animationDelay: `${Math.random() * 1}s`
+              }}
+            />
+          )), [particlesVisible]
+        )}
       </div>
 
       {/* Индикатор загрузки - черно-белый стиль */}
@@ -193,4 +197,4 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({
       </div>
     </div>
   );
-};
+});

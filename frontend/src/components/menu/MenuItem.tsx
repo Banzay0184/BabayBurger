@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useFavorites } from '../../context/FavoriteContext';
@@ -11,7 +11,7 @@ interface MenuItemProps {
   hideDescription?: boolean;
 }
 
-export const MenuItem: React.FC<MenuItemProps> = ({ 
+export const MenuItem: React.FC<MenuItemProps> = React.memo(({ 
   item, 
   onSelect, 
   isCompact = false,
@@ -22,16 +22,35 @@ export const MenuItem: React.FC<MenuItemProps> = ({
   const { toggleFavorite, isFavorite } = useFavorites();
 
 
-  const availableSizes = item.size_options?.filter((size: SizeOption) => size.is_active) || [];
-  const availableAddOns = item.add_on_options?.filter((addOn: AddOn) => addOn.is_active) || [];
-  const currentCount = getItemCountForMenuItem(item.id);
+  // Мемоизируем вычисления для оптимизации
+  const availableSizes = useMemo(() => 
+    item.size_options?.filter((size: SizeOption) => size.is_active) || [],
+    [item.size_options]
+  );
+  
+  const availableAddOns = useMemo(() => 
+    item.add_on_options?.filter((addOn: AddOn) => addOn.is_active) || [],
+    [item.add_on_options]
+  );
+  
+  const currentCount = useMemo(() => 
+    getItemCountForMenuItem(item.id),
+    [getItemCountForMenuItem, item.id]
+  );
 
   // Проверяем доступность товара по времени
-  const isItemAvailable = !item.use_time_restriction || item.is_available_now !== false;
-  const isTimeRestricted = item.use_time_restriction && item.is_available_now === false;
+  const isItemAvailable = useMemo(() => 
+    !item.use_time_restriction || item.is_available_now !== false,
+    [item.use_time_restriction, item.is_available_now]
+  );
+  
+  const isTimeRestricted = useMemo(() => 
+    item.use_time_restriction && item.is_available_now === false,
+    [item.use_time_restriction, item.is_available_now]
+  );
 
   // Обработка клика по блюду
-  const handleItemClick = () => {
+  const handleItemClick = useCallback(() => {
     console.log('🔍 MenuItem - handleItemClick вызван:', {
       itemName: item.name,
       availableSizes: availableSizes.length,
@@ -61,7 +80,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       addItem(item);
       showNotification(`${item.name} ${t('added_to_cart')}`);
     }
-  };
+  }, [item, availableSizes, availableAddOns, onSelect, isCompact, hideDescription, isItemAvailable, isTimeRestricted, addItem, t]);
 
 
 
@@ -309,4 +328,4 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
             </>
   );
-}; 
+}); 

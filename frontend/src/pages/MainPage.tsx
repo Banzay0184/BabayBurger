@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useMenu } from '../context/MenuContext';
@@ -15,15 +15,16 @@ import { AddressManager } from '../components/address/AddressManager';
 import { AutoLocationDetector } from '../components/address/AutoLocationDetector';
 import { RestaurantLogo } from '../components/common/RestaurantLogo';
 import { PageTransition } from '../components/common/PageTransition';
-import { OptionsPage } from './OptionsPage';
-import { ProfilePage } from './ProfilePage';
-import { CheckoutPage } from './CheckoutPage';
+// Ленивая загрузка тяжелых компонентов для оптимизации производительности
+const OptionsPage = React.lazy(() => import('./OptionsPage').then(module => ({ default: module.OptionsPage })));
+const ProfilePage = React.lazy(() => import('./ProfilePage').then(module => ({ default: module.ProfilePage })));
+const CheckoutPage = React.lazy(() => import('./CheckoutPage').then(module => ({ default: module.CheckoutPage })));
 import { getApiUrl } from '../config/api';
 import type { MenuItem, Promotion } from '../types/menu';
 import type { Address } from '../types/address';
 const logoUrl = '/logo.jpg';
 
-export const MainPage: React.FC = () => {
+export const MainPage: React.FC = React.memo(() => {
   const { state } = useAuth();
   const { state: cartState } = useCart();
   const { 
@@ -41,9 +42,11 @@ export const MainPage: React.FC = () => {
   const { favorites, isLoading: favoritesLoading } = useFavorites();
   const [currentView, setCurrentView] = useState<'menu' | 'cart' | 'search' | 'favorites' | 'address' | 'profile'>('menu');
   
-  // Логируем изменения currentView
+  // Логируем изменения currentView (только в dev режиме)
   useEffect(() => {
-    console.log('🔄 MainPage: currentView changed to:', currentView);
+    if (import.meta.env.DEV) {
+      console.log('🔄 MainPage: currentView changed to:', currentView);
+    }
   }, [currentView]);
   
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -58,14 +61,17 @@ export const MainPage: React.FC = () => {
   const [isWorkingWithAddresses, setIsWorkingWithAddresses] = useState(false);
   const [hasUserSelectedAddress, setHasUserSelectedAddress] = useState(false);
   
-  // Логирование изменений showMapPicker
+  // Логирование изменений (только в dev режиме)
   useEffect(() => {
-    console.log('🗺️ MainPage: showMapPicker changed to', showMapPicker);
+    if (import.meta.env.DEV) {
+      console.log('🗺️ MainPage: showMapPicker changed to', showMapPicker);
+    }
   }, [showMapPicker]);
   
-  // Логирование изменений isWorkingWithAddresses
   useEffect(() => {
-    console.log('🏠 MainPage: isWorkingWithAddresses changed to', isWorkingWithAddresses);
+    if (import.meta.env.DEV) {
+      console.log('🏠 MainPage: isWorkingWithAddresses changed to', isWorkingWithAddresses);
+    }
   }, [isWorkingWithAddresses]);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -332,7 +338,7 @@ export const MainPage: React.FC = () => {
     }
   }, [showLogo]);
 
-  const handleItemSelect = (item: MenuItem, size?: any, addOns?: any[]) => {
+  const handleItemSelect = useCallback((item: MenuItem, size?: any, addOns?: any[]) => {
     console.log('Selected item:', item, 'Size:', size, 'AddOns:', addOns);
     
     // Проверяем, есть ли у блюда опции
@@ -353,7 +359,7 @@ export const MainPage: React.FC = () => {
       console.log('Adding item without options directly to cart:', item.name);
       // Здесь можно добавить логику для добавления в корзину без опций
     }
-  };
+  }, []);
 
   const handleCategorySelect = (categoryName: string) => {
     console.log('🍽️ Category selected:', categoryName);
@@ -475,19 +481,23 @@ export const MainPage: React.FC = () => {
     setSelectedItem(null);
   };
 
-  const toggleLanguage = () => {
+  const toggleLanguage = useCallback(() => {
     setLanguage(language === 'ru' ? 'uz' : 'ru');
-  };
+  }, [language, setLanguage]);
 
-  const availableCategories = getAvailableCategories() || [];
-  const activePromotions = getActivePromotions() || [];
-  const hits = getHits() || [];
-  const newItems = getNewItems() || [];
+  // Мемоизируем вычисления для оптимизации производительности
+  const availableCategories = useMemo(() => getAvailableCategories() || [], [getAvailableCategories]);
+  const activePromotions = useMemo(() => getActivePromotions() || [], [getActivePromotions]);
+  const hits = useMemo(() => getHits() || [], [getHits]);
+  const newItems = useMemo(() => getNewItems() || [], [getNewItems]);
 
   // Фильтруем категории по активной
-  const filteredCategories = activeCategory 
-    ? availableCategories.filter(cat => cat.name === activeCategory)
-    : availableCategories;
+  const filteredCategories = useMemo(() => 
+    activeCategory 
+      ? availableCategories.filter(cat => cat.name === activeCategory)
+      : availableCategories,
+    [activeCategory, availableCategories]
+  );
     
   // Отладочная информация для категорий
   console.log('🍽️ Category Debug:', {
@@ -561,18 +571,24 @@ export const MainPage: React.FC = () => {
           <>
             {/* OptionsPage - показывается вместо основного контента */}
             {showOptionsPage && selectedItem ? (
-              <OptionsPage
-                item={selectedItem}
-                onClose={handleCloseOptionsPage}
-              />
+              <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div></div>}>
+                <OptionsPage
+                  item={selectedItem}
+                  onClose={handleCloseOptionsPage}
+                />
+              </React.Suspense>
             ) : showProfilePage ? (
-              <ProfilePage
-                onClose={() => setShowProfilePage(false)}
-              />
+              <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div></div>}>
+                <ProfilePage
+                  onClose={() => setShowProfilePage(false)}
+                />
+              </React.Suspense>
             ) : showCheckoutPage ? (
-              <CheckoutPage
-                onClose={() => setShowCheckoutPage(false)}
-              />
+              <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div></div>}>
+                <CheckoutPage
+                  onClose={() => setShowCheckoutPage(false)}
+                />
+              </React.Suspense>
             ) : showAutoLocationDetector && !isWorkingWithAddresses ? (
               <AutoLocationDetector
                 onAddressDetected={handleAddressDetected}
@@ -1279,6 +1295,6 @@ export const MainPage: React.FC = () => {
       </div>
     </PageTransition>
   );
-};
+});
 
 export default MainPage; 
