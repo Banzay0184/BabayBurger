@@ -599,7 +599,7 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Получение заказов для оператора"""
         import logging
-        logger = logging.getLogger(app_operator)
+        logger = logging.getLogger(api.views)
         operator = self.request.user
         
         # Получаем зоны оператора
@@ -728,8 +728,8 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
     
     def retrieve(self, request, pk=None):
         """Получение конкретного заказа с дополнительной диагностикой"""
-            import logging
-        logger = logging.getLogger(app_operator)
+        import logging
+        logger = logging.getLogger(api.views)
         
         try:
             # Сначала пытаемся получить заказ из нашего queryset
