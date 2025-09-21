@@ -267,40 +267,8 @@ class DeliveryZone(models.Model):
                 )
                 return distance <= float(self.radius_km)
             
-            # Временное решение для существующих зон
-            elif self.name in ["Бухара", "Центр Бухары", "Каган"] or "Каган" in self.name:
-                if self.name == "Бухара":
-                    # Проверяем, что координаты в пределах Бухары
-                    if 39.75 <= latitude <= 39.8 and 64.3 <= longitude <= 64.6:
-                        logger.info(f"✅ Coordinates ({latitude}, {longitude}) are in Bukhara zone")
-                        return True
-                    else:
-                        logger.info(f"❌ Coordinates ({latitude}, {longitude}) are outside Bukhara zone")
-                        return False
-                elif self.name == "Центр Бухары":
-                    # Проверяем расстояние до центра Бухары
-                    bukhara_center_lat, bukhara_center_lon = 39.7681, 64.4556
-                    distance = calculate_distance(latitude, longitude, bukhara_center_lat, bukhara_center_lon)
-                    result = distance <= 10  # 10 км от центра
-                    logger.info(f"🔍 Distance to Bukhara center: {distance:.2f}km, in zone: {result}")
-                    return result
-                elif self.name == "Каган" or "Каган" in self.name:
-                    # Проверяем, что координаты в пределах Кагана (расширенный диапазон)
-                    # Расширяем диапазон для покрытия пограничных областей
-                    if 39.72 <= latitude <= 39.78 and 64.54 <= longitude <= 64.58:
-                        logger.info(f"✅ Coordinates ({latitude}, {longitude}) are in Kagan zone '{self.name}'")
-                        return True
-                    else:
-                        logger.info(f"❌ Coordinates ({latitude}, {longitude}) are outside Kagan zone '{self.name}'")
-                        return False
-            
-            # Fallback: если координаты в пределах Бухары или Кагана, разрешаем доставку
-            if (39.75 <= latitude <= 39.8 and 64.3 <= longitude <= 64.6) or \
-               (39.72 <= latitude <= 39.78 and 64.54 <= longitude <= 64.58):
-                logger.info(f"✅ Coordinates ({latitude}, {longitude}) are in Bukhara/Kagan region - allowing delivery")
-                return True
-            
-            logger.info(f"❌ Coordinates ({latitude}, {longitude}) are outside all zones")
+            # Если нет ни полигона, ни радиуса - координаты не в зоне
+            logger.info(f"❌ Zone '{self.name}' has no polygon or radius defined")
             return False
             
         except Exception as e:
