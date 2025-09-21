@@ -12,21 +12,41 @@ interface AddressManagerProps {
   addresses: Address[];
   setAddresses: (addresses: Address[]) => void;
   onViewChange?: (view: 'menu' | 'cart' | 'search' | 'favorites' | 'address') => void;
+  showMapPicker?: boolean;
+  setShowMapPicker?: (show: boolean) => void;
+  setIsWorkingWithAddresses?: (working: boolean) => void;
 }
 
 export const AddressManager: React.FC<AddressManagerProps> = ({
   addresses,
   setAddresses,
-  onViewChange
+  onViewChange,
+  showMapPicker: externalShowMapPicker,
+  setShowMapPicker: externalSetShowMapPicker,
+  setIsWorkingWithAddresses: externalSetIsWorkingWithAddresses
 }) => {
   const { t } = useLanguage();
   const { state } = useAuth();
   
   // Состояния
   const [showForm, setShowForm] = useState(false);
-  const [showMapPicker, setShowMapPicker] = useState(false);
   const [showAutoLocationDetector, setShowAutoLocationDetector] = useState(false);
   const [editingAddress, setEditingAddress] = useState<any>(null);
+  const [isFormFilledFromMap, setIsFormFilledFromMap] = useState(false);
+  
+  // Логирование изменений showForm
+  useEffect(() => {
+    console.log('📝 AddressManager: showForm changed to', showForm);
+  }, [showForm]);
+  
+  // Логирование изменений showAutoLocationDetector
+  useEffect(() => {
+    console.log('📍 AddressManager: showAutoLocationDetector changed to', showAutoLocationDetector);
+  }, [showAutoLocationDetector]);
+  
+  // Используем внешнее состояние для карты, если оно передано, иначе локальное
+  const showMapPicker = externalShowMapPicker ?? false;
+  const setShowMapPicker = externalSetShowMapPicker ?? (() => {});
   const [formData, setFormData] = useState({
     street: '',
     house_number: '',
@@ -100,7 +120,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
               console.log('📱 🔍 Got phone from Telegram WebApp:', phone);
               // Сохраняем в localStorage для будущего использования
               localStorage.setItem('user_phone', phone);
-              return phone;
+              return formatPhoneNumber(phone);
             }
           }
         }
@@ -111,7 +131,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
     const savedPhone = localStorage.getItem('user_phone');
     if (savedPhone) {
       console.log('📱 🔍 Got phone from localStorage:', savedPhone);
-      return savedPhone;
+      return formatPhoneNumber(savedPhone);
     }
     
     // Fallback на пустой телефон
@@ -252,6 +272,9 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
       latitude: null,
       longitude: null
     });
+    
+    // Сбрасываем флаг заполнения с карты
+    setIsFormFilledFromMap(false);
     setEditingAddress(null);
     setShowForm(false);
   };
@@ -346,6 +369,12 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
           console.log('🗺️ 🔄 Switching view from address to menu...');
           onViewChange('menu');
           console.log('🗺️ ✅ View switched to menu');
+        }
+        
+        // Устанавливаем isWorkingWithAddresses в false после успешного сохранения
+        if (externalSetIsWorkingWithAddresses) {
+          console.log('🏠 AddressManager: Setting isWorkingWithAddresses to false (address saved)');
+          externalSetIsWorkingWithAddresses(false);
         }
       } else {
         const errorData = await response.json();
@@ -538,6 +567,9 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
       longitude: mapAddress.coordinates ? Number(mapAddress.coordinates[1].toFixed(6)) : null  // Долгота (второй элемент)
     });
     
+    // Устанавливаем флаг что форма заполнена с карты
+    setIsFormFilledFromMap(true);
+    
     console.log('🗺️ Form filled with map data:', {
       isEditing: !!editingAddress,
       phone: existingData.phone_number,
@@ -552,6 +584,11 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
     // Закрываем карту и показываем форму
     setShowMapPicker(false);
     setShowForm(true);
+    
+    console.log('📝 AddressManager: Form should be shown now');
+    
+    // НЕ устанавливаем isWorkingWithAddresses в false сразу
+    // Это будет сделано когда пользователь закроет форму или добавит адрес
   };
 
   // Обработчик отправки формы
@@ -559,6 +596,44 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
     e.preventDefault(); // Предотвращаем стандартную отправку формы
     console.log('🗺️ Form submitted, calling handleSave...');
     handleSave();
+  };
+
+  // Функция для формирования полного адреса
+  const getFullAddress = () => {
+    const parts = [];
+    if (formData.street) parts.push(formData.street);
+    if (formData.house_number) parts.push(`д. ${formData.house_number}`);
+    if (formData.apartment) parts.push(`кв. ${formData.apartment}`);
+    if (formData.city) parts.push(formData.city);
+    return parts.join(', ');
+  };
+
+  // Функция для форматирования номера телефона
+  const formatPhoneNumber = (value: string) => {
+    // Убираем все символы кроме цифр
+    const cleaned = value.replace(/\D/g, '');
+    
+    // Если номер начинается с 998, убираем его
+    let phone = cleaned;
+    if (phone.startsWith('998')) {
+      phone = phone.substring(3);
+    }
+    
+    // Форматируем в зависимости от длины
+    if (phone.length === 0) return '';
+    if (phone.length <= 2) return `+998 ${phone}`;
+    if (phone.length <= 5) return `+998 ${phone.substring(0, 2)} ${phone.substring(2)}`;
+    if (phone.length <= 7) return `+998 ${phone.substring(0, 2)} ${phone.substring(2, 5)} ${phone.substring(5)}`;
+    if (phone.length <= 9) return `+998 ${phone.substring(0, 2)} ${phone.substring(2, 5)} ${phone.substring(5, 7)} ${phone.substring(7)}`;
+    
+    // Для полного номера
+    return `+998 ${phone.substring(0, 2)} ${phone.substring(2, 5)} ${phone.substring(5, 7)} ${phone.substring(7, 9)}`;
+  };
+
+  // Функция для обработки изменения номера телефона
+  const handlePhoneChange = (value: string) => {
+    const formatted = formatPhoneNumber(value);
+    handleInputChange('phone_number', formatted);
   };
 
   return (
@@ -686,128 +761,83 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
 
       {/* Форма добавления/редактирования адреса */}
       {showForm && (
-        <div className="bg-gray-800 rounded-lg p-4 sm:p-6 mb-6 animate-fade-in min-h-screen sm:min-h-0 tg-webapp-form">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-100">
+        <div className="bg-gray-800 rounded-lg p-3 mb-4 animate-fade-in tg-webapp-form">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold text-gray-100">
               {editingAddress ? t('edit_address') : t('add_address')}
             </h3>
+            {isFormFilledFromMap && (
+              <div className="flex items-center text-xs text-green-400">
+                <span className="mr-1">📍</span>
+                <span>С карты</span>
+              </div>
+            )}
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-4 pb-20 sm:pb-4">
-            {/* Поле улицы */}
+          <form onSubmit={handleSubmit} className="space-y-3 pb-16 sm:pb-2">
+            {/* Адрес - простой текст */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Улица *
+                Адрес *
               </label>
-              <input
-                type="text"
-                name="street"
-                value={formData.street}
-                onChange={(e) => handleInputChange('street', e.target.value)}
-                className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm tg-webapp-input"
-                placeholder="Введите название улицы"
-                required
-              />
+              <div className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-gray-200 text-sm">
+                {getFullAddress() || 'Адрес не указан'}
+              </div>
             </div>
 
-            {/* Поле номера дома */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Номер дома *
-              </label>
-              <input
-                type="text"
-                name="house_number"
-                value={formData.house_number}
-                onChange={(e) => handleInputChange('house_number', e.target.value)}
-                className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm tg-webapp-input"
-                placeholder="Введите номер дома"
-                required
-              />
+            {/* Кнопка изменения адреса */}
+            <div className="text-center">
+              <Button
+                type="button"
+                onClick={() => {
+                  console.log('🗺️ Opening map for address selection');
+                  setShowMapPicker(true);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 text-sm"
+              >
+                🗺️ {isFormFilledFromMap ? 'Изменить адрес' : 'Выбрать адрес на карте'}
+              </Button>
             </div>
 
-            {/* Поле квартиры */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Квартира
-              </label>
-              <input
-                type="text"
-                name="apartment"
-                value={formData.apartment}
-                onChange={(e) => handleInputChange('apartment', e.target.value)}
-                className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm tg-webapp-input"
-                placeholder="Введите номер квартиры (необязательно)"
-              />
-            </div>
-
-            {/* Поле города */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Город *
-              </label>
-              <input
-                type="text"
-                name="city"
-                value={formData.city}
-                onChange={(e) => handleInputChange('city', e.target.value)}
-                className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm tg-webapp-input"
-                placeholder="Введите название города"
-                required
-              />
-            </div>
-
-            {/* Поле телефона - улучшенное для мобильных */}
+            {/* Поле телефона - с автоматическим форматированием */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-300 mb-1">
                 Номер телефона *
               </label>
               <input
                 type="tel"
                 name="phone_number"
                 value={formData.phone_number}
-                onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                onChange={(e) => handlePhoneChange(e.target.value)}
                 onFocus={handlePhoneFocus}
-                className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm tg-webapp-input tg-webapp-phone-input"
+                className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:border-primary-500 focus:outline-none text-xs tg-webapp-input tg-webapp-phone-input"
                 placeholder="+998 90 123 45 67"
                 required
                 autoComplete="tel"
                 inputMode="numeric"
+                maxLength={17} // +998 90 123 45 67 = 17 символов
               />
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
                 <span className="text-xs text-gray-400">📱</span>
               </div>
             </div>
 
-            {/* Поле комментария */}
+            {/* Поле комментария - компактное */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-300 mb-1">
                 Комментарий
               </label>
               <textarea
                 name="comment"
                 value={formData.comment}
                 onChange={(e) => handleInputChange('comment', e.target.value)}
-                className="w-full px-2 sm:px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:border-primary-500 focus:outline-none text-sm resize-none"
+                className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:border-primary-500 focus:outline-none text-xs resize-none"
                 placeholder="Дополнительная информация (необязательно)"
                 rows={2}
               />
             </div>
 
-            {/* Кнопка для выбора координат на карте */}
-            <div className="text-center mb-4">
-              <Button
-                onClick={() => {
-                  console.log('🗺️ Manual input: opening map for coordinates');
-                  setShowMapPicker(true);
-                }}
-                className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-sm"
-              >
-                🗺️ Открыть карту
-              </Button>
-            </div>
-
-            {/* Чекбокс основного адреса */}
+            {/* Чекбокс основного адреса - компактный */}
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
@@ -816,23 +846,23 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
                 checked={formData.is_primary}
                 onChange={(e) => handleInputChange('is_primary', e.target.checked)}
                 disabled={addresses.length === 0}
-                className="w-4 h-4 text-primary-600 bg-gray-700 border-gray-600 rounded focus:ring-primary-500 focus:ring-2"
+                className="w-3 h-3 text-primary-600 bg-gray-700 border-gray-600 rounded focus:ring-primary-500 focus:ring-1"
               />
-              <label htmlFor="is_primary" className="text-sm text-gray-300">
+              <label htmlFor="is_primary" className="text-xs text-gray-300">
                 {addresses.length === 0 
-                  ? '🔒 Это единственный адрес - он должен быть основным'
-                  : 'Установить как основной адрес доставки'
+                  ? '🔒 Основной адрес'
+                  : 'Основной адрес доставки'
                 }
               </label>
             </div>
 
-            {/* Кнопки действий */}
-            <div className="flex flex-col sm:flex-row gap-2 pt-4">
+            {/* Кнопки действий - компактные */}
+            <div className="flex flex-col sm:flex-row gap-2 pt-2">
               <Button
                 type="submit"
-                className="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-sm"
+                className="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 text-xs"
               >
-                {editingAddress ? 'Обновить адрес' : 'Добавить адрес'}
+                {editingAddress ? 'Обновить' : 'Добавить'}
               </Button>
               <Button
                 type="button"
@@ -840,8 +870,14 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
                   setShowForm(false);
                   setEditingAddress(null);
                   resetForm();
+                  
+                  // Устанавливаем isWorkingWithAddresses в false когда пользователь закрывает форму
+                  if (externalSetIsWorkingWithAddresses) {
+                    console.log('🏠 AddressManager: Setting isWorkingWithAddresses to false (form cancelled)');
+                    externalSetIsWorkingWithAddresses(false);
+                  }
                 }}
-                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 text-sm"
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 text-xs"
               >
                 Отмена
               </Button>
@@ -850,21 +886,27 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
         </div>
       )}
 
-      {/* Компонент карты */}
-      {showMapPicker && (
-        <YandexMapPicker
-          onAddressSelect={handleMapAddressSelect}
-          onClose={() => setShowMapPicker(false)}
-        />
-      )}
-
       {/* Компонент автоматического определения адреса */}
-      {showAutoLocationDetector && (
+      {showAutoLocationDetector && !showForm && (
         <AutoLocationDetector
           onAddressDetected={handleAddressDetected}
           onShowMap={handleShowMap}
           onClose={handleCloseAutoLocationDetector}
         />
+      )}
+
+      {/* Компонент карты */}
+      {showMapPicker && (
+        <>
+          {console.log('🗺️ AddressManager: Rendering YandexMapPicker, showMapPicker =', showMapPicker)}
+          <YandexMapPicker
+            onAddressSelect={handleMapAddressSelect}
+            onClose={() => {
+              console.log('🗺️ AddressManager: YandexMapPicker onClose called');
+              setShowMapPicker(false);
+            }}
+          />
+        </>
       )}
     </div>
   );

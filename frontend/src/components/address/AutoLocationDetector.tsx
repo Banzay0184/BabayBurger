@@ -8,12 +8,14 @@ interface AutoLocationDetectorProps {
   onAddressDetected: (address: Address | null) => void;
   onShowMap: () => void;
   onClose: () => void;
+  existingAddresses?: Address[];
 }
 
 export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = ({
   onAddressDetected,
   onShowMap,
-  onClose
+  onClose,
+  existingAddresses = []
 }) => {
   const { state } = useAuth();
   const [isDetecting, setIsDetecting] = useState(false);
@@ -201,10 +203,11 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = ({
         const deliveryZoneResult = await checkDeliveryZone(address, coords);
         setDeliveryZoneCheck(deliveryZoneResult);
         
-        // Если адрес не в зоне доставки, показываем ошибку
+        // Если адрес не в зоне доставки, показываем ошибку но продолжаем
         if (!deliveryZoneResult.is_in_delivery_zone) {
-          setError(`❌ ${deliveryZoneResult.message}`);
-          return;
+          // Не устанавливаем error, так как это не критическая ошибка
+          // Пользователь может выбрать другой адрес
+          console.log('⚠️ Address not in delivery zone:', deliveryZoneResult.message);
         }
       } catch (deliveryError) {
         console.warn('⚠️ Delivery zone check failed:', deliveryError);
@@ -216,7 +219,7 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = ({
       }
       
       // 4. Загружаем существующие адреса пользователя
-      const userAddresses = await addressApi.getUserAddresses();
+      const userAddresses = await addressApi.getUserAddresses(state.user?.telegram_id);
       
       // 5. Ищем похожий адрес
       const similarAddress = findSimilarAddress(address, userAddresses);
@@ -282,6 +285,18 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = ({
     }
   }, [detectedAddress, coordinates, state.user, onAddressDetected, onClose]);
 
+  // Функция для выбора существующего адреса
+  const selectExistingAddress = useCallback(async (address: Address) => {
+    try {
+      console.log('📍 Selecting existing address:', address);
+      onAddressDetected(address);
+      onClose();
+    } catch (error) {
+      console.error('❌ Error selecting existing address:', error);
+      setError('Ошибка выбора адреса');
+    }
+  }, [onAddressDetected, onClose]);
+
   // Автоматически запускаем определение при загрузке
   useEffect(() => {
     detectLocation();
@@ -325,13 +340,19 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = ({
                   </div>
                   <div className="mt-4 flex gap-2">
                     <Button
-                      onClick={detectLocation}
+                      onClick={() => {
+                        console.log('🔄 Попробовать снова clicked');
+                        detectLocation();
+                      }}
                       className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2"
                     >
                       Попробовать снова
                     </Button>
                     <Button
-                      onClick={onShowMap}
+                      onClick={() => {
+                        console.log('🗺️ Выбрать на карте clicked');
+                        onShowMap();
+                      }}
                       className="bg-gray-600 hover:bg-gray-700 text-white text-sm px-3 py-2"
                     >
                       Выбрать на карте
@@ -348,7 +369,10 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = ({
                 <h3 className="font-semibold text-green-800 mb-2">
                   📍 Ваш текущий адрес:
                 </h3>
-                <p className="text-green-700">{detectedAddress}</p>
+                <p className="text-green-700 mb-2">{detectedAddress}</p>
+                <p className="text-sm text-green-600">
+                  💡 Этот адрес отличается от ваших сохраненных адресов
+                </p>
               </div>
 
               {deliveryZoneCheck && (
@@ -419,19 +443,66 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-red-800 mb-2">
-                    ❌ Доставка недоступна
-                  </h3>
-                  <p className="text-red-700 mb-3">
-                    К сожалению, в этот адрес мы не доставляем. Попробуйте выбрать другой адрес.
-                  </p>
+                <div className="space-y-4">
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-red-800 mb-2">
+                      ❌ Доставка недоступна
+                    </h3>
+                    <p className="text-red-700 mb-3">
+                      К сожалению, в этот адрес мы не доставляем. Выберите один из ваших сохраненных адресов:
+                    </p>
+                  </div>
+
+                  {/* Список существующих адресов */}
+                  {existingAddresses.length > 0 ? (
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-gray-800 mb-3">
+                        📍 Ваши сохраненные адреса:
+                      </h4>
+                      {existingAddresses.map((address) => (
+                        <div
+                          key={address.id}
+                          className="bg-gray-50 border border-gray-200 rounded-lg p-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                          onClick={() => selectExistingAddress(address)}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-800">
+                                {address.full_address || `${address.street}, д. ${address.house_number}`}
+                              </p>
+                              {address.comment && (
+                                <p className="text-xs text-gray-600 mt-1">
+                                  💬 {address.comment}
+                                </p>
+                              )}
+                              {address.is_primary && (
+                                <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mt-1">
+                                  ⭐ Основной
+                                </span>
+                              )}
+                            </div>
+                            <div className="ml-2">
+                              <span className="text-gray-400">→</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <p className="text-yellow-700 text-sm">
+                        У вас нет сохраненных адресов. Добавьте адрес для доставки.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Кнопки действий */}
                   <div className="flex gap-2">
                     <Button
                       onClick={onShowMap}
                       className="flex-1 bg-primary-600 hover:bg-primary-700 text-white"
                     >
-                      Выбрать другой адрес
+                      🗺️ Выбрать на карте
                     </Button>
                     <Button
                       onClick={onClose}

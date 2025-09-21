@@ -54,6 +54,19 @@ export const MainPage: React.FC = () => {
   const [showProfilePage, setShowProfilePage] = useState(false);
   const [showCheckoutPage, setShowCheckoutPage] = useState(false);
   const [showAutoLocationDetector, setShowAutoLocationDetector] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [isWorkingWithAddresses, setIsWorkingWithAddresses] = useState(false);
+  const [hasUserSelectedAddress, setHasUserSelectedAddress] = useState(false);
+  
+  // Логирование изменений showMapPicker
+  useEffect(() => {
+    console.log('🗺️ MainPage: showMapPicker changed to', showMapPicker);
+  }, [showMapPicker]);
+  
+  // Логирование изменений isWorkingWithAddresses
+  useEffect(() => {
+    console.log('🏠 MainPage: isWorkingWithAddresses changed to', isWorkingWithAddresses);
+  }, [isWorkingWithAddresses]);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [searchFilters, setSearchFilters] = useState({
@@ -86,6 +99,61 @@ export const MainPage: React.FC = () => {
     }
   };
 
+  // Функция для проверки совпадения текущего местоположения с сохраненными адресами
+  const checkLocationMatch = async () => {
+    if (addresses.length === 0) {
+      return false; // Нет адресов для сравнения
+    }
+
+    try {
+      // Получаем текущее местоположение
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 минут
+        });
+      });
+
+      const currentLat = position.coords.latitude;
+      const currentLng = position.coords.longitude;
+
+      console.log('📍 Current location:', { lat: currentLat, lng: currentLng });
+
+      // Проверяем каждый сохраненный адрес
+      for (const address of addresses) {
+        if (address.latitude && address.longitude) {
+          const distance = calculateDistance(currentLat, currentLng, address.latitude, address.longitude);
+          console.log(`📍 Distance to address ${address.id}: ${distance.toFixed(2)} km`);
+          
+          // Если расстояние меньше 1 км, считаем что адреса совпадают
+          if (distance < 1) {
+            console.log('📍 Location matches existing address');
+            return true;
+          }
+        }
+      }
+
+      console.log('📍 Location does not match any existing address');
+      return false;
+    } catch (error) {
+      console.log('📍 Could not get current location:', error);
+      return false; // В случае ошибки не показываем AutoLocationDetector
+    }
+  };
+
+  // Функция для расчета расстояния между двумя точками (в км)
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371; // Радиус Земли в км
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
   // Загружаем адреса при монтировании
   useEffect(() => {
     if (state.user) {
@@ -101,13 +169,48 @@ export const MainPage: React.FC = () => {
     }
   }, [addresses.length, showLogo, currentView]);
 
-  // Автоматически показываем определение местоположения для новых пользователей
+  // Автоматически показываем определение местоположения для новых пользователей или при несовпадении адресов
   useEffect(() => {
-    if (state.user && addresses.length === 0 && !showLogo && !showAutoLocationDetector) {
-      console.log('📍 🔄 New user detected - showing auto location detector');
-      setShowAutoLocationDetector(true);
-    }
-  }, [state.user, addresses.length, showLogo, showAutoLocationDetector]);
+    const checkAndShowAutoLocationDetector = async () => {
+      console.log('📍 🔍 AutoLocationDetector check:', {
+        hasUser: !!state.user,
+        addressesCount: addresses.length,
+        showLogo,
+        showAutoLocationDetector,
+        showMapPicker,
+        isWorkingWithAddresses,
+        hasUserSelectedAddress
+      });
+      
+      // Не показываем если пользователь уже выбрал адрес
+      if (hasUserSelectedAddress) {
+        console.log('📍 ✅ User already selected address - no need to show detector');
+        return;
+      }
+      
+      // Показываем для новых пользователей (нет адресов)
+      if (state.user && addresses.length === 0 && !showLogo && !showAutoLocationDetector && !showMapPicker && !isWorkingWithAddresses) {
+        console.log('📍 🔄 New user detected - showing auto location detector');
+        setShowAutoLocationDetector(true);
+        return;
+      }
+      
+      // Показываем если есть адреса, но текущее местоположение не совпадает
+      if (state.user && addresses.length > 0 && !showLogo && !showAutoLocationDetector && !showMapPicker && !isWorkingWithAddresses) {
+        console.log('📍 🔍 Checking location match with existing addresses...');
+        const locationMatches = await checkLocationMatch();
+        
+        if (!locationMatches) {
+          console.log('📍 🔄 Location mismatch detected - showing auto location detector');
+          setShowAutoLocationDetector(true);
+        } else {
+          console.log('📍 ✅ Location matches existing address - no need to show detector');
+        }
+      }
+    };
+    
+    checkAndShowAutoLocationDetector();
+  }, [state.user, addresses.length, showLogo, showAutoLocationDetector, showMapPicker, isWorkingWithAddresses, hasUserSelectedAddress]);
 
   // Обработчики для AutoLocationDetector
   const handleAddressDetected = (address: Address | null) => {
@@ -118,17 +221,27 @@ export const MainPage: React.FC = () => {
       // Перезагружаем адреса
       loadAddresses();
     }
+    // Устанавливаем флаг что пользователь выбрал адрес
+    setHasUserSelectedAddress(true);
     setShowAutoLocationDetector(false);
   };
 
   const handleShowMap = () => {
+    console.log('🗺️ MainPage.handleShowMap called');
     setShowAutoLocationDetector(false);
     setCurrentView('address');
+    setShowMapPicker(true);
+    setIsWorkingWithAddresses(true);
+    // Сбрасываем флаг выбора адреса, так как пользователь хочет выбрать новый
+    setHasUserSelectedAddress(false);
+    console.log('🗺️ MainPage.handleShowMap - setShowMapPicker(true)');
   };
 
   const handleCloseAutoLocationDetector = () => {
     setShowAutoLocationDetector(false);
     setCurrentView('address');
+    // Устанавливаем флаг что пользователь выбрал адрес (закрыл модал)
+    setHasUserSelectedAddress(true);
   };
 
   // Функция для определения статуса работы ресторана
@@ -460,11 +573,12 @@ export const MainPage: React.FC = () => {
               <CheckoutPage
                 onClose={() => setShowCheckoutPage(false)}
               />
-            ) : showAutoLocationDetector ? (
+            ) : showAutoLocationDetector && !isWorkingWithAddresses ? (
               <AutoLocationDetector
                 onAddressDetected={handleAddressDetected}
                 onShowMap={handleShowMap}
                 onClose={handleCloseAutoLocationDetector}
+                existingAddresses={addresses}
               />
             ) : (
               <>
@@ -1066,6 +1180,9 @@ export const MainPage: React.FC = () => {
                       addresses={addresses}
                       setAddresses={(newAddresses: Address[]) => setAddresses(newAddresses)}
                       onViewChange={setCurrentView}
+                      showMapPicker={showMapPicker}
+                      setShowMapPicker={setShowMapPicker}
+                      setIsWorkingWithAddresses={setIsWorkingWithAddresses}
                     />
                   ) : (
                     <div>

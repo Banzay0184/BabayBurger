@@ -1,26 +1,13 @@
 import type { Address } from '../types/address';
 import { publicApi } from './unifiedClient';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-
 export const addressApi = {
   // Получить все адреса пользователя
-  async getUserAddresses(): Promise<Address[]> {
+  async getUserAddresses(telegramId?: number): Promise<Address[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/addresses/`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data;
+      const params = telegramId ? { telegram_id: telegramId } : {};
+      const response = await publicApi.get<Address[]>('/addresses/', { params });
+      return response;
     } catch (error) {
       console.error('Error fetching user addresses:', error);
       return [];
@@ -30,21 +17,8 @@ export const addressApi = {
   // Создать новый адрес
   async createAddress(addressData: Partial<Address>): Promise<Address> {
     try {
-      const response = await fetch(`${API_BASE_URL}/addresses/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(addressData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data;
+      const response = await publicApi.post<Address>('/addresses/', addressData);
+      return response;
     } catch (error) {
       console.error('Error creating address:', error);
       throw error;
@@ -54,21 +28,8 @@ export const addressApi = {
   // Обновить адрес
   async updateAddress(addressId: number, addressData: Partial<Address>): Promise<Address> {
     try {
-      const response = await fetch(`${API_BASE_URL}/addresses/${addressId}/`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(addressData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data;
+      const response = await publicApi.patch<Address>(`/addresses/${addressId}/`, addressData);
+      return response;
     } catch (error) {
       console.error('Error updating address:', error);
       throw error;
@@ -78,17 +39,7 @@ export const addressApi = {
   // Удалить адрес
   async deleteAddress(addressId: number): Promise<void> {
     try {
-      const response = await fetch(`${API_BASE_URL}/addresses/${addressId}/`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      await publicApi.delete(`/addresses/${addressId}/`);
     } catch (error) {
       console.error('Error deleting address:', error);
       throw error;
@@ -98,20 +49,8 @@ export const addressApi = {
   // Установить адрес как основной
   async setPrimaryAddress(addressId: number): Promise<Address> {
     try {
-      const response = await fetch(`${API_BASE_URL}/addresses/${addressId}/set-primary/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data;
+      const response = await publicApi.post<Address>(`/addresses/${addressId}/set-primary/`);
+      return response;
     } catch (error) {
       console.error('Error setting primary address:', error);
       throw error;
@@ -121,21 +60,8 @@ export const addressApi = {
   // Геокодирование адреса (получение координат по адресу)
   async geocodeAddress(address: string): Promise<{ latitude: number; longitude: number } | null> {
     try {
-      const response = await fetch(`${API_BASE_URL}/geocode/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ address }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.coordinates;
+      const response = await publicApi.post<{ coordinates: { latitude: number; longitude: number } }>('/geocode/', { address });
+      return response.coordinates;
     } catch (error) {
       console.error('Error geocoding address:', error);
       return null;
@@ -145,21 +71,8 @@ export const addressApi = {
   // Обратное геокодирование (получение адреса по координатам)
   async reverseGeocode(latitude: number, longitude: number): Promise<string | null> {
     try {
-      const response = await fetch(`${API_BASE_URL}/reverse-geocode/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ latitude, longitude }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.address;
+      const response = await publicApi.post<{ address: string }>('/reverse-geocode/', { latitude, longitude });
+      return response.address;
     } catch (error) {
       console.error('Error reverse geocoding:', error);
       return null;
