@@ -1206,6 +1206,45 @@ class AddressDetailView(APIView):
         except Exception as e:
             logger.error(f"Address deletion error: {str(e)}")
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def post(self, request, address_id):
+        """Устанавливает адрес как основной"""
+        try:
+            telegram_id = request.data.get('telegram_id')
+            
+            if not telegram_id:
+                logger.warning("Set primary address without telegram_id")
+                return Response({'error': 'telegram_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Проверяем существование пользователя
+            try:
+                user = User.objects.get(telegram_id=telegram_id)
+            except User.DoesNotExist:
+                logger.warning(f"User not found for set primary address: telegram_id={telegram_id}")
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Получаем адрес с проверкой владельца
+            try:
+                address = Address.objects.get(id=address_id, user=user)
+            except Address.DoesNotExist:
+                logger.warning(f"Address not found or access denied for set primary: address_id={address_id}, telegram_id={telegram_id}")
+                return Response({'error': 'Address not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Снимаем флаг основного адреса со всех адресов пользователя
+            Address.objects.filter(user=user, is_primary=True).update(is_primary=False)
+            
+            # Устанавливаем текущий адрес как основной
+            address.is_primary = True
+            address.save()
+            
+            logger.info(f"Address set as primary: address_id={address_id}, telegram_id={telegram_id}")
+            
+            serializer = AddressSerializer(address)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            logger.error(f"Set primary address error: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class OrderCreateView(APIView):
     """API для создания заказа с улучшенной логикой"""

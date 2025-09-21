@@ -12,6 +12,7 @@ import { CartDisplay } from '../components/cart/CartDisplay';
 import { MenuItem as MenuItemComponent } from '../components/menu/MenuItem';
 import { Button } from '../components/ui/Button';
 import { AddressManager } from '../components/address/AddressManager';
+import { AutoLocationDetector } from '../components/address/AutoLocationDetector';
 import { RestaurantLogo } from '../components/common/RestaurantLogo';
 import { PageTransition } from '../components/common/PageTransition';
 import { OptionsPage } from './OptionsPage';
@@ -52,6 +53,7 @@ export const MainPage: React.FC = () => {
   const [showOptionsPage, setShowOptionsPage] = useState(false);
   const [showProfilePage, setShowProfilePage] = useState(false);
   const [showCheckoutPage, setShowCheckoutPage] = useState(false);
+  const [showAutoLocationDetector, setShowAutoLocationDetector] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [searchFilters, setSearchFilters] = useState({
@@ -98,6 +100,36 @@ export const MainPage: React.FC = () => {
       setCurrentView('address');
     }
   }, [addresses.length, showLogo, currentView]);
+
+  // Автоматически показываем определение местоположения для новых пользователей
+  useEffect(() => {
+    if (state.user && addresses.length === 0 && !showLogo && !showAutoLocationDetector) {
+      console.log('📍 🔄 New user detected - showing auto location detector');
+      setShowAutoLocationDetector(true);
+    }
+  }, [state.user, addresses.length, showLogo, showAutoLocationDetector]);
+
+  // Обработчики для AutoLocationDetector
+  const handleAddressDetected = (address: Address | null) => {
+    if (address) {
+      console.log('📍 Address detected:', address);
+      // Добавляем адрес в список
+      setAddresses(prev => [...prev, address]);
+      // Перезагружаем адреса
+      loadAddresses();
+    }
+    setShowAutoLocationDetector(false);
+  };
+
+  const handleShowMap = () => {
+    setShowAutoLocationDetector(false);
+    setCurrentView('address');
+  };
+
+  const handleCloseAutoLocationDetector = () => {
+    setShowAutoLocationDetector(false);
+    setCurrentView('address');
+  };
 
   // Функция для определения статуса работы ресторана
   const getRestaurantStatus = () => {
@@ -427,6 +459,12 @@ export const MainPage: React.FC = () => {
             ) : showCheckoutPage ? (
               <CheckoutPage
                 onClose={() => setShowCheckoutPage(false)}
+              />
+            ) : showAutoLocationDetector ? (
+              <AutoLocationDetector
+                onAddressDetected={handleAddressDetected}
+                onShowMap={handleShowMap}
+                onClose={handleCloseAutoLocationDetector}
               />
             ) : (
               <>
@@ -1042,7 +1080,7 @@ export const MainPage: React.FC = () => {
       </div>
 
       {/* Фиксированная нижняя навигация - скрыта во время анимации логотипа, OptionsPage, ProfilePage и CheckoutPage */}
-      {!showLogo && !showOptionsPage && !showProfilePage && !showCheckoutPage && (
+      {!showLogo && !showOptionsPage && !showProfilePage && !showCheckoutPage && !showAutoLocationDetector && (
         <div className="fixed bottom-0 left-0 right-0 bg-dark-900/95 backdrop-blur-lg border-t border-gray-700/50 z-50">
         <div className="flex items-center justify-around px-4 py-3">
           {/* Кнопка Меню */}

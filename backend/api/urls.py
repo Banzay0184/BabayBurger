@@ -33,6 +33,9 @@ urlpatterns = [
     # Адреса (новая модель)
     path('addresses/', AddressView.as_view(), name='addresses'),
     path('addresses/<int:address_id>/', AddressDetailView.as_view(), name='address-detail'),
+    path('addresses/<int:address_id>/set-primary/', AddressDetailView.as_view(), name='address-set-primary'),
+    path('geocode/', GeocodeView.as_view(), name='geocode'),
+    path('reverse-geocode/', GeocodeView.as_view(), name='reverse-geocode'),
     # Адреса (старая модель - обратная совместимость)
     path('user-address/', UserAddressView.as_view(), name='user-address'),
     # Меню и категории

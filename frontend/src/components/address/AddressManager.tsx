@@ -3,6 +3,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { YandexMapPicker } from '../map/YandexMapPicker';
+import { AutoLocationDetector } from './AutoLocationDetector';
 import { getApiUrl } from '../../config/api';
 import type { MapAddress } from '../../types/yandex-maps';
 import type { Address } from '../../types/address';
@@ -24,6 +25,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
   // Состояния
   const [showForm, setShowForm] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
+  const [showAutoLocationDetector, setShowAutoLocationDetector] = useState(false);
   const [editingAddress, setEditingAddress] = useState<any>(null);
   const [formData, setFormData] = useState({
     street: '',
@@ -115,6 +117,26 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
     // Fallback на пустой телефон
     console.log('📱 ⚠️ No phone found, using empty string');
     return '';
+  };
+
+  // Обработчики для AutoLocationDetector
+  const handleAddressDetected = (address: Address | null) => {
+    if (address) {
+      console.log('📍 Address detected in AddressManager:', address);
+      // Добавляем адрес в список
+      const newAddresses = [...addresses, address];
+      updateAddresses(newAddresses);
+    }
+    setShowAutoLocationDetector(false);
+  };
+
+  const handleShowMap = () => {
+    setShowAutoLocationDetector(false);
+    setShowMapPicker(true);
+  };
+
+  const handleCloseAutoLocationDetector = () => {
+    setShowAutoLocationDetector(false);
   };
 
   // Функция загрузки адресов
@@ -636,6 +658,16 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
         <div className="space-y-3">
           <Button
             onClick={() => {
+              console.log('📍 AddressManager: Auto location button clicked');
+              setShowAutoLocationDetector(true);
+            }}
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
+          >
+            📍 Автоматически определить адрес
+          </Button>
+          
+          <Button
+            onClick={() => {
               console.log('🗺️ AddressManager: Map button clicked, setting showMapPicker to true');
               setShowMapPicker(true);
             }}
@@ -646,7 +678,7 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
           
           <div className="text-center">
             <p className="text-gray-400 text-sm">
-              💡 Адрес добавляется только через карту для точности
+              💡 Выберите способ добавления адреса
             </p>
           </div>
         </div>
@@ -823,6 +855,15 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
         <YandexMapPicker
           onAddressSelect={handleMapAddressSelect}
           onClose={() => setShowMapPicker(false)}
+        />
+      )}
+
+      {/* Компонент автоматического определения адреса */}
+      {showAutoLocationDetector && (
+        <AutoLocationDetector
+          onAddressDetected={handleAddressDetected}
+          onShowMap={handleShowMap}
+          onClose={handleCloseAutoLocationDetector}
         />
       )}
     </div>
