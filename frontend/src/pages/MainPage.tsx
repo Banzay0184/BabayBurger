@@ -17,7 +17,6 @@ import { PageTransition } from '../components/common/PageTransition';
 import { OptionsPage } from './OptionsPage';
 import { ProfilePage } from './ProfilePage';
 import { CheckoutPage } from './CheckoutPage';
-import { WebSocketDebugger } from '../components/debug/WebSocketDebugger';
 import { getApiUrl } from '../config/api';
 import type { MenuItem, Promotion } from '../types/menu';
 import type { Address } from '../types/address';
@@ -62,6 +61,7 @@ export const MainPage: React.FC = () => {
     isNew: false,
     sortBy: 'name' as 'name' | 'price' | 'popularity' | 'newest'
   });
+  const [hasScrolledToCategory, setHasScrolledToCategory] = useState(false);
 
   // Загрузка адресов
   const loadAddresses = async () => {
@@ -211,19 +211,118 @@ export const MainPage: React.FC = () => {
   };
 
   const handleCategorySelect = (categoryName: string) => {
-    setActiveCategory(activeCategory === categoryName ? null : categoryName);
+    console.log('🍽️ Category selected:', categoryName);
+    console.log('🍽️ Current activeCategory:', activeCategory);
     
-    // Плавная прокрутка к выбранной категории
-    if (activeCategory !== categoryName) {
-      const element = document.getElementById(`category-${categoryName}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+    const isCurrentlyActive = activeCategory === categoryName;
+    const newActiveCategory = isCurrentlyActive ? null : categoryName;
+    
+    console.log('🍽️ Category selection logic:', {
+      isCurrentlyActive,
+      newActiveCategory,
+      willScroll: !isCurrentlyActive
+    });
+    
+    setActiveCategory(newActiveCategory);
+    
+    // Плавная прокрутка к началу списка блюд при выборе категории
+    if (!isCurrentlyActive) {
+      // Небольшая задержка для обновления DOM
+      setTimeout(() => {
+        // Прокручиваем к заголовку выбранной категории
+        const categoryHeader = document.getElementById(`category-header-${categoryName}`);
+        console.log('🍽️ Scrolling to category header:', `category-header-${categoryName}`, categoryHeader);
+        
+        if (categoryHeader) {
+          // Вычисляем позицию элемента относительно документа
+          const rect = categoryHeader.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const elementTop = rect.top + scrollTop;
+          
+          console.log('🍽️ Element position:', {
+            rectTop: rect.top,
+            scrollTop: scrollTop,
+            elementTop: elementTop,
+            currentScrollY: window.scrollY
+          });
+          
+          // Прокручиваем к элементу с небольшим отступом сверху
+          window.scrollTo({ 
+            top: elementTop - 20, 
+            behavior: 'smooth' 
+          });
+          setHasScrolledToCategory(true);
+          console.log('✅ Scrolled to category header with calculated position');
+        } else {
+          // Fallback: прокручиваем к началу контента меню
+          const menuContent = document.querySelector('.animate-fade-in');
+          console.log('🍽️ Fallback: scrolling to menu content:', menuContent);
+          
+          if (menuContent) {
+            const rect = menuContent.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const elementTop = rect.top + scrollTop;
+            
+            window.scrollTo({ 
+              top: elementTop - 20, 
+              behavior: 'smooth' 
+            });
+            console.log('✅ Scrolled to menu content with calculated position');
+          } else {
+            // Fallback: прокручиваем к верху страницы
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            console.log('✅ Scrolled to top of page');
+          }
+        }
+      }, 100);
     }
   };
 
   const handlePromotionApply = (promotion: Promotion) => {
     console.log('Applied promotion:', promotion);
+  };
+
+  const handleShowAllCategories = () => {
+    console.log('🍽️ Show all clicked - returning to full menu');
+    setActiveCategory(null);
+    
+    // Проверяем текущую позицию прокрутки и флаг прокрутки к категории
+    const currentScrollY = window.scrollY;
+    console.log('🍽️ Show all - scroll info:', {
+      currentScrollY,
+      hasScrolledToCategory,
+      shouldScroll: currentScrollY > 100 || hasScrolledToCategory
+    });
+    
+    // Прокручиваем к началу страницы если пользователь прокрутил вниз ИЛИ была прокрутка к категории
+    if (currentScrollY > 100 || hasScrolledToCategory) {
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setHasScrolledToCategory(false); // Сбрасываем флаг
+        console.log('✅ Scrolled to top of page (was scrolled down or had category scroll)');
+      }, 100);
+    } else {
+      console.log('✅ No scroll needed - already near top and no category scroll');
+    }
+  };
+
+  const handleRefreshMenu = async () => {
+    console.log('🔄 Refreshing menu...');
+    await refreshMenu();
+    
+    // Проверяем текущую позицию прокрутки
+    const currentScrollY = window.scrollY;
+    console.log('🔄 Current scroll position after refresh:', currentScrollY);
+    
+    // Прокручиваем к началу страницы только если пользователь прокрутил вниз
+    if (currentScrollY > 100) {
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        console.log('✅ Menu refreshed and scrolled to top (was scrolled down)');
+      }, 100);
+    } else {
+      console.log('✅ Menu refreshed - no scroll needed (already near top)');
+    }
   };
 
   const handleCloseOptionsPage = () => {
@@ -244,6 +343,14 @@ export const MainPage: React.FC = () => {
   const filteredCategories = activeCategory 
     ? availableCategories.filter(cat => cat.name === activeCategory)
     : availableCategories;
+    
+  // Отладочная информация для категорий
+  console.log('🍽️ Category Debug:', {
+    activeCategory,
+    availableCategories: availableCategories.length,
+    filteredCategories: filteredCategories.length,
+    filteredCategoryNames: filteredCategories.map(cat => cat.name)
+  });
 
   const totalItems = cartState.items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -298,10 +405,6 @@ export const MainPage: React.FC = () => {
       
       <div className="tg-webapp bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800 pt-5">
       <div className="max-w-4xl mx-auto p-4 tg-safe-top tg-safe-bottom">
-        {/* WebSocket Debugger - только в режиме разработки */}
-        {import.meta.env.DEV && (
-          <WebSocketDebugger className="mb-4" />
-        )}
         {/* Современный хедер с темной темой */}
         
 
@@ -337,11 +440,16 @@ export const MainPage: React.FC = () => {
                   <img src={logoUrl} alt="Babay Food" className="w-full h-full object-cover rounded-2xl" />
                 </div>
               </div>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 ">
                 <div className="flex items-center justify-between mb-1">
-                  <h1 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text leading-tight">
+                  <h1 className="text-xl mr-2 sm:text-2xl font-bold text-gray-100 neon-text leading-tight">
                   Babay Food
                 </h1>
+                  {/* Номер телефона */}
+                  <div className="hidden sm:flex items-center space-x-1 bg-gray-700/50 px-2 py-1 rounded-lg">
+                    <span className="text-green-400 text-sm">📱</span>
+                    <span className="text-gray-300 text-xs font-medium">{t('phone_number')}</span>
+                  </div>
                 </div>
                 <button
                   onClick={() => setCurrentView('address')}
@@ -355,6 +463,11 @@ export const MainPage: React.FC = () => {
                     t('delivery_address')
                   )}
                 </button>
+                {/* Номер телефона для мобильных */}
+                <div className="sm:hidden flex items-center space-x-1 mt-1">
+                  <span className="text-green-400 text-xs">📱</span>
+                  <span className="text-gray-400 text-xs">{t('phone_number')}</span>
+                </div>
                 {state.user && (
                   <div className="flex items-center space-x-2 mt-1">
                     <span className="text-xs text-gray-500">
@@ -408,7 +521,7 @@ export const MainPage: React.FC = () => {
         </div>
                   {/* Блокировка экрана когда ресторан закрыт */}
                   {!restaurantStatus.isOpen && (
-                    <div className="fixed inset-0 bg-black/90 backdrop-blur-lg z-70 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 bg-black/90 backdrop-blur-lg z-[9999] flex items-center justify-center p-4">
                       <div className="bg-dark-900 border border-red-600/50 rounded-2xl p-6 sm:p-8 max-w-md w-full text-center animate-fade-in">
                         {/* Иконка закрытого ресторана */}
                         <div className="w-20 h-20 bg-gradient-to-br from-red-900/50 to-red-800/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-600/50">
@@ -437,25 +550,7 @@ export const MainPage: React.FC = () => {
                           </div>
                         )}
                         
-                        {/* Время работы */}
-                        <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4 mb-6">
-                          <h3 className="text-gray-300 font-semibold mb-3">
-                            {t('working_hours')}:
-                          </h3>
-                          <div className="space-y-2 text-sm text-gray-400">
-                            <div className="flex justify-between">
-                              <span>{t('monday')} - {t('saturday')}:</span>
-                              <span className="text-gray-300">10:00 - 3:00</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>{t('sunday')}:</span>
-                              <span className="text-red-400">{t('closed')}</span>
-                            </div>
-                            <div className="text-xs text-primary-400 mt-2 text-center">
-                              {t('note_24h_operation')}
-                            </div>
-                          </div>
-                        </div>
+                        
                         
                         {/* Адрес */}
                         <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4 mb-6">
@@ -464,17 +559,54 @@ export const MainPage: React.FC = () => {
                           </h3>
                           <p className="text-gray-400 text-sm leading-relaxed">
                             {t('restaurant_address')}
+                            {t('restaurant_address_2')}
                           </p>
                         </div>
                         
                         {/* Контакты */}
-                        <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4">
-                          <h3 className="text-gray-300 font-semibold mb-3">
+                        <div className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-3">
+                          <h3 className="text-gray-300 font-medium mb-3 text-sm">
                             📞 {t('contacts')}:
                           </h3>
-                          <p className="text-gray-400 text-sm">
-                            {t('phone_number')}
-                          </p>
+                          
+                          <div className="space-y-2">
+                            {/* Телефоны */}
+                            <div className="flex items-center space-x-2">
+                              <span className="text-green-400 text-sm">📱</span>
+                              <div className="flex-1">
+                                <p className="text-gray-300 text-sm font-medium">{t('phone_number')}</p>
+                                <p className="text-gray-400 text-xs">{t('restaurant_phone_2')}</p>
+                              </div>
+                            </div>
+
+                            {/* Социальные сети */}
+                            <div className="flex items-center space-x-2">
+                              <span className="text-blue-400 text-sm">📱</span>
+                              <div className="flex-1">
+                                <p className="text-gray-300 text-sm font-medium">Telegram: {t('telegram_contact')}</p>
+                                <p className="text-gray-400 text-xs">Быстрая связь и заказы</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <span className="text-pink-400 text-sm">📷</span>
+                              <div className="flex-1">
+                                <p className="text-gray-300 text-sm font-medium">Instagram: {t('instagram_contact')}</p>
+                                <p className="text-gray-400 text-xs">Новости и акции</p>
+                              </div>
+                            </div>
+                            
+                            {/* Время работы */}
+                            <div className="pt-2 border-t border-gray-600/50">
+                              <div className="flex items-center space-x-2">
+                                <span className="text-orange-400 text-sm">⏰</span>
+                                <div className="flex-1">
+                                  <p className="text-gray-300 text-sm font-medium">{t('support_hours')}</p>
+                                  <p className="text-gray-400 text-xs">{t('delivery_info')}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -482,8 +614,8 @@ export const MainPage: React.FC = () => {
                   
                   {currentView === 'menu' ? (
                     <>
-                      {/* Акции */}
-                      {activePromotions.length > 0 && (
+                      {/* Акции - показываем только если не выбрана категория */}
+                      {!activeCategory && activePromotions.length > 0 && (
                         <div className="mb-6 sm:mb-8 animate-fade-in">
                           <div className="flex items-center mb-4 sm:mb-6">
                             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center mr-2 sm:mr-3 shadow-dark-glow">
@@ -506,8 +638,19 @@ export const MainPage: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Хиты */}
-                      {hits.length > 0 && (
+                      {/* Быстрая навигация по категориям - показываем только если не выбрана категория */}
+                      {!activeCategory && availableCategories.length > 0 && (
+                        <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                          <CategoryNavigation
+                            categories={availableCategories}
+                            activeCategory={activeCategory}
+                            onCategorySelect={handleCategorySelect}
+                          />
+                        </div>
+                      )}
+
+                      {/* Хиты - показываем только если не выбрана категория */}
+                      {!activeCategory && hits.length > 0 && (
                         <div className="animate-slide-up">
                           <FeaturedSection
                             title={`🔥 ${t('hits')}`}
@@ -517,8 +660,8 @@ export const MainPage: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Новинки */}
-                      {newItems.length > 0 && (
+                      {/* Новинки - показываем только если не выбрана категория */}
+                      {!activeCategory && newItems.length > 0 && (
                         <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
                           <FeaturedSection
                             title={`✨ ${t('new_items')}`}
@@ -528,16 +671,7 @@ export const MainPage: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Быстрая навигация по категориям */}
-                      {availableCategories.length > 0 && (
-                        <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                          <CategoryNavigation
-                            categories={availableCategories}
-                            activeCategory={activeCategory}
-                            onCategorySelect={handleCategorySelect}
-                          />
-                        </div>
-                      )}
+                      
 
                       {/* Категории меню */}
                       <div className="animate-fade-in">
@@ -550,7 +684,7 @@ export const MainPage: React.FC = () => {
                                     {t('full_menu')}
                                   </h2>
                                   <button
-                                    onClick={refreshMenu}
+                                    onClick={handleRefreshMenu}
                                     disabled={menuState.isLoading}
                                     className="px-3 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm flex items-center space-x-2"
                                     title="Обновить меню"
@@ -570,7 +704,7 @@ export const MainPage: React.FC = () => {
                             )}
                             
                             {activeCategory && (
-                              <div className="mb-4 sm:mb-6">
+                              <div className="mb-4 sm:mb-6" id={`category-header-${activeCategory}`}>
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
                                   <div>
                                     <h2 className="text-xl sm:text-2xl font-bold text-gray-100 neon-text mb-2">
@@ -581,7 +715,7 @@ export const MainPage: React.FC = () => {
                                     </p>
                                   </div>
                                   <button
-                                    onClick={() => setActiveCategory(null)}
+                                    onClick={handleShowAllCategories}
                                     className="px-3 sm:px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors text-sm w-full sm:w-auto"
                                   >
                                     {t('show_all')}
@@ -615,7 +749,7 @@ export const MainPage: React.FC = () => {
                               {t('try_later')}
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                              <Button onClick={() => fetchMenu()} variant="primary" disabled={menuState.isLoading}>
+                              <Button onClick={handleRefreshMenu} variant="primary" disabled={menuState.isLoading}>
                                 <span className="flex items-center">
                                   <span className={`mr-2 ${menuState.isLoading ? 'animate-spin' : ''}`}>
                                     {menuState.isLoading ? '⏳' : '🔄'}
@@ -623,7 +757,7 @@ export const MainPage: React.FC = () => {
                                   {t('refresh_menu')}
                                 </span>
                               </Button>
-                              <Button onClick={refreshMenu} variant="accent" disabled={menuState.isLoading}>
+                              <Button onClick={handleRefreshMenu} variant="accent" disabled={menuState.isLoading}>
                                 <span className="flex items-center">
                                   <span className={`mr-2 ${menuState.isLoading ? 'animate-spin' : ''}`}>
                                     {menuState.isLoading ? '⏳' : '⚡'}

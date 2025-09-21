@@ -2,6 +2,7 @@ import React from 'react';
 import { menuApi } from '../../api/menu';
 import { adminApi } from '../../api/adminApi';
 import Modal from '../../components/admin/Modal';
+import { autoCompressImage, type CompressionResult } from '../../utils/imageCompression';
 
 export const AdminMenuPage: React.FC = () => {
   const [loading, setLoading] = React.useState(false);
@@ -235,19 +236,10 @@ export const AdminMenuPage: React.FC = () => {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     
     if (file) {
-      // Проверяем размер файла (максимум 2MB)
-      const maxSize = 2 * 1024 * 1024; // 2MB в байтах
-      if (file.size > maxSize) {
-        alert(`Размер изображения слишком большой (${(file.size / 1024 / 1024).toFixed(1)}MB). Максимальный размер: 2MB`);
-        // Сбрасываем input
-        e.target.value = '';
-        return;
-      }
-      
       // Проверяем тип файла
       if (!file.type.startsWith('image/')) {
         alert('Пожалуйста, выберите файл изображения');
@@ -255,14 +247,46 @@ export const AdminMenuPage: React.FC = () => {
         return;
       }
       
-      console.log('📷 Изображение выбрано:', {
+      console.log('📷 Исходное изображение:', {
         name: file.name,
         size: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
         type: file.type
       });
+      
+      try {
+        // Показываем индикатор загрузки
+        setLoading(true);
+        
+        // Сжимаем изображение
+        const compressionResult: CompressionResult = await autoCompressImage(file);
+        
+        console.log('🗜️ Результат сжатия:', {
+          originalSize: `${(compressionResult.originalSize / 1024 / 1024).toFixed(2)}MB`,
+          compressedSize: `${(compressionResult.compressedSize / 1024 / 1024).toFixed(2)}MB`,
+          compressionRatio: `${compressionResult.compressionRatio.toFixed(1)}%`
+        });
+        
+        // Проверяем размер после сжатия (максимум 1MB)
+        const maxSizeAfterCompression = 1 * 1024 * 1024; // 1MB
+        if (compressionResult.compressedSize > maxSizeAfterCompression) {
+          alert(`После сжатия размер изображения все еще слишком большой (${(compressionResult.compressedSize / 1024 / 1024).toFixed(1)}MB). Попробуйте выбрать другое изображение.`);
+          e.target.value = '';
+          setLoading(false);
+          return;
+        }
+        
+        setFormData(prev => ({ ...prev, image: compressionResult.file }));
+        
+      } catch (error) {
+        console.error('❌ Ошибка при сжатии изображения:', error);
+        alert('Ошибка при обработке изображения. Попробуйте выбрать другое изображение.');
+        e.target.value = '';
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setFormData(prev => ({ ...prev, image: null }));
     }
-    
-    setFormData(prev => ({ ...prev, image: file }));
   };
 
   // Функции для работы с добавками

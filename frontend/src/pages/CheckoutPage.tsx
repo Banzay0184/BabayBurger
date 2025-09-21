@@ -1135,6 +1135,40 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
           </div>
         )}
 
+        {/* Секция поддержки */}
+        <div className="bg-dark-800 rounded-xl p-4 border border-gray-700/50">
+          <h3 className="text-base font-semibold text-gray-100 mb-3 flex items-center">
+            <span className="mr-2 text-lg">🆘</span>
+            Нужна помощь?
+          </h3>
+          
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <span className="text-green-400 text-base">📱</span>
+              <div className="flex-1">
+                <p className="text-gray-300 text-sm font-medium">{t('phone_number')}</p>
+                <p className="text-gray-400 text-xs">Звонок для поддержки</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <span className="text-blue-400 text-base">📱</span>
+              <div className="flex-1">
+                <p className="text-gray-300 text-sm font-medium">Telegram: {t('telegram_contact')}</p>
+                <p className="text-gray-400 text-xs">Быстрая связь</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <span className="text-orange-400 text-base">⏰</span>
+              <div className="flex-1">
+                <p className="text-gray-300 text-sm font-medium">{t('support_hours')}</p>
+                <p className="text-gray-400 text-xs">Время работы поддержки</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Кнопка оформления заказа */}
         <button
           onClick={handleSubmitOrder}

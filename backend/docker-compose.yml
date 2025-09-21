@@ -48,6 +48,22 @@ services:
       redis:
         condition: service_started
 
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/sites-available/babayfood
+      - static_volume:/app/static
+      - media_volume:/app/media
+    command: >
+      sh -c "ln -sf /etc/nginx/sites-available/babayfood /etc/nginx/sites-enabled/ &&
+             rm -f /etc/nginx/sites-enabled/default &&
+             nginx -g 'daemon off;'"
+    depends_on:
+      - web
+
   celery:
     build: .
     command: celery -A config worker -l info

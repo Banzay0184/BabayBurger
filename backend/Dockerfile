@@ -8,6 +8,7 @@ RUN apt-get update \
         libpq-dev \
         gcc \
         python3-dev \
+        nginx \
     && rm -rf /var/lib/apt/lists/*
 
 # Создание рабочей директории
@@ -19,6 +20,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Копирование кода приложения
 COPY . .
+
+# Копирование конфигурации nginx
+COPY nginx.conf /etc/nginx/sites-available/babayfood
+RUN ln -sf /etc/nginx/sites-available/babayfood /etc/nginx/sites-enabled/ \
+    && rm -f /etc/nginx/sites-enabled/default
 
 # Создание директорий для логов и медиа
 RUN mkdir -p logs media static
