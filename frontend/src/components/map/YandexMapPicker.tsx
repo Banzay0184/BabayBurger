@@ -86,14 +86,24 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
     // Определяем примерное местоположение на основе координат
     if (lat >= 39.76 && lat <= 39.78 && lon >= 64.39 && lon <= 64.42) {
       return 'Бухара, центр города';
-    } else if (lat >= 39.72 && lat <= 39.74 && lon >= 64.54 && lon <= 64.56) {
+    } else if (lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
       return 'Каган, центр города';
-    } else if (lat >= 39.7 && lat <= 39.8 && lon >= 64.3 && lon <= 64.6) {
+    } else if (lat >= 39.75 && lat <= 39.8 && lon >= 64.3 && lon <= 64.6) {
       // Более широкий диапазон для Бухары
       return 'Бухара, город';
+    } else if (lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
+      // Более широкий диапазон для Кагана
+      return 'Каган, город';
     } else {
-      // Более точные координаты для отладки
-      return `Координаты: ${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+      // Создаем более понятный адрес на основе координат
+      const latStr = lat.toFixed(4).replace('.', '');
+      const lonStr = lon.toFixed(4).replace('.', '');
+      // Определяем город по координатам для fallback
+      if (lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
+        return `Каган, район ${latStr.slice(-2)}-${lonStr.slice(-2)}`;
+      } else {
+        return `Бухара, район ${latStr.slice(-2)}-${lonStr.slice(-2)}`;
+      }
     }
   };
 
@@ -395,43 +405,84 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
       console.log('🗺️ 🔍 Zone delivery check result:', isInZone);
       setAddressInZone(isInZone);
 
-      // Определяем город из адреса если locality пустой
-      let cityName = locality;
-      if (!cityName && address) {
-        // Парсим адрес для извлечения города
-        const addressParts = address.split(',').map(part => part.trim());
-        console.log('🗺️ 🔍 Parsing address for city:', addressParts);
-        
-        // Ищем город в частях адреса
-        for (const part of addressParts) {
-          if (part.toLowerCase().includes('каган')) {
-            cityName = 'Каган';
-            console.log('🗺️ ✅ City extracted from address: Каган');
-            break;
-          } else if (part.toLowerCase().includes('бухара')) {
-            cityName = 'Бухара';
-            console.log('🗺️ ✅ City extracted from address: Бухара');
-            break;
-          } else if (part.toLowerCase().includes('ташкент')) {
-            cityName = 'Ташкент';
-            console.log('🗺️ ✅ City extracted from address: Ташкент');
-            break;
+      // ПРИОРИТЕТ: Определяем город по координатам (более точно чем геокодирование)
+      const [lat, lon] = coords;
+      let cityName = '';
+      
+      // Сначала проверяем координаты для точного определения города
+      if (lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
+        cityName = 'Каган';
+        console.log('🗺️ ✅ City determined by coordinates: Каган');
+      } else if (lat >= 39.75 && lat <= 39.8 && lon >= 64.3 && lon <= 64.6) {
+        cityName = 'Бухара';
+        console.log('🗺️ ✅ City determined by coordinates: Бухара');
+      } else {
+        // Fallback: парсим адрес если координаты не дали результата
+        if (address) {
+          const addressParts = address.split(',').map(part => part.trim());
+          console.log('🗺️ 🔍 Parsing address for city (fallback):', addressParts);
+          
+          // Ищем город в частях адреса
+          for (const part of addressParts) {
+            if (part.toLowerCase().includes('каган')) {
+              cityName = 'Каган';
+              console.log('🗺️ ✅ City extracted from address: Каган');
+              break;
+            } else if (part.toLowerCase().includes('бухара')) {
+              cityName = 'Бухара';
+              console.log('🗺️ ✅ City extracted from address: Бухара');
+              break;
+            } else if (part.toLowerCase().includes('ташкент')) {
+              cityName = 'Ташкент';
+              console.log('🗺️ ✅ City extracted from address: Ташкент');
+              break;
+            }
           }
+        }
+        
+        // Если все еще нет города, используем fallback
+        if (!cityName) {
+          cityName = 'Бухара'; // Fallback
+          console.log('🗺️ ⚠️ Using fallback city: Бухара');
         }
       }
       
-      // Если все еще нет города, определяем по координатам
-      if (!cityName) {
-        const [lat, lon] = coords;
-        if (lat >= 39.72 && lat <= 39.74 && lon >= 64.54 && lon <= 64.56) {
-          cityName = 'Каган';
-          console.log('🗺️ ✅ City determined by coordinates: Каган');
-        } else if (lat >= 39.76 && lat <= 39.78 && lon >= 64.39 && lon <= 64.42) {
-          cityName = 'Бухара';
-          console.log('🗺️ ✅ City determined by coordinates: Бухара');
+      // Дополнительная проверка: если координаты в Кагане, но адрес говорит "Бухара", исправляем
+      if (cityName === 'Бухара' && lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
+        cityName = 'Каган';
+        console.log('🗺️ 🔧 Corrected city from Бухара to Каган based on coordinates');
+      }
+
+      // Улучшенная обработка улицы
+      let finalStreet = thoroughfare;
+      if (!finalStreet || finalStreet.trim() === '') {
+        // Пробуем извлечь улицу из полного адреса
+        const addressParts = address.split(',').map(part => part.trim());
+        const streetPart = addressParts.find(part => 
+          part.toLowerCase().includes('улица') || 
+          part.toLowerCase().includes('проспект') || 
+          part.toLowerCase().includes('переулок') ||
+          part.toLowerCase().includes('шоссе') ||
+          part.toLowerCase().includes('набережная') ||
+          part.toLowerCase().includes('бульвар') ||
+          part.toLowerCase().includes('площадь')
+        );
+        
+        if (streetPart) {
+          finalStreet = streetPart;
         } else {
-          cityName = 'Бухара'; // Fallback
-          console.log('🗺️ ⚠️ Using fallback city: Бухара');
+          // Если не нашли улицу, создаем описательное название на основе координат
+          const [lat, lon] = coords;
+          if (lat >= 39.76 && lat <= 39.78 && lon >= 64.39 && lon <= 64.42) {
+            finalStreet = 'Центр Бухары';
+          } else if (lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
+            finalStreet = 'Центр Кагана';
+          } else {
+            // Создаем уникальное название на основе координат
+            const latStr = lat.toFixed(4).replace('.', '');
+            const lonStr = lon.toFixed(4).replace('.', '');
+            finalStreet = `Район ${latStr.slice(-2)}-${lonStr.slice(-2)}`;
+          }
         }
       }
 
@@ -439,7 +490,7 @@ export const YandexMapPicker: React.FC<YandexMapPickerProps> = ({
       const addressData: MapAddress = {
         coordinates: [coords[0], coords[1]], // [широта, долгота] для бэкэнда
         address: address,
-        street: thoroughfare || 'Улица не определена',
+        street: finalStreet,
         house: premise || createFallbackHouseNumber(coords), // Генерируем номер дома если не определен
         city: cityName
       };

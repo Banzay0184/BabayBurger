@@ -255,10 +255,33 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
     }));
   };
 
+  // Функция для получения номера телефона (приоритет: существующие адреса > Telegram > localStorage)
+  const getPhoneForNewAddress = () => {
+    // Сначала пробуем получить из существующих адресов
+    if (addresses.length > 0) {
+      const existingAddress = addresses.find(addr => addr.phone_number && addr.phone_number.trim() !== '');
+      if (existingAddress?.phone_number) {
+        console.log('📱 Got phone from existing address:', existingAddress.phone_number);
+        return existingAddress.phone_number;
+      }
+    }
+    
+    // Если в адресах нет телефона, пробуем получить из Telegram
+    const telegramPhone = getUserPhone();
+    if (telegramPhone && telegramPhone.trim() !== '') {
+      console.log('📱 Got phone from Telegram:', telegramPhone);
+      return telegramPhone;
+    }
+    
+    // Fallback на пустой телефон
+    console.log('📱 No phone found, using empty string');
+    return '';
+  };
+
   // Сброс формы
   const resetForm = () => {
     // Получаем телефон пользователя для автоматического заполнения
-    const userPhone = getUserPhone();
+    const userPhone = getPhoneForNewAddress();
     
     setFormData({
       street: '',
@@ -521,41 +544,47 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
   const handleMapAddressSelect = (mapAddress: MapAddress) => {
     console.log('🗺️ Address selected from map:', mapAddress);
     
-    // Получаем номер телефона из localStorage или профиля пользователя
-    const getUserPhone = () => {
-      // Пробуем получить из localStorage
-      const savedPhone = localStorage.getItem('user_phone');
-      if (savedPhone) return savedPhone;
-      
-      // Пробуем получить из Telegram WebApp
-      if ((window as any).Telegram?.WebApp?.initDataUnsafe?.user?.phone_number) {
-        return (window as any).Telegram.WebApp.initDataUnsafe.user.phone_number;
-      }
-      
-      // Fallback на пустую строку
-      return '';
-    };
-    
     // Если редактируем адрес, сохраняем существующие данные
     const existingData = editingAddress ? {
       apartment: editingAddress.apartment || '',
-      phone_number: editingAddress.phone_number || getUserPhone(),
+      phone_number: editingAddress.phone_number || getPhoneForNewAddress(),
       comment: editingAddress.comment || '',
       is_primary: editingAddress.is_primary,
       latitude: editingAddress.latitude || null,
       longitude: editingAddress.longitude || null
     } : {
       apartment: formData.apartment || '',
-      phone_number: formData.phone_number || getUserPhone(),
+      phone_number: formData.phone_number || getPhoneForNewAddress(),
       comment: formData.comment || '',
       is_primary: formData.is_primary,
       latitude: formData.latitude || null,
       longitude: formData.longitude || null
     };
     
+    // Улучшенная обработка улицы
+    let finalStreet = mapAddress.street || formData.street || '';
+    if (!finalStreet || finalStreet.trim() === '' || finalStreet === 'Улица не определена') {
+      // Если улица не определена, создаем описательное название
+      if (mapAddress.coordinates) {
+        const [lat, lon] = mapAddress.coordinates;
+        if (lat >= 39.76 && lat <= 39.78 && lon >= 64.39 && lon <= 64.42) {
+          finalStreet = 'Центр Бухары';
+        } else if (lat >= 39.72 && lat <= 39.75 && lon >= 64.54 && lon <= 64.58) {
+          finalStreet = 'Центр Кагана';
+        } else {
+          // Создаем уникальное название на основе координат
+          const latStr = lat.toFixed(4).replace('.', '');
+          const lonStr = lon.toFixed(4).replace('.', '');
+          finalStreet = `Район ${latStr.slice(-2)}-${lonStr.slice(-2)}`;
+        }
+      } else {
+        finalStreet = 'Центр Бухары'; // Fallback
+      }
+    }
+
     // Заполняем форму данными с карты, сохраняя ручной ввод
     setFormData({
-      street: mapAddress.street || formData.street || '',
+      street: finalStreet,
       house_number: mapAddress.house || formData.house_number || '1',
       apartment: existingData.apartment,
       city: mapAddress.city || formData.city || 'Бухара',

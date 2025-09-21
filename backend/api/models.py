@@ -241,6 +241,8 @@ class DeliveryZone(models.Model):
             latitude = float(latitude)
             longitude = float(longitude)
             
+            print(f"🔍 Checking if coordinates ({latitude}, {longitude}) are in zone '{self.name}'")
+            
             # Если есть полигон, используем его для проверки
             if self.polygon_coordinates and len(self.polygon_coordinates) > 2:
                 polygon_result = self._is_point_in_polygon(latitude, longitude)
@@ -264,15 +266,38 @@ class DeliveryZone(models.Model):
                 return distance <= float(self.radius_km)
             
             # Временное решение для существующих зон
-            elif self.name in ["Бухара", "Центр Бухары"]:
+            elif self.name in ["Бухара", "Центр Бухары", "Каган"]:
                 if self.name == "Бухара":
-                    return True  # Вся Бухара
+                    # Проверяем, что координаты в пределах Бухары
+                    if 39.75 <= latitude <= 39.8 and 64.3 <= longitude <= 64.6:
+                        print(f"✅ Coordinates ({latitude}, {longitude}) are in Bukhara zone")
+                        return True
+                    else:
+                        print(f"❌ Coordinates ({latitude}, {longitude}) are outside Bukhara zone")
+                        return False
                 elif self.name == "Центр Бухары":
                     # Проверяем расстояние до центра Бухары
                     bukhara_center_lat, bukhara_center_lon = 39.7681, 64.4556
                     distance = calculate_distance(latitude, longitude, bukhara_center_lat, bukhara_center_lon)
-                    return distance <= 10  # 10 км от центра
+                    result = distance <= 10  # 10 км от центра
+                    print(f"🔍 Distance to Bukhara center: {distance:.2f}km, in zone: {result}")
+                    return result
+                elif self.name == "Каган":
+                    # Проверяем, что координаты в пределах Кагана (расширенный диапазон)
+                    if 39.72 <= latitude <= 39.75 and 64.54 <= longitude <= 64.58:
+                        print(f"✅ Coordinates ({latitude}, {longitude}) are in Kagan zone")
+                        return True
+                    else:
+                        print(f"❌ Coordinates ({latitude}, {longitude}) are outside Kagan zone")
+                        return False
             
+            # Fallback: если координаты в пределах Бухары или Кагана, разрешаем доставку
+            if (39.75 <= latitude <= 39.8 and 64.3 <= longitude <= 64.6) or \
+               (39.72 <= latitude <= 39.75 and 64.54 <= longitude <= 64.58):
+                print(f"✅ Coordinates ({latitude}, {longitude}) are in Bukhara/Kagan region - allowing delivery")
+                return True
+            
+            print(f"❌ Coordinates ({latitude}, {longitude}) are outside all zones")
             return False
             
         except Exception as e:

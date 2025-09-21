@@ -603,10 +603,12 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         # Получаем зоны оператора
         operator_zones = operator.assigned_zones.filter(is_active=True)
         if not operator_zones.exists():
+            print(f"⚠️ Operator {operator.username} has no active zones")
             return Order.objects.none()
         
         # Создаем список городов из зон оператора
         operator_cities = list(operator_zones.values_list('city', flat=True).distinct())
+        print(f"🔍 Operator {operator.username} zones: {operator_cities}")
         
         # Базовый queryset - заказы в зонах оператора
         # Для доставки: по адресу клиента, для самовывоза: по городу ресторана
@@ -627,10 +629,21 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         
         # Проверяем только заказы доставки
         for order in delivery_orders:
+            print(f"🔍 Checking delivery order #{order.id}: {order.address}")
+            if not order.address:
+                print(f"⚠️ Order #{order.id} has no address")
+                continue
+            if not order.address.latitude or not order.address.longitude:
+                print(f"⚠️ Order #{order.id} address has no coordinates: lat={order.address.latitude}, lon={order.address.longitude}")
+                continue
+            
             # Проверяем, находится ли адрес в какой-либо зоне оператора
             for zone in operator_zones:
-                if order.address and order.address.latitude and order.address.longitude and zone.is_address_in_zone(order.address.latitude, order.address.longitude):
+                is_in_zone = zone.is_address_in_zone(order.address.latitude, order.address.longitude)
+                print(f"🔍 Order #{order.id} in zone '{zone.name}': {is_in_zone}")
+                if is_in_zone:
                     delivery_orders_in_zones.append(order.id)
+                    print(f"✅ Order #{order.id} added to delivery orders")
                     break
         
         # Объединяем заказы доставки в зонах и заказы самовывоза
