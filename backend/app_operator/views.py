@@ -603,12 +603,16 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         # Получаем зоны оператора
         operator_zones = operator.assigned_zones.filter(is_active=True)
         if not operator_zones.exists():
-            print(f"⚠️ Operator {operator.username} has no active zones")
+            import logging
+            logger = logging.getLogger(api)
+            logger.warning(f"⚠️ Operator {operator.username} has no active zones")
             return Order.objects.none()
         
         # Создаем список городов из зон оператора
         operator_cities = list(operator_zones.values_list('city', flat=True).distinct())
-        print(f"🔍 Operator {operator.username} zones: {operator_cities}")
+        import logging
+        logger = logging.getLogger(api)
+        logger.info(f"🔍 Operator {operator.username} zones: {operator_cities}")
         
         # Базовый queryset - заказы в зонах оператора
         # Для доставки: по адресу клиента, для самовывоза: по городу ресторана
@@ -620,6 +624,10 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             Q(service_type='pickup', restaurant__city__in=operator_cities)  # Самовывоз: только по городу ресторана
         )
         
+        logger.info(f"🔍 Base queryset count: {base_queryset.count()}")
+        logger.info(f"🔍 Delivery orders count: {base_queryset.filter(service_type='delivery').count()}")
+        logger.info(f"🔍 Pickup orders count: {base_queryset.filter(service_type='pickup').count()}")
+        
         # Для оптимизации, сначала получаем заказы самовывоза
         pickup_orders = base_queryset.filter(service_type='pickup')
         
@@ -629,21 +637,21 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         
         # Проверяем только заказы доставки
         for order in delivery_orders:
-            print(f"🔍 Checking delivery order #{order.id}: {order.address}")
+            logger.info(f"🔍 Checking delivery order #{order.id}: {order.address}")
             if not order.address:
-                print(f"⚠️ Order #{order.id} has no address")
+                logger.warning(f"⚠️ Order #{order.id} has no address")
                 continue
             if not order.address.latitude or not order.address.longitude:
-                print(f"⚠️ Order #{order.id} address has no coordinates: lat={order.address.latitude}, lon={order.address.longitude}")
+                logger.warning(f"⚠️ Order #{order.id} address has no coordinates: lat={order.address.latitude}, lon={order.address.longitude}")
                 continue
             
             # Проверяем, находится ли адрес в какой-либо зоне оператора
             for zone in operator_zones:
                 is_in_zone = zone.is_address_in_zone(order.address.latitude, order.address.longitude)
-                print(f"🔍 Order #{order.id} in zone '{zone.name}': {is_in_zone}")
+                logger.info(f"🔍 Order #{order.id} in zone '{zone.name}': {is_in_zone}")
                 if is_in_zone:
                     delivery_orders_in_zones.append(order.id)
-                    print(f"✅ Order #{order.id} added to delivery orders")
+                    logger.info(f"✅ Order #{order.id} added to delivery orders")
                     break
         
         # Объединяем заказы доставки в зонах и заказы самовывоза
@@ -706,15 +714,64 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         # Возвращаем QuerySet для совместимости с ModelViewSet
         if filtered_orders:
             order_ids = [order.id for order in filtered_orders]
-            return Order.objects.filter(id__in=order_ids).select_related(
+            final_queryset = Order.objects.filter(id__in=order_ids).select_related(
                 'user', 'address', 'restaurant', 'promo_code'
             ).prefetch_related(
                 'orderitem_set__menu_item',
                 'orderitem_set__size_option',
                 'orderitem_set__add_ons'
             ).order_by('-created_at')
+            logger.info(f"✅ Final queryset count: {final_queryset.count()}")
+            logger.info(f"✅ Final order IDs: {order_ids}")
+            return final_queryset
         else:
+            logger.warning(f"❌ No orders found for operator {operator.username}")
             return Order.objects.none()
+    
+    def retrieve(self, request, pk=None):
+        """Получение конкретного заказа с дополнительной диагностикой"""
+        try:
+            # Сначала пытаемся получить заказ из нашего queryset
+            queryset = self.get_queryset()
+            order = get_object_or_404(queryset, pk=pk)
+            serializer = self.get_serializer(order)
+            return Response(serializer.data)
+        except Exception as e:
+            # Если заказ не найден в queryset, проверяем существует ли он вообще
+            try:
+                order = Order.objects.get(pk=pk)
+                operator = request.user
+                
+                # Диагностика: почему заказ не входит в queryset оператора
+                import logging
+                logger = logging.getLogger(api)
+                logger.info(f"🔍 Order #{pk} exists but not in operator queryset")
+                logger.info(f"🔍 Order details: service_type={order.service_type}, address={order.address}")
+                
+                if order.address:
+                    logger.info(f"🔍 Address details: city={order.address.city}, lat={order.address.latitude}, lon={order.address.longitude}")
+                
+                # Проверяем зоны оператора
+                operator_zones = operator.assigned_zones.filter(is_active=True)
+                logger.info(f"🔍 Operator zones: {[zone.name for zone in operator_zones]}")
+                
+                # Проверяем can_handle_order
+                can_handle, message = operator.can_handle_order(order)
+                logger.info(f"🔍 Can handle order: {can_handle}, message: {message}")
+                
+                return Response({
+                    'error': f'Заказ #{pk} не доступен для данного оператора',
+                    'details': message,
+                    'order_exists': True,
+                    'operator_zones': [zone.name for zone in operator_zones],
+                    'order_city': order.address.city if order.address else None
+                }, status=status.HTTP_403_FORBIDDEN)
+                
+            except Order.DoesNotExist:
+                return Response({
+                    'error': f'Заказ #{pk} не найден',
+                    'details': 'Заказ с указанным ID не существует в системе'
+                }, status=status.HTTP_404_NOT_FOUND)
     
     @action(detail=False, methods=['get'])
     def dashboard(self, request):

@@ -156,12 +156,21 @@ class Operator(AbstractUser):
 
     def can_handle_order(self, order):
         """Проверяет, может ли оператор обрабатывать заказ"""
+        import logging
+        logger = logging.getLogger(api)
+        logger.info(f"🔍 Checking if operator {self.username} can handle order #{order.id}")
+        
         if not self.is_active_operator:
+            logger.warning(f"❌ Operator {self.username} is not active")
             return False, "Оператор неактивен"
         
         # Проверяем, есть ли у оператора назначенные зоны
-        if not self.assigned_zones.exists():
+        assigned_zones = self.assigned_zones.filter(is_active=True)
+        if not assigned_zones.exists():
+            logger.warning(f"❌ Operator {self.username} has no active zones")
             return False, "У оператора нет назначенных зон доставки"
+        
+        logger.info(f"🔍 Operator {self.username} has {assigned_zones.count()} active zones: {[zone.name for zone in assigned_zones]}")
         
         # Для заказов самовывоза проверяем город ресторана
         if order.service_type == 'pickup':
@@ -181,12 +190,19 @@ class Operator(AbstractUser):
         elif order.service_type == 'delivery':
             order_address = order.address
             if not order_address:
+                logger.warning(f"❌ Order #{order.id} has no address")
                 return False, "У заказа доставки не указан адрес"
             
-            for zone in self.assigned_zones.filter(is_active=True):
-                if zone.is_address_in_zone(order_address.latitude, order_address.longitude):
+            logger.info(f"🔍 Order #{order.id} address: city={order_address.city}, lat={order_address.latitude}, lon={order_address.longitude}")
+            
+            for zone in assigned_zones:
+                is_in_zone = zone.is_address_in_zone(order_address.latitude, order_address.longitude)
+                logger.info(f"🔍 Order #{order.id} in zone '{zone.name}': {is_in_zone}")
+                if is_in_zone:
+                    logger.info(f"✅ Order #{order.id} is in zone '{zone.name}'")
                     return True, f"Заказ доставки в зоне '{zone.name}'"
             
+            logger.warning(f"❌ Order #{order.id} is not in any operator zone")
             return False, "Адрес заказа доставки не в зонах оператора"
         
         return False, "Неизвестный тип услуги"

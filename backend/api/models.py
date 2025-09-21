@@ -241,7 +241,9 @@ class DeliveryZone(models.Model):
             latitude = float(latitude)
             longitude = float(longitude)
             
-            print(f"🔍 Checking if coordinates ({latitude}, {longitude}) are in zone '{self.name}'")
+            import logging
+            logger = logging.getLogger(api)
+            logger.info(f"🔍 Checking if coordinates ({latitude}, {longitude}) are in zone '{self.name}'")
             
             # Если есть полигон, используем его для проверки
             if self.polygon_coordinates and len(self.polygon_coordinates) > 2:
@@ -253,7 +255,7 @@ class DeliveryZone(models.Model):
                         float(self.center_latitude), float(self.center_longitude)
                     )
                     if distance <= float(self.radius_km):
-                        print(f"⚠️ Полигон не покрывает точку, но радиус покрывает (расстояние: {distance:.2f} км)")
+                        logger.info(f"⚠️ Полигон не покрывает точку, но радиус покрывает (расстояние: {distance:.2f} км)")
                         return True
                 return polygon_result
             
@@ -270,38 +272,38 @@ class DeliveryZone(models.Model):
                 if self.name == "Бухара":
                     # Проверяем, что координаты в пределах Бухары
                     if 39.75 <= latitude <= 39.8 and 64.3 <= longitude <= 64.6:
-                        print(f"✅ Coordinates ({latitude}, {longitude}) are in Bukhara zone")
+                        logger.info(f"✅ Coordinates ({latitude}, {longitude}) are in Bukhara zone")
                         return True
                     else:
-                        print(f"❌ Coordinates ({latitude}, {longitude}) are outside Bukhara zone")
+                        logger.info(f"❌ Coordinates ({latitude}, {longitude}) are outside Bukhara zone")
                         return False
                 elif self.name == "Центр Бухары":
                     # Проверяем расстояние до центра Бухары
                     bukhara_center_lat, bukhara_center_lon = 39.7681, 64.4556
                     distance = calculate_distance(latitude, longitude, bukhara_center_lat, bukhara_center_lon)
                     result = distance <= 10  # 10 км от центра
-                    print(f"🔍 Distance to Bukhara center: {distance:.2f}km, in zone: {result}")
+                    logger.info(f"🔍 Distance to Bukhara center: {distance:.2f}km, in zone: {result}")
                     return result
                 elif self.name == "Каган":
                     # Проверяем, что координаты в пределах Кагана (расширенный диапазон)
                     if 39.72 <= latitude <= 39.75 and 64.54 <= longitude <= 64.58:
-                        print(f"✅ Coordinates ({latitude}, {longitude}) are in Kagan zone")
+                        logger.info(f"✅ Coordinates ({latitude}, {longitude}) are in Kagan zone")
                         return True
                     else:
-                        print(f"❌ Coordinates ({latitude}, {longitude}) are outside Kagan zone")
+                        logger.info(f"❌ Coordinates ({latitude}, {longitude}) are outside Kagan zone")
                         return False
             
             # Fallback: если координаты в пределах Бухары или Кагана, разрешаем доставку
             if (39.75 <= latitude <= 39.8 and 64.3 <= longitude <= 64.6) or \
                (39.72 <= latitude <= 39.75 and 64.54 <= longitude <= 64.58):
-                print(f"✅ Coordinates ({latitude}, {longitude}) are in Bukhara/Kagan region - allowing delivery")
+                logger.info(f"✅ Coordinates ({latitude}, {longitude}) are in Bukhara/Kagan region - allowing delivery")
                 return True
             
-            print(f"❌ Coordinates ({latitude}, {longitude}) are outside all zones")
+            logger.info(f"❌ Coordinates ({latitude}, {longitude}) are outside all zones")
             return False
             
         except Exception as e:
-            print(f"Ошибка проверки зоны доставки: {e}")
+            logger.error(f"Ошибка проверки зоны доставки: {e}")
             return False
     
     def _is_point_in_polygon(self, lat, lon):
