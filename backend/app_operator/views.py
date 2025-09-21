@@ -598,20 +598,18 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         """Получение заказов для оператора"""
+        import logging
+        logger = logging.getLogger(app_operator)
         operator = self.request.user
         
         # Получаем зоны оператора
         operator_zones = operator.assigned_zones.filter(is_active=True)
         if not operator_zones.exists():
-            import logging
-            logger = logging.getLogger(api)
             logger.warning(f"⚠️ Operator {operator.username} has no active zones")
             return Order.objects.none()
         
         # Создаем список городов из зон оператора
         operator_cities = list(operator_zones.values_list('city', flat=True).distinct())
-        import logging
-        logger = logging.getLogger(api)
         logger.info(f"🔍 Operator {operator.username} zones: {operator_cities}")
         
         # Базовый queryset - заказы в зонах оператора
@@ -730,6 +728,9 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
     
     def retrieve(self, request, pk=None):
         """Получение конкретного заказа с дополнительной диагностикой"""
+            import logging
+        logger = logging.getLogger(app_operator)
+        
         try:
             # Сначала пытаемся получить заказ из нашего queryset
             queryset = self.get_queryset()
@@ -743,8 +744,6 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
                 operator = request.user
                 
                 # Диагностика: почему заказ не входит в queryset оператора
-                import logging
-                logger = logging.getLogger(api)
                 logger.info(f"🔍 Order #{pk} exists but not in operator queryset")
                 logger.info(f"🔍 Order details: service_type={order.service_type}, address={order.address}")
                 

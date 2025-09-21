@@ -157,7 +157,7 @@ class Operator(AbstractUser):
     def can_handle_order(self, order):
         """Проверяет, может ли оператор обрабатывать заказ"""
         import logging
-        logger = logging.getLogger(api)
+        logger = logging.getLogger(app_operator)
         logger.info(f"🔍 Checking if operator {self.username} can handle order #{order.id}")
         
         if not self.is_active_operator:

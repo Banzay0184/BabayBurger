@@ -242,7 +242,8 @@ class DeliveryZone(models.Model):
             longitude = float(longitude)
             
             import logging
-            logger = logging.getLogger(api)
+            logger = logging.getLogger(app_operator)
+            logger.info(f"🔍 Checking if coordinates ({latitude}, {longitude}) are in zone '{self.name}'")
             logger.info(f"🔍 Checking if coordinates ({latitude}, {longitude}) are in zone '{self.name}'")
             
             # Если есть полигон, используем его для проверки
