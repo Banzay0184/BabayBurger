@@ -585,16 +585,23 @@ class Address(models.Model):
         """
         print(f"🔍 Проверяем адрес: {self.full_address}")
         print(f"🔍 Координаты: lat={self.latitude}, lon={self.longitude}")
-        print(f"🔍 Город: {self.city}")
+        print(f"🔍 Город: '{self.city}'")
+        print(f"🔍 Улица: '{self.street}'")
+        print(f"🔍 Номер дома: '{self.house_number}'")
         
         if not self.latitude or not self.longitude:
             print("❌ Координаты адреса не определены")
             return False, "Координаты адреса не определены"
         
         # Временное решение: если адрес в Бухаре и есть координаты, разрешить доставку
-        if self.city == 'Бухара' and self.latitude and self.longitude:
+        if self.city and 'Бухара' in self.city and self.latitude and self.longitude:
             print("🔍 Временное решение: адрес в Бухаре, разрешаем доставку")
             return True, "Адрес в Бухаре - доставка разрешена (временное решение)"
+        
+        # Также проверяем Каган
+        if self.city and 'Каган' in self.city and self.latitude and self.longitude:
+            print("🔍 Временное решение: адрес в Кагане, разрешаем доставку")
+            return True, "Адрес в Кагане - доставка разрешена (временное решение)"
         
         # Получаем активные зоны доставки для города
         delivery_zones = DeliveryZone.objects.filter(

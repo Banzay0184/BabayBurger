@@ -122,11 +122,44 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
     message: string;
   }> => {
     try {
-      // Парсим адрес для получения компонентов
-      const addressParts = address.split(',');
-      const street = addressParts[0]?.trim() || '';
-      const houseNumber = addressParts[1]?.trim() || '';
-      const city = addressParts[addressParts.length - 1]?.trim() || 'Бухара';
+      // Улучшенный парсинг адреса
+      const addressParts = address.split(',').map(part => part.trim());
+      
+      // Определяем город - ищем в конце адреса
+      let city = 'Бухара'; // По умолчанию
+      let street = '';
+      let houseNumber = '';
+      
+      // Ищем город в конце адреса (обычно это последняя часть)
+      const possibleCities = ['Бухара', 'Каган', 'Бухарская область', 'Узбекистан'];
+      for (let i = addressParts.length - 1; i >= 0; i--) {
+        const part = addressParts[i];
+        if (possibleCities.some(c => part.toLowerCase().includes(c.toLowerCase()))) {
+          city = part;
+          break;
+        }
+      }
+      
+      // Улица - первая часть
+      street = addressParts[0] || '';
+      
+      // Номер дома - ищем число во второй части или в первой
+      for (let i = 1; i < Math.min(3, addressParts.length); i++) {
+        const part = addressParts[i];
+        if (part && /\d/.test(part)) {
+          houseNumber = part;
+          break;
+        }
+      }
+      
+      // Если номер дома не найден, пробуем найти в улице
+      if (!houseNumber && street) {
+        const houseMatch = street.match(/(\d+[а-я]?)/i);
+        if (houseMatch) {
+          houseNumber = houseMatch[1];
+          street = street.replace(houseMatch[0], '').trim();
+        }
+      }
 
       const addressData = {
         street,
@@ -137,6 +170,8 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       };
 
       console.log('🚚 Checking delivery zone for address:', addressData);
+      console.log('🚚 Original address string:', address);
+      console.log('🚚 Parsed components:', { street, houseNumber, city });
       
       const result = await addressApi.checkDeliveryZone(addressData);
       console.log('🚚 Delivery zone check result:', result);
