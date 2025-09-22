@@ -534,41 +534,6 @@ export const MainPage: React.FC = React.memo(() => {
     cartState
   });
 
-  // Показываем экран загрузки меню только если анимация логотипа завершена И меню еще загружается
-  if (!showLogo && menuState.isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 animate-fade-in">
-        <div className="text-center text-white">
-          {/* Логотип ресторана */}
-          <div className="mb-8">
-            <img 
-              src={logoUrl} 
-              alt="Babay Food" 
-              className="w-24 h-24 mx-auto rounded-full shadow-lg border-4 border-white/20"
-            />
-          </div>
-          
-          {/* Анимированный спиннер */}
-          <div className="relative mb-6">
-            <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-accent-500 rounded-full animate-spin mx-auto" style={{ animationDelay: '-0.5s' }}></div>
-          </div>
-          
-          {/* Брендовый текст */}
-          <h1 className="text-3xl font-bold mb-2">Babay Food</h1>
-          <p className="text-white/90 text-lg font-medium mb-2">{t('loading_menu')}</p>
-          <p className="text-white/70 text-sm">{t('preparing_delicious_dishes')}</p>
-          
-          {/* Дополнительные элементы брендинга */}
-          <div className="mt-8 flex justify-center space-x-2">
-            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse"></div>
-            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (menuState.error) {
     return (
