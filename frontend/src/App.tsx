@@ -12,7 +12,6 @@ import { OperatorApp } from './pages/operator/OperatorApp';
 import { CashierApp } from './pages/cashier/CashierApp';
 import { TelegramWebAppOptimizer } from './components/common/TelegramWebAppOptimizer';
 import { AdminApp } from './pages/admin/AdminApp';
-import { LoadingScreen } from './components/common/LoadingScreen';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { initTelegramWebApp } from './utils/telegram';
 import './styles/telegram-optimization.css';
@@ -20,25 +19,11 @@ import './styles/telegram-optimization.css';
 // Компонент для основного приложения (клиент)
 const ClientApp: React.FC = () => {
   const { state } = useAuth();
-  const [isInitializing, setIsInitializing] = React.useState(true);
 
-  // Инициализируем Telegram Web App при загрузке
+  // Инициализируем Telegram Web App при загрузке (без экрана загрузки)
   useEffect(() => {
-    const initializeApp = async () => {
-      await initTelegramWebApp();
-      // Небольшая задержка для показа анимации загрузки
-      setTimeout(() => {
-        setIsInitializing(false);
-      }, 1000);
-    };
-    
-    initializeApp();
+    initTelegramWebApp();
   }, []);
-
-  // Показываем анимацию загрузки только при инициализации
-  if (isInitializing) {
-    return <LoadingScreen title="Babay Food" subtitle="Загрузка приложения..." />;
-  }
 
   // Если загрузка или не авторизован - показываем страницу авторизации
   if (state.isLoading || !state.isAuthenticated) {

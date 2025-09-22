@@ -8,6 +8,7 @@ interface AutoLocationDetectorProps {
   onAddressDetected: (address: Address | null) => void;
   onShowMap: () => void;
   onClose: () => void;
+  onShowForm?: (address: Address) => void; // Новый проп для показа формы
   existingAddresses?: Address[];
 }
 
@@ -15,6 +16,7 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
   onAddressDetected,
   onShowMap,
   onClose,
+  onShowForm,
   existingAddresses = []
 }) => {
   const { state } = useAuth();
@@ -116,50 +118,78 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
     }
   }, []);
 
+  // Функция для парсинга адреса
+  const parseAddress = useCallback((address: string) => {
+    const addressParts = address.split(',').map(part => part.trim());
+    
+    let city = 'Бухара'; // По умолчанию
+    let street = '';
+    let houseNumber = '';
+    
+    console.log('🔍 Parsing address parts:', addressParts);
+    
+    // Определяем город - ищем Каган или Бухара
+    const cityKeywords = ['Каган', 'Бухара'];
+    for (let i = addressParts.length - 1; i >= 0; i--) {
+      const part = addressParts[i];
+      const foundCity = cityKeywords.find(city => 
+        part.toLowerCase().includes(city.toLowerCase())
+      );
+      if (foundCity) {
+        city = foundCity;
+        console.log('🏙️ Found city:', city, 'in part:', part);
+        break;
+      }
+    }
+    
+    // Ищем улицу - обычно содержит слово "улица" или "street"
+    const streetKeywords = ['улица', 'street', 'проспект', 'проезд', 'переулок'];
+    for (let i = 0; i < addressParts.length; i++) {
+      const part = addressParts[i];
+      const foundStreet = streetKeywords.find(keyword => 
+        part.toLowerCase().includes(keyword.toLowerCase())
+      );
+      if (foundStreet) {
+        street = part;
+        console.log('🛣️ Found street:', street);
+        break;
+      }
+    }
+    
+    // Если улица не найдена по ключевым словам, берем предпоследнюю часть
+    if (!street && addressParts.length >= 2) {
+      street = addressParts[addressParts.length - 2];
+      console.log('🛣️ Using second-to-last part as street:', street);
+    }
+    
+    // Ищем номер дома - ищем число в любой части
+    for (let i = 0; i < addressParts.length; i++) {
+      const part = addressParts[i];
+      const numberMatch = part.match(/(\d+[а-я]?)/i);
+      if (numberMatch) {
+        houseNumber = numberMatch[1];
+        console.log('🏠 Found house number:', houseNumber, 'in part:', part);
+        break;
+      }
+    }
+    
+    // Если номер дома найден в улице, убираем его из улицы
+    if (houseNumber && street && street.includes(houseNumber)) {
+      street = street.replace(houseNumber, '').trim();
+      console.log('🛣️ Cleaned street after removing house number:', street);
+    }
+    
+    return { city, street, houseNumber };
+  }, []);
+
   // Функция для проверки зоны доставки
   const checkDeliveryZone = useCallback(async (address: string, coords: [number, number]): Promise<{
     is_in_delivery_zone: boolean;
     message: string;
   }> => {
     try {
-      // Улучшенный парсинг адреса
-      const addressParts = address.split(',').map(part => part.trim());
-      
-      // Определяем город - ищем в конце адреса
-      let city = 'Бухара'; // По умолчанию
-      let street = '';
-      let houseNumber = '';
-      
-      // Ищем город в конце адреса (обычно это последняя часть)
-      const possibleCities = ['Бухара', 'Каган', 'Бухарская область', 'Узбекистан'];
-      for (let i = addressParts.length - 1; i >= 0; i--) {
-        const part = addressParts[i];
-        if (possibleCities.some(c => part.toLowerCase().includes(c.toLowerCase()))) {
-          city = part;
-          break;
-        }
-      }
-      
-      // Улица - первая часть
-      street = addressParts[0] || '';
-      
-      // Номер дома - ищем число во второй части или в первой
-      for (let i = 1; i < Math.min(3, addressParts.length); i++) {
-        const part = addressParts[i];
-        if (part && /\d/.test(part)) {
-          houseNumber = part;
-          break;
-        }
-      }
-      
-      // Если номер дома не найден, пробуем найти в улице
-      if (!houseNumber && street) {
-        const houseMatch = street.match(/(\d+[а-я]?)/i);
-        if (houseMatch) {
-          houseNumber = houseMatch[1];
-          street = street.replace(houseMatch[0], '').trim();
-        }
-      }
+      // Используем функцию парсинга адреса
+      const { city, street, houseNumber } = parseAddress(address);
 
       const addressData = {
         street,
@@ -184,7 +214,7 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
         message: 'Ошибка проверки зоны доставки'
       };
     }
-  }, []);
+  }, [parseAddress]);
 
   // Функция для поиска похожих адресов
   const findSimilarAddress = useCallback((detectedAddr: string, addresses: Address[]): Address | null => {
@@ -295,14 +325,17 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
     if (!detectedAddress || !coordinates) return;
     
     try {
+      // Парсим адрес для получения компонентов
+      const { city, street, houseNumber } = parseAddress(detectedAddress);
+      
       // Создаем новый адрес на основе определенного местоположения
       const newAddress: Address = {
         id: -1, // Временный ID
         user: Number(state.user?.id) || 0,
-        street: detectedAddress.split(',')[0] || '',
-        house_number: detectedAddress.split(',')[1] || '',
+        street: street || '',
+        house_number: houseNumber || '',
         apartment: '',
-        city: 'Бухара',
+        city: city,
         comment: 'Автоматически определенный адрес',
         coordinates: `${coordinates[1]},${coordinates[0]}`, // longitude,latitude
         latitude: coordinates[0],
@@ -316,13 +349,21 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
         telegram_id: String(state.user?.telegram_id || '')
       };
       
-      onAddressDetected(newAddress);
-      onClose();
+      // Если есть функция для показа формы, используем её
+      if (onShowForm) {
+        console.log('📍 📝 Showing form for new address:', newAddress);
+        onShowForm(newAddress);
+        onClose();
+      } else {
+        // Fallback: добавляем адрес напрямую
+        onAddressDetected(newAddress);
+        onClose();
+      }
     } catch (error) {
       console.error('❌ Error creating new address:', error);
       setError('Ошибка создания нового адреса');
     }
-  }, [detectedAddress, coordinates, state.user, onAddressDetected, onClose]);
+  }, [detectedAddress, coordinates, state.user, onAddressDetected, onClose, onShowForm, parseAddress]);
 
   // Функция для выбора существующего адреса
   const selectExistingAddress = useCallback(async (address: Address) => {

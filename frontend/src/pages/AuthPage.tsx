@@ -27,20 +27,6 @@ export const AuthPage: React.FC = () => {
     }
   }, [isTelegram, state.isAuthenticated, state.isLoading, loginAsGuest]);
 
-  if (state.isLoading) {
-    return (
-      <div className="tg-webapp flex items-center justify-center tg-safe-top tg-safe-bottom bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
-        <div className="text-center animate-fade-in">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-6"></div>
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-accent-500 rounded-full animate-spin mx-auto" style={{ animationDelay: '-0.5s' }}></div>
-          </div>
-          <p className="text-gray-300 text-lg font-medium">Загрузка...</p>
-          <p className="text-gray-500 text-sm mt-2">Подготавливаем приложение</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <PageTransition>

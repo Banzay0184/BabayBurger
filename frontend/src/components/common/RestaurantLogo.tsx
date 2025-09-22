@@ -53,12 +53,12 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = React.memo(({
     
     // Оптимизированная анимация с меньшим количеством таймеров
     const timers = [
-      setTimeout(() => setLogoScale(1), 500),
-      setTimeout(() => setLogoPosition({ x: 0, y: 0 }), 1000),
-      setTimeout(() => setTextOpacity(1), 2000),
-      setTimeout(() => setTextSlide(0), 2500),
-      setTimeout(() => setParticlesVisible(true), 3000),
-      setTimeout(handleAnimationComplete, 5000)
+      setTimeout(() => setLogoScale(1), 300),
+      setTimeout(() => setLogoPosition({ x: 0, y: 0 }), 600),
+      setTimeout(() => setTextOpacity(1), 1200),
+      setTimeout(() => setTextSlide(0), 1500),
+      setTimeout(() => setParticlesVisible(true), 1800),
+      setTimeout(handleAnimationComplete, 2500)
     ];
 
     // Очистка таймеров при размонтировании

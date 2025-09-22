@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { YandexMapPicker } from '../map/YandexMapPicker';
 import { AutoLocationDetector } from './AutoLocationDetector';
 import { getApiUrl } from '../../config/api';
+import { addressApi } from '../../api/addressApi';
 import type { MapAddress } from '../../types/yandex-maps';
 import type { Address } from '../../types/address';
 
@@ -15,6 +16,8 @@ interface AddressManagerProps {
   showMapPicker?: boolean;
   setShowMapPicker?: (show: boolean) => void;
   setIsWorkingWithAddresses?: (working: boolean) => void;
+  prefillAddress?: Address; // Адрес для предзаполнения формы
+  onClearPrefillAddress?: () => void; // Функция для очистки prefillAddress
 }
 
 export const AddressManager: React.FC<AddressManagerProps> = ({
@@ -23,7 +26,9 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
   onViewChange,
   showMapPicker: externalShowMapPicker,
   setShowMapPicker: externalSetShowMapPicker,
-  setIsWorkingWithAddresses: externalSetIsWorkingWithAddresses
+  setIsWorkingWithAddresses: externalSetIsWorkingWithAddresses,
+  prefillAddress,
+  onClearPrefillAddress
 }) => {
   const { t } = useLanguage();
   const { state } = useAuth();
@@ -43,6 +48,41 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
   useEffect(() => {
     console.log('📍 AddressManager: showAutoLocationDetector changed to', showAutoLocationDetector);
   }, [showAutoLocationDetector]);
+  
+  // Обработка prefillAddress - показываем форму с предзаполненными данными
+  useEffect(() => {
+    if (prefillAddress) {
+      console.log('📍 📝 AddressManager: prefillAddress received:', prefillAddress);
+      
+      // Заполняем форму данными из prefillAddress
+      setFormData({
+        street: prefillAddress.street || '',
+        house_number: prefillAddress.house_number || '',
+        apartment: prefillAddress.apartment || '',
+        city: prefillAddress.city || '',
+        phone_number: prefillAddress.phone_number || getPhoneForNewAddress(),
+        comment: prefillAddress.comment || '',
+        is_primary: prefillAddress.is_primary || false,
+        telegram_id: prefillAddress.telegram_id || getTelegramId(),
+        latitude: prefillAddress.latitude || null,
+        longitude: prefillAddress.longitude || null
+      });
+      
+      // Показываем форму
+      setShowForm(true);
+      setIsFormFilledFromMap(true);
+      
+      // Устанавливаем флаг работы с адресами
+      if (externalSetIsWorkingWithAddresses) {
+        externalSetIsWorkingWithAddresses(true);
+      }
+      
+      // Очищаем prefillAddress после обработки
+      if (onClearPrefillAddress) {
+        onClearPrefillAddress();
+      }
+    }
+  }, [prefillAddress, onClearPrefillAddress]);
   
   // Используем внешнее состояние для карты, если оно передано, иначе локальное
   const showMapPicker = externalShowMapPicker ?? false;
@@ -342,43 +382,34 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
 
       console.log('🗺️ 📤 Sending address data to backend:', addressData);
 
-      // Определяем URL и метод
-      const url = editingAddress 
-        ? getApiUrl(`addresses/${editingAddress.id}/`)
-        : getApiUrl('addresses/');
-      const method = editingAddress ? 'PUT' : 'POST';
+      console.log('🗺️ 🌐 API request data:', addressData);
 
-      console.log('🗺️ 🌐 API request:', { method, url });
+      let newAddress: Address;
+      if (editingAddress) {
+        // Редактирование существующего адреса
+        console.log('🗺️ 🔄 Updating existing address:', editingAddress.id);
+        newAddress = await addressApi.updateAddress(editingAddress.id, addressData);
+      } else {
+        // Добавление нового адреса
+        console.log('🗺️ ➕ Creating new address');
+        newAddress = await addressApi.createAddress(addressData);
+      }
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
-        },
-        body: JSON.stringify(addressData)
-      });
-
-      console.log('🗺️ 📥 Backend response status:', response.status);
-
-      if (response.ok) {
-        const newAddress = await response.json();
-        console.log('🗺️ ✅ Address saved successfully:', newAddress);
+      console.log('🗺️ ✅ Address saved successfully:', newAddress);
         
-        if (editingAddress) {
-          // Редактирование существующего адреса
-          const updatedAddresses = addresses.map((addr: any) => 
-            addr.id === editingAddress.id ? newAddress : addr
-          );
-          updateAddresses(updatedAddresses);
-          alert('✅ Адрес обновлен!');
-        } else {
-          // Добавление нового адреса
-          const updatedAddresses = [...addresses, newAddress];
-          updateAddresses(updatedAddresses);
-          alert('✅ Адрес добавлен!');
-        }
+      if (editingAddress) {
+        // Редактирование существующего адреса
+        const updatedAddresses = addresses.map((addr: any) => 
+          addr.id === editingAddress.id ? newAddress : addr
+        );
+        updateAddresses(updatedAddresses);
+        alert('✅ Адрес обновлен!');
+      } else {
+        // Добавление нового адреса
+        const updatedAddresses = [...addresses, newAddress];
+        updateAddresses(updatedAddresses);
+        alert('✅ Адрес добавлен!');
+      }
         
         // Сбрасываем форму
         resetForm();
@@ -394,19 +425,28 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
           console.log('🗺️ ✅ View switched to menu');
         }
         
-        // Устанавливаем isWorkingWithAddresses в false после успешного сохранения
-        if (externalSetIsWorkingWithAddresses) {
-          console.log('🏠 AddressManager: Setting isWorkingWithAddresses to false (address saved)');
-          externalSetIsWorkingWithAddresses(false);
-        }
-      } else {
-        const errorData = await response.json();
-        console.error('🗺️ ❌ Backend error:', errorData);
-        throw new Error(`Backend error: ${errorData.error || 'Unknown error'}`);
+      // Устанавливаем isWorkingWithAddresses в false после успешного сохранения
+      if (externalSetIsWorkingWithAddresses) {
+        console.log('🏠 AddressManager: Setting isWorkingWithAddresses to false (address saved)');
+        externalSetIsWorkingWithAddresses(false);
       }
     } catch (error) {
       console.error('🗺️ ❌ Error in handleSave:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      
+      // Обрабатываем ошибки от addressApi
+      let errorMessage = 'Неизвестная ошибка';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'response' in error) {
+        // Ошибка от axios/unifiedClient
+        const axiosError = error as any;
+        if (axiosError.response?.data?.error) {
+          errorMessage = axiosError.response.data.error;
+        } else if (axiosError.response?.status) {
+          errorMessage = `Ошибка сервера: ${axiosError.response.status}`;
+        }
+      }
+      
       alert('Ошибка сохранения адреса: ' + errorMessage);
     }
   };

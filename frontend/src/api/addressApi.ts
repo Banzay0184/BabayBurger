@@ -17,10 +17,43 @@ export const addressApi = {
   // Создать новый адрес
   async createAddress(addressData: Partial<Address>): Promise<Address> {
     try {
-      const response = await publicApi.post<Address>('/addresses/', addressData);
+      // Извлекаем telegram_id из addressData
+      const { telegram_id, ...restData } = addressData;
+      
+      // Формируем правильную структуру для бэкенда
+      const requestData = {
+        ...restData,
+        telegram_id: String(telegram_id), // Конвертируем в строку
+        phone_number: restData.phone_number?.replace(/\s/g, ''), // Убираем пробелы из номера телефона
+        latitude: restData.latitude ? Number(restData.latitude.toFixed(7)) : null, // Округляем до 7 знаков
+        longitude: restData.longitude ? Number(restData.longitude.toFixed(7)) : null // Округляем до 7 знаков
+      };
+      
+      console.log('📤 Sending address creation request:', requestData);
+      console.log('📤 Request data types:', {
+        street: typeof requestData.street,
+        house_number: typeof requestData.house_number,
+        apartment: typeof requestData.apartment,
+        city: typeof requestData.city,
+        phone_number: typeof requestData.phone_number,
+        telegram_id: typeof requestData.telegram_id,
+        latitude: typeof requestData.latitude,
+        longitude: typeof requestData.longitude
+      });
+      
+      const response = await publicApi.post<Address>('/addresses/', requestData);
       return response;
     } catch (error) {
-      console.error('Error creating address:', error);
+      console.error('❌ Error creating address:', error);
+      
+      // Подробное логирование ошибки
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as any;
+        console.error('❌ Response status:', axiosError.response?.status);
+        console.error('❌ Response data:', axiosError.response?.data);
+        console.error('❌ Response headers:', axiosError.response?.headers);
+      }
+      
       throw error;
     }
   },
