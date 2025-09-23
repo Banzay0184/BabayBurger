@@ -344,7 +344,7 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       
       // Если это ошибка геолокации, показываем более понятное сообщение
       if (errorMessage.includes('местоположение') || errorMessage.includes('geolocation') || errorMessage.includes('User denied Geolocation')) {
-        setError('Геолокация недоступна. В Telegram Web App на компьютере автоматическое определение адреса может не работать. Пожалуйста, выберите адрес на карте или используйте один из сохраненных адресов.');
+        setError('Геолокация недоступна. Выберите адрес на карте или используйте сохраненный.');
       } else {
         setError(errorMessage);
       }
@@ -486,53 +486,51 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <span className="text-red-400 text-xl">⚠️</span>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <div className="flex items-center mb-3">
+                <span className="text-red-500 text-lg mr-2">⚠️</span>
+                <h3 className="text-sm font-semibold text-red-800">
+                  Не удалось определить адрес
+                </h3>
+              </div>
+              
+              <p className="text-xs text-red-600 mb-3 leading-relaxed">
+                {error}
+              </p>
+              
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => {
+                      console.log('🔄 Попробовать снова clicked');
+                      detectLocation();
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-2 flex-1"
+                  >
+                    🔄 Попробовать снова
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      console.log('🗺️ Выбрать на карте clicked');
+                      onShowMap();
+                    }}
+                    className="bg-gray-600 hover:bg-gray-700 text-white text-xs px-3 py-2 flex-1"
+                  >
+                    🗺️ На карте
+                  </Button>
                 </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    Ошибка определения адреса
-                  </h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <p>{error}</p>
-                  </div>
-                  <div className="mt-4 flex flex-col gap-2">
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => {
-                          console.log('🔄 Попробовать снова clicked');
-                          detectLocation();
-                        }}
-                        className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2 flex-1"
-                      >
-                        Попробовать снова
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          console.log('🗺️ Выбрать на карте clicked');
-                          onShowMap();
-                        }}
-                        className="bg-gray-600 hover:bg-gray-700 text-white text-sm px-3 py-2 flex-1"
-                      >
-                        Выбрать на карте
-                      </Button>
-                    </div>
-                    {existingAddresses.length > 0 && (
-                      <Button
-                        onClick={() => {
-                          console.log('📍 Показать сохраненные адреса clicked');
-                          setShowExistingAddresses(true);
-                          setError(null);
-                        }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-2 w-full"
-                      >
-                        📍 Использовать сохраненный адрес ({existingAddresses.length})
-                      </Button>
-                    )}
-                  </div>
-                </div>
+                {existingAddresses.length > 0 && (
+                  <Button
+                    onClick={() => {
+                      console.log('📍 Показать сохраненные адреса clicked');
+                      setShowExistingAddresses(true);
+                      setError(null);
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 w-full"
+                  >
+                    📍 Сохраненные адреса ({existingAddresses.length})
+                  </Button>
+                )}
               </div>
             </div>
           )}
