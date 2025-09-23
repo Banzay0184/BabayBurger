@@ -29,6 +29,7 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
     is_in_delivery_zone: boolean;
     message: string;
   } | null>(null);
+  const [showExistingAddresses, setShowExistingAddresses] = useState(false);
   
   // Ref для предотвращения множественных вызовов
   const hasDetectedRef = useRef(false);
@@ -206,6 +207,16 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       }
     }
     
+    // Если номер дома не найден, пробуем найти в последней части адреса
+    if (!houseNumber && addressParts.length > 0) {
+      const lastPart = addressParts[addressParts.length - 1];
+      const lastNumberMatch = lastPart.match(/(\d+[а-я]?)/i);
+      if (lastNumberMatch) {
+        houseNumber = lastNumberMatch[1];
+        console.log('🏠 Found house number in last part:', houseNumber, 'in part:', lastPart);
+      }
+    }
+    
     // Если номер дома найден в улице, убираем его из улицы
     if (houseNumber && street && street.includes(houseNumber)) {
       street = street.replace(houseNumber, '').trim();
@@ -332,8 +343,8 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       const errorMessage = error instanceof Error ? error.message : 'Ошибка определения местоположения';
       
       // Если это ошибка геолокации, показываем более понятное сообщение
-      if (errorMessage.includes('местоположение') || errorMessage.includes('geolocation')) {
-        setError('Не удалось получить доступ к местоположению. Пожалуйста, разрешите доступ к геолокации в настройках браузера или выберите адрес на карте.');
+      if (errorMessage.includes('местоположение') || errorMessage.includes('geolocation') || errorMessage.includes('User denied Geolocation')) {
+        setError('Геолокация недоступна. В Telegram Web App на компьютере автоматическое определение адреса может не работать. Пожалуйста, выберите адрес на карте или используйте один из сохраненных адресов.');
       } else {
         setError(errorMessage);
       }
@@ -355,21 +366,30 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
 
   // Функция создания нового адреса
   const createNewAddress = useCallback(async () => {
-    if (!detectedAddress || !coordinates) return;
+    console.log('📍 📝 createNewAddress called');
+    console.log('📍 📝 detectedAddress:', detectedAddress);
+    console.log('📍 📝 coordinates:', coordinates);
+    console.log('📍 📝 onShowForm:', !!onShowForm);
+    
+    if (!detectedAddress || !coordinates) {
+      console.log('❌ Missing detectedAddress or coordinates');
+      return;
+    }
     
     try {
       // Парсим адрес для получения компонентов
       const { city, street, houseNumber } = parseAddress(detectedAddress);
+      console.log('📍 📝 Parsed address:', { city, street, houseNumber });
       
       // Создаем новый адрес на основе определенного местоположения
       const newAddress: Address = {
         id: -1, // Временный ID
         user: Number(state.user?.id) || 0,
         street: street || '',
-        house_number: houseNumber || '',
+        house_number: houseNumber || 'не указан', // Если номер дома не найден, ставим "не указан"
         apartment: '',
         city: city,
-        comment: 'Автоматически определенный адрес',
+        comment: houseNumber ? 'Автоматически определенный адрес' : 'Автоматически определенный адрес (номер дома не найден)',
         coordinates: `${coordinates[1]},${coordinates[0]}`, // longitude,latitude
         latitude: coordinates[0],
         longitude: coordinates[1],
@@ -382,12 +402,16 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
         telegram_id: String(state.user?.telegram_id || '')
       };
       
+      console.log('📍 📝 Created newAddress:', newAddress);
+      
       // Если есть функция для показа формы, используем её
       if (onShowForm) {
-        console.log('📍 📝 Showing form for new address:', newAddress);
+        console.log('📍 📝 Calling onShowForm with newAddress');
         onShowForm(newAddress);
+        console.log('📍 📝 Calling onClose');
         onClose();
       } else {
+        console.log('📍 📝 onShowForm not available, using fallback');
         // Fallback: добавляем адрес напрямую
         onAddressDetected(newAddress);
         onClose();
@@ -474,27 +498,98 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                   <div className="mt-2 text-sm text-red-700">
                     <p>{error}</p>
                   </div>
-                  <div className="mt-4 flex gap-2">
-                    <Button
-                      onClick={() => {
-                        console.log('🔄 Попробовать снова clicked');
-                        detectLocation();
-                      }}
-                      className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2"
-                    >
-                      Попробовать снова
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        console.log('🗺️ Выбрать на карте clicked');
-                        onShowMap();
-                      }}
-                      className="bg-gray-600 hover:bg-gray-700 text-white text-sm px-3 py-2"
-                    >
-                      Выбрать на карте
-                    </Button>
+                  <div className="mt-4 flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => {
+                          console.log('🔄 Попробовать снова clicked');
+                          detectLocation();
+                        }}
+                        className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2 flex-1"
+                      >
+                        Попробовать снова
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          console.log('🗺️ Выбрать на карте clicked');
+                          onShowMap();
+                        }}
+                        className="bg-gray-600 hover:bg-gray-700 text-white text-sm px-3 py-2 flex-1"
+                      >
+                        Выбрать на карте
+                      </Button>
+                    </div>
+                    {existingAddresses.length > 0 && (
+                      <Button
+                        onClick={() => {
+                          console.log('📍 Показать сохраненные адреса clicked');
+                          setShowExistingAddresses(true);
+                          setError(null);
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-2 w-full"
+                      >
+                        📍 Использовать сохраненный адрес ({existingAddresses.length})
+                      </Button>
+                    )}
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Показываем существующие адреса, если пользователь выбрал этот вариант */}
+          {showExistingAddresses && existingAddresses.length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold text-blue-800 mb-3">
+                📍 Ваши сохраненные адреса:
+              </h3>
+              <div className="space-y-2">
+                {existingAddresses.map((address) => (
+                  <div
+                    key={address.id}
+                    className="bg-white border border-blue-200 rounded-lg p-3 cursor-pointer hover:bg-blue-50 transition-colors"
+                    onClick={() => selectExistingAddress(address)}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">
+                          {address.street} {address.house_number}
+                          {address.apartment && `, кв. ${address.apartment}`}
+                        </p>
+                        <p className="text-sm text-gray-600">{address.city}</p>
+                        {address.comment && (
+                          <p className="text-xs text-gray-500 mt-1">{address.comment}</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          selectExistingAddress(address);
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2 py-1 rounded"
+                      >
+                        Выбрать
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex gap-2">
+                <Button
+                  onClick={() => setShowExistingAddresses(false)}
+                  className="bg-gray-600 hover:bg-gray-700 text-white text-sm px-3 py-2 flex-1"
+                >
+                  Назад
+                </Button>
+                <Button
+                  onClick={() => {
+                    console.log('🗺️ Выбрать на карте clicked');
+                    onShowMap();
+                  }}
+                  className="bg-primary-600 hover:bg-primary-700 text-white text-sm px-3 py-2 flex-1"
+                >
+                  Выбрать на карте
+                </Button>
               </div>
             </div>
           )}
@@ -565,7 +660,10 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                   </p>
                   <div className="flex gap-2">
                     <Button
-                      onClick={createNewAddress}
+                      onClick={() => {
+                        console.log('📍 📝 "Да, добавить" button clicked');
+                        createNewAddress();
+                      }}
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                     >
                       Да, добавить

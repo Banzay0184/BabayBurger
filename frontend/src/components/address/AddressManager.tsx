@@ -353,9 +353,17 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
         return;
       }
       
+      // Если номер дома пустой, предлагаем пользователю ввести его
       if (!formData.house_number || formData.house_number.trim() === '') {
-        alert('Пожалуйста, введите номер дома');
-        return;
+        const userInput = prompt('Номер дома не определен автоматически. Пожалуйста, введите номер дома (или "не указан" если неизвестен):');
+        if (userInput === null) {
+          return; // Пользователь отменил
+        }
+        if (userInput.trim() === '') {
+          alert('Пожалуйста, введите номер дома');
+          return;
+        }
+        formData.house_number = userInput.trim();
       }
       
       if (!formData.phone_number) {
