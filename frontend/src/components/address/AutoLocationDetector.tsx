@@ -34,7 +34,7 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
   const hasDetectedRef = useRef(false);
   const detectionTimeoutRef = useRef<number | null>(null);
 
-  // Функция для получения местоположения через Telegram Web App
+  // Функция для получения местоположения через Telegram Web App с улучшенной точностью
   const getTelegramLocation = useCallback(async (): Promise<[number, number] | null> => {
     try {
       // Проверяем, есть ли доступ к Telegram Web App
@@ -46,8 +46,14 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
           return new Promise((resolve) => {
             webApp.requestLocation((location: any) => {
               if (location && location.latitude && location.longitude) {
-                console.log('📍 Telegram location received:', location);
-                resolve([location.latitude, location.longitude]);
+                // Округляем координаты до 6 знаков после запятой для стабильности
+                const roundedCoords: [number, number] = [
+                  Number(location.latitude.toFixed(6)),
+                  Number(location.longitude.toFixed(6))
+                ];
+                console.log('📍 Telegram location received:', roundedCoords);
+                console.log('📍 Original accuracy:', location.accuracy || 'unknown');
+                resolve(roundedCoords);
               } else {
                 console.log('❌ Telegram location not available');
                 resolve(null);
@@ -57,16 +63,18 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
         }
       }
       
-      // Fallback на стандартный Geolocation API
+      // Fallback на стандартный Geolocation API с улучшенными настройками
       if (navigator.geolocation) {
         return new Promise((resolve) => {
           navigator.geolocation.getCurrentPosition(
             (position) => {
+              // Округляем координаты до 6 знаков после запятой для стабильности
               const coords: [number, number] = [
-                position.coords.latitude,
-                position.coords.longitude
+                Number(position.coords.latitude.toFixed(6)),
+                Number(position.coords.longitude.toFixed(6))
               ];
               console.log('📍 Browser location received:', coords);
+              console.log('📍 Location accuracy:', position.coords.accuracy, 'meters');
               resolve(coords);
             },
             (error) => {
@@ -76,8 +84,8 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
             },
             {
               enableHighAccuracy: true,
-              timeout: 10000,
-              maximumAge: 300000 // 5 минут
+              timeout: 15000, // Увеличиваем таймаут для лучшей точности
+              maximumAge: 60000 // Уменьшаем кэш до 1 минуты для свежести
             }
           );
         });
@@ -90,9 +98,24 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
     }
   }, []);
 
-  // Функция для геокодирования координат в адрес
+  // Кэш для геокодирования (ключ: "lat,lng", значение: адрес)
+  const geocodeCache = useRef<Map<string, string>>(new Map());
+
+  // Функция для геокодирования координат в адрес с кэшированием
   const geocodeCoordinates = useCallback(async (lat: number, lon: number): Promise<string | null> => {
     try {
+      // Создаем ключ для кэша (округленные координаты)
+      const cacheKey = `${lat.toFixed(6)},${lon.toFixed(6)}`;
+      
+      // Проверяем кэш
+      if (geocodeCache.current.has(cacheKey)) {
+        const cachedAddress = geocodeCache.current.get(cacheKey);
+        console.log('📍 Using cached address:', cachedAddress);
+        return cachedAddress || null;
+      }
+      
+      console.log('📍 Geocoding coordinates:', lat, lon);
+      
       // Используем Яндекс Геокодер для получения адреса
       const response = await fetch(
         `https://geocode-maps.yandex.ru/1.x/?format=json&geocode=${lon},${lat}&apikey=3033f881-c5ec-434f-96aa-e13da893f61f&lang=ru_RU`
@@ -108,6 +131,16 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       if (featureMember && featureMember.length > 0) {
         const address = featureMember[0].GeoObject.metaDataProperty.GeocoderMetaData.text;
         console.log('📍 Geocoded address:', address);
+        
+        // Сохраняем в кэш
+        geocodeCache.current.set(cacheKey, address);
+        
+        // Ограничиваем размер кэша (максимум 50 записей)
+        if (geocodeCache.current.size > 50) {
+          const firstKey = geocodeCache.current.keys().next().value;
+          geocodeCache.current.delete(firstKey);
+        }
+        
         return address;
       }
       
