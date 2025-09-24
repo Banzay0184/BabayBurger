@@ -8,6 +8,7 @@ import { PWAManifestProgrammatic } from '../../components/operator/PWAManifestPr
 import { HTMLInspector } from '../../components/operator/HTMLInspector';
 import { URLChecker } from '../../components/operator/URLChecker';
 import { HTMLFileChecker } from '../../components/operator/HTMLFileChecker';
+import { PWAFileAvailabilityChecker } from '../../components/operator/PWAFileAvailabilityChecker';
 
 export const OperatorLoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -49,6 +50,9 @@ export const OperatorLoginPage: React.FC = () => {
         
         {/* HTML File Checker */}
         <HTMLFileChecker />
+        
+        {/* PWA File Availability Checker */}
+        <PWAFileAvailabilityChecker />
         
         {/* HTML Inspector */}
         <HTMLInspector />

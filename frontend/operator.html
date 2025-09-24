@@ -8,7 +8,7 @@
     <meta name="description" content="Интерфейс оператора для управления заказами ресторана Babay Burger" />
     
     <!-- PWA манифест -->
-    <link rel="manifest" href="./operator-manifest.json" />
+    <link rel="manifest" href="/operator-manifest.json" />
     
     <!-- Встроенный манифест как fallback -->
     <script type="application/json" id="pwa-manifest">
@@ -118,7 +118,7 @@
       // Регистрация Service Worker для PWA
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./operator-sw.js')
+          navigator.serviceWorker.register('/operator-sw.js')
             .then((registration) => {
               console.log('🎯 Operator PWA: Service Worker registered successfully');
               
