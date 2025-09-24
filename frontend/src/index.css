@@ -1,3 +1,6 @@
+/* Импорт стилей для звуковых уведомлений */
+@import './styles/sound-notifications.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

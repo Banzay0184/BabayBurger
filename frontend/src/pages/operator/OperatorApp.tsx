@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { OperatorAuthProvider, useOperatorAuth } from '../../context/OperatorAuthContext';
+import { SoundNotificationProvider } from '../../components/operator/SoundNotificationManager';
 import { OperatorLoginPage } from './OperatorLoginPage';
 import { OperatorDashboardPage } from './OperatorDashboardPage';
 import { OperatorStatsPage } from './OperatorStatsPage';
@@ -133,7 +134,9 @@ const OperatorAppContent: React.FC = () => {
 export const OperatorApp: React.FC = () => {
   return (
     <OperatorAuthProvider>
-      <OperatorAppContent />
+      <SoundNotificationProvider>
+        <OperatorAppContent />
+      </SoundNotificationProvider>
     </OperatorAuthProvider>
   );
 };

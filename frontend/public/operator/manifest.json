@@ -1,0 +1,81 @@
+{
+  "name": "Babay Burger - Оператор",
+  "short_name": "Babay Оператор",
+  "description": "Интерфейс оператора для управления заказами ресторана Babay Burger",
+  "start_url": "/operator/",
+  "display": "standalone",
+  "id": "/operator/",
+  "background_color": "#1f2937",
+  "theme_color": "#3b82f6",
+  "orientation": "any",
+  "scope": "/",
+  "lang": "ru",
+  "categories": ["business", "food", "productivity"],
+  "icons": [
+    {
+      "src": "/logobabay.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logobabay.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Вход оператора",
+      "short_name": "Вход",
+      "description": "Быстрый доступ к странице входа оператора",
+      "url": "/operator/#/login",
+      "icons": [
+        {
+          "src": "/logobabay.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Панель оператора",
+      "short_name": "Панель",
+      "description": "Основная рабочая панель оператора",
+      "url": "/operator/#/dashboard",
+      "icons": [
+        {
+          "src": "/logobabay.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Статистика",
+      "short_name": "Статистика",
+      "description": "Статистика и аналитика оператора",
+      "url": "/operator/#/stats",
+      "icons": [
+        {
+          "src": "/logobabay.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
+}

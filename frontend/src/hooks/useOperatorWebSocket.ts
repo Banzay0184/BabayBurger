@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useWebSocket } from './useWebSocket';
 import type { WebSocketMessage } from './useWebSocket';
 import { useOperatorAuth } from '../context/OperatorAuthContext';
+import { useSoundNotifications } from '../components/operator/SoundNotificationManager';
 import type { OrderForOperator, OperatorNotification } from '../types/operator';
 
 export interface OperatorWebSocketMessage extends WebSocketMessage {
@@ -48,6 +49,7 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
   } = options;
 
   const { state: authState } = useOperatorAuth();
+  const { playSound } = useSoundNotifications();
   const [operatorId, setOperatorId] = useState<number | null>(null);
 
   const buildWsBase = (override?: string): string => {
@@ -96,6 +98,8 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
       case 'order_created':
         if ((message as any).order && onOrderCreated) {
           console.log('🆕 New order received:', (message as any).order);
+          // Воспроизводим звук для нового заказа
+          playSound('new_order');
           onOrderCreated((message as any).order);
         }
         break;
@@ -103,6 +107,8 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
       case 'order_updated':
         if ((message as any).order_id && onOrderUpdated) {
           console.log('🔄 Order updated:', (message as any).order_id, (message as any).status);
+          // Воспроизводим звук для обновления заказа
+          playSound('order_update');
           onOrderUpdated((message as any).order_id, (message as any).order, (message as any).status);
         }
         break;
@@ -110,6 +116,8 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
       case 'order_assigned':
         if ((message as any).order_id && (message as any).operator_id && (message as any).operator_name && onOrderAssigned) {
           console.log('👤 Order assigned:', (message as any).order_id, (message as any).operator_name);
+          // Воспроизводим звук для назначения заказа
+          playSound('notification');
           onOrderAssigned((message as any).order_id, (message as any).operator_id, (message as any).operator_name);
         }
         break;
@@ -117,6 +125,8 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
       case 'notification':
         if ((message as any).notification && onNotification) {
           console.log('🔔 Notification received:', (message as any).notification);
+          // Воспроизводим звук для системных уведомлений
+          playSound('notification');
           onNotification((message as any).notification);
         }
         break;
@@ -139,7 +149,7 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
       default:
         console.log('❓ Unknown message type:', message.type);
     }
-  }, [onOrderCreated, onOrderUpdated, onOrderAssigned, onNotification, onDashboardUpdate]);
+  }, [onOrderCreated, onOrderUpdated, onOrderAssigned, onNotification, onDashboardUpdate, playSound]);
 
   // Обработчики событий WebSocket
   const handleOpen = useCallback(() => {

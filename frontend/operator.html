@@ -7,7 +7,21 @@
     <title>Babay Burger - Оператор</title>
     <meta name="description" content="Интерфейс оператора для управления заказами ресторана Babay Burger" />
     
+    <!-- PWA манифест -->
+    <link rel="manifest" href="/operator/manifest.json" />
+    
+    <!-- Иконки для PWA -->
     <link rel="icon" type="image/png" href="/logobabay.png" />
+    <link rel="apple-touch-icon" href="/logobabay.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/logobabay.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/logobabay.png" />
+    
+    <!-- PWA мета-теги -->
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Babay Оператор" />
+    <meta name="mobile-web-app-capable" content="yes" />
     
     <!-- Современный шрифт Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -54,5 +68,60 @@
     <div id="root"></div>
     
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- PWA Service Worker -->
+    <script>
+      // Регистрация Service Worker для PWA
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/operator/sw.js')
+            .then((registration) => {
+              console.log('🎯 Operator PWA: Service Worker registered successfully');
+              
+              // Проверяем обновления каждые 60 секунд
+              setInterval(() => {
+                registration.update();
+              }, 60000);
+              
+              // Слушаем сообщения от Service Worker
+              navigator.serviceWorker.addEventListener('message', (event) => {
+                console.log('🎯 Operator PWA: Message from SW:', event.data);
+                
+                if (event.data.type === 'SYNC_COMPLETE') {
+                  console.log('🎯 Operator PWA: Background sync completed');
+                }
+                
+                if (event.data.type === 'PLAY_SOUND') {
+                  // Делегируем воспроизведение звука основному потоку
+                  window.dispatchEvent(new CustomEvent('playSoundFromSW', {
+                    detail: { soundType: event.data.soundType }
+                  }));
+                }
+              });
+            })
+            .catch((error) => {
+              console.error('🎯 Operator PWA: Service Worker registration failed:', error);
+            });
+        });
+      }
+      
+      // Проверка критериев установки PWA
+      function checkInstallCriteria() {
+        const hasServiceWorker = 'serviceWorker' in navigator;
+        const hasManifest = !!document.querySelector('link[rel="manifest"]');
+        const isSecure = location.protocol === 'https:' || location.hostname === 'localhost';
+        const hasIcons = document.querySelectorAll('link[rel*="icon"], link[rel*="apple-touch-icon"]').length > 0;
+        
+        return hasServiceWorker && hasManifest && isSecure && hasIcons;
+      }
+      
+      // Проверяем критерии установки после загрузки DOM
+      document.addEventListener('DOMContentLoaded', () => {
+        const canInstall = checkInstallCriteria();
+        console.log('🎯 Operator PWA: Install criteria met:', canInstall);
+      });
+      
+      console.log('🎯 Operator PWA: Initialized successfully');
+    </script>
   </body>
 </html>

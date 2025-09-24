@@ -56,20 +56,6 @@ export const OperatorLoginPage: React.FC = () => {
     }
   };
 
-  // Переключение между входом и регистрацией
-  const toggleMode = () => {
-    setIsRegistering(!isRegistering);
-    clearError();
-    setUsername('');
-    setPassword('');
-    setRegisterData({
-      first_name: '',
-      last_name: '',
-      email: '',
-      phone: '',
-      password_confirm: ''
-    });
-  };
 
   if (state.isLoading) {
     return (
@@ -243,21 +229,29 @@ export const OperatorLoginPage: React.FC = () => {
               )}
             </button>
           </div>
-
-          {/* Переключение режима - планшетная версия */}
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={toggleMode}
-              className="text-blue-400 hover:text-blue-300 text-lg transition-colors"
-            >
-              {isRegistering 
-                ? 'Уже есть аккаунт? Войти' 
-                : 'Нет аккаунта? Зарегистрироваться'
-              }
-            </button>
-          </div>
         </form>
+
+        {/* Переключение между режимами */}
+        <div className="text-center mt-6">
+          <button
+            onClick={() => {
+              setIsRegistering(!isRegistering);
+              clearError();
+              setUsername('');
+              setPassword('');
+              setRegisterData({
+                first_name: '',
+                last_name: '',
+                email: '',
+                phone: '',
+                password_confirm: ''
+              });
+            }}
+            className="text-blue-400 hover:text-blue-300 text-lg font-medium transition-colors"
+          >
+            {isRegistering ? 'Уже есть аккаунт? Войти' : 'Нет аккаунта? Зарегистрироваться'}
+          </button>
+        </div>
 
         {/* Дополнительная информация - планшетная версия */}
         <div className="text-center">

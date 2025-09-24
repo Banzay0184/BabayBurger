@@ -14,6 +14,8 @@ import { CompactOrderFilters } from '../../components/operator/CompactOrderFilte
 import { OrderSearch } from '../../components/operator/OrderSearch';
 import { NotificationsPanel } from '../../components/operator/NotificationsPanel';
 import { WebSocketStatus } from '../../components/operator/WebSocketStatus';
+import { SoundSettingsPanel } from '../../components/operator/SoundNotificationManager';
+import { OperatorPWAStatus, OperatorPWAForceInstall } from '../../components/operator/OperatorPWAStatus';
 import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
 
 export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ onNavigate }) => {
@@ -25,6 +27,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showSoundSettings, setShowSoundSettings] = useState(false);
 
   // WebSocket обработчики для real-time обновлений
   const handleNewOrder = useCallback((newOrder: OrderForOperator) => {
@@ -378,6 +381,9 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
 
       {/* Основной контент - планшетная версия с двумя колонками */}
       <main className="max-w-full mx-auto px-4 py-4">
+        {/* PWA установка */}
+        <OperatorPWAForceInstall />
+        
         {/* Поиск заказов */}
         <OrderSearch
           onSearch={handleSearch}
@@ -413,27 +419,40 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
                 </span>
               </div>
             </div>
-            <div className="flex space-x-1">
-              <button
-                onClick={() => {
-                  console.log('🔄 Принудительное обновление всех данных...');
-                  loadDashboard();
-                  loadOrders();
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
-              >
-                🔄
-              </button>
-              <button
-                onClick={() => {
-                  if (onNavigate) {
-                    onNavigate('stats');
-                  }
-                }}
-                className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
-              >
-                📊
-              </button>
+            <div className="flex items-center space-x-2">
+              {/* PWA статус */}
+              <OperatorPWAStatus className="text-xs" />
+              
+              {/* Кнопки действий */}
+              <div className="flex space-x-1">
+                <button
+                  onClick={() => {
+                    console.log('🔄 Принудительное обновление всех данных...');
+                    loadDashboard();
+                    loadOrders();
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                >
+                  🔄
+                </button>
+                <button
+                  onClick={() => {
+                    if (onNavigate) {
+                      onNavigate('stats');
+                    }
+                  }}
+                  className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                >
+                  📊
+                </button>
+                <button
+                  onClick={() => setShowSoundSettings(true)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                  title="Настройки звука"
+                >
+                  🔊
+                </button>
+              </div>
             </div>
           </div>
 
@@ -472,6 +491,26 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
           onClose={() => setShowNotifications(false)}
           onMarkAsRead={operatorNotificationsApi.markAsRead}
         />
+      )}
+
+      {/* Панель настроек звука */}
+      {showSoundSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg max-w-md w-full mx-4">
+            <div className="flex justify-between items-center p-6 border-b border-gray-700">
+              <h2 className="text-xl font-semibold text-white">Настройки звука</h2>
+              <button
+                onClick={() => setShowSoundSettings(false)}
+                className="text-gray-400 hover:text-white text-2xl transition-colors"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-6">
+              <SoundSettingsPanel />
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
