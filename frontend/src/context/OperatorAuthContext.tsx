@@ -91,15 +91,6 @@ interface OperatorAuthContextType {
   state: OperatorAuthState;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (operatorData: {
-    username: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone: string;
-    password: string;
-    password_confirm: string;
-  }) => Promise<void>;
   clearError: () => void;
   updateOperator: (operator: Operator) => void;
 }
@@ -173,31 +164,6 @@ export const OperatorAuthProvider: React.FC<OperatorAuthProviderProps> = ({ chil
     }
   };
 
-  // Функция регистрации
-  const register = async (operatorData: {
-    username: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone: string;
-    password: string;
-    password_confirm: string;
-  }): Promise<void> => {
-    try {
-      dispatch({ type: 'AUTH_START' });
-      const result = await operatorAuthApi.register(operatorData);
-      dispatch({ 
-        type: 'AUTH_SUCCESS', 
-        payload: { operator: result.operator, token: result.token } 
-      });
-    } catch (error) {
-      dispatch({ 
-        type: 'AUTH_FAILURE', 
-        payload: error instanceof Error ? error.message : 'Ошибка регистрации' 
-      });
-    }
-  };
-
   // Функция очистки ошибки
   const clearError = (): void => {
     dispatch({ type: 'CLEAR_ERROR' });
@@ -212,7 +178,6 @@ export const OperatorAuthProvider: React.FC<OperatorAuthProviderProps> = ({ chil
     state,
     login,
     logout,
-    register,
     clearError,
     updateOperator,
   };

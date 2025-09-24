@@ -25,10 +25,16 @@
       "purpose": "any"
     },
     {
-      "src": "/logo.jpg",
+      "src": "/logobabay.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
-      "purpose": "any"
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logobabay.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [

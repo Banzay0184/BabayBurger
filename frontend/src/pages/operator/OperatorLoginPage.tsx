@@ -1,19 +1,13 @@
 import React, { useState } from 'react';
 import { useOperatorAuth } from '../../context/OperatorAuthContext';
+import { PWADebugInfo, SimplePWAInstallButton } from '../../components/operator/PWADebug';
+import { PWAForceInstall, PWAHealthCheck } from '../../components/operator/PWAForceInstall';
 
 export const OperatorLoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [registerData, setRegisterData] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    password_confirm: ''
-  });
 
-  const { state, login, register, clearError } = useOperatorAuth();
+  const { state, login } = useOperatorAuth();
 
   // Обработка входа
   const handleLogin = async (e: React.FormEvent) => {
@@ -26,33 +20,6 @@ export const OperatorLoginPage: React.FC = () => {
       await login(username, password);
     } catch (error) {
       console.error('Ошибка входа:', error);
-    }
-  };
-
-  // Обработка регистрации
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!username.trim() || !password.trim() || !registerData.first_name.trim()) {
-      return;
-    }
-
-    if (password !== registerData.password_confirm) {
-      alert('Пароли не совпадают');
-      return;
-    }
-
-    try {
-      await register({
-        username,
-        first_name: registerData.first_name,
-        last_name: registerData.last_name,
-        email: registerData.email,
-        phone: registerData.phone,
-        password,
-        password_confirm: registerData.password_confirm
-      });
-    } catch (error) {
-      console.error('Ошибка регистрации:', error);
     }
   };
 
@@ -71,24 +38,33 @@ export const OperatorLoginPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 py-16 px-6">
       <div className="max-w-2xl w-full space-y-12">
+        {/* PWA Health Check */}
+        <PWAHealthCheck />
+        
+        {/* PWA отладка */}
+        <PWADebugInfo />
+        
+        {/* PWA принудительная установка */}
+        <PWAForceInstall />
+        
+        {/* PWA установка */}
+        <SimplePWAInstallButton />
+        
         {/* Заголовок - планшетная версия */}
         <div className="text-center">
           <div className="mx-auto h-32 w-32 bg-blue-600 rounded-2xl flex items-center justify-center mb-8">
             <span className="text-white text-5xl">👨‍💼</span>
           </div>
           <h2 className="text-4xl font-bold text-white mb-4">
-            {isRegistering ? 'Регистрация оператора' : 'Вход оператора'}
+            Вход оператора
           </h2>
           <p className="text-gray-400 text-xl">
-            {isRegistering 
-              ? 'Создайте аккаунт для работы с заказами' 
-              : 'Войдите в систему для управления заказами'
-            }
+            Войдите в систему для управления заказами
           </p>
         </div>
 
         {/* Форма - планшетная версия */}
-        <form className="mt-12 space-y-8" onSubmit={isRegistering ? handleRegister : handleLogin}>
+        <form className="mt-12 space-y-8" onSubmit={handleLogin}>
           <div className="space-y-6">
             {/* Имя пользователя */}
             <div>
@@ -123,89 +99,6 @@ export const OperatorLoginPage: React.FC = () => {
                 placeholder="Введите пароль"
               />
             </div>
-
-            {/* Дополнительные поля для регистрации - планшетная версия */}
-            {isRegistering && (
-              <>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="first_name" className="block text-lg font-semibold text-gray-300 mb-3">
-                      Имя
-                    </label>
-                    <input
-                      id="first_name"
-                      name="first_name"
-                      type="text"
-                      required
-                      value={registerData.first_name}
-                      onChange={(e) => setRegisterData({...registerData, first_name: e.target.value})}
-                      className="w-full px-6 py-4 border border-gray-600 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
-                      placeholder="Имя"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="last_name" className="block text-lg font-semibold text-gray-300 mb-3">
-                      Фамилия
-                    </label>
-                    <input
-                      id="last_name"
-                      name="last_name"
-                      type="text"
-                      value={registerData.last_name}
-                      onChange={(e) => setRegisterData({...registerData, last_name: e.target.value})}
-                      className="w-full px-6 py-4 border border-gray-600 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
-                      placeholder="Фамилия"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="email" className="block text-lg font-semibold text-gray-300 mb-3">
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={registerData.email}
-                    onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
-                    className="w-full px-6 py-4 border border-gray-600 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
-                    placeholder="email@example.com"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="phone" className="block text-lg font-semibold text-gray-300 mb-3">
-                    Телефон
-                  </label>
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    value={registerData.phone}
-                    onChange={(e) => setRegisterData({...registerData, phone: e.target.value})}
-                    className="w-full px-6 py-4 border border-gray-600 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
-                    placeholder="+998 90 123 45 67"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="password_confirm" className="block text-lg font-semibold text-gray-300 mb-3">
-                    Подтвердите пароль
-                  </label>
-                  <input
-                    id="password_confirm"
-                    name="password_confirm"
-                    type="password"
-                    required
-                    value={registerData.password_confirm}
-                    onChange={(e) => setRegisterData({...registerData, password_confirm: e.target.value})}
-                    className="w-full px-6 py-4 border border-gray-600 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
-                    placeholder="Повторите пароль"
-                  />
-                </div>
-              </>
-            )}
           </div>
 
           {/* Ошибка - планшетная версия */}
@@ -225,33 +118,11 @@ export const OperatorLoginPage: React.FC = () => {
               {state.isLoading ? (
                 <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                isRegistering ? 'Зарегистрироваться' : 'Войти'
+                'Войти'
               )}
             </button>
           </div>
         </form>
-
-        {/* Переключение между режимами */}
-        <div className="text-center mt-6">
-          <button
-            onClick={() => {
-              setIsRegistering(!isRegistering);
-              clearError();
-              setUsername('');
-              setPassword('');
-              setRegisterData({
-                first_name: '',
-                last_name: '',
-                email: '',
-                phone: '',
-                password_confirm: ''
-              });
-            }}
-            className="text-blue-400 hover:text-blue-300 text-lg font-medium transition-colors"
-          >
-            {isRegistering ? 'Уже есть аккаунт? Войти' : 'Нет аккаунта? Зарегистрироваться'}
-          </button>
-        </div>
 
         {/* Дополнительная информация - планшетная версия */}
         <div className="text-center">

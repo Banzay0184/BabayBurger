@@ -16,6 +16,7 @@ import { NotificationsPanel } from '../../components/operator/NotificationsPanel
 import { WebSocketStatus } from '../../components/operator/WebSocketStatus';
 import { SoundSettingsPanel } from '../../components/operator/SoundNotificationManager';
 import { OperatorPWAStatus, OperatorPWAForceInstall } from '../../components/operator/OperatorPWAStatus';
+import { OperatorPWAFloatingButton, OperatorPWAHeaderButton } from '../../components/operator/OperatorPWAInstallButton';
 import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
 
 export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ onNavigate }) => {
@@ -423,6 +424,9 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
               {/* PWA статус */}
               <OperatorPWAStatus className="text-xs" />
               
+              {/* Кнопка установки PWA */}
+              <OperatorPWAHeaderButton />
+              
               {/* Кнопки действий */}
               <div className="flex space-x-1">
                 <button
@@ -512,6 +516,9 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
           </div>
         </div>
       )}
+
+      {/* Плавающая кнопка установки PWA */}
+      <OperatorPWAFloatingButton />
 
     </div>
   );
