@@ -31,6 +31,12 @@ export const usePWASound = () => {
     const checkAudioContext = () => {
       if (window.audioContext) {
         setAudioContextState(window.audioContext.state);
+        
+        // Если AudioContext работает, считаем систему инициализированной
+        if (window.audioContext.state === 'running' && !isInitialized) {
+          setIsInitialized(true);
+          console.log('🔊 PWA Hook: AudioContext is running, marking as initialized');
+        }
       }
     };
 
@@ -39,7 +45,7 @@ export const usePWASound = () => {
     // Проверяем каждые 3 секунды
     const interval = setInterval(checkAudioContext, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isInitialized]);
 
   // Проверяем сохраненное состояние инициализации
   useEffect(() => {
@@ -48,6 +54,12 @@ export const usePWASound = () => {
       if (wasInitialized) {
         setIsInitialized(true);
         console.log('🔊 PWA Hook: Sound system was previously initialized');
+      }
+    } else {
+      // В браузере считаем систему инициализированной если AudioContext работает
+      if (window.audioContext && window.audioContext.state === 'running') {
+        setIsInitialized(true);
+        console.log('🔊 PWA Hook: Browser mode - AudioContext is running');
       }
     }
   }, [isPWA]);
@@ -101,7 +113,14 @@ export const usePWASound = () => {
 
     // В PWA проверяем инициализацию
     if (!isInitialized) {
-      console.warn('🔊 PWA Hook: Sound system not initialized, cannot play sound');
+      console.warn('🔊 PWA Hook: Sound system not initialized, attempting to initialize...');
+      
+      // Попробуем инициализировать автоматически
+      initializeSound().then((success) => {
+        if (success) {
+          playSound(type);
+        }
+      });
       return;
     }
 
@@ -117,7 +136,7 @@ export const usePWASound = () => {
     }
 
     playSound(type);
-  }, [config.enabled, isPWA, isInitialized, playSound]);
+  }, [config.enabled, isPWA, isInitialized, playSound, initializeSound]);
 
   // Сброс состояния инициализации
   const resetInitialization = useCallback(() => {

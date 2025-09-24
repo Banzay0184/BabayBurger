@@ -20,6 +20,7 @@ import { OperatorPWAFloatingButton, OperatorPWAHeaderButton } from '../../compon
 import { SoundTestComponent } from '../../components/operator/SoundTestComponent';
 import { SoundInitializer } from '../../components/operator/SoundInitializer';
 import { PWASoundInitializer, PWASoundActivator } from '../../components/operator/PWASoundInitializer';
+import { MobileSoundInitializer, MobileSoundActivator } from '../../components/operator/MobileSoundInitializer';
 import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
 
 export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ onNavigate }) => {
@@ -387,6 +388,12 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
       <main className="max-w-full mx-auto px-4 py-4">
         {/* PWA установка */}
         <OperatorPWAForceInstall />
+        
+        {/* Мобильная звуковая инициализация */}
+        <MobileSoundInitializer />
+        
+        {/* Мобильный активатор звука */}
+        <MobileSoundActivator />
         
         {/* PWA звуковая инициализация */}
         <PWASoundInitializer />
