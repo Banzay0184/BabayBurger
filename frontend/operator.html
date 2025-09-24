@@ -136,10 +136,18 @@
                 }
                 
                 if (event.data.type === 'PLAY_SOUND') {
+                  console.log('🎯 Operator PWA: Received sound request from SW:', event.data.soundType);
                   // Делегируем воспроизведение звука основному потоку
                   window.dispatchEvent(new CustomEvent('playSoundFromSW', {
-                    detail: { soundType: event.data.soundType }
+                    detail: { 
+                      soundType: event.data.soundType,
+                      timestamp: event.data.timestamp 
+                    }
                   }));
+                }
+                
+                if (event.data.type === 'INIT_SOUND_RESPONSE') {
+                  console.log('🎯 Operator PWA: Sound system initialization response:', event.data.success);
                 }
               });
             })

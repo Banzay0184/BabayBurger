@@ -19,6 +19,7 @@ import { OperatorPWAStatus, OperatorPWAForceInstall } from '../../components/ope
 import { OperatorPWAFloatingButton, OperatorPWAHeaderButton } from '../../components/operator/OperatorPWAInstallButton';
 import { SoundTestComponent } from '../../components/operator/SoundTestComponent';
 import { SoundInitializer } from '../../components/operator/SoundInitializer';
+import { PWASoundInitializer, PWASoundActivator } from '../../components/operator/PWASoundInitializer';
 import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
 
 export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ onNavigate }) => {
@@ -387,7 +388,13 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
         {/* PWA установка */}
         <OperatorPWAForceInstall />
         
-        {/* Инициализация звуковой системы */}
+        {/* PWA звуковая инициализация */}
+        <PWASoundInitializer />
+        
+        {/* PWA активатор звука */}
+        <PWASoundActivator />
+        
+        {/* Инициализация звуковой системы (для браузера) */}
         <SoundInitializer />
         
         {/* Тест звуковых уведомлений */}

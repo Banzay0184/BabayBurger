@@ -237,14 +237,33 @@ self.addEventListener('message', (event) => {
   
   // Обработка звуковых уведомлений
   if (event.data && event.data.type === 'SOUND_NOTIFICATION') {
-    // Service Worker может воспроизводить звуки через Web Audio API
-    // Но лучше делегировать это основному потоку
+    console.log('🎯 Operator SW: Received sound notification request:', event.data.soundType);
+    
+    // Делегируем воспроизведение звука основному потоку
     event.waitUntil(
       self.clients.matchAll().then(clients => {
         clients.forEach(client => {
           client.postMessage({
             type: 'PLAY_SOUND',
-            soundType: event.data.soundType
+            soundType: event.data.soundType,
+            timestamp: Date.now()
+          });
+        });
+      })
+    );
+  }
+  
+  // Обработка запросов на инициализацию звука
+  if (event.data && event.data.type === 'INIT_SOUND_SYSTEM') {
+    console.log('🎯 Operator SW: Sound system initialization requested');
+    
+    event.waitUntil(
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'INIT_SOUND_RESPONSE',
+            success: true,
+            timestamp: Date.now()
           });
         });
       })

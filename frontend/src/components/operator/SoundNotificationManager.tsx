@@ -76,6 +76,12 @@ export const SoundNotificationProvider: React.FC<SoundNotificationProviderProps>
   // Инициализация AudioContext при первом взаимодействии
   const initializeAudioContext = useCallback(() => {
     try {
+      // Проверяем, запущено ли как PWA
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+                   (window.navigator as any).standalone === true;
+      
+      console.log('🔊 Initializing AudioContext, PWA mode:', isPWA);
+      
       // Создаем AudioContext только при необходимости
       if (!window.audioContext) {
         window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -86,6 +92,14 @@ export const SoundNotificationProvider: React.FC<SoundNotificationProviderProps>
       if (window.audioContext.state === 'suspended') {
         window.audioContext.resume().then(() => {
           console.log('🔊 AudioContext resumed');
+          
+          // В PWA режиме сохраняем состояние инициализации
+          if (isPWA) {
+            localStorage.setItem('pwa_sound_initialized', 'true');
+            console.log('🔊 PWA: Sound initialization state saved');
+          }
+        }).catch((error) => {
+          console.error('🔊 Error resuming AudioContext:', error);
         });
       }
     } catch (error) {
