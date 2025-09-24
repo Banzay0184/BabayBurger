@@ -17,6 +17,8 @@ import { WebSocketStatus } from '../../components/operator/WebSocketStatus';
 import { SoundSettingsPanel } from '../../components/operator/SoundNotificationManager';
 import { OperatorPWAStatus, OperatorPWAForceInstall } from '../../components/operator/OperatorPWAStatus';
 import { OperatorPWAFloatingButton, OperatorPWAHeaderButton } from '../../components/operator/OperatorPWAInstallButton';
+import { SoundTestComponent } from '../../components/operator/SoundTestComponent';
+import { SoundInitializer } from '../../components/operator/SoundInitializer';
 import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
 
 export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ onNavigate }) => {
@@ -384,6 +386,12 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
       <main className="max-w-full mx-auto px-4 py-4">
         {/* PWA установка */}
         <OperatorPWAForceInstall />
+        
+        {/* Инициализация звуковой системы */}
+        <SoundInitializer />
+        
+        {/* Тест звуковых уведомлений */}
+        <SoundTestComponent />
         
         {/* Поиск заказов */}
         <OrderSearch

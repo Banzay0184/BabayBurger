@@ -99,7 +99,13 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
         if ((message as any).order && onOrderCreated) {
           console.log('🆕 New order received:', (message as any).order);
           // Воспроизводим звук для нового заказа
-          playSound('new_order');
+          try {
+            console.log('🔊 Attempting to play new order sound...');
+            playSound('new_order');
+            console.log('🔊 New order sound played successfully');
+          } catch (error) {
+            console.error('🔊 Error playing new order sound:', error);
+          }
           onOrderCreated((message as any).order);
         }
         break;
@@ -108,7 +114,13 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
         if ((message as any).order_id && onOrderUpdated) {
           console.log('🔄 Order updated:', (message as any).order_id, (message as any).status);
           // Воспроизводим звук для обновления заказа
-          playSound('order_update');
+          try {
+            console.log('🔊 Attempting to play order update sound...');
+            playSound('order_update');
+            console.log('🔊 Order update sound played successfully');
+          } catch (error) {
+            console.error('🔊 Error playing order update sound:', error);
+          }
           onOrderUpdated((message as any).order_id, (message as any).order, (message as any).status);
         }
         break;
@@ -117,7 +129,13 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
         if ((message as any).order_id && (message as any).operator_id && (message as any).operator_name && onOrderAssigned) {
           console.log('👤 Order assigned:', (message as any).order_id, (message as any).operator_name);
           // Воспроизводим звук для назначения заказа
-          playSound('notification');
+          try {
+            console.log('🔊 Attempting to play assignment sound...');
+            playSound('notification');
+            console.log('🔊 Assignment sound played successfully');
+          } catch (error) {
+            console.error('🔊 Error playing assignment sound:', error);
+          }
           onOrderAssigned((message as any).order_id, (message as any).operator_id, (message as any).operator_name);
         }
         break;
@@ -126,7 +144,13 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
         if ((message as any).notification && onNotification) {
           console.log('🔔 Notification received:', (message as any).notification);
           // Воспроизводим звук для системных уведомлений
-          playSound('notification');
+          try {
+            console.log('🔊 Attempting to play notification sound...');
+            playSound('notification');
+            console.log('🔊 Notification sound played successfully');
+          } catch (error) {
+            console.error('🔊 Error playing notification sound:', error);
+          }
           onNotification((message as any).notification);
         }
         break;

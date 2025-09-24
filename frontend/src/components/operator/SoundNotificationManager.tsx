@@ -1,6 +1,13 @@
 // Улучшенная система звуковых уведомлений с реальными звуками
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
+// Глобальная переменная для AudioContext
+declare global {
+  interface Window {
+    audioContext?: AudioContext;
+  }
+}
+
 // Типы для звуковых уведомлений
 export interface SoundNotificationConfig {
   enabled: boolean;
@@ -65,6 +72,26 @@ export const SoundNotificationProvider: React.FC<SoundNotificationProviderProps>
     audio.preload = 'auto';
     return audio;
   }, [config.volume]);
+
+  // Инициализация AudioContext при первом взаимодействии
+  const initializeAudioContext = useCallback(() => {
+    try {
+      // Создаем AudioContext только при необходимости
+      if (!window.audioContext) {
+        window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        console.log('🔊 AudioContext initialized');
+      }
+      
+      // Если AudioContext приостановлен, возобновляем его
+      if (window.audioContext.state === 'suspended') {
+        window.audioContext.resume().then(() => {
+          console.log('🔊 AudioContext resumed');
+        });
+      }
+    } catch (error) {
+      console.error('🔊 Error initializing AudioContext:', error);
+    }
+  }, []);
 
   // Улучшенные звуки с использованием Web Audio API для генерации
   const generateSound = useCallback((type: 'new_order' | 'order_update' | 'notification'): string => {
@@ -149,9 +176,15 @@ export const SoundNotificationProvider: React.FC<SoundNotificationProviderProps>
 
   // Воспроизведение звука
   const playSound = useCallback((type: 'new_order' | 'order_update' | 'notification' | 'custom') => {
-    if (!config.enabled) return;
+    if (!config.enabled) {
+      console.log('🔊 Sound disabled, skipping playback');
+      return;
+    }
 
     try {
+      // Инициализируем AudioContext при первом воспроизведении
+      initializeAudioContext();
+      
       let soundUrl: string;
       
       if (type === 'custom' && config.customSoundUrl) {
@@ -160,13 +193,22 @@ export const SoundNotificationProvider: React.FC<SoundNotificationProviderProps>
         // Проверяем, включен ли звук для этого типа
         switch (type) {
           case 'new_order':
-            if (!config.newOrderSound) return;
+            if (!config.newOrderSound) {
+              console.log('🔊 New order sound disabled, skipping');
+              return;
+            }
             break;
           case 'order_update':
-            if (!config.orderUpdateSound) return;
+            if (!config.orderUpdateSound) {
+              console.log('🔊 Order update sound disabled, skipping');
+              return;
+            }
             break;
           case 'notification':
-            if (!config.notificationSound) return;
+            if (!config.notificationSound) {
+              console.log('🔊 Notification sound disabled, skipping');
+              return;
+            }
             break;
         }
         
@@ -175,17 +217,28 @@ export const SoundNotificationProvider: React.FC<SoundNotificationProviderProps>
         return;
       }
 
-      if (!soundUrl) return;
+      if (!soundUrl) {
+        console.warn('🔊 No sound URL generated');
+        return;
+      }
+
+      console.log(`🔊 Playing sound: ${type}, URL: ${soundUrl.substring(0, 50)}...`);
 
       const audio = createAudioElement(soundUrl);
       
       // Обработка ошибок воспроизведения
       audio.onerror = (e) => {
-        console.warn('Ошибка воспроизведения звука:', e);
+        console.warn('🔊 Audio playback error:', e);
       };
 
-      // Очистка URL после воспроизведения
+      // Обработка успешного воспроизведения
+      audio.onplay = () => {
+        console.log(`🔊 Sound started playing: ${type}`);
+      };
+
       audio.onended = () => {
+        console.log(`🔊 Sound finished playing: ${type}`);
+        // Очистка URL после воспроизведения
         if (soundUrl.startsWith('blob:')) {
           URL.revokeObjectURL(soundUrl);
         }
@@ -195,9 +248,14 @@ export const SoundNotificationProvider: React.FC<SoundNotificationProviderProps>
       const playPromise = audio.play();
       
       if (playPromise !== undefined) {
-        playPromise.catch((error) => {
-          console.warn('Не удалось воспроизвести звук:', error);
+        playPromise.then(() => {
+          console.log(`🔊 Sound play promise resolved: ${type}`);
+        }).catch((error) => {
+          console.warn(`🔊 Sound play promise rejected: ${type}`, error);
           // В некоторых браузерах требуется пользовательское взаимодействие
+          if (error.name === 'NotAllowedError') {
+            console.warn('🔊 Autoplay blocked - user interaction required');
+          }
         });
       }
 
@@ -208,9 +266,9 @@ export const SoundNotificationProvider: React.FC<SoundNotificationProviderProps>
         detail: { type, timestamp: Date.now() } 
       }));
     } catch (error) {
-      console.error('Ошибка при воспроизведении звука:', error);
+      console.error('🔊 Ошибка при воспроизведении звука:', error);
     }
-  }, [config, createAudioElement, generateSound]);
+  }, [config, createAudioElement, generateSound, initializeAudioContext]);
 
   // Тестовый звук
   const testSound = useCallback(() => {
