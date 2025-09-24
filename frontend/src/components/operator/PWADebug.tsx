@@ -34,7 +34,7 @@ export const PWADebugInfo: React.FC = () => {
                     (window.navigator as any).standalone === true;
       
       const hasServiceWorker = 'serviceWorker' in navigator;
-      const hasManifest = !!document.querySelector('link[rel="manifest"]');
+      const hasManifest = !!document.querySelector('link[rel="manifest"]') || !!document.getElementById('pwa-manifest');
       const isSecure = location.protocol === 'https:' || location.hostname === 'localhost';
 
       // Проверяем валидность манифеста
@@ -44,24 +44,48 @@ export const PWADebugInfo: React.FC = () => {
       if (hasManifest) {
         try {
           const manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement;
-          const response = await fetch(manifestLink.href);
-          const manifest = await response.json();
-          
-          manifestValid = !!(
-            manifest.name &&
-            manifest.short_name &&
-            manifest.start_url &&
-            manifest.display &&
-            manifest.icons &&
-            manifest.icons.length > 0
-          );
-          
-          // Проверяем иконки
-          iconsValid = manifest.icons.some((icon: any) => 
-            icon.sizes && icon.src && (icon.sizes.includes('192') || icon.sizes.includes('512'))
-          );
-          
-          console.log('🎯 PWA Debug: Manifest validation:', { manifestValid, iconsValid, manifest });
+          if (manifestLink) {
+            const response = await fetch(manifestLink.href);
+            const manifest = await response.json();
+            
+            manifestValid = !!(
+              manifest.name &&
+              manifest.short_name &&
+              manifest.start_url &&
+              manifest.display &&
+              manifest.icons &&
+              manifest.icons.length > 0
+            );
+            
+            // Проверяем иконки
+            iconsValid = manifest.icons.some((icon: any) => 
+              icon.sizes && icon.src && (icon.sizes.includes('192') || icon.sizes.includes('512'))
+            );
+            
+            console.log('🎯 PWA Debug: Manifest validation:', { manifestValid, iconsValid, manifest });
+          } else {
+            // Проверяем встроенный манифест
+            const embeddedManifest = document.getElementById('pwa-manifest');
+            if (embeddedManifest) {
+              const manifest = JSON.parse(embeddedManifest.textContent || '{}');
+              
+              manifestValid = !!(
+                manifest.name &&
+                manifest.short_name &&
+                manifest.start_url &&
+                manifest.display &&
+                manifest.icons &&
+                manifest.icons.length > 0
+              );
+              
+              // Проверяем иконки
+              iconsValid = manifest.icons.some((icon: any) => 
+                icon.sizes && icon.src && (icon.sizes.includes('192') || icon.sizes.includes('512'))
+              );
+              
+              console.log('🎯 PWA Debug: Embedded manifest validation:', { manifestValid, iconsValid, manifest });
+            }
+          }
         } catch (error) {
           console.error('🎯 PWA Debug: Manifest validation failed:', error);
         }

@@ -16,9 +16,13 @@ export const ManifestTester: React.FC = () => {
         
         // Проверяем ссылку на манифест в HTML
         const manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement;
+        console.log('🎯 Manifest Tester: Manifest link found:', manifestLink);
+        
         if (!manifestLink) {
           // Проверяем встроенный манифест
           const embeddedManifest = document.getElementById('pwa-manifest');
+          console.log('🎯 Manifest Tester: Embedded manifest found:', embeddedManifest);
+          
           if (embeddedManifest) {
             try {
               const manifest = JSON.parse(embeddedManifest.textContent || '{}');
