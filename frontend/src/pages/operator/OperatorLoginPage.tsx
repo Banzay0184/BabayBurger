@@ -7,6 +7,7 @@ import { PWAFileChecker } from '../../components/operator/PWAFileChecker';
 import { PWAManifestProgrammatic } from '../../components/operator/PWAManifestProgrammatic';
 import { HTMLInspector } from '../../components/operator/HTMLInspector';
 import { URLChecker } from '../../components/operator/URLChecker';
+import { HTMLFileChecker } from '../../components/operator/HTMLFileChecker';
 
 export const OperatorLoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -45,6 +46,9 @@ export const OperatorLoginPage: React.FC = () => {
       <div className="max-w-2xl w-full space-y-12">
         {/* URL Checker */}
         <URLChecker />
+        
+        {/* HTML File Checker */}
+        <HTMLFileChecker />
         
         {/* HTML Inspector */}
         <HTMLInspector />
