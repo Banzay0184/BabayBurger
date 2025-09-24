@@ -17,7 +17,46 @@ export const ManifestTester: React.FC = () => {
         // Проверяем ссылку на манифест в HTML
         const manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement;
         if (!manifestLink) {
-          throw new Error('Manifest link not found in HTML');
+          // Проверяем встроенный манифест
+          const embeddedManifest = document.getElementById('pwa-manifest');
+          if (embeddedManifest) {
+            try {
+              const manifest = JSON.parse(embeddedManifest.textContent || '{}');
+              console.log('🎯 Manifest Tester: Using embedded manifest:', manifest);
+              
+              // Проверяем обязательные поля
+              const requiredFields = ['name', 'short_name', 'start_url', 'display', 'icons'];
+              const missingFields = requiredFields.filter(field => !manifest[field]);
+              
+              if (missingFields.length > 0) {
+                throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+              }
+
+              // Проверяем иконки
+              if (!manifest.icons || manifest.icons.length === 0) {
+                throw new Error('No icons found in manifest');
+              }
+
+              const hasValidIcons = manifest.icons.some((icon: any) => 
+                icon.sizes && icon.src && (icon.sizes.includes('192') || icon.sizes.includes('512'))
+              );
+
+              if (!hasValidIcons) {
+                throw new Error('No valid icons found (need 192x192 or 512x512)');
+              }
+
+              setManifestStatus({
+                loading: false,
+                loaded: true,
+                error: null,
+                manifest,
+              });
+              return;
+            } catch (error) {
+              throw new Error(`Embedded manifest error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
+          }
+          throw new Error('Manifest link not found in HTML and no embedded manifest');
         }
 
         console.log('🎯 Manifest Tester: Found manifest link:', manifestLink.href);

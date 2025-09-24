@@ -8,7 +8,51 @@
     <meta name="description" content="Интерфейс оператора для управления заказами ресторана Babay Burger" />
     
     <!-- PWA манифест -->
-    <link rel="manifest" href="/operator-manifest.json" />
+    <link rel="manifest" href="./operator-manifest.json" />
+    
+    <!-- Встроенный манифест как fallback -->
+    <script type="application/json" id="pwa-manifest">
+    {
+      "name": "Babay Burger - Оператор",
+      "short_name": "Babay Оператор",
+      "description": "Интерфейс оператора для управления заказами ресторана Babay Burger",
+      "start_url": "/operator/",
+      "display": "standalone",
+      "id": "/operator/",
+      "background_color": "#1f2937",
+      "theme_color": "#3b82f6",
+      "orientation": "any",
+      "scope": "/",
+      "lang": "ru",
+      "categories": ["business", "food", "productivity"],
+      "icons": [
+        {
+          "src": "/logobabay.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "/logobabay.png",
+          "sizes": "512x512",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "/logobabay.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "maskable"
+        },
+        {
+          "src": "/logobabay.png",
+          "sizes": "512x512",
+          "type": "image/png",
+          "purpose": "maskable"
+        }
+      ]
+    }
+    </script>
     
     <!-- Иконки для PWA -->
     <link rel="icon" type="image/png" href="/logobabay.png" />
@@ -74,7 +118,7 @@
       // Регистрация Service Worker для PWA
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/operator-sw.js')
+          navigator.serviceWorker.register('./operator-sw.js')
             .then((registration) => {
               console.log('🎯 Operator PWA: Service Worker registered successfully');
               
