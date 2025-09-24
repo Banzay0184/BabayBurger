@@ -6,6 +6,7 @@ import { ManifestTester } from '../../components/operator/ManifestTester';
 import { PWAFileChecker } from '../../components/operator/PWAFileChecker';
 import { PWAManifestProgrammatic } from '../../components/operator/PWAManifestProgrammatic';
 import { HTMLInspector } from '../../components/operator/HTMLInspector';
+import { URLChecker } from '../../components/operator/URLChecker';
 
 export const OperatorLoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -42,6 +43,9 @@ export const OperatorLoginPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 py-16 px-6">
       <div className="max-w-2xl w-full space-y-12">
+        {/* URL Checker */}
+        <URLChecker />
+        
         {/* HTML Inspector */}
         <HTMLInspector />
         
