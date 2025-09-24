@@ -88,7 +88,18 @@ export const HTMLFileChecker: React.FC = () => {
 
   const openOperatorHTML = () => {
     // Открываем статический HTML файл оператора
-    window.open('/operator.html', '_blank');
+    // Пробуем разные варианты URL
+    const urls = [
+      '/operator.html',
+      'https://www.babayfood.uz/operator.html',
+      window.location.origin + '/operator.html'
+    ];
+    
+    // Открываем первый URL
+    window.open(urls[0], '_blank');
+    
+    console.log('🎯 HTML File Checker: Opening operator.html');
+    console.log('- URLs to try:', urls);
   };
 
   if (htmlInfo.isOperatorHTML && htmlInfo.hasManifestLink) {

@@ -1,6 +1,8 @@
 {
   "rewrites": [
     { "source": "/operator.html", "destination": "/operator.html" },
+    { "source": "/operator/", "destination": "/operator.html" },
+    { "source": "/operator", "destination": "/operator.html" },
     { "source": "/client.html", "destination": "/client.html" },
     { "source": "/cashier/login", "destination": "/cashier.html" },
     { "source": "/cashier/login/", "destination": "/cashier.html" },
@@ -16,6 +18,37 @@
     }
   ],
   "headers": [
+    {
+      "source": "/operator.html",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/html; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/operator-manifest.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        }
+      ]
+    },
+    {
+      "source": "/operator-sw.js",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        }
+      ]
+    },
     {
       "source": "/cashier/manifest.json",
       "headers": [
