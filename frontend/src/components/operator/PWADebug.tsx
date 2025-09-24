@@ -30,6 +30,9 @@ export const PWADebugInfo: React.FC = () => {
 
     // Проверяем PWA статус
     const checkPWAStatus = async () => {
+      // Ждем загрузки DOM
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
                     (window.navigator as any).standalone === true;
       

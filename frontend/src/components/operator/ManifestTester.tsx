@@ -14,6 +14,9 @@ export const ManifestTester: React.FC = () => {
       try {
         setManifestStatus(prev => ({ ...prev, loading: true, error: null }));
         
+        // Ждем загрузки DOM
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         // Проверяем ссылку на манифест в HTML
         const manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement;
         console.log('🎯 Manifest Tester: Manifest link found:', manifestLink);
