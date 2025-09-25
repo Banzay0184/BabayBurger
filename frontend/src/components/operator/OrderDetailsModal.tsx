@@ -39,8 +39,13 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     setIsLoading(true);
     try {
       console.log('💳 Изменение способа оплаты:', order.id, paymentMethod);
-      const updatedOrder = await operatorOrdersApi.updateOrderPaymentMethod(order.id, paymentMethod);
-      console.log('✅ Способ оплаты изменен, обновляем заказ:', updatedOrder);
+      const response = await operatorOrdersApi.updateOrderPaymentMethod(order.id, paymentMethod);
+      console.log('✅ Способ оплаты изменен, обновляем заказ:', response);
+      
+      // Извлекаем заказ из ответа API
+      const updatedOrder = response.order || response;
+      console.log('📦 Извлеченный заказ:', updatedOrder);
+      
       onUpdate(updatedOrder);
       setIsEditingPayment(false);
     } catch (error) {

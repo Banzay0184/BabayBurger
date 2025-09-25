@@ -315,7 +315,7 @@ export const operatorOrdersApi = {
   },
 
   // Изменение типа оплаты заказа
-  updateOrderPaymentMethod: async (orderId: number, paymentMethod: 'cash' | 'card' | 'online'): Promise<OrderForOperator> => {
+  updateOrderPaymentMethod: async (orderId: number, paymentMethod: 'cash' | 'card' | 'online'): Promise<{message: string, order: OrderForOperator}> => {
     const response = await fetch(getApiUrl(`operator/operator-orders/${orderId}/update_payment_method/`), {
       method: 'POST',
       headers: getHeaders(),
