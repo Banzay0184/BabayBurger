@@ -269,10 +269,52 @@ export const SimpleMobileSoundManager: React.FC = () => {
           setShowPrompt(false);
         } else {
           console.log('📱 Mobile: No audio elements found, waiting for creation...');
+          // Ждем создания аудио элементов с таймаутом
+          const checkTimer = setTimeout(() => {
+            if (Object.keys(audioElements).length > 0) {
+              console.log('📱 Mobile: Audio elements created after timeout, marking as initialized');
+              setIsInitialized(true);
+              setShowPrompt(false);
+            } else {
+              console.log('📱 Mobile: Audio elements still not found, showing prompt');
+              setShowPrompt(true);
+            }
+          }, 2000);
+          
+          return () => clearTimeout(checkTimer);
         }
       }
     }
   }, [isMobile, audioElements]);
+
+  // Проверяем состояние AudioContext при загрузке
+  useEffect(() => {
+    if (isMobile && isInitialized) {
+      // Проверяем AudioContext каждые 5 секунд
+      const checkAudioContext = () => {
+        if (window.audioContext) {
+          console.log('📱 Mobile: AudioContext state:', window.audioContext.state);
+          
+          if (window.audioContext.state === 'suspended') {
+            console.log('📱 Mobile: AudioContext suspended, attempting to resume...');
+            window.audioContext.resume().then(() => {
+              console.log('📱 Mobile: AudioContext resumed successfully');
+            }).catch((error) => {
+              console.error('📱 Mobile: Failed to resume AudioContext:', error);
+            });
+          }
+        }
+      };
+      
+      // Проверяем сразу
+      checkAudioContext();
+      
+      // Проверяем каждые 5 секунд
+      const interval = setInterval(checkAudioContext, 5000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isMobile, isInitialized]);
 
   // Автоматическая активация при первом взаимодействии пользователя
   useEffect(() => {
@@ -319,6 +361,13 @@ export const SimpleMobileSoundManager: React.FC = () => {
     }
 
     try {
+      // Проверяем и возобновляем AudioContext если нужно
+      if (window.audioContext && window.audioContext.state === 'suspended') {
+        console.log('📱 Mobile: AudioContext suspended, attempting to resume...');
+        await window.audioContext.resume();
+        console.log('📱 Mobile: AudioContext resumed');
+      }
+
       const audio = audioElements[type];
       if (audio) {
         console.log(`📱 Mobile: Playing ${type} sound`);
@@ -364,9 +413,18 @@ export const SimpleMobileSoundManager: React.FC = () => {
         setShowPrompt(true);
         localStorage.removeItem('mobile_sound_simple_initialized');
       };
-      console.log('📱 Mobile: playMobileSound and resetMobileSound functions exported to window');
+      (window as any).checkMobileSoundStatus = () => {
+        console.log('📱 Mobile: Sound status:', {
+          isInitialized,
+          showPrompt,
+          audioElementsCount: Object.keys(audioElements).length,
+          audioContextState: window.audioContext?.state,
+          localStorageInitialized: localStorage.getItem('mobile_sound_simple_initialized')
+        });
+      };
+      console.log('📱 Mobile: playMobileSound, resetMobileSound, and checkMobileSoundStatus functions exported to window');
     }
-  }, [isMobile, playSound]);
+  }, [isMobile, playSound, isInitialized, showPrompt, audioElements]);
 
   if (!config?.enabled) {
     return null;
