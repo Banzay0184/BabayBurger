@@ -79,11 +79,66 @@ export const SoundDiagnostics: React.FC = () => {
     updateDiagnostics();
   };
 
-  const testSound = () => {
-    if ((window as any).playMobileSound) {
-      (window as any).playMobileSound('new_order');
+  const activateSounds = () => {
+    console.log('🔧 Activating sounds...');
+    
+    // Создаем AudioContext если его нет
+    if (!window.audioContext) {
+      window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
-    updateDiagnostics();
+    
+    // Возобновляем AudioContext
+    if (window.audioContext.state === 'suspended') {
+      window.audioContext.resume().then(() => {
+        console.log('🔧 AudioContext activated');
+        
+        // Вызываем инициализацию звуковой системы
+        if ((window as any).handleInitialize) {
+          (window as any).handleInitialize();
+        }
+        
+        updateDiagnostics();
+      }).catch((error) => {
+        console.error('🔧 Failed to activate AudioContext:', error);
+        updateDiagnostics();
+      });
+    } else {
+      // AudioContext уже активен
+      console.log('🔧 AudioContext already active');
+      
+      // Вызываем инициализацию звуковой системы
+      if ((window as any).handleInitialize) {
+        (window as any).handleInitialize();
+      }
+      
+      updateDiagnostics();
+    }
+  };
+
+  const testSound = () => {
+    console.log('🔧 Testing sound...');
+    
+    // Принудительно активируем AudioContext при взаимодействии пользователя
+    if (window.audioContext && window.audioContext.state === 'suspended') {
+      console.log('🔧 Resuming AudioContext for test...');
+      window.audioContext.resume().then(() => {
+        console.log('🔧 AudioContext resumed for test');
+        // Теперь пробуем воспроизвести звук
+        if ((window as any).playMobileSound) {
+          (window as any).playMobileSound('new_order');
+        }
+        updateDiagnostics();
+      }).catch((error) => {
+        console.error('🔧 Failed to resume AudioContext for test:', error);
+        updateDiagnostics();
+      });
+    } else {
+      // AudioContext уже активен, пробуем воспроизвести звук
+      if ((window as any).playMobileSound) {
+        (window as any).playMobileSound('new_order');
+      }
+      updateDiagnostics();
+    }
   };
 
   const createAudioContext = () => {
@@ -251,6 +306,13 @@ export const SoundDiagnostics: React.FC = () => {
           {/* Кнопки управления */}
           <div className="space-y-2">
             <button
+              onClick={activateSounds}
+              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              🎵 Активировать звуки
+            </button>
+            
+            <button
               onClick={createAudioContext}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
@@ -283,9 +345,9 @@ export const SoundDiagnostics: React.FC = () => {
           <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-3">
             <div className="text-blue-300 text-xs">
               <p className="font-medium mb-1">💡 Для разработчика:</p>
+              <p>• Если есть ошибка автовоспроизведения - нажмите "Активировать звуки"</p>
               <p>• Если "AudioContext: Неизвестно" - нажмите "Создать AudioContext"</p>
               <p>• Если "Инициализировано: Нет" - нажмите "Принудительная инициализация"</p>
-              <p>• Если "AudioContext: Приостановлен" - нажмите "Тест звука"</p>
               <p>• Если ничего не помогает - нажмите "Сброс системы"</p>
             </div>
           </div>

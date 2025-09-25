@@ -447,6 +447,12 @@ export const SimpleMobileSoundManager: React.FC = () => {
       (window as any).mobileSoundAudioElementsCount = Object.keys(audioElements).length;
       (window as any).handleInitialize = handleInitialize;
       
+      // Обновляем состояние prompt если система инициализирована
+      if (isInitialized && showPrompt) {
+        console.log('📱 Mobile: System initialized but prompt still showing, hiding it...');
+        setShowPrompt(false);
+      }
+      
       console.log('📱 Mobile: playMobileSound, resetMobileSound, and checkMobileSoundStatus functions exported to window');
     }
   }, [isMobile, playSound, isInitialized, showPrompt, audioElements, handleInitialize]);
