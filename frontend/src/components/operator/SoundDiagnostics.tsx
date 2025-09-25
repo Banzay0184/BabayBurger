@@ -16,6 +16,12 @@ export const SoundDiagnostics: React.FC = () => {
 
   const [isVisible, setIsVisible] = useState(false);
 
+  // Отладочная информация
+  useEffect(() => {
+    console.log('🔧 SoundDiagnostics: Component loaded');
+    console.log('🔧 SoundDiagnostics: Current diagnostics:', diagnostics);
+  }, []);
+
   // Обновляем диагностику
   const updateDiagnostics = () => {
     const userAgentMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -88,11 +94,23 @@ export const SoundDiagnostics: React.FC = () => {
   };
 
   if (!isVisible) {
+    console.log('🔧 SoundDiagnostics: Rendering button, isVisible:', isVisible);
     return (
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-4 right-4 z-[9999]">
         <button
-          onClick={() => setIsVisible(true)}
-          className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg"
+          onClick={() => {
+            console.log('🔧 SoundDiagnostics: Button clicked');
+            setIsVisible(true);
+          }}
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg text-sm font-bold shadow-2xl border-2 border-red-400 animate-pulse"
+          style={{ 
+            position: 'fixed',
+            bottom: '16px',
+            right: '16px',
+            zIndex: 9999,
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}
         >
           🔧 Диагностика звуков
         </button>

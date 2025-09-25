@@ -388,6 +388,19 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
         {/* Диагностика звуков */}
         <SoundDiagnostics />
         
+        {/* Тестовая кнопка диагностики */}
+        <div className="fixed top-4 right-4 z-[9999]">
+          <button
+            onClick={() => {
+              console.log('🔧 Test button clicked');
+              alert('Диагностика работает!');
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow-lg"
+          >
+            🔧 Тест
+          </button>
+        </div>
+        
         {/* Поиск заказов */}
         <OrderSearch
           onSearch={handleSearch}
