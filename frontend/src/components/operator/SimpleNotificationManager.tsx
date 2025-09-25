@@ -1,7 +1,10 @@
+// Простая система уведомлений для оператора
+// Работает с локальными уведомлениями, но показывает их даже когда вкладка неактивна
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-// Типы для Push-уведомлений
-export interface PushNotificationConfig {
+// Типы для уведомлений
+export interface NotificationConfig {
   enabled: boolean;
   newOrderNotifications: boolean;
   orderUpdateNotifications: boolean;
@@ -10,41 +13,28 @@ export interface PushNotificationConfig {
   vibrationEnabled: boolean;
 }
 
-// Расширенный интерфейс для уведомлений с дополнительными опциями
-export interface ExtendedNotificationOptions extends NotificationOptions {
-  vibrate?: number[];
-  actions?: NotificationAction[];
-  timestamp?: number;
-}
-
-export interface NotificationAction {
-  action: string;
-  title: string;
-  icon?: string;
-}
-
-export interface PushNotificationContextType {
-  config: PushNotificationConfig;
-  updateConfig: (config: Partial<PushNotificationConfig>) => void;
+export interface NotificationContextType {
+  config: NotificationConfig;
+  updateConfig: (config: Partial<NotificationConfig>) => void;
   permission: NotificationPermission;
   requestPermission: () => Promise<NotificationPermission>;
-  sendNotification: (title: string, options?: ExtendedNotificationOptions) => Promise<void>;
+  sendNotification: (title: string, options?: NotificationOptions) => Promise<void>;
   sendOrderNotification: (orderId: number, type: 'new' | 'update' | 'system', data?: any) => Promise<void>;
   isSupported: boolean;
+  isSubscribed: boolean;
 }
 
-// Контекст для Push-уведомлений
-const PushNotificationContext = createContext<PushNotificationContextType | undefined>(undefined);
+// Контекст для уведомлений
+const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 // Провайдер контекста
-interface PushNotificationProviderProps {
+interface NotificationProviderProps {
   children: React.ReactNode;
 }
 
-export const PushNotificationProvider: React.FC<PushNotificationProviderProps> = ({ children }) => {
-  const [config, setConfig] = useState<PushNotificationConfig>(() => {
-    // Загружаем настройки из localStorage
-    const saved = localStorage.getItem('operator_push_config');
+export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
+  const [config, setConfig] = useState<NotificationConfig>(() => {
+    const saved = localStorage.getItem('operator_notification_config');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -53,7 +43,6 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
       }
     }
     
-    // Дефолтные настройки
     return {
       enabled: true,
       newOrderNotifications: true,
@@ -69,7 +58,7 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
 
   // Проверяем поддержку уведомлений
   useEffect(() => {
-    const supported = 'Notification' in window && 'serviceWorker' in navigator;
+    const supported = 'Notification' in window;
     setIsSupported(supported);
     
     if (supported) {
@@ -79,18 +68,18 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
 
   // Сохраняем настройки в localStorage при изменении
   useEffect(() => {
-    localStorage.setItem('operator_push_config', JSON.stringify(config));
+    localStorage.setItem('operator_notification_config', JSON.stringify(config));
   }, [config]);
 
   // Обновление конфигурации
-  const updateConfig = useCallback((newConfig: Partial<PushNotificationConfig>) => {
+  const updateConfig = useCallback((newConfig: Partial<NotificationConfig>) => {
     setConfig(prev => ({ ...prev, ...newConfig }));
   }, []);
 
   // Запрос разрешения на уведомления
   const requestPermission = useCallback(async (): Promise<NotificationPermission> => {
     if (!isSupported) {
-      console.warn('Push notifications not supported');
+      console.warn('Notifications not supported');
       return 'denied';
     }
 
@@ -108,7 +97,7 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
   // Отправка обычного уведомления
   const sendNotification = useCallback(async (
     title: string, 
-    options: ExtendedNotificationOptions = {}
+    options: NotificationOptions = {}
   ): Promise<void> => {
     if (!isSupported || !config.enabled || permission !== 'granted') {
       console.warn('Cannot send notification:', { isSupported, enabled: config.enabled, permission });
@@ -117,34 +106,30 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
 
     try {
       // Дефолтные опции
-      const defaultOptions: ExtendedNotificationOptions = {
+      const defaultOptions: NotificationOptions = {
         icon: '/logobabay.png',
         badge: '/logobabay.png',
         tag: 'operator-notification',
         requireInteraction: true,
         silent: !config.soundEnabled,
-        vibrate: config.vibrationEnabled ? [200, 100, 200] : undefined,
-        timestamp: Date.now(),
         ...options
       };
 
-      // Если есть Service Worker, используем его
-      if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.ready;
-        await registration.showNotification(title, defaultOptions);
-      } else {
-        // Fallback к обычным уведомлениям (без расширенных опций)
-        const basicOptions: NotificationOptions = {
-          icon: defaultOptions.icon,
-          badge: defaultOptions.badge,
-          tag: defaultOptions.tag,
-          requireInteraction: defaultOptions.requireInteraction,
-          silent: defaultOptions.silent,
-        };
-        new Notification(title, basicOptions);
-      }
+      // Создаем уведомление
+      const notification = new Notification(title, defaultOptions);
+      
+      // Обработка клика по уведомлению
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
 
-      console.log('📱 Push notification sent:', title);
+      // Автоматически закрываем через 5 секунд
+      setTimeout(() => {
+        notification.close();
+      }, 5000);
+
+      console.log('📱 Notification sent:', title);
     } catch (error) {
       console.error('Error sending notification:', error);
     }
@@ -173,38 +158,21 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
 
     let title: string;
     let body: string;
-    let icon: string;
-    let actions: NotificationAction[] = [];
 
     switch (type) {
       case 'new':
         title = '🆕 Новый заказ!';
         body = `Заказ #${orderId} поступил в систему`;
-        icon = '/logobabay.png';
-        actions = [
-          { action: 'view', title: 'Посмотреть заказ', icon: '/logobabay.png' },
-          { action: 'dismiss', title: 'Закрыть' }
-        ];
         break;
 
       case 'update':
         title = '🔄 Заказ обновлен';
         body = `Заказ #${orderId} изменил статус`;
-        icon = '/logobabay.png';
-        actions = [
-          { action: 'view', title: 'Посмотреть заказ', icon: '/logobabay.png' },
-          { action: 'dismiss', title: 'Закрыть' }
-        ];
         break;
 
       case 'system':
         title = '🔔 Системное уведомление';
         body = data?.message || 'Новое системное сообщение';
-        icon = '/logobabay.png';
-        actions = [
-          { action: 'view', title: 'Открыть панель', icon: '/logobabay.png' },
-          { action: 'dismiss', title: 'Закрыть' }
-        ];
         break;
 
       default:
@@ -213,8 +181,6 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
 
     await sendNotification(title, {
       body,
-      icon,
-      actions,
       data: {
         orderId,
         type,
@@ -224,7 +190,7 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
     });
   }, [config, sendNotification]);
 
-  const value: PushNotificationContextType = {
+  const value: NotificationContextType = {
     config,
     updateConfig,
     permission,
@@ -232,26 +198,27 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
     sendNotification,
     sendOrderNotification,
     isSupported,
+    isSubscribed: permission === 'granted',
   };
 
   return (
-    <PushNotificationContext.Provider value={value}>
+    <NotificationContext.Provider value={value}>
       {children}
-    </PushNotificationContext.Provider>
+    </NotificationContext.Provider>
   );
 };
 
-// Хук для использования Push-уведомлений
-export const usePushNotifications = (): PushNotificationContextType => {
-  const context = useContext(PushNotificationContext);
+// Хук для использования уведомлений
+export const useNotifications = (): NotificationContextType => {
+  const context = useContext(NotificationContext);
   if (context === undefined) {
-    throw new Error('usePushNotifications must be used within a PushNotificationProvider');
+    throw new Error('useNotifications must be used within a NotificationProvider');
   }
   return context;
 };
 
-// Компонент для управления настройками Push-уведомлений
-export const PushNotificationSettings: React.FC = () => {
+// Компонент для управления настройками уведомлений
+export const NotificationSettings: React.FC = () => {
   const { 
     config, 
     updateConfig, 
@@ -259,7 +226,7 @@ export const PushNotificationSettings: React.FC = () => {
     requestPermission, 
     isSupported,
     sendOrderNotification
-  } = usePushNotifications();
+  } = useNotifications();
 
   const handleRequestPermission = async () => {
     await requestPermission();
@@ -271,9 +238,9 @@ export const PushNotificationSettings: React.FC = () => {
         <div className="flex items-center space-x-2">
           <span className="text-red-400 text-lg">⚠️</span>
           <div>
-            <h3 className="text-red-300 font-semibold">Push-уведомления не поддерживаются</h3>
+            <h3 className="text-red-300 font-semibold">Уведомления не поддерживаются</h3>
             <p className="text-red-400 text-sm">
-              Ваш браузер не поддерживает Push-уведомления или Service Worker
+              Ваш браузер не поддерживает уведомления
             </p>
           </div>
         </div>
@@ -284,8 +251,8 @@ export const PushNotificationSettings: React.FC = () => {
   return (
     <div className="bg-gray-800 rounded-lg p-4">
       <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-        <span className="mr-2">📱</span>
-        Push-уведомления
+        <span className="mr-2">🔔</span>
+        Уведомления
       </h3>
       
       <div className="space-y-4">
@@ -315,7 +282,7 @@ export const PushNotificationSettings: React.FC = () => {
 
         {/* Основной переключатель */}
         <div className="flex items-center justify-between">
-          <label className="text-gray-300 font-medium">Включить Push-уведомления</label>
+          <label className="text-gray-300 font-medium">Включить уведомления</label>
           <button
             onClick={() => updateConfig({ enabled: !config.enabled })}
             disabled={permission !== 'granted'}
@@ -389,47 +356,6 @@ export const PushNotificationSettings: React.FC = () => {
           </div>
         </div>
 
-        {/* Дополнительные настройки */}
-        <div className="space-y-3">
-          <h4 className="text-gray-300 font-medium">Дополнительные настройки</h4>
-          
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-gray-300 text-sm">Звук в уведомлениях</label>
-              <button
-                onClick={() => updateConfig({ soundEnabled: !config.soundEnabled })}
-                disabled={!config.enabled || permission !== 'granted'}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                  config.soundEnabled && config.enabled && permission === 'granted' ? 'bg-green-600' : 'bg-gray-600'
-                } ${!config.enabled || permission !== 'granted' ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <span
-                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                    config.soundEnabled && config.enabled && permission === 'granted' ? 'translate-x-5' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="text-gray-300 text-sm">Вибрация</label>
-              <button
-                onClick={() => updateConfig({ vibrationEnabled: !config.vibrationEnabled })}
-                disabled={!config.enabled || permission !== 'granted'}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                  config.vibrationEnabled && config.enabled && permission === 'granted' ? 'bg-green-600' : 'bg-gray-600'
-                } ${!config.enabled || permission !== 'granted' ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <span
-                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                    config.vibrationEnabled && config.enabled && permission === 'granted' ? 'translate-x-5' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* Тест уведомления */}
         <div className="pt-4 border-t border-gray-700">
           <button
@@ -437,7 +363,7 @@ export const PushNotificationSettings: React.FC = () => {
             disabled={!config.enabled || permission !== 'granted'}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
-            📱 Тест уведомления
+            🔔 Тест уведомления
           </button>
         </div>
       </div>

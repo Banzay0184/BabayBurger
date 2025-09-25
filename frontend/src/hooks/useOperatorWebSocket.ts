@@ -3,7 +3,7 @@ import { useWebSocket } from './useWebSocket';
 import type { WebSocketMessage } from './useWebSocket';
 import { useOperatorAuth } from '../context/OperatorAuthContext';
 import { useSoundNotifications } from '../components/operator/SoundNotificationManager';
-import { usePushNotifications } from '../components/operator/PushNotificationManager';
+import { useNotifications } from '../components/operator/SimpleNotificationManager';
 import { useSimpleMobileSound } from './useSimpleMobileSound';
 import type { OrderForOperator, OperatorNotification } from '../types/operator';
 
@@ -53,7 +53,7 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
   const { state: authState } = useOperatorAuth();
   const { playSound, config } = useSoundNotifications();
   const { playSound: playSimpleMobileSound } = useSimpleMobileSound();
-  const { sendOrderNotification } = usePushNotifications();
+  const { sendOrderNotification } = useNotifications();
   const [operatorId, setOperatorId] = useState<number | null>(null);
 
   const buildWsBase = (override?: string): string => {
