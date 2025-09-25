@@ -342,6 +342,35 @@ export const SimpleMobileSoundManager: React.FC = () => {
     };
   }, [isMobile, isInitialized, handleInitialize]);
 
+  // Автоматическая активация AudioContext при любом взаимодействии
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleAnyInteraction = () => {
+      if (window.audioContext && window.audioContext.state === 'suspended') {
+        console.log('📱 Mobile: Any interaction detected, resuming AudioContext...');
+        window.audioContext.resume().then(() => {
+          console.log('📱 Mobile: AudioContext resumed from any interaction');
+        }).catch((error) => {
+          console.error('📱 Mobile: Failed to resume AudioContext from any interaction:', error);
+        });
+      }
+    };
+
+    // Добавляем слушатели для всех типов взаимодействия
+    document.addEventListener('click', handleAnyInteraction, { passive: true });
+    document.addEventListener('touchstart', handleAnyInteraction, { passive: true });
+    document.addEventListener('keydown', handleAnyInteraction, { passive: true });
+    document.addEventListener('scroll', handleAnyInteraction, { passive: true });
+
+    return () => {
+      document.removeEventListener('click', handleAnyInteraction);
+      document.removeEventListener('touchstart', handleAnyInteraction);
+      document.removeEventListener('keydown', handleAnyInteraction);
+      document.removeEventListener('scroll', handleAnyInteraction);
+    };
+  }, [isMobile]);
+
   // Воспроизведение звука
   const playSound = useCallback(async (type: 'new_order' | 'order_update' | 'notification') => {
     if (!config?.enabled) {
@@ -366,6 +395,12 @@ export const SimpleMobileSoundManager: React.FC = () => {
         console.log('📱 Mobile: AudioContext suspended, attempting to resume...');
         await window.audioContext.resume();
         console.log('📱 Mobile: AudioContext resumed');
+      }
+
+      // Если AudioContext все еще не активен, пытаемся создать новый
+      if (!window.audioContext || window.audioContext.state === 'closed') {
+        console.log('📱 Mobile: AudioContext not available, creating new one...');
+        window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       }
 
       const audio = audioElements[type];
