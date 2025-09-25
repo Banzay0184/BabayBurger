@@ -47,6 +47,7 @@ export const SimpleMobileSoundManager: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
   const [audioElements, setAudioElements] = useState<{ [key: string]: HTMLAudioElement }>({});
+  const [waitingForInteraction, setWaitingForInteraction] = useState(false);
 
   // Определяем тип устройства
   useEffect(() => {
@@ -405,18 +406,15 @@ export const SimpleMobileSoundManager: React.FC = () => {
       
       // Если система была активирована ранее ИЛИ уже инициализирована
       if (localStorageActivated || sessionStorageActivated || wasInitialized || isInitialized) {
-        console.log('📱 Mobile: Sound system was previously activated, force initializing...');
+        console.log('📱 Mobile: Sound system was previously activated, preparing for auto-activation...');
         
-        // Принудительная активация для надежности
-        await forceActivateSoundSystem();
+        // Не активируем сразу, а ждем первого взаимодействия пользователя
+        // Это решает проблему с политикой автовоспроизведения браузеров
+        console.log('📱 Mobile: Waiting for user interaction to activate (browser autoplay policy)...');
         
-        // Дополнительная проверка через 2 секунды
-        setTimeout(async () => {
-          if (!isInitialized) {
-            console.log('📱 Mobile: System not initialized after 2s, retrying...');
-            await forceActivateSoundSystem();
-          }
-        }, 2000);
+        // Показываем подсказку о необходимости взаимодействия
+        setWaitingForInteraction(true);
+        setShowPrompt(false);
         
       } else {
         console.log('📱 Mobile: Sound system not previously activated, waiting for user interaction...');
@@ -463,14 +461,29 @@ export const SimpleMobileSoundManager: React.FC = () => {
     }
 
     // Автоматическая активация AudioContext при любом взаимодействии
-    const handleAnyInteraction = () => {
+    const handleAnyInteraction = async () => {
+      console.log('📱 Mobile: User interaction detected, activating sound system...');
+      
+      // Проверяем, нужно ли активировать систему
+      const shouldActivate = localStorage.getItem('mobile_sound_persistent_activated') === 'true' ||
+                           sessionStorage.getItem('mobile_sound_session_activated') === 'true' ||
+                           localStorage.getItem('mobile_sound_simple_initialized') === 'true';
+      
+      if (shouldActivate && !isInitialized) {
+        console.log('📱 Mobile: System should be active, force activating...');
+        setWaitingForInteraction(false);
+        await forceActivateSoundSystem();
+      }
+      
+      // Возобновляем AudioContext
       if (window.audioContext && window.audioContext.state === 'suspended') {
-        console.log('📱 Mobile: Any interaction detected, resuming AudioContext...');
-        window.audioContext.resume().then(() => {
-          console.log('📱 Mobile: AudioContext resumed from any interaction');
-        }).catch((error) => {
-          console.error('📱 Mobile: Failed to resume AudioContext from any interaction:', error);
-        });
+        console.log('📱 Mobile: Resuming AudioContext from interaction...');
+        try {
+          await window.audioContext.resume();
+          console.log('📱 Mobile: AudioContext resumed from interaction');
+        } catch (error) {
+          console.error('📱 Mobile: Failed to resume AudioContext from interaction:', error);
+        }
       }
     };
 
@@ -479,14 +492,18 @@ export const SimpleMobileSoundManager: React.FC = () => {
     document.addEventListener('touchstart', handleAnyInteraction, { passive: true });
     document.addEventListener('keydown', handleAnyInteraction, { passive: true });
     document.addEventListener('scroll', handleAnyInteraction, { passive: true });
+    document.addEventListener('mousemove', handleAnyInteraction, { passive: true });
+    document.addEventListener('focus', handleAnyInteraction, { passive: true });
 
     return () => {
       document.removeEventListener('click', handleAnyInteraction);
       document.removeEventListener('touchstart', handleAnyInteraction);
       document.removeEventListener('keydown', handleAnyInteraction);
       document.removeEventListener('scroll', handleAnyInteraction);
+      document.removeEventListener('mousemove', handleAnyInteraction);
+      document.removeEventListener('focus', handleAnyInteraction);
     };
-  }, [isMobile]);
+  }, [isMobile, isInitialized, forceActivateSoundSystem]);
 
   // Воспроизведение звука
   const playSound = useCallback(async (type: 'new_order' | 'order_update' | 'notification') => {
@@ -629,6 +646,27 @@ export const SimpleMobileSoundManager: React.FC = () => {
             <p className="text-green-300 text-sm font-medium">Мобильные звуки активны</p>
             <p className="text-green-400 text-xs">
               {isIOS ? 'iOS' : isAndroid ? 'Android' : 'Mobile'} • Простая система
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (waitingForInteraction) {
+    return (
+      <div className="bg-yellow-900/30 border border-yellow-600/50 rounded-lg p-4 mb-4">
+        <div className="flex items-center space-x-3">
+          <span className="text-yellow-400 text-2xl">🔊</span>
+          <div>
+            <h3 className="text-yellow-300 font-semibold">
+              Звуки готовы к активации
+            </h3>
+            <p className="text-yellow-400 text-sm">
+              Сделайте любое действие (клик, нажатие кнопки) для активации звуков
+            </p>
+            <p className="text-yellow-400 text-xs mt-1">
+              Это требование браузера для автовоспроизведения звука
             </p>
           </div>
         </div>

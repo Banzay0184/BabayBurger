@@ -138,7 +138,7 @@ export const SoundDiagnostics: React.FC = () => {
       (window as any).forceActivateMobileSound().then(() => {
         console.log('🔧 Persistent sounds enabled via force activation');
         updateDiagnostics();
-      }).catch((error) => {
+      }).catch((error: Error) => {
         console.error('🔧 Failed to enable persistent sounds:', error);
         updateDiagnostics();
       });
