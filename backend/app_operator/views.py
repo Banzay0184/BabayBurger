@@ -1429,6 +1429,70 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             'order': OrderForOperatorSerializer(order).data
         })
 
+    @action(detail=True, methods=['post'])
+    def update_payment_method(self, request, pk=None):
+        """Обновить способ оплаты заказа"""
+        order = get_object_or_404(Order, pk=pk)
+        operator = request.user
+        
+        # Получаем новый способ оплаты
+        payment_method = request.data.get('payment_method')
+        if not payment_method or payment_method not in ['cash', 'card', 'online']:
+            return Response(
+                {'error': 'Необходимо указать корректный способ оплаты (cash, card, online)'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Проверяем, назначен ли заказ оператору
+        if order.assigned_operator != operator:
+            # Если заказ не назначен, назначаем его текущему оператору
+            if order.assigned_operator is None:
+                old_status_before = order.status
+                
+                order.assigned_operator = operator
+                order.save()
+                
+                # Записываем в историю назначение без изменения статуса
+                OrderStatusHistory.objects.create(
+                    order=order,
+                    operator=operator,
+                    old_status=old_status_before,
+                    new_status=order.status,
+                    reason='Заказ автоматически назначен оператору при изменении способа оплаты'
+                )
+            else:
+                return Response(
+                    {'error': 'Заказ назначен другому оператору'}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        
+        # Проверяем, что заказ можно редактировать
+        if order.status not in ['pending', 'assigned', 'confirmed']:
+            return Response(
+                {'error': f'Заказ нельзя редактировать в статусе "{order.get_status_display()}"'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Обновляем способ оплаты
+        old_payment_method = order.payment_method
+        old_payment_method_display = order.get_payment_method_display()
+        order.payment_method = payment_method
+        order.save()
+        
+        # Создаем запись в истории статусов
+        OrderStatusHistory.objects.create(
+            order=order,
+            operator=operator,
+            old_status=order.status,
+            new_status=order.status,
+            reason=f'Способ оплаты изменен с "{old_payment_method_display}" на "{order.get_payment_method_display()}"'
+        )
+        
+        return Response({
+            'message': 'Способ оплаты обновлен',
+            'order': OrderForOperatorSerializer(order).data
+        })
+
 
 class SearchSuggestionsView(APIView):
     """API для получения предложений поиска"""
