@@ -316,36 +316,64 @@ export const SimpleMobileSoundManager: React.FC = () => {
     }
   }, [isMobile, isInitialized]);
 
-  // Автоматическая активация при первом взаимодействии пользователя
-  useEffect(() => {
-    if (!isMobile || isInitialized) return;
-
-    const handleUserInteraction = async () => {
-      console.log('📱 Mobile: User interaction detected, auto-initializing sound...');
-      await handleInitialize();
-      
-      // Удаляем слушатели после активации
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('touchstart', handleUserInteraction);
-      document.removeEventListener('keydown', handleUserInteraction);
-    };
-
-    // Добавляем слушатели для различных типов взаимодействия
-    document.addEventListener('click', handleUserInteraction, { once: true });
-    document.addEventListener('touchstart', handleUserInteraction, { once: true });
-    document.addEventListener('keydown', handleUserInteraction, { once: true });
-
-    return () => {
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('touchstart', handleUserInteraction);
-      document.removeEventListener('keydown', handleUserInteraction);
-    };
-  }, [isMobile, isInitialized, handleInitialize]);
-
-  // Автоматическая активация AudioContext при любом взаимодействии
+  // Автоматическая активация при загрузке страницы
   useEffect(() => {
     if (!isMobile) return;
 
+    const autoInitialize = async () => {
+      console.log('📱 Mobile: Auto-initializing sound system on page load...');
+      
+      // Проверяем, была ли система уже активирована ранее
+      const wasActivated = localStorage.getItem('mobile_sound_persistent_activated') === 'true';
+      
+      if (wasActivated) {
+        console.log('📱 Mobile: Sound system was previously activated, initializing...');
+        await handleInitialize();
+      } else {
+        console.log('📱 Mobile: Sound system not previously activated, waiting for user interaction...');
+        
+        const handleUserInteraction = async () => {
+          console.log('📱 Mobile: User interaction detected, auto-initializing sound...');
+          await handleInitialize();
+          
+          // Сохраняем состояние активации
+          localStorage.setItem('mobile_sound_persistent_activated', 'true');
+          
+          // Удаляем слушатели после активации
+          document.removeEventListener('click', handleUserInteraction);
+          document.removeEventListener('touchstart', handleUserInteraction);
+          document.removeEventListener('keydown', handleUserInteraction);
+        };
+
+        // Добавляем слушатели для различных типов взаимодействия
+        document.addEventListener('click', handleUserInteraction, { once: true });
+        document.addEventListener('touchstart', handleUserInteraction, { once: true });
+        document.addEventListener('keydown', handleUserInteraction, { once: true });
+
+        return () => {
+          document.removeEventListener('click', handleUserInteraction);
+          document.removeEventListener('touchstart', handleUserInteraction);
+          document.removeEventListener('keydown', handleUserInteraction);
+        };
+      }
+    };
+
+    autoInitialize();
+  }, [isMobile, handleInitialize]);
+
+  // Автоматическое создание AudioContext при загрузке
+  useEffect(() => {
+    if (!isMobile) return;
+
+    console.log('📱 Mobile: Creating AudioContext on page load...');
+    
+    // Создаем AudioContext сразу при загрузке
+    if (!window.audioContext) {
+      window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      console.log('📱 Mobile: AudioContext created on page load');
+    }
+
+    // Автоматическая активация AudioContext при любом взаимодействии
     const handleAnyInteraction = () => {
       if (window.audioContext && window.audioContext.state === 'suspended') {
         console.log('📱 Mobile: Any interaction detected, resuming AudioContext...');
@@ -465,6 +493,7 @@ export const SimpleMobileSoundManager: React.FC = () => {
         setIsInitialized(false);
         setShowPrompt(true);
         localStorage.removeItem('mobile_sound_simple_initialized');
+        localStorage.removeItem('mobile_sound_persistent_activated');
       };
       (window as any).checkMobileSoundStatus = () => {
         console.log('📱 Mobile: Sound status:', {

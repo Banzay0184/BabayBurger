@@ -16,6 +16,29 @@ export const SoundDiagnostics: React.FC = () => {
 
   const [isVisible, setIsVisible] = useState(false);
 
+  // Сохранение состояния активации при закрытии диагностики
+  useEffect(() => {
+    if (!isVisible) {
+      console.log('🔧 Diagnostics closed, ensuring sound system remains active...');
+      
+      // Убеждаемся, что AudioContext остается активным
+      if (window.audioContext && window.audioContext.state === 'suspended') {
+        console.log('🔧 AudioContext suspended when diagnostics closed, resuming...');
+        window.audioContext.resume().then(() => {
+          console.log('🔧 AudioContext resumed after diagnostics closed');
+        }).catch((error) => {
+          console.error('🔧 Failed to resume AudioContext after diagnostics closed:', error);
+        });
+      }
+      
+      // Убеждаемся, что звуковая система остается инициализированной
+      if ((window as any).handleInitialize) {
+        console.log('🔧 Re-initializing sound system after diagnostics closed...');
+        (window as any).handleInitialize();
+      }
+    }
+  }, [isVisible]);
+
   // Отладочная информация
   useEffect(() => {
     console.log('🔧 SoundDiagnostics: Component loaded');
@@ -72,29 +95,9 @@ export const SoundDiagnostics: React.FC = () => {
     // Восстанавливаем AudioContext сразу
     restoreAudioContext();
     
-    // Также восстанавливаем при взаимодействии пользователя
-    const handleUserInteraction = () => {
-      if (window.audioContext && window.audioContext.state === 'suspended') {
-        console.log('🔧 User interaction detected, resuming AudioContext...');
-        window.audioContext.resume().then(() => {
-          console.log('🔧 AudioContext resumed successfully');
-          updateDiagnostics();
-        }).catch((error) => {
-          console.error('🔧 Failed to resume AudioContext:', error);
-        });
-      }
-    };
-
-    // Добавляем слушатели для различных типов взаимодействия
-    document.addEventListener('click', handleUserInteraction, { once: true });
-    document.addEventListener('touchstart', handleUserInteraction, { once: true });
-    document.addEventListener('keydown', handleUserInteraction, { once: true });
-
-    return () => {
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('touchstart', handleUserInteraction);
-      document.removeEventListener('keydown', handleUserInteraction);
-    };
+    // НЕ добавляем слушатели здесь, чтобы не конфликтовать с основной системой
+    // Основная система уже имеет свои слушатели в SimpleMobileSoundManager
+    
   }, []);
 
   // Слушаем события звуков
@@ -125,6 +128,53 @@ export const SoundDiagnostics: React.FC = () => {
       (window as any).resetMobileSound();
     }
     updateDiagnostics();
+  };
+
+  const enablePersistentSounds = () => {
+    console.log('🔧 Enabling persistent sounds...');
+    
+    // Принудительно активируем AudioContext
+    if (!window.audioContext) {
+      window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    
+    if (window.audioContext.state === 'suspended') {
+      window.audioContext.resume().then(() => {
+        console.log('🔧 AudioContext resumed for persistent sounds');
+        
+        // Вызываем инициализацию звуковой системы
+        if ((window as any).handleInitialize) {
+          (window as any).handleInitialize();
+        }
+        
+        // Очищаем ошибки
+        (window as any).mobileSoundLastError = null;
+        
+        // Сохраняем состояние активации
+        localStorage.setItem('mobile_sound_persistent_activated', 'true');
+        
+        updateDiagnostics();
+      }).catch((error) => {
+        console.error('🔧 Failed to enable persistent sounds:', error);
+        updateDiagnostics();
+      });
+    } else {
+      // AudioContext уже активен
+      console.log('🔧 AudioContext already active for persistent sounds');
+      
+      // Вызываем инициализацию звуковой системы
+      if ((window as any).handleInitialize) {
+        (window as any).handleInitialize();
+      }
+      
+      // Очищаем ошибки
+      (window as any).mobileSoundLastError = null;
+      
+      // Сохраняем состояние активации
+      localStorage.setItem('mobile_sound_persistent_activated', 'true');
+      
+      updateDiagnostics();
+    }
   };
 
   const forceTestSound = () => {
@@ -413,6 +463,13 @@ export const SoundDiagnostics: React.FC = () => {
           {/* Кнопки управления */}
           <div className="space-y-2">
             <button
+              onClick={enablePersistentSounds}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              🎵 Постоянная активация
+            </button>
+            
+            <button
               onClick={activateSounds}
               className="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
@@ -466,9 +523,9 @@ export const SoundDiagnostics: React.FC = () => {
           <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-3">
             <div className="text-blue-300 text-xs">
               <p className="font-medium mb-1">💡 Для разработчика:</p>
+              <p>• Если звуки не работают после закрытия - нажмите "Постоянная активация"</p>
               <p>• Если есть ошибка автовоспроизведения - нажмите "Активировать звуки"</p>
               <p>• Если звук не воспроизводится - нажмите "Принудительный тест"</p>
-              <p>• Если "AudioContext: Неизвестно" - нажмите "Создать AudioContext"</p>
               <p>• Если "Последняя ошибка" есть - нажмите "Очистить ошибки"</p>
             </div>
           </div>
