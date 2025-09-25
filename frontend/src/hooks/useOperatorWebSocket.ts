@@ -51,7 +51,7 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
   } = options;
 
   const { state: authState } = useOperatorAuth();
-  const { playSound } = useSoundNotifications();
+  const { playSound, config } = useSoundNotifications();
   const { playSoundSafe, isPWA } = usePWASound();
   const { playSoundSafe: playMobileSoundSafe, isMobile } = useMobileSound();
   const [operatorId, setOperatorId] = useState<number | null>(null);
@@ -97,89 +97,124 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
   // Обработчик сообщений WebSocket
   const handleMessage = useCallback((message: WebSocketMessage) => {
     console.log('📨 Operator WebSocket message:', message);
+    console.log('📨 Message type:', message.type);
+    console.log('📨 Device info:', { isMobile, isPWA });
+    console.log('📨 Sound config:', { enabled: config?.enabled });
 
     switch (message.type) {
       case 'order_created':
-        if ((message as any).order && onOrderCreated) {
+        if ((message as any).order) {
           console.log('🆕 New order received:', (message as any).order);
-          // Воспроизводим звук для нового заказа
-          try {
-            console.log('🔊 Attempting to play new order sound...');
-            if (isMobile) {
-              playMobileSoundSafe('new_order');
-            } else if (isPWA) {
-              playSoundSafe('new_order');
-            } else {
-              playSound('new_order');
+          // Воспроизводим звук для нового заказа (независимо от наличия callback)
+          if (config?.enabled) {
+            try {
+              console.log('🔊 Attempting to play new order sound...');
+              if (isMobile) {
+                playMobileSoundSafe('new_order');
+              } else if (isPWA) {
+                playSoundSafe('new_order');
+              } else {
+                playSound('new_order');
+              }
+              console.log('🔊 New order sound played successfully');
+            } catch (error) {
+              console.error('🔊 Error playing new order sound:', error);
             }
-            console.log('🔊 New order sound played successfully');
-          } catch (error) {
-            console.error('🔊 Error playing new order sound:', error);
+          } else {
+            console.log('🔊 Sound disabled, skipping new order sound');
           }
-          onOrderCreated((message as any).order);
+          
+          // Вызываем callback если он есть
+          if (onOrderCreated) {
+            onOrderCreated((message as any).order);
+          }
         }
         break;
 
       case 'order_updated':
-        if ((message as any).order_id && onOrderUpdated) {
+        if ((message as any).order_id) {
           console.log('🔄 Order updated:', (message as any).order_id, (message as any).status);
-          // Воспроизводим звук для обновления заказа
-          try {
-            console.log('🔊 Attempting to play order update sound...');
-            if (isMobile) {
-              playMobileSoundSafe('order_update');
-            } else if (isPWA) {
-              playSoundSafe('order_update');
-            } else {
-              playSound('order_update');
+          // Воспроизводим звук для обновления заказа (независимо от наличия callback)
+          if (config?.enabled) {
+            try {
+              console.log('🔊 Attempting to play order update sound...');
+              if (isMobile) {
+                playMobileSoundSafe('order_update');
+              } else if (isPWA) {
+                playSoundSafe('order_update');
+              } else {
+                playSound('order_update');
+              }
+              console.log('🔊 Order update sound played successfully');
+            } catch (error) {
+              console.error('🔊 Error playing order update sound:', error);
             }
-            console.log('🔊 Order update sound played successfully');
-          } catch (error) {
-            console.error('🔊 Error playing order update sound:', error);
+          } else {
+            console.log('🔊 Sound disabled, skipping order update sound');
           }
-          onOrderUpdated((message as any).order_id, (message as any).order, (message as any).status);
+          
+          // Вызываем callback если он есть
+          if (onOrderUpdated) {
+            onOrderUpdated((message as any).order_id, (message as any).order, (message as any).status);
+          }
         }
         break;
 
       case 'order_assigned':
-        if ((message as any).order_id && (message as any).operator_id && (message as any).operator_name && onOrderAssigned) {
+        if ((message as any).order_id && (message as any).operator_id && (message as any).operator_name) {
           console.log('👤 Order assigned:', (message as any).order_id, (message as any).operator_name);
-          // Воспроизводим звук для назначения заказа
-          try {
-            console.log('🔊 Attempting to play assignment sound...');
-            if (isMobile) {
-              playMobileSoundSafe('notification');
-            } else if (isPWA) {
-              playSoundSafe('notification');
-            } else {
-              playSound('notification');
+          // Воспроизводим звук для назначения заказа (независимо от наличия callback)
+          if (config?.enabled) {
+            try {
+              console.log('🔊 Attempting to play assignment sound...');
+              if (isMobile) {
+                playMobileSoundSafe('notification');
+              } else if (isPWA) {
+                playSoundSafe('notification');
+              } else {
+                playSound('notification');
+              }
+              console.log('🔊 Assignment sound played successfully');
+            } catch (error) {
+              console.error('🔊 Error playing assignment sound:', error);
             }
-            console.log('🔊 Assignment sound played successfully');
-          } catch (error) {
-            console.error('🔊 Error playing assignment sound:', error);
+          } else {
+            console.log('🔊 Sound disabled, skipping assignment sound');
           }
-          onOrderAssigned((message as any).order_id, (message as any).operator_id, (message as any).operator_name);
+          
+          // Вызываем callback если он есть
+          if (onOrderAssigned) {
+            onOrderAssigned((message as any).order_id, (message as any).operator_id, (message as any).operator_name);
+          }
         }
         break;
 
       case 'notification':
-        if ((message as any).notification && onNotification) {
+        if ((message as any).notification) {
           console.log('🔔 Notification received:', (message as any).notification);
-          // Воспроизводим звук для системных уведомлений
-          try {
-            console.log('🔊 Attempting to play notification sound...');
-            if (isMobile) {
-              playMobileSoundSafe('notification');
-            } else if (isPWA) {
-              playSoundSafe('notification');
-            } else {
-              playSound('notification');
+          // Воспроизводим звук для системных уведомлений (независимо от наличия callback)
+          if (config?.enabled) {
+            try {
+              console.log('🔊 Attempting to play notification sound...');
+              if (isMobile) {
+                playMobileSoundSafe('notification');
+              } else if (isPWA) {
+                playSoundSafe('notification');
+              } else {
+                playSound('notification');
+              }
+              console.log('🔊 Notification sound played successfully');
+            } catch (error) {
+              console.error('🔊 Error playing notification sound:', error);
             }
-            console.log('🔊 Notification sound played successfully');
-          } catch (error) {
-            console.error('🔊 Error playing notification sound:', error);
+          } else {
+            console.log('🔊 Sound disabled, skipping notification sound');
           }
-          onNotification((message as any).notification);
+          
+          // Вызываем callback если он есть
+          if (onNotification) {
+            onNotification((message as any).notification);
+          }
         }
         break;
 
