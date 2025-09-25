@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { OrderForOperator } from '../../types/operator';
 import { operatorOrdersApi } from '../../api/operatorApi';
 
@@ -23,6 +23,12 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     `${order.user_info.first_name} ${order.user_info.last_name || ''}`.trim()
   );
 
+  // Синхронизируем локальное состояние с обновленным заказом
+  useEffect(() => {
+    setPaymentMethod(order.payment_method);
+    setCustomerName(`${order.user_info.first_name} ${order.user_info.last_name || ''}`.trim());
+  }, [order.payment_method, order.user_info.first_name, order.user_info.last_name]);
+
   // Изменение типа оплаты
   const handlePaymentMethodChange = async () => {
     if (paymentMethod === order.payment_method) {
@@ -32,7 +38,9 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
     setIsLoading(true);
     try {
+      console.log('💳 Изменение способа оплаты:', order.id, paymentMethod);
       const updatedOrder = await operatorOrdersApi.updateOrderPaymentMethod(order.id, paymentMethod);
+      console.log('✅ Способ оплаты изменен, обновляем заказ:', updatedOrder);
       onUpdate(updatedOrder);
       setIsEditingPayment(false);
     } catch (error) {

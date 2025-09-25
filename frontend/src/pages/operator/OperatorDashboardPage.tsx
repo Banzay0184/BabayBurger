@@ -202,7 +202,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
 
   // Обновление заказа (после действий оператора)
   const updateOrder = useCallback((updatedOrder: OrderForOperator) => {
-    console.log('🔄 Обновление заказа после действия оператора:', updatedOrder.id, updatedOrder.status);
+    console.log('🔄 Обновление заказа после действия оператора:', updatedOrder.id, updatedOrder.status, updatedOrder.payment_method);
     
     // Обновляем заказ в списке без фильтрации
     setOrders(prev => {
