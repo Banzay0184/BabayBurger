@@ -167,12 +167,19 @@ export const SimpleMobileSoundManager: React.FC = () => {
     if (isMobile) {
       const wasInitialized = localStorage.getItem('mobile_sound_simple_initialized') === 'true';
       if (wasInitialized) {
-        console.log('📱 Mobile: Previously initialized');
-        setIsInitialized(true);
-        setShowPrompt(false);
+        console.log('📱 Mobile: Previously initialized, checking audio elements...');
+        
+        // Проверяем, есть ли аудио элементы
+        if (Object.keys(audioElements).length > 0) {
+          console.log('📱 Mobile: Audio elements found, marking as initialized');
+          setIsInitialized(true);
+          setShowPrompt(false);
+        } else {
+          console.log('📱 Mobile: No audio elements found, waiting for creation...');
+        }
       }
     }
-  }, [isMobile]);
+  }, [isMobile, audioElements]);
 
   // Инициализация звуковой системы
   const handleInitialize = useCallback(async () => {
@@ -182,17 +189,47 @@ export const SimpleMobileSoundManager: React.FC = () => {
       // Создаем AudioContext
       if (!window.audioContext) {
         window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        console.log('📱 Mobile: AudioContext created');
       }
       
       // Возобновляем AudioContext
       if (window.audioContext.state === 'suspended') {
         await window.audioContext.resume();
+        console.log('📱 Mobile: AudioContext resumed');
+      }
+
+      // Проверяем, что аудио элементы созданы
+      if (Object.keys(audioElements).length === 0) {
+        console.log('📱 Mobile: No audio elements found, waiting for creation...');
+        // Ждем создания аудио элементов
+        setTimeout(() => {
+          if (Object.keys(audioElements).length > 0) {
+            console.log('📱 Mobile: Audio elements created, proceeding with test');
+            const testAudio = audioElements.new_order;
+            if (testAudio) {
+              testAudio.play().then(() => {
+                console.log('📱 Mobile: Test sound played successfully');
+                setIsInitialized(true);
+                setShowPrompt(false);
+                localStorage.setItem('mobile_sound_simple_initialized', 'true');
+              }).catch((error) => {
+                console.error('📱 Mobile: Test sound failed:', error);
+                // Все равно считаем инициализированным
+                setIsInitialized(true);
+                setShowPrompt(false);
+                localStorage.setItem('mobile_sound_simple_initialized', 'true');
+              });
+            }
+          }
+        }, 1000);
+        return;
       }
 
       // Воспроизводим тестовый звук
       const testAudio = audioElements.new_order;
       if (testAudio) {
         await testAudio.play();
+        console.log('📱 Mobile: Test sound played successfully');
       }
       
       setIsInitialized(true);
@@ -205,6 +242,13 @@ export const SimpleMobileSoundManager: React.FC = () => {
       
     } catch (error) {
       console.error('📱 Mobile: Initialization failed:', error);
+      
+      // Даже если инициализация не удалась, сохраняем состояние
+      // чтобы не показывать prompt снова
+      setIsInitialized(true);
+      setShowPrompt(false);
+      localStorage.setItem('mobile_sound_simple_initialized', 'true');
+      console.log('📱 Mobile: Marked as initialized despite error');
     }
   }, [audioElements]);
 
@@ -240,15 +284,24 @@ export const SimpleMobileSoundManager: React.FC = () => {
         console.log(`📱 Mobile: ${type} sound played successfully`);
       } else {
         console.warn(`📱 Mobile: Audio element for ${type} not found`);
+        
+        // Если аудио элемент не найден, но система инициализирована,
+        // попробуем пересоздать элементы
+        if (isInitialized && Object.keys(audioElements).length === 0) {
+          console.log('📱 Mobile: Audio elements missing, recreating...');
+          // Перезагружаем страницу для пересоздания элементов
+          window.location.reload();
+        }
       }
     } catch (error) {
       console.error(`📱 Mobile: Error playing ${type} sound:`, error);
       
-      // Если ошибка, показываем prompt для повторной инициализации
+      // НЕ сбрасываем состояние инициализации при ошибках воспроизведения
+      // Только логируем ошибку
       if (error instanceof Error && error.name === 'NotAllowedError') {
-        console.log('📱 Mobile: Autoplay blocked, showing prompt');
-        setShowPrompt(true);
-        setIsInitialized(false);
+        console.log('📱 Mobile: Autoplay blocked, but keeping initialization state');
+        // Не сбрасываем isInitialized, только показываем предупреждение
+        console.warn('📱 Mobile: Sound blocked by browser policy, but system remains initialized');
       }
     }
   }, [config?.enabled, isMobile, isInitialized, audioElements]);
@@ -257,7 +310,13 @@ export const SimpleMobileSoundManager: React.FC = () => {
   useEffect(() => {
     if (isMobile) {
       (window as any).playMobileSound = playSound;
-      console.log('📱 Mobile: playMobileSound function exported to window');
+      (window as any).resetMobileSound = () => {
+        console.log('📱 Mobile: Resetting sound system...');
+        setIsInitialized(false);
+        setShowPrompt(true);
+        localStorage.removeItem('mobile_sound_simple_initialized');
+      };
+      console.log('📱 Mobile: playMobileSound and resetMobileSound functions exported to window');
     }
   }, [isMobile, playSound]);
 
