@@ -594,7 +594,6 @@ export const SimpleMobileSoundManager: React.FC = () => {
   useEffect(() => {
     if (isMobile) {
       (window as any).playMobileSound = playSound;
-      (window as any).forceActivateMobileSound = forceActivateSoundSystem;
       (window as any).resetMobileSound = () => {
         console.log('📱 Mobile: Resetting sound system...');
         setIsInitialized(false);
@@ -603,21 +602,7 @@ export const SimpleMobileSoundManager: React.FC = () => {
         localStorage.removeItem('mobile_sound_persistent_activated');
         sessionStorage.removeItem('mobile_sound_session_activated');
       };
-      (window as any).checkMobileSoundStatus = () => {
-        console.log('📱 Mobile: Sound status:', {
-          isInitialized,
-          showPrompt,
-          audioElementsCount: Object.keys(audioElements).length,
-          audioContextState: window.audioContext?.state,
-          localStorageInitialized: localStorage.getItem('mobile_sound_simple_initialized')
-        });
-      };
       
-      // Экспортируем состояние для диагностики
-      (window as any).mobileSoundInitialized = isInitialized;
-      (window as any).mobileSoundShowPrompt = showPrompt;
-      (window as any).mobileSoundAudioElementsCount = Object.keys(audioElements).length;
-      (window as any).handleInitialize = handleInitialize;
       
       // Обновляем состояние prompt если система инициализирована
       if (isInitialized && showPrompt) {
@@ -625,7 +610,7 @@ export const SimpleMobileSoundManager: React.FC = () => {
         setShowPrompt(false);
       }
       
-      console.log('📱 Mobile: playMobileSound, resetMobileSound, and checkMobileSoundStatus functions exported to window');
+      console.log('📱 Mobile: playMobileSound and resetMobileSound functions exported to window');
     }
   }, [isMobile, playSound, isInitialized, showPrompt, audioElements, handleInitialize]);
 
