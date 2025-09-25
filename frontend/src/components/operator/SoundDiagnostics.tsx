@@ -127,6 +127,35 @@ export const SoundDiagnostics: React.FC = () => {
     updateDiagnostics();
   };
 
+  const forceTestSound = () => {
+    console.log('🔧 Force testing sound...');
+    
+    // Принудительно активируем AudioContext
+    if (!window.audioContext) {
+      window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    
+    if (window.audioContext.state === 'suspended') {
+      window.audioContext.resume().then(() => {
+        console.log('🔧 AudioContext resumed for force test');
+        // Тестируем звук
+        if ((window as any).playMobileSound) {
+          (window as any).playMobileSound('new_order');
+        }
+        updateDiagnostics();
+      }).catch((error) => {
+        console.error('🔧 Failed to resume AudioContext for force test:', error);
+        updateDiagnostics();
+      });
+    } else {
+      // AudioContext уже активен, тестируем звук
+      if ((window as any).playMobileSound) {
+        (window as any).playMobileSound('new_order');
+      }
+      updateDiagnostics();
+    }
+  };
+
   const clearErrors = () => {
     console.log('🔧 Clearing errors...');
     (window as any).mobileSoundLastError = null;
@@ -156,6 +185,14 @@ export const SoundDiagnostics: React.FC = () => {
         // Очищаем ошибку автовоспроизведения
         (window as any).mobileSoundLastError = null;
         
+        // Принудительно тестируем звук
+        setTimeout(() => {
+          if ((window as any).playMobileSound) {
+            console.log('🔧 Testing sound after activation...');
+            (window as any).playMobileSound('new_order');
+          }
+        }, 500);
+        
         updateDiagnostics();
       }).catch((error) => {
         console.error('🔧 Failed to activate AudioContext:', error);
@@ -172,6 +209,14 @@ export const SoundDiagnostics: React.FC = () => {
       
       // Очищаем ошибку автовоспроизведения
       (window as any).mobileSoundLastError = null;
+      
+      // Принудительно тестируем звук
+      setTimeout(() => {
+        if ((window as any).playMobileSound) {
+          console.log('🔧 Testing sound after activation...');
+          (window as any).playMobileSound('new_order');
+        }
+      }, 500);
       
       updateDiagnostics();
     }
@@ -375,6 +420,13 @@ export const SoundDiagnostics: React.FC = () => {
             </button>
             
             <button
+              onClick={forceTestSound}
+              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              🔊 Принудительный тест
+            </button>
+            
+            <button
               onClick={clearErrors}
               className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
@@ -415,9 +467,9 @@ export const SoundDiagnostics: React.FC = () => {
             <div className="text-blue-300 text-xs">
               <p className="font-medium mb-1">💡 Для разработчика:</p>
               <p>• Если есть ошибка автовоспроизведения - нажмите "Активировать звуки"</p>
+              <p>• Если звук не воспроизводится - нажмите "Принудительный тест"</p>
               <p>• Если "AudioContext: Неизвестно" - нажмите "Создать AudioContext"</p>
               <p>• Если "Последняя ошибка" есть - нажмите "Очистить ошибки"</p>
-              <p>• Если ничего не помогает - нажмите "Сброс системы"</p>
             </div>
           </div>
         </div>
