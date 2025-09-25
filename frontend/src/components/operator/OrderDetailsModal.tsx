@@ -17,9 +17,32 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   const [notes, setNotes] = useState(order.operator_notes || '');
   const [showNotesForm, setShowNotesForm] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingPayment, setIsEditingPayment] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState(order.payment_method);
   const [customerName, setCustomerName] = useState(
     `${order.user_info.first_name} ${order.user_info.last_name || ''}`.trim()
   );
+
+  // Изменение типа оплаты
+  const handlePaymentMethodChange = async () => {
+    if (paymentMethod === order.payment_method) {
+      setIsEditingPayment(false);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const updatedOrder = await operatorOrdersApi.updateOrderPaymentMethod(order.id, paymentMethod);
+      onUpdate(updatedOrder);
+      setIsEditingPayment(false);
+    } catch (error) {
+      console.error('Ошибка при изменении типа оплаты:', error);
+      // Возвращаем исходное значение при ошибке
+      setPaymentMethod(order.payment_method);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Добавление заметок к заказу
   const handleAddNotes = async () => {
@@ -328,10 +351,53 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Способ оплаты:</span>
-                    <span className="text-white flex items-center space-x-1">
-                      <span>{getPaymentMethodIcon(order.payment_method)}</span>
-                      <span>{getPaymentMethodText(order.payment_method)}</span>
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      {isEditingPayment ? (
+                        <div className="flex items-center space-x-2">
+                          <select
+                            value={paymentMethod}
+                            onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'card' | 'online')}
+                            className="bg-gray-600 text-white px-2 py-1 rounded text-sm border border-gray-500 focus:border-blue-500 focus:outline-none"
+                            disabled={isLoading}
+                          >
+                            <option value="cash">💵 Наличными</option>
+                            <option value="card">💳 Картой</option>
+                            <option value="online">🌐 Онлайн</option>
+                          </select>
+                          <button
+                            onClick={handlePaymentMethodChange}
+                            disabled={isLoading}
+                            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                          >
+                            ✓
+                          </button>
+                          <button
+                            onClick={() => {
+                              setPaymentMethod(order.payment_method);
+                              setIsEditingPayment(false);
+                            }}
+                            disabled={isLoading}
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-white flex items-center space-x-1">
+                            <span>{getPaymentMethodIcon(order.payment_method)}</span>
+                            <span>{getPaymentMethodText(order.payment_method)}</span>
+                          </span>
+                          <button
+                            onClick={() => setIsEditingPayment(true)}
+                            className="text-blue-400 hover:text-blue-300 text-xs font-medium transition-colors"
+                            title="Изменить способ оплаты"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="border-t border-gray-600 pt-2 mt-2">
                     <div className="flex justify-between">

@@ -312,6 +312,21 @@ export const operatorOrdersApi = {
     }
 
     return response.json();
+  },
+
+  // Изменение типа оплаты заказа
+  updateOrderPaymentMethod: async (orderId: number, paymentMethod: 'cash' | 'card' | 'online'): Promise<OrderForOperator> => {
+    const response = await fetch(getApiUrl(`operator/operator-orders/${orderId}/`), {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify({ payment_method: paymentMethod })
+    });
+
+    if (!response.ok) {
+      await handleApiError(response);
+    }
+
+    return response.json();
   }
 };
 
