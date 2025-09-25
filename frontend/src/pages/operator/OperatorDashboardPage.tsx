@@ -21,7 +21,7 @@ import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
 
 export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ onNavigate }) => {
   const { state: authState, logout } = useOperatorAuth();
-  const { sendOrderNotification, permission } = usePushNotifications();
+  const { permission } = usePushNotifications();
   const [dashboard, setDashboard] = useState<OperatorDashboard | null>(null);
   const [orders, setOrders] = useState<OrderForOperator[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -470,16 +470,6 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
                   title="Push-уведомления"
                 >
                   📱
-                </button>
-                <button
-                  onClick={() => {
-                    console.log('🧪 Testing push notification...');
-                    sendOrderNotification(99999, 'new', { test: true });
-                  }}
-                  className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
-                  title="Тест Push-уведомления"
-                >
-                  🧪
                 </button>
               </div>
             </div>

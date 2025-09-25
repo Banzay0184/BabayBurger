@@ -107,14 +107,9 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
           
           // Отправляем Push-уведомление
           const order = (message as any).order;
-          console.log('📱 Sending push notification for new order:', order.id);
           sendOrderNotification(order.id, 'new', {
             orderData: order,
             timestamp: Date.now()
-          }).then(() => {
-            console.log('📱 Push notification sent successfully for order:', order.id);
-          }).catch((error) => {
-            console.error('📱 Error sending push notification:', error);
           });
           
           // Воспроизводим звук для нового заказа (независимо от наличия callback)

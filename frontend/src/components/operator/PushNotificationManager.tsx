@@ -110,10 +110,7 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
     title: string, 
     options: ExtendedNotificationOptions = {}
   ): Promise<void> => {
-    console.log('📱 sendNotification called:', { title, isSupported, enabled: config.enabled, permission });
-    
     if (!isSupported || !config.enabled || permission !== 'granted') {
-      console.warn('Cannot send notification:', { isSupported, enabled: config.enabled, permission });
       return;
     }
 
@@ -132,12 +129,9 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
 
       // Если есть Service Worker, используем его
       if ('serviceWorker' in navigator) {
-        console.log('📱 Using Service Worker for notification');
         const registration = await navigator.serviceWorker.ready;
         await registration.showNotification(title, defaultOptions);
-        console.log('📱 Service Worker notification sent:', title);
       } else {
-        console.log('📱 Using fallback Notification API');
         // Fallback к обычным уведомлениям (без расширенных опций)
         const basicOptions: NotificationOptions = {
           icon: defaultOptions.icon,
@@ -147,10 +141,7 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
           silent: defaultOptions.silent,
         };
         new Notification(title, basicOptions);
-        console.log('📱 Fallback notification sent:', title);
       }
-
-      console.log('📱 Push notification sent successfully:', title);
     } catch (error) {
       console.error('Error sending notification:', error);
     }
@@ -162,32 +153,18 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
     type: 'new' | 'update' | 'system',
     data?: any
   ): Promise<void> => {
-    console.log('📱 sendOrderNotification called:', { orderId, type, config, permission, isSupported });
-    
-    if (!config.enabled) {
-      console.log('📱 Push notifications disabled in config');
-      return;
-    }
+    if (!config.enabled) return;
 
     // Проверяем, включен ли этот тип уведомлений
     switch (type) {
       case 'new':
-        if (!config.newOrderNotifications) {
-          console.log('📱 New order notifications disabled');
-          return;
-        }
+        if (!config.newOrderNotifications) return;
         break;
       case 'update':
-        if (!config.orderUpdateNotifications) {
-          console.log('📱 Order update notifications disabled');
-          return;
-        }
+        if (!config.orderUpdateNotifications) return;
         break;
       case 'system':
-        if (!config.systemNotifications) {
-          console.log('📱 System notifications disabled');
-          return;
-        }
+        if (!config.systemNotifications) return;
         break;
     }
 
@@ -231,8 +208,6 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
         return;
     }
 
-    console.log('📱 About to send notification:', { title, body, orderId, type });
-    
     await sendNotification(title, {
       body,
       icon,
@@ -244,8 +219,6 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
         ...data
       }
     });
-    
-    console.log('📱 Notification sent successfully for order:', orderId);
   }, [config, sendNotification]);
 
   const value: PushNotificationContextType = {
