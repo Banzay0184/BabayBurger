@@ -1493,6 +1493,87 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
             'order': OrderForOperatorSerializer(order).data
         })
 
+    @action(detail=True, methods=['post'])
+    def update_service_type(self, request, pk=None):
+        """Обновить тип заказа (доставка ↔ самовывоз)"""
+        order = get_object_or_404(Order, pk=pk)
+        operator = request.user
+        
+        # Получаем новый тип заказа
+        service_type = request.data.get('service_type')
+        if not service_type or service_type not in ['delivery', 'pickup']:
+            return Response(
+                {'error': 'Необходимо указать корректный тип заказа (delivery, pickup)'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Проверяем, назначен ли заказ оператору
+        if order.assigned_operator != operator:
+            # Если заказ не назначен, назначаем его текущему оператору
+            if order.assigned_operator is None:
+                old_status_before = order.status
+                
+                order.assigned_operator = operator
+                order.save()
+                
+                # Записываем в историю назначение без изменения статуса
+                OrderStatusHistory.objects.create(
+                    order=order,
+                    operator=operator,
+                    old_status=old_status_before,
+                    new_status=order.status,
+                    reason='Заказ автоматически назначен оператору при изменении типа заказа'
+                )
+            else:
+                return Response(
+                    {'error': 'Заказ назначен другому оператору'}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        
+        # Проверяем, что заказ можно редактировать
+        if order.status not in ['pending', 'assigned', 'confirmed']:
+            return Response(
+                {'error': f'Заказ нельзя редактировать в статусе "{order.get_status_display()}"'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Обновляем тип заказа
+        old_service_type = order.service_type
+        old_service_type_display = order.get_service_type_display()
+        order.service_type = service_type
+        
+        # Если меняем с доставки на самовывоз, очищаем адрес
+        if old_service_type == 'delivery' and service_type == 'pickup':
+            order.address_info = None
+            order.delivery_fee = 0
+        
+        # Если меняем с самовывоза на доставку, нужно будет указать адрес
+        elif old_service_type == 'pickup' and service_type == 'delivery':
+            # Проверяем, есть ли адрес в запросе
+            address_info = request.data.get('address_info')
+            if not address_info:
+                return Response(
+                    {'error': 'При изменении на доставку необходимо указать адрес'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            order.address_info = address_info
+        
+        order.save()
+        
+        # Создаем запись в истории статусов
+        OrderStatusHistory.objects.create(
+            order=order,
+            operator=operator,
+            old_status=order.status,
+            new_status=order.status,
+            reason=f'Тип заказа изменен с "{old_service_type_display}" на "{order.get_service_type_display()}"'
+        )
+        
+        return Response({
+            'message': 'Тип заказа обновлен',
+            'order': OrderForOperatorSerializer(order).data
+        })
+
 
 class SearchSuggestionsView(APIView):
     """API для получения предложений поиска"""

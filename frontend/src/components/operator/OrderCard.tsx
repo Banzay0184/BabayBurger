@@ -158,6 +158,42 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
     }
   };
 
+  // Изменить тип заказа (доставка ↔ самовывоз)
+  const handleServiceTypeChange = async () => {
+    const newServiceType = order.service_type === 'delivery' ? 'pickup' : 'delivery';
+    
+    // Подтверждение изменения
+    const confirmMessage = newServiceType === 'delivery' 
+      ? 'Изменить заказ на доставку? (Потребуется указать адрес)'
+      : 'Изменить заказ на самовывоз? (Адрес будет удален)';
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      console.log('🔄 Изменение типа заказа:', order.id, `${order.service_type} → ${newServiceType}`);
+      
+      // Выполняем API вызов
+      const response = await operatorOrdersApi.updateOrderServiceType(order.id, newServiceType);
+      console.log('✅ Тип заказа изменен, обновляем заказ:', response);
+      
+      // Извлекаем заказ из ответа API
+      const updatedOrder = response.order || response;
+      console.log('📦 Извлеченный заказ:', updatedOrder);
+      
+      onUpdate(updatedOrder);
+      
+    } catch (error) {
+      console.error('Ошибка при изменении типа заказа:', error);
+      alert('Ошибка при изменении типа заказа');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   // Форматирование даты
   const formatDate = (dateString: string): string => {
@@ -318,6 +354,18 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
               {isLoading ? '...' : '✏️ Изменить'}
+            </button>
+          )}
+
+          {/* Кнопка изменения типа заказа */}
+          {order.status !== 'completed' && order.status !== 'cancelled' && order.status !== 'rejected' && (
+            <button
+              onClick={handleServiceTypeChange}
+              disabled={isLoading}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              title={`Изменить на ${order.service_type === 'delivery' ? 'самовывоз' : 'доставку'}`}
+            >
+              {isLoading ? '...' : (order.service_type === 'delivery' ? '🏪 Самовывоз' : '🚚 Доставка')}
             </button>
           )}
         </div>

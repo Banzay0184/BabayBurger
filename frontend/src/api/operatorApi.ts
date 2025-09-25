@@ -327,6 +327,21 @@ export const operatorOrdersApi = {
     }
 
     return response.json();
+  },
+
+  // Изменение типа заказа (доставка ↔ самовывоз)
+  updateOrderServiceType: async (orderId: number, serviceType: 'delivery' | 'pickup'): Promise<{message: string, order: OrderForOperator}> => {
+    const response = await fetch(getApiUrl(`operator/operator-orders/${orderId}/update_service_type/`), {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ service_type: serviceType })
+    });
+
+    if (!response.ok) {
+      await handleApiError(response);
+    }
+
+    return response.json();
   }
 };
 

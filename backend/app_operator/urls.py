@@ -78,6 +78,11 @@ urlpatterns = [
     path('api/operator/search-suggestions/', 
          views.SearchSuggestionsView.as_view(), 
          name='search-suggestions'),
+    
+    # Дополнительные эндпоинты для OperatorOrderViewSet
+    path('api/operator/operator-orders/<int:pk>/update_service_type/', 
+         views.OperatorOrderViewSet.as_view({'post': 'update_service_type'}), 
+         name='operator-order-management-update-service-type'),
 ]
 
 # Добавляем маршруты роутера
