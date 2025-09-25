@@ -17,6 +17,7 @@ export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
       case 'pending': return 'Ожидают обработки';
       case 'confirmed': return 'Подтвержденные';
       case 'preparing': return 'Готовятся';
+      case 'ready_for_delivery': return 'Готов к доставке';
       case 'delivering': return 'Доставляются';
       case 'completed': return 'Завершенные';
       case 'cancelled': return 'Отмененные';
@@ -32,6 +33,7 @@ export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
       case 'pending': return '⏳';
       case 'confirmed': return '✅';
       case 'preparing': return '👨‍🍳';
+      case 'ready_for_delivery': return '📦';
       case 'delivering': return '🚚';
       case 'completed': return '🎉';
       case 'cancelled': return '❌';
@@ -45,6 +47,7 @@ export const CompactOrderFilters: React.FC<CompactOrderFiltersProps> = ({
     'all',
     'pending',
     'preparing',
+    'ready_for_delivery',
     'delivering',
     'completed',
     'cancelled',

@@ -62,6 +62,7 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
     'pending',
     'confirmed',
     'preparing',
+    'ready_for_delivery',
     'delivering',
     'completed',
     'cancelled',
@@ -161,6 +162,12 @@ export const OrderFilters: React.FC<OrderFiltersProps> = ({
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-xl text-lg font-medium transition-colors"
           >
             👨‍🍳 Готовятся
+          </button>
+          <button
+            onClick={() => onStatusChange('ready_for_delivery')}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-xl text-lg font-medium transition-colors"
+          >
+            📦 Готов к доставке
           </button>
           <button
             onClick={() => onStatusChange('delivering')}
