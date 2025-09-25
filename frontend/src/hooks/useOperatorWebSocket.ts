@@ -5,6 +5,7 @@ import { useOperatorAuth } from '../context/OperatorAuthContext';
 import { useSoundNotifications } from '../components/operator/SoundNotificationManager';
 import { usePWASound } from './usePWASound';
 import { useMobileSound } from './useMobileSound';
+import { useSimpleMobileSound } from './useSimpleMobileSound';
 import type { OrderForOperator, OperatorNotification } from '../types/operator';
 
 export interface OperatorWebSocketMessage extends WebSocketMessage {
@@ -54,6 +55,7 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
   const { playSound, config } = useSoundNotifications();
   const { playSoundSafe, isPWA } = usePWASound();
   const { playSoundSafe: playMobileSoundSafe, isMobile } = useMobileSound();
+  const { playSound: playSimpleMobileSound } = useSimpleMobileSound();
   const [operatorId, setOperatorId] = useState<number | null>(null);
 
   const buildWsBase = (override?: string): string => {
@@ -110,6 +112,9 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
             try {
               console.log('🔊 Attempting to play new order sound...');
               if (isMobile) {
+                // Пробуем простую мобильную систему сначала
+                playSimpleMobileSound('new_order');
+                // Также пробуем сложную систему как fallback
                 playMobileSoundSafe('new_order');
               } else if (isPWA) {
                 playSoundSafe('new_order');
@@ -139,6 +144,9 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
             try {
               console.log('🔊 Attempting to play order update sound...');
               if (isMobile) {
+                // Пробуем простую мобильную систему сначала
+                playSimpleMobileSound('order_update');
+                // Также пробуем сложную систему как fallback
                 playMobileSoundSafe('order_update');
               } else if (isPWA) {
                 playSoundSafe('order_update');
@@ -168,6 +176,9 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
             try {
               console.log('🔊 Attempting to play assignment sound...');
               if (isMobile) {
+                // Пробуем простую мобильную систему сначала
+                playSimpleMobileSound('notification');
+                // Также пробуем сложную систему как fallback
                 playMobileSoundSafe('notification');
               } else if (isPWA) {
                 playSoundSafe('notification');
@@ -197,6 +208,9 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
             try {
               console.log('🔊 Attempting to play notification sound...');
               if (isMobile) {
+                // Пробуем простую мобильную систему сначала
+                playSimpleMobileSound('notification');
+                // Также пробуем сложную систему как fallback
                 playMobileSoundSafe('notification');
               } else if (isPWA) {
                 playSoundSafe('notification');
@@ -236,7 +250,7 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
       default:
         console.log('❓ Unknown message type:', message.type);
     }
-  }, [onOrderCreated, onOrderUpdated, onOrderAssigned, onNotification, onDashboardUpdate, playSound, playSoundSafe, isPWA, playMobileSoundSafe, isMobile]);
+  }, [onOrderCreated, onOrderUpdated, onOrderAssigned, onNotification, onDashboardUpdate, playSound, playSoundSafe, isPWA, playMobileSoundSafe, isMobile, playSimpleMobileSound]);
 
   // Обработчики событий WebSocket
   const handleOpen = useCallback(() => {
