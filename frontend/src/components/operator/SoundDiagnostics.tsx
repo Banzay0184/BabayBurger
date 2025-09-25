@@ -86,10 +86,45 @@ export const SoundDiagnostics: React.FC = () => {
     updateDiagnostics();
   };
 
+  const createAudioContext = () => {
+    console.log('🔧 Creating AudioContext...');
+    
+    if (!window.audioContext) {
+      window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      console.log('🔧 AudioContext created:', window.audioContext.state);
+    } else {
+      console.log('🔧 AudioContext already exists:', window.audioContext.state);
+    }
+    
+    updateDiagnostics();
+  };
+
   const forceInitialize = () => {
+    console.log('🔧 Force initializing sound system...');
+    
+    // Принудительно создаем AudioContext
+    if (!window.audioContext) {
+      console.log('🔧 Creating AudioContext...');
+      window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    
+    // Возобновляем AudioContext
+    if (window.audioContext.state === 'suspended') {
+      console.log('🔧 Resuming AudioContext...');
+      window.audioContext.resume().then(() => {
+        console.log('🔧 AudioContext resumed successfully');
+        updateDiagnostics();
+      }).catch((error) => {
+        console.error('🔧 Failed to resume AudioContext:', error);
+        updateDiagnostics();
+      });
+    }
+    
+    // Вызываем оригинальную инициализацию
     if ((window as any).handleInitialize) {
       (window as any).handleInitialize();
     }
+    
     updateDiagnostics();
   };
 
@@ -216,6 +251,13 @@ export const SoundDiagnostics: React.FC = () => {
           {/* Кнопки управления */}
           <div className="space-y-2">
             <button
+              onClick={createAudioContext}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              🎵 Создать AudioContext
+            </button>
+            
+            <button
               onClick={testSound}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
@@ -241,6 +283,7 @@ export const SoundDiagnostics: React.FC = () => {
           <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-3">
             <div className="text-blue-300 text-xs">
               <p className="font-medium mb-1">💡 Для разработчика:</p>
+              <p>• Если "AudioContext: Неизвестно" - нажмите "Создать AudioContext"</p>
               <p>• Если "Инициализировано: Нет" - нажмите "Принудительная инициализация"</p>
               <p>• Если "AudioContext: Приостановлен" - нажмите "Тест звука"</p>
               <p>• Если ничего не помогает - нажмите "Сброс системы"</p>
