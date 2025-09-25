@@ -15,12 +15,6 @@ import { OrderSearch } from '../../components/operator/OrderSearch';
 import { NotificationsPanel } from '../../components/operator/NotificationsPanel';
 import { WebSocketStatus } from '../../components/operator/WebSocketStatus';
 import { SoundSettingsPanel } from '../../components/operator/SoundNotificationManager';
-import { OperatorPWAStatus, OperatorPWAForceInstall } from '../../components/operator/OperatorPWAStatus';
-import { OperatorPWAFloatingButton, OperatorPWAHeaderButton } from '../../components/operator/OperatorPWAInstallButton';
-import { SoundTestComponent } from '../../components/operator/SoundTestComponent';
-import { SoundInitializer } from '../../components/operator/SoundInitializer';
-import { PWASoundInitializer, PWASoundActivator } from '../../components/operator/PWASoundInitializer';
-import { MobileSoundInitializer, MobileSoundActivator } from '../../components/operator/MobileSoundInitializer';
 import { SimpleMobileSoundManager } from '../../components/operator/SimpleMobileSoundManager';
 import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
 
@@ -387,29 +381,8 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
 
       {/* Основной контент - планшетная версия с двумя колонками */}
       <main className="max-w-full mx-auto px-4 py-4">
-        {/* PWA установка */}
-        <OperatorPWAForceInstall />
-        
         {/* Простая мобильная звуковая система */}
         <SimpleMobileSoundManager />
-        
-        {/* Мобильная звуковая инициализация */}
-        <MobileSoundInitializer />
-        
-        {/* Мобильный активатор звука */}
-        <MobileSoundActivator />
-        
-        {/* PWA звуковая инициализация */}
-        <PWASoundInitializer />
-        
-        {/* PWA активатор звука */}
-        <PWASoundActivator />
-        
-        {/* Инициализация звуковой системы (для браузера) */}
-        <SoundInitializer />
-        
-        {/* Тест звуковых уведомлений */}
-        <SoundTestComponent />
         
         {/* Поиск заказов */}
         <OrderSearch
@@ -447,12 +420,6 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              {/* PWA статус */}
-              <OperatorPWAStatus className="text-xs" />
-              
-              {/* Кнопка установки PWA */}
-              <OperatorPWAHeaderButton />
-              
               {/* Кнопки действий */}
               <div className="flex space-x-1">
                 <button
@@ -542,10 +509,6 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
           </div>
         </div>
       )}
-
-      {/* Плавающая кнопка установки PWA */}
-      <OperatorPWAFloatingButton />
-
     </div>
   );
 };

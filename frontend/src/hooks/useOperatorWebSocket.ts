@@ -3,8 +3,6 @@ import { useWebSocket } from './useWebSocket';
 import type { WebSocketMessage } from './useWebSocket';
 import { useOperatorAuth } from '../context/OperatorAuthContext';
 import { useSoundNotifications } from '../components/operator/SoundNotificationManager';
-import { usePWASound } from './usePWASound';
-import { useMobileSound } from './useMobileSound';
 import { useSimpleMobileSound } from './useSimpleMobileSound';
 import type { OrderForOperator, OperatorNotification } from '../types/operator';
 
@@ -53,8 +51,6 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
 
   const { state: authState } = useOperatorAuth();
   const { playSound, config } = useSoundNotifications();
-  const { playSoundSafe, isPWA } = usePWASound();
-  const { playSoundSafe: playMobileSoundSafe, isMobile } = useMobileSound();
   const { playSound: playSimpleMobileSound } = useSimpleMobileSound();
   const [operatorId, setOperatorId] = useState<number | null>(null);
 
@@ -100,7 +96,6 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
   const handleMessage = useCallback((message: WebSocketMessage) => {
     console.log('📨 Operator WebSocket message:', message);
     console.log('📨 Message type:', message.type);
-    console.log('📨 Device info:', { isMobile, isPWA });
     console.log('📨 Sound config:', { enabled: config?.enabled });
 
     switch (message.type) {
@@ -111,93 +106,21 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
           if (config?.enabled) {
             try {
               console.log('🔊 Attempting to play new order sound...');
-              console.log('🔊 Device detection:', { isMobile, isPWA });
-              console.log('🔊 Available sound functions:', {
-                playSound: typeof playSound,
-                playSoundSafe: typeof playSoundSafe,
-                playMobileSoundSafe: typeof playMobileSoundSafe,
-                playSimpleMobileSound: typeof playSimpleMobileSound,
-                windowPlayMobileSound: typeof (window as any).playMobileSound
-              });
-              console.log('🔊 Sound settings:', {
-                newOrderSound: config?.newOrderSound,
-                orderUpdateSound: config?.orderUpdateSound,
-                notificationSound: config?.notificationSound,
-                volume: config?.volume
-              });
-              console.log('🔊 Initialization status:', {
-                pwaInitialized: localStorage.getItem('pwa_sound_initialized'),
-                mobileInitialized: localStorage.getItem('mobile_sound_initialized'),
-                mobileSimpleInitialized: localStorage.getItem('mobile_sound_simple_initialized')
-              });
-              console.log('🔊 AudioContext status:', {
-                exists: !!window.audioContext,
-                state: window.audioContext?.state,
-                sampleRate: window.audioContext?.sampleRate
-              });
+              
+              // Определяем тип устройства
+              const userAgentMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+              const screenMobile = window.innerWidth <= 768 || window.innerHeight <= 768;
+              const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+              const isMobile = userAgentMobile || (screenMobile && hasTouch);
               
               if (isMobile) {
                 console.log('🔊 Using mobile sound system...');
-                
-                // Пробуем простую мобильную систему сначала
-                console.log('🔊 Calling playSimpleMobileSound...');
-                try {
-                  playSimpleMobileSound('new_order');
-                  console.log('🔊 playSimpleMobileSound called successfully');
-                } catch (error) {
-                  console.error('🔊 playSimpleMobileSound failed:', error);
-                }
-                
-                // Также пробуем сложную систему как fallback
-                console.log('🔊 Calling playMobileSoundSafe...');
-                try {
-                  playMobileSoundSafe('new_order');
-                  console.log('🔊 playMobileSoundSafe called successfully');
-                } catch (error) {
-                  console.error('🔊 playMobileSoundSafe failed:', error);
-                }
-                
-                // Дополнительный fallback к глобальной функции
-                if ((window as any).playMobileSound) {
-                  console.log('🔊 Calling global playMobileSound...');
-                  try {
-                    (window as any).playMobileSound('new_order');
-                    console.log('🔊 Global playMobileSound called successfully');
-                  } catch (error) {
-                    console.error('🔊 Global playMobileSound failed:', error);
-                  }
-                } else {
-                  console.warn('🔊 Global playMobileSound not available');
-                }
-              } else if (isPWA) {
-                console.log('🔊 Using PWA sound system...');
-                playSoundSafe('new_order');
+                playSimpleMobileSound('new_order');
               } else {
                 console.log('🔊 Using desktop sound system...');
                 playSound('new_order');
               }
               
-              // Дополнительная проверка для мобильных PWA
-              if (isPWA && !isMobile) {
-                console.log('🔊 PWA mode detected, checking if mobile...');
-                const userAgentMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                const screenMobile = window.innerWidth <= 768 || window.innerHeight <= 768;
-                const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-                const isActuallyMobile = userAgentMobile || (screenMobile && hasTouch);
-                
-                if (isActuallyMobile) {
-                  console.log('🔊 Actually mobile device in PWA mode, using mobile sounds...');
-                  try {
-                    playSimpleMobileSound('new_order');
-                    playMobileSoundSafe('new_order');
-                    if ((window as any).playMobileSound) {
-                      (window as any).playMobileSound('new_order');
-                    }
-                  } catch (error) {
-                    console.error('🔊 Mobile PWA sound failed:', error);
-                  }
-                }
-              }
               console.log('🔊 New order sound played successfully');
             } catch (error) {
               console.error('🔊 Error playing new order sound:', error);
@@ -220,16 +143,19 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
           if (config?.enabled) {
             try {
               console.log('🔊 Attempting to play order update sound...');
+              
+              // Определяем тип устройства
+              const userAgentMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+              const screenMobile = window.innerWidth <= 768 || window.innerHeight <= 768;
+              const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+              const isMobile = userAgentMobile || (screenMobile && hasTouch);
+              
               if (isMobile) {
-                // Пробуем простую мобильную систему сначала
                 playSimpleMobileSound('order_update');
-                // Также пробуем сложную систему как fallback
-                playMobileSoundSafe('order_update');
-              } else if (isPWA) {
-                playSoundSafe('order_update');
               } else {
                 playSound('order_update');
               }
+              
               console.log('🔊 Order update sound played successfully');
             } catch (error) {
               console.error('🔊 Error playing order update sound:', error);
@@ -252,16 +178,19 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
           if (config?.enabled) {
             try {
               console.log('🔊 Attempting to play assignment sound...');
+              
+              // Определяем тип устройства
+              const userAgentMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+              const screenMobile = window.innerWidth <= 768 || window.innerHeight <= 768;
+              const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+              const isMobile = userAgentMobile || (screenMobile && hasTouch);
+              
               if (isMobile) {
-                // Пробуем простую мобильную систему сначала
                 playSimpleMobileSound('notification');
-                // Также пробуем сложную систему как fallback
-                playMobileSoundSafe('notification');
-              } else if (isPWA) {
-                playSoundSafe('notification');
               } else {
                 playSound('notification');
               }
+              
               console.log('🔊 Assignment sound played successfully');
             } catch (error) {
               console.error('🔊 Error playing assignment sound:', error);
@@ -284,16 +213,19 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
           if (config?.enabled) {
             try {
               console.log('🔊 Attempting to play notification sound...');
+              
+              // Определяем тип устройства
+              const userAgentMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+              const screenMobile = window.innerWidth <= 768 || window.innerHeight <= 768;
+              const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+              const isMobile = userAgentMobile || (screenMobile && hasTouch);
+              
               if (isMobile) {
-                // Пробуем простую мобильную систему сначала
                 playSimpleMobileSound('notification');
-                // Также пробуем сложную систему как fallback
-                playMobileSoundSafe('notification');
-              } else if (isPWA) {
-                playSoundSafe('notification');
               } else {
                 playSound('notification');
               }
+              
               console.log('🔊 Notification sound played successfully');
             } catch (error) {
               console.error('🔊 Error playing notification sound:', error);
@@ -327,7 +259,7 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
       default:
         console.log('❓ Unknown message type:', message.type);
     }
-  }, [onOrderCreated, onOrderUpdated, onOrderAssigned, onNotification, onDashboardUpdate, playSound, playSoundSafe, isPWA, playMobileSoundSafe, isMobile, playSimpleMobileSound]);
+  }, [onOrderCreated, onOrderUpdated, onOrderAssigned, onNotification, onDashboardUpdate, playSound, playSimpleMobileSound, config?.enabled, operatorId]);
 
   // Обработчики событий WebSocket
   const handleOpen = useCallback(() => {
@@ -402,20 +334,18 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
   useEffect(() => {
     (window as any).testOperatorSound = (type: 'new_order' | 'order_update' | 'notification' = 'new_order') => {
       console.log('🔊 Testing operator sound:', type);
-      console.log('🔊 Device detection:', { isMobile, isPWA });
       console.log('🔊 Sound config:', { enabled: config?.enabled });
       
       if (config?.enabled) {
+        // Определяем тип устройства
+        const userAgentMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const screenMobile = window.innerWidth <= 768 || window.innerHeight <= 768;
+        const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const isMobile = userAgentMobile || (screenMobile && hasTouch);
+        
         if (isMobile) {
           console.log('🔊 Testing mobile sound...');
-          if ((window as any).playMobileSound) {
-            (window as any).playMobileSound(type);
-          } else {
-            console.warn('🔊 Global playMobileSound not available');
-          }
-        } else if (isPWA) {
-          console.log('🔊 Testing PWA sound...');
-          playSoundSafe(type);
+          playSimpleMobileSound(type);
         } else {
           console.log('🔊 Testing desktop sound...');
           playSound(type);
@@ -426,7 +356,7 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
     };
     
     console.log('🔊 testOperatorSound function exported to window');
-  }, [isMobile, isPWA, config?.enabled, playSound, playSoundSafe]);
+  }, [config?.enabled, playSound, playSimpleMobileSound]);
 
   return {
     isConnected,
