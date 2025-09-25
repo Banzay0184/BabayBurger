@@ -3,7 +3,7 @@ import { useWebSocket } from './useWebSocket';
 import type { WebSocketMessage } from './useWebSocket';
 import { useOperatorAuth } from '../context/OperatorAuthContext';
 import { useSoundNotifications } from '../components/operator/SoundNotificationManager';
-import { useNotifications } from '../components/operator/SimpleNotificationManager';
+import { usePushNotifications } from '../components/operator/PushNotificationManager';
 import { useSimpleMobileSound } from './useSimpleMobileSound';
 import type { OrderForOperator, OperatorNotification } from '../types/operator';
 
@@ -53,7 +53,7 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
   const { state: authState } = useOperatorAuth();
   const { playSound, config } = useSoundNotifications();
   const { playSound: playSimpleMobileSound } = useSimpleMobileSound();
-  const { sendOrderNotification } = useNotifications();
+  const { sendOrderNotification } = usePushNotifications();
   const [operatorId, setOperatorId] = useState<number | null>(null);
 
   const buildWsBase = (override?: string): string => {
@@ -107,9 +107,14 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
           
           // Отправляем Push-уведомление
           const order = (message as any).order;
+          console.log('📱 Sending push notification for new order:', order.id);
           sendOrderNotification(order.id, 'new', {
             orderData: order,
             timestamp: Date.now()
+          }).then(() => {
+            console.log('📱 Push notification sent successfully for order:', order.id);
+          }).catch((error) => {
+            console.error('📱 Error sending push notification:', error);
           });
           
           // Воспроизводим звук для нового заказа (независимо от наличия callback)
