@@ -215,12 +215,16 @@ export const SimpleMobileSoundManager: React.FC = () => {
                 setIsInitialized(true);
                 setShowPrompt(false);
                 localStorage.setItem('mobile_sound_simple_initialized', 'true');
+                localStorage.setItem('mobile_sound_persistent_activated', 'true');
+                sessionStorage.setItem('mobile_sound_session_activated', 'true');
               }).catch((error) => {
                 console.error('📱 Mobile: Test sound failed:', error);
                 // Все равно считаем инициализированным
                 setIsInitialized(true);
                 setShowPrompt(false);
                 localStorage.setItem('mobile_sound_simple_initialized', 'true');
+                localStorage.setItem('mobile_sound_persistent_activated', 'true');
+                sessionStorage.setItem('mobile_sound_session_activated', 'true');
               });
             }
           }
@@ -238,8 +242,10 @@ export const SimpleMobileSoundManager: React.FC = () => {
       setIsInitialized(true);
       setShowPrompt(false);
       
-      // Сохраняем состояние
+      // Сохраняем состояние во всех хранилищах
       localStorage.setItem('mobile_sound_simple_initialized', 'true');
+      localStorage.setItem('mobile_sound_persistent_activated', 'true');
+      sessionStorage.setItem('mobile_sound_session_activated', 'true');
       
       console.log('📱 Mobile: Simple sound system initialized');
       
@@ -251,6 +257,8 @@ export const SimpleMobileSoundManager: React.FC = () => {
       setIsInitialized(true);
       setShowPrompt(false);
       localStorage.setItem('mobile_sound_simple_initialized', 'true');
+      localStorage.setItem('mobile_sound_persistent_activated', 'true');
+      sessionStorage.setItem('mobile_sound_session_activated', 'true');
       console.log('📱 Mobile: Marked as initialized despite error');
     }
   }, [audioElements]);
@@ -323,12 +331,25 @@ export const SimpleMobileSoundManager: React.FC = () => {
     const autoInitialize = async () => {
       console.log('📱 Mobile: Auto-initializing sound system on page load...');
       
-      // Проверяем, была ли система уже активирована ранее
-      const wasActivated = localStorage.getItem('mobile_sound_persistent_activated') === 'true';
+      // Проверяем множественные источники состояния активации
+      const localStorageActivated = localStorage.getItem('mobile_sound_persistent_activated') === 'true';
+      const sessionStorageActivated = sessionStorage.getItem('mobile_sound_session_activated') === 'true';
+      const wasInitialized = localStorage.getItem('mobile_sound_simple_initialized') === 'true';
       
-      if (wasActivated) {
+      console.log('📱 Mobile: Activation status:', {
+        localStorageActivated,
+        sessionStorageActivated,
+        wasInitialized
+      });
+      
+      // Если система была активирована ранее ИЛИ уже инициализирована
+      if (localStorageActivated || sessionStorageActivated || wasInitialized) {
         console.log('📱 Mobile: Sound system was previously activated, initializing...');
         await handleInitialize();
+        
+        // Сохраняем состояние во всех хранилищах
+        localStorage.setItem('mobile_sound_persistent_activated', 'true');
+        sessionStorage.setItem('mobile_sound_session_activated', 'true');
       } else {
         console.log('📱 Mobile: Sound system not previously activated, waiting for user interaction...');
         
@@ -336,8 +357,9 @@ export const SimpleMobileSoundManager: React.FC = () => {
           console.log('📱 Mobile: User interaction detected, auto-initializing sound...');
           await handleInitialize();
           
-          // Сохраняем состояние активации
+          // Сохраняем состояние активации во всех хранилищах
           localStorage.setItem('mobile_sound_persistent_activated', 'true');
+          sessionStorage.setItem('mobile_sound_session_activated', 'true');
           
           // Удаляем слушатели после активации
           document.removeEventListener('click', handleUserInteraction);
@@ -494,6 +516,7 @@ export const SimpleMobileSoundManager: React.FC = () => {
         setShowPrompt(true);
         localStorage.removeItem('mobile_sound_simple_initialized');
         localStorage.removeItem('mobile_sound_persistent_activated');
+        sessionStorage.removeItem('mobile_sound_session_activated');
       };
       (window as any).checkMobileSoundStatus = () => {
         console.log('📱 Mobile: Sound status:', {
