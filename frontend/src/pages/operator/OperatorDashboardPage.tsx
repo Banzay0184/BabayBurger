@@ -15,6 +15,7 @@ import { OrderSearch } from '../../components/operator/OrderSearch';
 import { NotificationsPanel } from '../../components/operator/NotificationsPanel';
 import { WebSocketStatus } from '../../components/operator/WebSocketStatus';
 import { SoundSettingsPanel } from '../../components/operator/SoundNotificationManager';
+import { PushNotificationSettings } from '../../components/operator/PushNotificationManager';
 import { SimpleMobileSoundManager } from '../../components/operator/SimpleMobileSoundManager';
 import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
 
@@ -28,6 +29,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSoundSettings, setShowSoundSettings] = useState(false);
+  const [showPushSettings, setShowPushSettings] = useState(false);
 
   // WebSocket обработчики для real-time обновлений
   const handleNewOrder = useCallback((newOrder: OrderForOperator) => {
@@ -450,6 +452,13 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
                 >
                   🔊
                 </button>
+                <button
+                  onClick={() => setShowPushSettings(true)}
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                  title="Push-уведомления"
+                >
+                  📱
+                </button>
               </div>
             </div>
           </div>
@@ -510,6 +519,27 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
           </div>
         </div>
       )}
+
+      {/* Панель настроек Push-уведомлений */}
+      {showPushSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg max-w-md w-full mx-4">
+            <div className="flex justify-between items-center p-6 border-b border-gray-700">
+              <h2 className="text-xl font-semibold text-white">Push-уведомления</h2>
+              <button
+                onClick={() => setShowPushSettings(false)}
+                className="text-gray-400 hover:text-white text-2xl transition-colors"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-6">
+              <PushNotificationSettings />
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

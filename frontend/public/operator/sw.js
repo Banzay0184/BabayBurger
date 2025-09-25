@@ -155,8 +155,11 @@ function isStaticResource(request) {
 
 // Обработка push уведомлений для оператора
 self.addEventListener('push', (event) => {
-  const options = {
-    body: 'Новый заказ поступил в систему',
+  console.log('🎯 Operator SW: Push event received');
+  
+  let notificationData = {
+    title: 'Babay Burger - Оператор',
+    body: 'Новое уведомление',
     icon: '/logobabay.png',
     badge: '/logobabay.png',
     tag: 'operator-notification',
@@ -164,36 +167,105 @@ self.addEventListener('push', (event) => {
     actions: [
       {
         action: 'view',
-        title: 'Посмотреть заказ'
+        title: 'Посмотреть',
+        icon: '/logobabay.png'
       },
       {
         action: 'dismiss',
         title: 'Закрыть'
       }
-    ]
+    ],
+    data: {
+      timestamp: Date.now(),
+      type: 'default'
+    }
   };
 
+  // Если есть данные в push событии, используем их
+  if (event.data) {
+    try {
+      const pushData = event.data.json();
+      console.log('🎯 Operator SW: Push data received:', pushData);
+      
+      notificationData = {
+        ...notificationData,
+        ...pushData,
+        data: {
+          ...notificationData.data,
+          ...pushData.data
+        }
+      };
+    } catch (error) {
+      console.error('🎯 Operator SW: Error parsing push data:', error);
+    }
+  }
+
   event.waitUntil(
-    self.registration.showNotification('Babay Burger - Оператор', options)
+    self.registration.showNotification(notificationData.title, notificationData)
   );
 });
 
 // Обработка кликов по уведомлениям
 self.addEventListener('notificationclick', (event) => {
+  console.log('🎯 Operator SW: Notification clicked:', event.action);
+  
   event.notification.close();
   
-  if (event.action === 'view') {
-    event.waitUntil(
-      clients.openWindow('/operator/#/dashboard')
-    );
-  } else if (event.action === 'dismiss') {
-    // Просто закрываем уведомление
-    return;
-  } else {
-    // Клик по самому уведомлению
-    event.waitUntil(
-      clients.openWindow('/operator/#/dashboard')
-    );
+  const notificationData = event.notification.data || {};
+  const action = event.action || 'default';
+  
+  let targetUrl = '/operator/#/dashboard';
+  
+  // Определяем URL в зависимости от типа уведомления
+  if (notificationData.orderId) {
+    targetUrl = `/operator/#/dashboard?order=${notificationData.orderId}`;
+  } else if (notificationData.type === 'system') {
+    targetUrl = '/operator/#/dashboard';
+  }
+  
+  // Определяем действие
+  switch (action) {
+    case 'view':
+      // Открываем/фокусируем окно
+      event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+          .then((clientList) => {
+            // Ищем открытое окно
+            for (const client of clientList) {
+              if (client.url.includes('/operator/') && 'focus' in client) {
+                return client.focus().then(() => {
+                  // Переходим к нужной странице
+                  return client.navigate(targetUrl);
+                });
+              }
+            }
+            
+            // Если окно не найдено, открываем новое
+            return clients.openWindow(targetUrl);
+          })
+      );
+      break;
+      
+    case 'dismiss':
+      // Просто закрываем уведомление
+      break;
+      
+    default:
+      // Клик по самому уведомлению
+      event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+          .then((clientList) => {
+            for (const client of clientList) {
+              if (client.url.includes('/operator/') && 'focus' in client) {
+                return client.focus().then(() => {
+                  return client.navigate(targetUrl);
+                });
+              }
+            }
+            return clients.openWindow(targetUrl);
+          })
+      );
+      break;
   }
 });
 

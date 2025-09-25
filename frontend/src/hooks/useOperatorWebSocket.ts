@@ -3,6 +3,7 @@ import { useWebSocket } from './useWebSocket';
 import type { WebSocketMessage } from './useWebSocket';
 import { useOperatorAuth } from '../context/OperatorAuthContext';
 import { useSoundNotifications } from '../components/operator/SoundNotificationManager';
+import { usePushNotifications } from '../components/operator/PushNotificationManager';
 import { useSimpleMobileSound } from './useSimpleMobileSound';
 import type { OrderForOperator, OperatorNotification } from '../types/operator';
 
@@ -52,6 +53,7 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
   const { state: authState } = useOperatorAuth();
   const { playSound, config } = useSoundNotifications();
   const { playSound: playSimpleMobileSound } = useSimpleMobileSound();
+  const { sendOrderNotification } = usePushNotifications();
   const [operatorId, setOperatorId] = useState<number | null>(null);
 
   const buildWsBase = (override?: string): string => {
@@ -102,6 +104,14 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
       case 'order_created':
         if ((message as any).order) {
           console.log('🆕 New order received:', (message as any).order);
+          
+          // Отправляем Push-уведомление
+          const order = (message as any).order;
+          sendOrderNotification(order.id, 'new', {
+            orderData: order,
+            timestamp: Date.now()
+          });
+          
           // Воспроизводим звук для нового заказа (независимо от наличия callback)
           if (config?.enabled) {
             try {
@@ -139,6 +149,15 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
       case 'order_updated':
         if ((message as any).order_id) {
           console.log('🔄 Order updated:', (message as any).order_id, (message as any).status);
+          
+          // Отправляем Push-уведомление
+          const orderId = (message as any).order_id;
+          const status = (message as any).status;
+          sendOrderNotification(orderId, 'update', {
+            status,
+            timestamp: Date.now()
+          });
+          
           // Воспроизводим звук для обновления заказа (независимо от наличия callback)
           if (config?.enabled) {
             try {
@@ -209,6 +228,14 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
       case 'notification':
         if ((message as any).notification) {
           console.log('🔔 Notification received:', (message as any).notification);
+          
+          // Отправляем Push-уведомление
+          const notification = (message as any).notification;
+          sendOrderNotification(0, 'system', {
+            notification,
+            timestamp: Date.now()
+          });
+          
           // Воспроизводим звук для системных уведомлений (независимо от наличия callback)
           if (config?.enabled) {
             try {
