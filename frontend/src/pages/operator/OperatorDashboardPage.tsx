@@ -16,6 +16,7 @@ import { NotificationsPanel } from '../../components/operator/NotificationsPanel
 import { WebSocketStatus } from '../../components/operator/WebSocketStatus';
 import { SoundSettingsPanel } from '../../components/operator/SoundNotificationManager';
 import { SimpleMobileSoundManager } from '../../components/operator/SimpleMobileSoundManager';
+import { SoundDiagnostics } from '../../components/operator/SoundDiagnostics';
 import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
 
 export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ onNavigate }) => {
@@ -383,6 +384,9 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
       <main className="max-w-full mx-auto px-4 py-4">
         {/* Простая мобильная звуковая система */}
         <SimpleMobileSoundManager />
+        
+        {/* Диагностика звуков */}
+        <SoundDiagnostics />
         
         {/* Поиск заказов */}
         <OrderSearch

@@ -379,6 +379,15 @@ export const SimpleMobileSoundManager: React.FC = () => {
         await audio.play();
         
         console.log(`📱 Mobile: ${type} sound played successfully`);
+        
+        // Отправляем событие о успешном воспроизведении
+        window.dispatchEvent(new CustomEvent('soundPlayed', { 
+          detail: { type, timestamp: Date.now() } 
+        }));
+        
+        // Обновляем глобальные переменные для диагностики
+        (window as any).mobileSoundLastPlayed = type;
+        (window as any).mobileSoundLastTime = new Date().toLocaleTimeString();
       } else {
         console.warn(`📱 Mobile: Audio element for ${type} not found`);
         
@@ -392,6 +401,15 @@ export const SimpleMobileSoundManager: React.FC = () => {
       }
     } catch (error) {
       console.error(`📱 Mobile: Error playing ${type} sound:`, error);
+      
+      // Отправляем событие об ошибке
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      window.dispatchEvent(new CustomEvent('soundError', { 
+        detail: { type, error: errorMessage, timestamp: Date.now() } 
+      }));
+      
+      // Обновляем глобальные переменные для диагностики
+      (window as any).mobileSoundLastError = errorMessage;
       
       // НЕ сбрасываем состояние инициализации при ошибках воспроизведения
       // Только логируем ошибку
@@ -422,9 +440,16 @@ export const SimpleMobileSoundManager: React.FC = () => {
           localStorageInitialized: localStorage.getItem('mobile_sound_simple_initialized')
         });
       };
+      
+      // Экспортируем состояние для диагностики
+      (window as any).mobileSoundInitialized = isInitialized;
+      (window as any).mobileSoundShowPrompt = showPrompt;
+      (window as any).mobileSoundAudioElementsCount = Object.keys(audioElements).length;
+      (window as any).handleInitialize = handleInitialize;
+      
       console.log('📱 Mobile: playMobileSound, resetMobileSound, and checkMobileSoundStatus functions exported to window');
     }
-  }, [isMobile, playSound, isInitialized, showPrompt, audioElements]);
+  }, [isMobile, playSound, isInitialized, showPrompt, audioElements, handleInitialize]);
 
   if (!config?.enabled) {
     return null;
