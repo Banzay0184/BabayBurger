@@ -133,14 +133,44 @@ export const SoundDiagnostics: React.FC = () => {
   const enablePersistentSounds = () => {
     console.log('🔧 Enabling persistent sounds...');
     
-    // Принудительно активируем AudioContext
-    if (!window.audioContext) {
-      window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    
-    if (window.audioContext.state === 'suspended') {
-      window.audioContext.resume().then(() => {
-        console.log('🔧 AudioContext resumed for persistent sounds');
+    // Используем новую функцию принудительной активации
+    if ((window as any).forceActivateMobileSound) {
+      (window as any).forceActivateMobileSound().then(() => {
+        console.log('🔧 Persistent sounds enabled via force activation');
+        updateDiagnostics();
+      }).catch((error) => {
+        console.error('🔧 Failed to enable persistent sounds:', error);
+        updateDiagnostics();
+      });
+    } else {
+      // Fallback к старому методу
+      if (!window.audioContext) {
+        window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      if (window.audioContext.state === 'suspended') {
+        window.audioContext.resume().then(() => {
+          console.log('🔧 AudioContext resumed for persistent sounds');
+          
+          // Вызываем инициализацию звуковой системы
+          if ((window as any).handleInitialize) {
+            (window as any).handleInitialize();
+          }
+          
+          // Очищаем ошибки
+          (window as any).mobileSoundLastError = null;
+          
+          // Сохраняем состояние активации
+          localStorage.setItem('mobile_sound_persistent_activated', 'true');
+          
+          updateDiagnostics();
+        }).catch((error) => {
+          console.error('🔧 Failed to enable persistent sounds:', error);
+          updateDiagnostics();
+        });
+      } else {
+        // AudioContext уже активен
+        console.log('🔧 AudioContext already active for persistent sounds');
         
         // Вызываем инициализацию звуковой системы
         if ((window as any).handleInitialize) {
@@ -154,26 +184,7 @@ export const SoundDiagnostics: React.FC = () => {
         localStorage.setItem('mobile_sound_persistent_activated', 'true');
         
         updateDiagnostics();
-      }).catch((error) => {
-        console.error('🔧 Failed to enable persistent sounds:', error);
-        updateDiagnostics();
-      });
-    } else {
-      // AudioContext уже активен
-      console.log('🔧 AudioContext already active for persistent sounds');
-      
-      // Вызываем инициализацию звуковой системы
-      if ((window as any).handleInitialize) {
-        (window as any).handleInitialize();
       }
-      
-      // Очищаем ошибки
-      (window as any).mobileSoundLastError = null;
-      
-      // Сохраняем состояние активации
-      localStorage.setItem('mobile_sound_persistent_activated', 'true');
-      
-      updateDiagnostics();
     }
   };
 

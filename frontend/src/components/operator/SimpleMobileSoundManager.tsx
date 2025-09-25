@@ -295,34 +295,94 @@ export const SimpleMobileSoundManager: React.FC = () => {
     }
   }, [isMobile, audioElements]);
 
+  // Принудительная активация звуковой системы
+  const forceActivateSoundSystem = useCallback(async () => {
+    console.log('📱 Mobile: Force activating sound system...');
+    
+    try {
+      // Принудительно создаем AudioContext
+      if (!window.audioContext) {
+        window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        console.log('📱 Mobile: AudioContext created forcefully');
+      }
+      
+      // Принудительно возобновляем AudioContext
+      if (window.audioContext.state === 'suspended') {
+        await window.audioContext.resume();
+        console.log('📱 Mobile: AudioContext resumed forcefully');
+      }
+      
+      // Принудительно инициализируем систему
+      await handleInitialize();
+      
+      // Принудительно сохраняем состояние
+      localStorage.setItem('mobile_sound_persistent_activated', 'true');
+      sessionStorage.setItem('mobile_sound_session_activated', 'true');
+      localStorage.setItem('mobile_sound_simple_initialized', 'true');
+      
+      console.log('📱 Mobile: Sound system force activated successfully');
+      
+    } catch (error) {
+      console.error('📱 Mobile: Force activation failed:', error);
+      
+      // Даже при ошибке помечаем как активированную
+      setIsInitialized(true);
+      setShowPrompt(false);
+      localStorage.setItem('mobile_sound_persistent_activated', 'true');
+      sessionStorage.setItem('mobile_sound_session_activated', 'true');
+      localStorage.setItem('mobile_sound_simple_initialized', 'true');
+    }
+  }, [handleInitialize]);
+
   // Проверяем состояние AudioContext при загрузке
+  // Периодическая проверка и восстановление системы
   useEffect(() => {
-    if (isMobile && isInitialized) {
-      // Проверяем AudioContext каждые 5 секунд
-      const checkAudioContext = () => {
-        if (window.audioContext) {
-          console.log('📱 Mobile: AudioContext state:', window.audioContext.state);
-          
-          if (window.audioContext.state === 'suspended') {
-            console.log('📱 Mobile: AudioContext suspended, attempting to resume...');
-            window.audioContext.resume().then(() => {
-              console.log('📱 Mobile: AudioContext resumed successfully');
-            }).catch((error) => {
-              console.error('📱 Mobile: Failed to resume AudioContext:', error);
-            });
+    if (!isMobile) return;
+
+    const checkAndRestoreSystem = async () => {
+      console.log('📱 Mobile: Periodic system check...');
+      
+      // Проверяем состояние системы
+      const shouldBeActive = localStorage.getItem('mobile_sound_persistent_activated') === 'true' ||
+                           sessionStorage.getItem('mobile_sound_session_activated') === 'true' ||
+                           localStorage.getItem('mobile_sound_simple_initialized') === 'true';
+      
+      if (shouldBeActive && !isInitialized) {
+        console.log('📱 Mobile: System should be active but not initialized, restoring...');
+        await forceActivateSoundSystem();
+        return;
+      }
+      
+      // Проверяем AudioContext
+      if (window.audioContext) {
+        console.log('📱 Mobile: AudioContext state:', window.audioContext.state);
+        
+        if (window.audioContext.state === 'suspended') {
+          console.log('📱 Mobile: AudioContext suspended, resuming...');
+          try {
+            await window.audioContext.resume();
+            console.log('📱 Mobile: AudioContext resumed');
+          } catch (error) {
+            console.error('📱 Mobile: Failed to resume AudioContext:', error);
           }
         }
-      };
+      }
       
-      // Проверяем сразу
-      checkAudioContext();
-      
-      // Проверяем каждые 5 секунд
-      const interval = setInterval(checkAudioContext, 5000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [isMobile, isInitialized]);
+      // Проверяем аудио элементы
+      if (isInitialized && Object.keys(audioElements).length === 0) {
+        console.log('📱 Mobile: Audio elements missing, recreating...');
+        await forceActivateSoundSystem();
+      }
+    };
+
+    // Проверяем сразу
+    checkAndRestoreSystem();
+    
+    // Проверяем каждые 3 секунды
+    const interval = setInterval(checkAndRestoreSystem, 3000);
+    
+    return () => clearInterval(interval);
+  }, [isMobile, isInitialized, audioElements, forceActivateSoundSystem]);
 
   // Автоматическая активация при загрузке страницы
   useEffect(() => {
@@ -339,27 +399,31 @@ export const SimpleMobileSoundManager: React.FC = () => {
       console.log('📱 Mobile: Activation status:', {
         localStorageActivated,
         sessionStorageActivated,
-        wasInitialized
+        wasInitialized,
+        currentInitialized: isInitialized
       });
       
       // Если система была активирована ранее ИЛИ уже инициализирована
-      if (localStorageActivated || sessionStorageActivated || wasInitialized) {
-        console.log('📱 Mobile: Sound system was previously activated, initializing...');
-        await handleInitialize();
+      if (localStorageActivated || sessionStorageActivated || wasInitialized || isInitialized) {
+        console.log('📱 Mobile: Sound system was previously activated, force initializing...');
         
-        // Сохраняем состояние во всех хранилищах
-        localStorage.setItem('mobile_sound_persistent_activated', 'true');
-        sessionStorage.setItem('mobile_sound_session_activated', 'true');
+        // Принудительная активация для надежности
+        await forceActivateSoundSystem();
+        
+        // Дополнительная проверка через 2 секунды
+        setTimeout(async () => {
+          if (!isInitialized) {
+            console.log('📱 Mobile: System not initialized after 2s, retrying...');
+            await forceActivateSoundSystem();
+          }
+        }, 2000);
+        
       } else {
         console.log('📱 Mobile: Sound system not previously activated, waiting for user interaction...');
         
         const handleUserInteraction = async () => {
-          console.log('📱 Mobile: User interaction detected, auto-initializing sound...');
-          await handleInitialize();
-          
-          // Сохраняем состояние активации во всех хранилищах
-          localStorage.setItem('mobile_sound_persistent_activated', 'true');
-          sessionStorage.setItem('mobile_sound_session_activated', 'true');
+          console.log('📱 Mobile: User interaction detected, force initializing sound...');
+          await forceActivateSoundSystem();
           
           // Удаляем слушатели после активации
           document.removeEventListener('click', handleUserInteraction);
@@ -380,8 +444,11 @@ export const SimpleMobileSoundManager: React.FC = () => {
       }
     };
 
-    autoInitialize();
-  }, [isMobile, handleInitialize]);
+    // Задержка для стабилизации
+    const timeoutId = setTimeout(autoInitialize, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [isMobile, handleInitialize, forceActivateSoundSystem, isInitialized]);
 
   // Автоматическое создание AudioContext при загрузке
   useEffect(() => {
@@ -510,6 +577,7 @@ export const SimpleMobileSoundManager: React.FC = () => {
   useEffect(() => {
     if (isMobile) {
       (window as any).playMobileSound = playSound;
+      (window as any).forceActivateMobileSound = forceActivateSoundSystem;
       (window as any).resetMobileSound = () => {
         console.log('📱 Mobile: Resetting sound system...');
         setIsInitialized(false);
