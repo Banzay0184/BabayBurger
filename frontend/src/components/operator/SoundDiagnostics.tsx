@@ -49,6 +49,54 @@ export const SoundDiagnostics: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Автоматическое восстановление AudioContext при загрузке
+  useEffect(() => {
+    const restoreAudioContext = () => {
+      console.log('🔧 Auto-restoring AudioContext...');
+      
+      // Если AudioContext не существует, создаем его
+      if (!window.audioContext) {
+        console.log('🔧 Creating AudioContext on load...');
+        window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      // Если AudioContext приостановлен, пытаемся возобновить
+      if (window.audioContext && window.audioContext.state === 'suspended') {
+        console.log('🔧 AudioContext suspended, will resume on user interaction');
+        // Не возобновляем автоматически, ждем взаимодействия пользователя
+      }
+      
+      updateDiagnostics();
+    };
+
+    // Восстанавливаем AudioContext сразу
+    restoreAudioContext();
+    
+    // Также восстанавливаем при взаимодействии пользователя
+    const handleUserInteraction = () => {
+      if (window.audioContext && window.audioContext.state === 'suspended') {
+        console.log('🔧 User interaction detected, resuming AudioContext...');
+        window.audioContext.resume().then(() => {
+          console.log('🔧 AudioContext resumed successfully');
+          updateDiagnostics();
+        }).catch((error) => {
+          console.error('🔧 Failed to resume AudioContext:', error);
+        });
+      }
+    };
+
+    // Добавляем слушатели для различных типов взаимодействия
+    document.addEventListener('click', handleUserInteraction, { once: true });
+    document.addEventListener('touchstart', handleUserInteraction, { once: true });
+    document.addEventListener('keydown', handleUserInteraction, { once: true });
+
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('keydown', handleUserInteraction);
+    };
+  }, []);
+
   // Слушаем события звуков
   useEffect(() => {
     const handleSoundPlayed = (event: CustomEvent) => {
@@ -79,23 +127,34 @@ export const SoundDiagnostics: React.FC = () => {
     updateDiagnostics();
   };
 
+  const clearErrors = () => {
+    console.log('🔧 Clearing errors...');
+    (window as any).mobileSoundLastError = null;
+    updateDiagnostics();
+  };
+
   const activateSounds = () => {
     console.log('🔧 Activating sounds...');
     
     // Создаем AudioContext если его нет
     if (!window.audioContext) {
+      console.log('🔧 Creating AudioContext...');
       window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
     
     // Возобновляем AudioContext
     if (window.audioContext.state === 'suspended') {
+      console.log('🔧 Resuming AudioContext...');
       window.audioContext.resume().then(() => {
-        console.log('🔧 AudioContext activated');
+        console.log('🔧 AudioContext activated successfully');
         
         // Вызываем инициализацию звуковой системы
         if ((window as any).handleInitialize) {
           (window as any).handleInitialize();
         }
+        
+        // Очищаем ошибку автовоспроизведения
+        (window as any).mobileSoundLastError = null;
         
         updateDiagnostics();
       }).catch((error) => {
@@ -110,6 +169,9 @@ export const SoundDiagnostics: React.FC = () => {
       if ((window as any).handleInitialize) {
         (window as any).handleInitialize();
       }
+      
+      // Очищаем ошибку автовоспроизведения
+      (window as any).mobileSoundLastError = null;
       
       updateDiagnostics();
     }
@@ -313,6 +375,13 @@ export const SoundDiagnostics: React.FC = () => {
             </button>
             
             <button
+              onClick={clearErrors}
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              🧹 Очистить ошибки
+            </button>
+            
+            <button
               onClick={createAudioContext}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
@@ -347,7 +416,7 @@ export const SoundDiagnostics: React.FC = () => {
               <p className="font-medium mb-1">💡 Для разработчика:</p>
               <p>• Если есть ошибка автовоспроизведения - нажмите "Активировать звуки"</p>
               <p>• Если "AudioContext: Неизвестно" - нажмите "Создать AudioContext"</p>
-              <p>• Если "Инициализировано: Нет" - нажмите "Принудительная инициализация"</p>
+              <p>• Если "Последняя ошибка" есть - нажмите "Очистить ошибки"</p>
               <p>• Если ничего не помогает - нажмите "Сброс системы"</p>
             </div>
           </div>
