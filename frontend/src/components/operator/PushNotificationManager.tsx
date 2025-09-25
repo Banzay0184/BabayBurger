@@ -10,12 +10,25 @@ export interface PushNotificationConfig {
   vibrationEnabled: boolean;
 }
 
+// Расширенный интерфейс для уведомлений с дополнительными опциями
+export interface ExtendedNotificationOptions extends NotificationOptions {
+  vibrate?: number[];
+  actions?: NotificationAction[];
+  timestamp?: number;
+}
+
+export interface NotificationAction {
+  action: string;
+  title: string;
+  icon?: string;
+}
+
 export interface PushNotificationContextType {
   config: PushNotificationConfig;
   updateConfig: (config: Partial<PushNotificationConfig>) => void;
   permission: NotificationPermission;
   requestPermission: () => Promise<NotificationPermission>;
-  sendNotification: (title: string, options?: NotificationOptions) => Promise<void>;
+  sendNotification: (title: string, options?: ExtendedNotificationOptions) => Promise<void>;
   sendOrderNotification: (orderId: number, type: 'new' | 'update' | 'system', data?: any) => Promise<void>;
   isSupported: boolean;
 }
@@ -95,7 +108,7 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
   // Отправка обычного уведомления
   const sendNotification = useCallback(async (
     title: string, 
-    options: NotificationOptions = {}
+    options: ExtendedNotificationOptions = {}
   ): Promise<void> => {
     if (!isSupported || !config.enabled || permission !== 'granted') {
       console.warn('Cannot send notification:', { isSupported, enabled: config.enabled, permission });
@@ -104,7 +117,7 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
 
     try {
       // Дефолтные опции
-      const defaultOptions: NotificationOptions = {
+      const defaultOptions: ExtendedNotificationOptions = {
         icon: '/logobabay.png',
         badge: '/logobabay.png',
         tag: 'operator-notification',
@@ -120,8 +133,15 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
         const registration = await navigator.serviceWorker.ready;
         await registration.showNotification(title, defaultOptions);
       } else {
-        // Fallback к обычным уведомлениям
-        new Notification(title, defaultOptions);
+        // Fallback к обычным уведомлениям (без расширенных опций)
+        const basicOptions: NotificationOptions = {
+          icon: defaultOptions.icon,
+          badge: defaultOptions.badge,
+          tag: defaultOptions.tag,
+          requireInteraction: defaultOptions.requireInteraction,
+          silent: defaultOptions.silent,
+        };
+        new Notification(title, basicOptions);
       }
 
       console.log('📱 Push notification sent:', title);
@@ -237,7 +257,8 @@ export const PushNotificationSettings: React.FC = () => {
     updateConfig, 
     permission, 
     requestPermission, 
-    isSupported 
+    isSupported,
+    sendOrderNotification
   } = usePushNotifications();
 
   const handleRequestPermission = async () => {
