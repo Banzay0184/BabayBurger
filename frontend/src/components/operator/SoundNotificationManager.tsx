@@ -1,5 +1,6 @@
 // Улучшенная система звуковых уведомлений с реальными звуками
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { MobileSoundSelector } from './MobileSoundSelector';
 
 // Глобальная переменная для AudioContext
 declare global {
@@ -433,6 +434,9 @@ export const SoundSettingsPanel: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Выбор звуков для мобильных устройств */}
+        <MobileSoundSelector />
 
         {/* Тест звука */}
         <div className="pt-4 border-t border-gray-700">

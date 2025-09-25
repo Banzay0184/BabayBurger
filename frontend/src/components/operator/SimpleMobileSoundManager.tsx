@@ -184,25 +184,6 @@ export const SimpleMobileSoundManager: React.FC = () => {
     return () => clearTimeout(timer);
   }, [isMobile]);
 
-  // Проверяем сохраненное состояние
-  useEffect(() => {
-    if (isMobile) {
-      const wasInitialized = localStorage.getItem('mobile_sound_simple_initialized') === 'true';
-      if (wasInitialized) {
-        console.log('📱 Mobile: Previously initialized, checking audio elements...');
-        
-        // Проверяем, есть ли аудио элементы
-        if (Object.keys(audioElements).length > 0) {
-          console.log('📱 Mobile: Audio elements found, marking as initialized');
-          setIsInitialized(true);
-          setShowPrompt(false);
-        } else {
-          console.log('📱 Mobile: No audio elements found, waiting for creation...');
-        }
-      }
-    }
-  }, [isMobile, audioElements]);
-
   // Инициализация звуковой системы
   const handleInitialize = useCallback(async () => {
     try {
@@ -273,6 +254,51 @@ export const SimpleMobileSoundManager: React.FC = () => {
       console.log('📱 Mobile: Marked as initialized despite error');
     }
   }, [audioElements]);
+
+  // Проверяем сохраненное состояние
+  useEffect(() => {
+    if (isMobile) {
+      const wasInitialized = localStorage.getItem('mobile_sound_simple_initialized') === 'true';
+      if (wasInitialized) {
+        console.log('📱 Mobile: Previously initialized, checking audio elements...');
+        
+        // Проверяем, есть ли аудио элементы
+        if (Object.keys(audioElements).length > 0) {
+          console.log('📱 Mobile: Audio elements found, marking as initialized');
+          setIsInitialized(true);
+          setShowPrompt(false);
+        } else {
+          console.log('📱 Mobile: No audio elements found, waiting for creation...');
+        }
+      }
+    }
+  }, [isMobile, audioElements]);
+
+  // Автоматическая активация при первом взаимодействии пользователя
+  useEffect(() => {
+    if (!isMobile || isInitialized) return;
+
+    const handleUserInteraction = async () => {
+      console.log('📱 Mobile: User interaction detected, auto-initializing sound...');
+      await handleInitialize();
+      
+      // Удаляем слушатели после активации
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('keydown', handleUserInteraction);
+    };
+
+    // Добавляем слушатели для различных типов взаимодействия
+    document.addEventListener('click', handleUserInteraction, { once: true });
+    document.addEventListener('touchstart', handleUserInteraction, { once: true });
+    document.addEventListener('keydown', handleUserInteraction, { once: true });
+
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('keydown', handleUserInteraction);
+    };
+  }, [isMobile, isInitialized, handleInitialize]);
 
   // Воспроизведение звука
   const playSound = useCallback(async (type: 'new_order' | 'order_update' | 'notification') => {
