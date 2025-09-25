@@ -176,6 +176,28 @@ export const useOperatorWebSocket = (options: UseOperatorWebSocketOptions = {}):
                 console.log('🔊 Using desktop sound system...');
                 playSound('new_order');
               }
+              
+              // Дополнительная проверка для мобильных PWA
+              if (isPWA && !isMobile) {
+                console.log('🔊 PWA mode detected, checking if mobile...');
+                const userAgentMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const screenMobile = window.innerWidth <= 768 || window.innerHeight <= 768;
+                const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                const isActuallyMobile = userAgentMobile || (screenMobile && hasTouch);
+                
+                if (isActuallyMobile) {
+                  console.log('🔊 Actually mobile device in PWA mode, using mobile sounds...');
+                  try {
+                    playSimpleMobileSound('new_order');
+                    playMobileSoundSafe('new_order');
+                    if ((window as any).playMobileSound) {
+                      (window as any).playMobileSound('new_order');
+                    }
+                  } catch (error) {
+                    console.error('🔊 Mobile PWA sound failed:', error);
+                  }
+                }
+              }
               console.log('🔊 New order sound played successfully');
             } catch (error) {
               console.error('🔊 Error playing new order sound:', error);

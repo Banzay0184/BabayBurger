@@ -3,8 +3,30 @@ import { useSoundNotifications } from './SoundNotificationManager';
 
 // Утилиты для определения мобильного устройства
 const isMobileDevice = (): boolean => {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-         (typeof window !== 'undefined' && window.innerWidth <= 768);
+  // Проверяем User Agent
+  const userAgentMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  // Проверяем размер экрана
+  const screenMobile = window.innerWidth <= 768 || window.innerHeight <= 768;
+  
+  // Проверяем touch события
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  // Комбинированная проверка
+  const isMobile = userAgentMobile || (screenMobile && hasTouch);
+  
+  console.log('📱 Simple Mobile detection:', {
+    userAgentMobile,
+    screenMobile,
+    hasTouch,
+    windowWidth: window.innerWidth,
+    windowHeight: window.innerHeight,
+    userAgent: navigator.userAgent,
+    maxTouchPoints: navigator.maxTouchPoints,
+    finalResult: isMobile
+  });
+  
+  return isMobile;
 };
 
 const isIOSDevice = (): boolean => {
