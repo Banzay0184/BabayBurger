@@ -52,7 +52,7 @@ export const MainPage: React.FC = React.memo(() => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   // Состояния
-  const [showLogo, setShowLogo] = useState(false); // Убираем показ логотипа по умолчанию
+  const [showLogo, setShowLogo] = useState(true); // Показываем анимацию загрузки при первой загрузке
   const [showOptionsPage, setShowOptionsPage] = useState(false);
   const [showProfilePage, setShowProfilePage] = useState(false);
   const [showCheckoutPage, setShowCheckoutPage] = useState(false);
