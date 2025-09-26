@@ -110,68 +110,7 @@ export const MainPage: React.FC = React.memo(() => {
     }
   };
 
-  // Функция для проверки совпадения текущего местоположения с сохраненными адресами
-  const checkLocationMatch = async () => {
-    if (addresses.length === 0) {
-      return false; // Нет адресов для сравнения
-    }
 
-    // Если есть основной адрес, считаем что пользователь уже выбрал адрес
-    const hasPrimaryAddress = addresses.some(addr => addr.is_primary);
-    if (hasPrimaryAddress) {
-      console.log('📍 Primary address exists - no need to check location');
-      return true;
-    }
-
-    try {
-      // Получаем текущее местоположение
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: false, // Снижаем точность для стабильности
-          timeout: 5000, // Сокращаем таймаут
-          maximumAge: 600000 // 10 минут - увеличиваем кэш
-        });
-      });
-
-      const currentLat = position.coords.latitude;
-      const currentLng = position.coords.longitude;
-
-      console.log('📍 Current location:', { lat: currentLat, lng: currentLng });
-
-      // Проверяем каждый сохраненный адрес
-      for (const address of addresses) {
-        if (address.latitude && address.longitude) {
-          const distance = calculateDistance(currentLat, currentLng, address.latitude, address.longitude);
-          console.log(`📍 Distance to address ${address.id}: ${distance.toFixed(2)} km`);
-          
-          // Увеличиваем порог до 2 км для более стабильной работы
-          if (distance < 2) {
-            console.log('📍 Location matches existing address');
-            return true;
-          }
-        }
-      }
-
-      console.log('📍 Location does not match any existing address');
-      return false;
-    } catch (error) {
-      console.log('📍 Could not get current location:', error);
-      // Если не можем получить местоположение, но есть адреса - считаем что все ОК
-      return addresses.length > 0;
-    }
-  };
-
-  // Функция для расчета расстояния между двумя точками (в км)
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 6371; // Радиус Земли в км
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
 
   // Загружаем адреса при монтировании
   useEffect(() => {
@@ -225,20 +164,15 @@ export const MainPage: React.FC = React.memo(() => {
         return;
       }
       
-      // Показываем если есть адреса, но нет основного адреса и текущее местоположение не совпадает
+      // Если есть адреса, но нет основного адреса - показываем выбор адреса вместо определения местоположения
       if (state.user && addresses.length > 0 && !hasPrimaryAddress && !showLogo && !showAutoLocationDetector && !showMapPicker && !isWorkingWithAddresses) {
-        console.log('📍 🔍 Checking location match with existing addresses...');
-        const locationMatches = await checkLocationMatch();
-        
-        if (!locationMatches) {
-          console.log('📍 🔄 Location mismatch detected - showing auto location detector');
-          setShowAutoLocationDetector(true);
-        } else {
-          console.log('📍 ✅ Location matches existing address - no need to show detector');
-          // Если местоположение совпадает, сохраняем что пользователь выбрал адрес
-          setHasUserSelectedAddress(true);
-          localStorage.setItem('hasUserSelectedAddress', 'true');
-        }
+        console.log('📍 🔍 User has addresses but no primary address - showing address selection');
+        setCurrentView('address');
+        setIsWorkingWithAddresses(true);
+        // Сохраняем что пользователь выбрал адрес (через выбор из списка)
+        setHasUserSelectedAddress(true);
+        localStorage.setItem('hasUserSelectedAddress', 'true');
+        return;
       }
     };
     
@@ -274,8 +208,10 @@ export const MainPage: React.FC = React.memo(() => {
   const handleCloseAutoLocationDetector = () => {
     setShowAutoLocationDetector(false);
     setCurrentView('address');
+    setIsWorkingWithAddresses(true);
     // Устанавливаем флаг что пользователь выбрал адрес (закрыл модал)
     setHasUserSelectedAddress(true);
+    localStorage.setItem('hasUserSelectedAddress', 'true');
   };
 
   // Обработчик для показа формы добавления адреса

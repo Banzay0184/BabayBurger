@@ -434,6 +434,72 @@ def check_telegram_api_health(self):
 
 @shared_task(
     bind=True,
+    name='api.tasks.send_start_command_message',
+    queue='notifications',
+    autoretry_for=(requests.RequestException,),
+    retry_kwargs={'max_retries': 3, 'countdown': 5},
+    retry_backoff=True,
+)
+def send_start_command_message(self, chat_id, welcome_text, keyboard):
+    """
+    Асинхронная отправка приветственного сообщения для команды /start
+    
+    Args:
+        chat_id: ID чата в Telegram
+        welcome_text: Текст приветствия
+        keyboard: Клавиатура с кнопкой Web App
+    
+    Returns:
+        dict: Результат отправки
+    """
+    try:
+        # Получаем токен бота из настроек
+        bot_token = settings.BOT_TOKEN
+        if not bot_token:
+            logger.error("BOT_TOKEN not configured")
+            return {'success': False, 'error': 'BOT_TOKEN not configured'}
+        
+        # URL для отправки сообщения
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        
+        # Данные для отправки
+        data = {
+            'chat_id': chat_id,
+            'text': welcome_text,
+            'parse_mode': 'HTML',
+            'reply_markup': keyboard,
+            'disable_web_page_preview': True,
+        }
+        
+        # Отправляем запрос с коротким таймаутом
+        response = requests.post(url, json=data, timeout=3)
+        response.raise_for_status()
+        
+        result = response.json()
+        
+        if result.get('ok'):
+            logger.info(f"Start command message sent successfully to chat_id={chat_id}")
+            return {
+                'success': True,
+                'message_id': result['result']['message_id'],
+                'chat_id': chat_id
+            }
+        else:
+            error_msg = f"Telegram API error: {result.get('description', 'Unknown error')}"
+            logger.error(f"Failed to send start message to chat_id={chat_id}: {error_msg}")
+            return {'success': False, 'error': error_msg}
+            
+    except requests.RequestException as e:
+        logger.error(f"Network error sending start message to chat_id={chat_id}: {str(e)}")
+        # Повторяем попытку через Celery
+        raise self.retry(exc=e, countdown=5)
+        
+    except Exception as e:
+        logger.error(f"Unexpected error sending start message to chat_id={chat_id}: {str(e)}")
+        return {'success': False, 'error': str(e)}
+
+@shared_task(
+    bind=True,
     name='api.tasks.send_cart_updated_notification',
     queue='notifications',
     autoretry_for=(requests.RequestException,),

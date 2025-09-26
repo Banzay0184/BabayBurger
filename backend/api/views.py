@@ -363,20 +363,43 @@ class WebhookView(APIView):
             
             logger.info(f"Creating/updating user: {user_id} - {first_name} {last_name or ''} (@{username or ''})")
             
-            # Создаем или обновляем пользователя одним запросом
-            user_obj, created = User.objects.update_or_create(
-                telegram_id=user_id,
-                defaults={
-                    'first_name': first_name,
-                    'last_name': last_name,
-                    'username': username,
-                }
-            )
+            # Проверяем кэш пользователя
+            from django.core.cache import cache
+            cache_key = f"user_{user_id}"
+            user_obj = cache.get(cache_key)
             
-            if created:
-                logger.info(f"Created new user: {user_obj}")
+            if user_obj is None:
+                # Создаем или обновляем пользователя одним запросом
+                user_obj, created = User.objects.update_or_create(
+                    telegram_id=user_id,
+                    defaults={
+                        'first_name': first_name,
+                        'last_name': last_name,
+                        'username': username,
+                    }
+                )
+                
+                # Кэшируем пользователя на 5 минут
+                cache.set(cache_key, user_obj, 300)
+                
+                if created:
+                    logger.info(f"Created new user: {user_obj}")
+                else:
+                    logger.info(f"Updated existing user: {user_obj}")
             else:
-                logger.info(f"Updated existing user: {user_obj}")
+                # Обновляем данные в кэше если они изменились
+                if (user_obj.first_name != first_name or 
+                    user_obj.last_name != last_name or 
+                    user_obj.username != username):
+                    
+                    user_obj.first_name = first_name
+                    user_obj.last_name = last_name
+                    user_obj.username = username
+                    user_obj.save()
+                    cache.set(cache_key, user_obj, 300)
+                    logger.info(f"Updated cached user: {user_obj}")
+                else:
+                    logger.info(f"Using cached user: {user_obj}")
             
             # URL для Web App (замените на ваш домен)
             web_app_url = "https://babay-burger.vercel.app"  # Для разработки
@@ -399,46 +422,14 @@ class WebhookView(APIView):
                 "Нажмите кнопку ниже, чтобы открыть приложение и сделать заказ:"
             )
             
-            # Отправляем сообщение напрямую для быстрого ответа
-            import requests
+            # Отправляем сообщение асинхронно для максимальной скорости
+            from api.tasks import send_start_command_message
             
-            url = f"https://api.telegram.org/bot{settings.BOT_TOKEN}/sendMessage"
-            data = {
-                'chat_id': chat_id,
-                'text': welcome_text,
-                'parse_mode': 'HTML',
-                'reply_markup': keyboard,
-                'disable_web_page_preview': True
-            }
+            # Запускаем асинхронную задачу
+            task = send_start_command_message.delay(chat_id, welcome_text, keyboard)
             
-            try:
-                response = requests.post(url, json=data, timeout=3)
-                if response.status_code == 200:
-                    result = response.json()
-                    if result.get('ok'):
-                        logger.info(f"Start command processed successfully for chat {chat_id}")
-                        return Response({'status': 'ok'}, status=status.HTTP_200_OK)
-                
-                # Если прямая отправка не удалась, используем fallback
-                logger.warning(f"Direct send failed, using fallback: {response.text}")
-                from api.telegram_fallback import telegram_fallback
-                result = telegram_fallback.send_message(
-                    chat_id=chat_id,
-                    text=welcome_text,
-                    parse_mode="HTML",
-                    reply_markup=keyboard
-                )
-                
-                if result['success']:
-                    logger.info(f"Message sent with fallback: {result}")
-                    return Response({'status': 'ok'}, status=status.HTTP_200_OK)
-                else:
-                    logger.error(f"Failed to send start message: {result.get('error')}")
-                    return Response({'error': 'Failed to send message'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                    
-            except requests.RequestException as e:
-                logger.error(f"Network error in start command: {str(e)}")
-                return Response({'error': 'Network error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.info(f"Start command processed successfully for chat {chat_id}, message queued: {task.id}")
+            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
                 
         except Exception as e:
             logger.error(f"Error handling start command: {str(e)}")

@@ -317,9 +317,12 @@ DATABASES = {
         'HOST': config('DB_HOST', default='localhost'),
         'PORT': config('DB_PORT', default='5432'),
         'OPTIONS': {
-            'connect_timeout': 5,
-            'command_timeout': 5,
-       }
+            'connect_timeout': 3,
+            'command_timeout': 3,
+            'MAX_CONNS': 20,
+            'MIN_CONNS': 5,
+       },
+        'CONN_MAX_AGE': 60,  # Переиспользование соединений
     }
 }
 
