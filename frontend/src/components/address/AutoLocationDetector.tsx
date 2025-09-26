@@ -113,8 +113,8 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
   // Функция для геокодирования координат в адрес с кэшированием
   const geocodeCoordinates = useCallback(async (lat: number, lon: number): Promise<string | null> => {
     try {
-      // Создаем ключ для кэша (округленные координаты для группировки близких точек)
-      const cacheKey = `${lat.toFixed(5)},${lon.toFixed(5)}`;
+      // Создаем ключ для кэша (более точные координаты для избежания конфликтов)
+      const cacheKey = `${lat.toFixed(6)},${lon.toFixed(6)}`;
       
       // Проверяем кэш
       if (geocodeCache.current.has(cacheKey)) {
@@ -125,6 +125,7 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       
       console.log('📍 Geocoding coordinates:', lat, lon);
       console.log('📍 Cache key:', cacheKey);
+      console.log('📍 Cache size:', geocodeCache.current.size);
       
       // Используем Яндекс Геокодер для получения адреса
       const response = await fetch(
@@ -145,10 +146,11 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
         // Сохраняем в кэш
         geocodeCache.current.set(cacheKey, address);
         
-        // Ограничиваем размер кэша (максимум 20 записей для свежести)
-        if (geocodeCache.current.size > 20) {
+        // Ограничиваем размер кэша (максимум 10 записей для свежести)
+        if (geocodeCache.current.size > 10) {
           const firstKey = geocodeCache.current.keys().next().value;
           geocodeCache.current.delete(firstKey);
+          console.log('📍 Cache cleaned, removed key:', firstKey);
         }
         
         return address;
@@ -535,6 +537,9 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                   <Button
                     onClick={() => {
                       console.log('🔄 Попробовать снова clicked');
+                      // Очищаем кэш для получения свежего адреса
+                      geocodeCache.current.clear();
+                      console.log('📍 Cache cleared for fresh geocoding');
                       detectLocation();
                     }}
                     className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-2 flex-1"
@@ -734,21 +739,41 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                     return null;
                   })()}
                   
-                  <div className="flex gap-2">
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => {
+                          console.log('📍 📝 "Да, добавить" button clicked');
+                          createNewAddress();
+                        }}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        Да, добавить
+                      </Button>
+                      <Button
+                        onClick={onShowMap}
+                        className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                      >
+                        Выбрать на карте
+                      </Button>
+                    </div>
+                    
+                    {/* Кнопка для обновления адреса */}
                     <Button
                       onClick={() => {
-                        console.log('📍 📝 "Да, добавить" button clicked');
-                        createNewAddress();
+                        console.log('🔄 Обновить адрес clicked');
+                        // Очищаем кэш и переопределяем местоположение
+                        geocodeCache.current.clear();
+                        console.log('📍 Cache cleared for fresh geocoding');
+                        setDetectedAddress(null);
+                        setCoordinates(null);
+                        setDeliveryZoneCheck(null);
+                        setMatchedAddress(null);
+                        detectLocation();
                       }}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2"
                     >
-                      Да, добавить
-                    </Button>
-                    <Button
-                      onClick={onShowMap}
-                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
-                    >
-                      Выбрать на карте
+                      🔄 Обновить адрес
                     </Button>
                   </div>
                 </div>

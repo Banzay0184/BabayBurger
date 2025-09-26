@@ -363,8 +363,8 @@ class WebhookView(APIView):
             
             logger.info(f"Creating/updating user: {user_id} - {first_name} {last_name or ''} (@{username or ''})")
             
-            # Создаем или обновляем пользователя
-            user_obj, created = User.objects.get_or_create(
+            # Создаем или обновляем пользователя одним запросом
+            user_obj, created = User.objects.update_or_create(
                 telegram_id=user_id,
                 defaults={
                     'first_name': first_name,
@@ -373,15 +373,10 @@ class WebhookView(APIView):
                 }
             )
             
-            if not created:
-                # Обновляем существующего пользователя
-                user_obj.first_name = first_name
-                user_obj.last_name = last_name
-                user_obj.username = username
-                user_obj.save()
-                logger.info(f"Updated existing user: {user_obj}")
-            else:
+            if created:
                 logger.info(f"Created new user: {user_obj}")
+            else:
+                logger.info(f"Updated existing user: {user_obj}")
             
             # URL для Web App (замените на ваш домен)
             web_app_url = "https://babay-burger.vercel.app"  # Для разработки
@@ -404,27 +399,47 @@ class WebhookView(APIView):
                 "Нажмите кнопку ниже, чтобы открыть приложение и сделать заказ:"
             )
             
-            # Отправляем сообщение с кнопкой через резервный механизм
-            from api.telegram_fallback import telegram_fallback
+            # Отправляем сообщение напрямую для быстрого ответа
+            import requests
             
-            result = telegram_fallback.send_message(
-                chat_id=chat_id,
-                text=welcome_text,
-                parse_mode="HTML",
-                reply_markup=keyboard
-            )
+            url = f"https://api.telegram.org/bot{settings.BOT_TOKEN}/sendMessage"
+            data = {
+                'chat_id': chat_id,
+                'text': welcome_text,
+                'parse_mode': 'HTML',
+                'reply_markup': keyboard,
+                'disable_web_page_preview': True
+            }
             
-            if result['success']:
-                logger.info(f"Start command processed successfully for chat {chat_id}")
-                logger.info(f"Message sent with fallback: {result}")
-                return Response({'status': 'ok'}, status=status.HTTP_200_OK)
-            else:
-                logger.error(f"Failed to send start message: {result.get('error')}")
-                return Response({'error': 'Failed to send message'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            try:
+                response = requests.post(url, json=data, timeout=3)
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get('ok'):
+                        logger.info(f"Start command processed successfully for chat {chat_id}")
+                        return Response({'status': 'ok'}, status=status.HTTP_200_OK)
                 
-        except requests.RequestException as e:
-            logger.error(f"Network error in start command: {str(e)}")
-            return Response({'error': 'Network error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                # Если прямая отправка не удалась, используем fallback
+                logger.warning(f"Direct send failed, using fallback: {response.text}")
+                from api.telegram_fallback import telegram_fallback
+                result = telegram_fallback.send_message(
+                    chat_id=chat_id,
+                    text=welcome_text,
+                    parse_mode="HTML",
+                    reply_markup=keyboard
+                )
+                
+                if result['success']:
+                    logger.info(f"Message sent with fallback: {result}")
+                    return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+                else:
+                    logger.error(f"Failed to send start message: {result.get('error')}")
+                    return Response({'error': 'Failed to send message'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    
+            except requests.RequestException as e:
+                logger.error(f"Network error in start command: {str(e)}")
+                return Response({'error': 'Network error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
         except Exception as e:
             logger.error(f"Error handling start command: {str(e)}")
             return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

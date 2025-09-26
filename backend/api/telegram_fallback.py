@@ -103,7 +103,7 @@ class TelegramFallback:
             if reply_markup:
                 data['reply_markup'] = reply_markup
             
-            response = requests.post(url, json=data, timeout=10)
+            response = requests.post(url, json=data, timeout=5)
             
             if response.status_code == 200:
                 result = response.json()
