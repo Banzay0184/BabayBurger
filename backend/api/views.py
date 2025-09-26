@@ -650,7 +650,6 @@ class MenuView(APIView):
             
             # Оптимизированный запрос - получаем только активные товары с фильтрацией в БД
             from django.db.models import Q
-            from django.utils import timezone
             
             current_time = timezone.now().time()
             
@@ -1763,7 +1762,6 @@ class PromotionsView(APIView):
     
     def get(self, request):
         try:
-            from django.utils import timezone
             now = timezone.now()
             
             # Получаем активные акции

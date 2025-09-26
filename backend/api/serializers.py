@@ -81,15 +81,12 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'image', 'priority']
 
 class AddOnSerializer(serializers.ModelSerializer):
-    available_for_categories = serializers.PrimaryKeyRelatedField(
-        many=True, 
-        queryset=Category.objects.all(), 
-        required=False
-    )
+    # Убираем available_for_categories из сериализации для меню, чтобы избежать дополнительных запросов
+    # Это поле не используется в клиентском приложении для отображения меню
     
     class Meta:
         model = AddOn
-        fields = ['id', 'name', 'price', 'available_for_categories', 'is_active']
+        fields = ['id', 'name', 'price', 'is_active']
 
 class SizeOptionSerializer(serializers.ModelSerializer):
     menu_item = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
