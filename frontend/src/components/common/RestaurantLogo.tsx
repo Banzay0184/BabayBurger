@@ -69,7 +69,7 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = React.memo(({
 
   return (
     <div className={`
-      fixed inset-0 z-80 bg-gradient-to-br from-white via-gray-100 to-gray-200
+      fixed inset-0 z-[9999] bg-gradient-to-br from-white via-gray-100 to-gray-200
       flex flex-col items-center justify-center
       transition-opacity duration-1000 ease-out
       ${isVisible ? 'opacity-100' : 'opacity-0'}
@@ -111,7 +111,7 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = React.memo(({
             relative w-64 h-64
             flex items-center justify-center
             will-change-transform
-            z-10
+            z-[100]
           "
           style={{
             transform: `scale(${logoScale}) translate(${logoPosition.x}px, ${logoPosition.y}px)`,
@@ -136,7 +136,7 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = React.memo(({
       {/* Название ресторана - черно-белый стиль */}
       <div 
         className="
-          mt-8 text-center z-20
+          mt-8 text-center z-[200]
           will-change-opacity will-change-transform
         "
         style={{ 
