@@ -497,37 +497,37 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
   }, [detectLocation]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
+      <div className="bg-white rounded-lg max-w-sm w-full max-h-[85vh] overflow-y-auto">
+        <div className="p-4">
+          <div className="flex items-center justify-center mb-4">
+            <h2 className="text-lg font-bold text-gray-900">
               📍 Определение адреса
             </h2>
           </div>
 
           {isDetecting && (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-600">Определяем ваше местоположение...</p>
+            <div className="text-center py-4">
+              <div className="w-12 h-12 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-3"></div>
+              <p className="text-sm text-gray-600">Определяем ваше местоположение...</p>
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-              <div className="flex items-center mb-3">
-                <span className="text-red-500 text-lg mr-2">⚠️</span>
-                <h3 className="text-sm font-semibold text-red-800">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+              <div className="flex items-center mb-2">
+                <span className="text-red-500 text-sm mr-2">⚠️</span>
+                <h3 className="text-xs font-semibold text-red-800">
                   Не удалось определить адрес
                 </h3>
               </div>
               
-              <p className="text-xs text-red-600 mb-3 leading-relaxed">
+              <p className="text-xs text-red-600 mb-2 leading-relaxed">
                 {error}
               </p>
               
-              <div className="space-y-2">
-                <div className="flex gap-2">
+              <div className="space-y-1.5">
+                <div className="flex gap-1.5">
                   <Button
                     onClick={() => {
                       console.log('🔄 Попробовать снова clicked');
@@ -536,18 +536,18 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                       console.log('📍 Cache cleared for fresh geocoding');
                       detectLocation();
                     }}
-                    className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-2 flex-1"
+                    className="bg-red-600 hover:bg-red-700 text-white text-xs px-2 py-1.5 flex-1"
                   >
-                    🔄 Попробовать снова
+                    🔄 Снова
                   </Button>
                   <Button
                     onClick={() => {
                       console.log('🗺️ Выбрать на карте clicked');
                       onShowMap();
                     }}
-                    className="bg-gray-600 hover:bg-gray-700 text-white text-xs px-3 py-2 flex-1"
+                    className="bg-gray-600 hover:bg-gray-700 text-white text-xs px-2 py-1.5 flex-1"
                   >
-                    🗺️ На карте
+                    🗺️ Карта
                   </Button>
                 </div>
                 {existingAddresses.length > 0 && (
@@ -557,9 +557,9 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                       setShowExistingAddresses(true);
                       setError(null);
                     }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 w-full"
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2 py-1.5 w-full"
                   >
-                    📍 Сохраненные адреса ({existingAddresses.length})
+                    📍 Сохраненные ({existingAddresses.length})
                   </Button>
                 )}
               </div>
@@ -568,26 +568,26 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
 
           {/* Показываем существующие адреса, если пользователь выбрал этот вариант */}
           {showExistingAddresses && existingAddresses.length > 0 && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <h3 className="font-semibold text-blue-800 mb-3">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+              <h3 className="font-semibold text-blue-800 mb-2 text-sm">
                 📍 Ваши сохраненные адреса:
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {existingAddresses.map((address) => (
                   <div
                     key={address.id}
-                    className="bg-white border border-blue-200 rounded-lg p-3 cursor-pointer hover:bg-blue-50 transition-colors"
+                    className="bg-white border border-blue-200 rounded-lg p-2 cursor-pointer hover:bg-blue-50 transition-colors"
                     onClick={() => selectExistingAddress(address)}
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-gray-900 text-sm">
                           {address.street} {address.house_number}
                           {address.apartment && `, кв. ${address.apartment}`}
                         </p>
-                        <p className="text-sm text-gray-600">{address.city}</p>
+                        <p className="text-xs text-gray-600">{address.city}</p>
                         {address.comment && (
-                          <p className="text-xs text-gray-500 mt-1">{address.comment}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{address.comment}</p>
                         )}
                       </div>
                       <button
@@ -595,7 +595,7 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                           e.stopPropagation();
                           selectExistingAddress(address);
                         }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2 py-1 rounded"
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-1.5 py-0.5 rounded text-xs"
                       >
                         Выбрать
                       </button>
@@ -603,10 +603,10 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                   </div>
                 ))}
               </div>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-2 flex gap-1.5">
                 <Button
                   onClick={() => setShowExistingAddresses(false)}
-                  className="bg-gray-600 hover:bg-gray-700 text-white text-sm px-3 py-2 flex-1"
+                  className="bg-gray-600 hover:bg-gray-700 text-white text-xs px-2 py-1.5 flex-1"
                 >
                   Назад
                 </Button>
@@ -615,54 +615,41 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                     console.log('🗺️ Выбрать на карте clicked');
                     onShowMap();
                   }}
-                  className="bg-primary-600 hover:bg-primary-700 text-white text-sm px-3 py-2 flex-1"
+                  className="bg-primary-600 hover:bg-primary-700 text-white text-xs px-2 py-1.5 flex-1"
                 >
-                  Выбрать на карте
+                  На карте
                 </Button>
               </div>
             </div>
           )}
 
           {detectedAddress && !isDetecting && (
-            <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h3 className="font-semibold text-green-800 mb-2">
+            <div className="space-y-3">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <h3 className="font-semibold text-green-800 mb-1 text-sm">
                   📍 Ваш текущий адрес:
                 </h3>
-                <p className="text-green-700 mb-2">{detectedAddress}</p>
+                <p className="text-green-700 mb-1 text-sm">{detectedAddress}</p>
                 
-                {/* Показываем координаты для отладки */}
-                {coordinates && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
-                    <h4 className="font-semibold text-blue-800 text-sm mb-1">
-                      📍 Координаты местоположения:
-                    </h4>
-                    <p className="text-blue-700 text-xs">
-                      Широта: {coordinates[0].toFixed(6)}<br/>
-                      Долгота: {coordinates[1].toFixed(6)}
-                    </p>
-                  </div>
-                )}
-                
-                <p className="text-sm text-green-600 mt-2">
+                <p className="text-xs text-green-600">
                   💡 Этот адрес отличается от ваших сохраненных адресов
                 </p>
               </div>
 
               {deliveryZoneCheck && (
-                <div className={`border rounded-lg p-4 ${
+                <div className={`border rounded-lg p-3 ${
                   deliveryZoneCheck.is_in_delivery_zone 
                     ? 'bg-green-50 border-green-200' 
                     : 'bg-red-50 border-red-200'
                 }`}>
-                  <h3 className={`font-semibold mb-2 ${
+                  <h3 className={`font-semibold mb-1 text-sm ${
                     deliveryZoneCheck.is_in_delivery_zone 
                       ? 'text-green-800' 
                       : 'text-red-800'
                   }`}>
                     {deliveryZoneCheck.is_in_delivery_zone ? '✅ Доставка доступна' : '❌ Доставка недоступна'}
                   </h3>
-                  <p className={`text-sm ${
+                  <p className={`text-xs ${
                     deliveryZoneCheck.is_in_delivery_zone 
                       ? 'text-green-700' 
                       : 'text-red-700'
@@ -673,32 +660,32 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
               )}
 
               {deliveryZoneCheck?.is_in_delivery_zone && matchedAddress ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-blue-800 mb-2">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <h3 className="font-semibold text-blue-800 mb-1 text-sm">
                     ✅ Найден похожий адрес:
                   </h3>
-                  <p className="text-blue-700 mb-3">{matchedAddress.full_address}</p>
-                  <div className="flex gap-2">
+                  <p className="text-blue-700 mb-2 text-sm">{matchedAddress.full_address}</p>
+                  <div className="flex gap-1.5">
                     <Button
                       onClick={() => confirmAddress(matchedAddress)}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs py-1.5"
                     >
                       Да, это мой адрес
                     </Button>
                     <Button
                       onClick={onShowMap}
-                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white text-xs py-1.5"
                     >
                       Нет, выбрать другой
                     </Button>
                   </div>
                 </div>
               ) : deliveryZoneCheck?.is_in_delivery_zone ? (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-yellow-800 mb-2">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <h3 className="font-semibold text-yellow-800 mb-1 text-sm">
                     🆕 Новый адрес
                   </h3>
-                  <p className="text-yellow-700 mb-3">
+                  <p className="text-yellow-700 mb-2 text-sm">
                     Этот адрес не найден в вашем списке. Хотите добавить его?
                   </p>
                   
@@ -709,18 +696,18 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                     
                     if (!isAddressComplete) {
                       return (
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-2 mb-2">
                           <div className="flex items-start">
-                            <span className="text-orange-500 text-lg mr-2">⚠️</span>
+                            <span className="text-orange-500 text-sm mr-1">⚠️</span>
                             <div>
-                              <h4 className="font-semibold text-orange-800 text-sm mb-1">
+                              <h4 className="font-semibold text-orange-800 text-xs mb-0.5">
                                 Адрес требует уточнения
                               </h4>
                               <p className="text-orange-700 text-xs leading-relaxed">
                                 Не удалось определить полный адрес. Пожалуйста, укажите номер дома вручную.
                               </p>
                               {!street && (
-                                <p className="text-orange-600 text-xs mt-1">• Улица не определена</p>
+                                <p className="text-orange-600 text-xs">• Улица не определена</p>
                               )}
                               {!houseNumber && (
                                 <p className="text-orange-600 text-xs">• Номер дома не определен</p>
@@ -733,22 +720,22 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                     return null;
                   })()}
                   
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
+                  <div className="space-y-1.5">
+                    <div className="flex gap-1.5">
                       <Button
                         onClick={() => {
                           console.log('📍 📝 "Да, добавить" button clicked');
                           createNewAddress();
                         }}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1.5"
                       >
                         Да, добавить
                       </Button>
                       <Button
                         onClick={onShowMap}
-                        className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                        className="flex-1 bg-gray-600 hover:bg-gray-700 text-white text-xs py-1.5"
                       >
-                        Выбрать на карте
+                        На карте
                       </Button>
                     </div>
                     
@@ -765,70 +752,68 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                         setMatchedAddress(null);
                         detectLocation();
                       }}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-1.5"
                     >
                       🔄 Обновить адрес
                     </Button>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  
-
+                <div className="space-y-3">
                   {/* Список существующих адресов */}
                   {memoizedExistingAddresses.length > 0 ? (
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-gray-800 mb-3">
+                    <div className="space-y-1.5">
+                      <h4 className="font-medium text-gray-800 mb-2 text-sm">
                         📍 Ваши сохраненные адреса:
                       </h4>
                       {memoizedExistingAddresses.map((address) => (
                         <div
                           key={`auto-location-${address.id}`}
-                          className="bg-gray-50 border border-gray-200 rounded-lg p-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                          className="bg-gray-50 border border-gray-200 rounded-lg p-2 cursor-pointer hover:bg-gray-100 transition-colors"
                           onClick={() => selectExistingAddress(address)}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-800">
+                              <p className="text-xs font-medium text-gray-800">
                                 {address.full_address || `${address.street}, д. ${address.house_number}`}
                               </p>
                               {address.comment && (
-                                <p className="text-xs text-gray-600 mt-1">
+                                <p className="text-xs text-gray-600 mt-0.5">
                                   💬 {address.comment}
                                 </p>
                               )}
                               {address.is_primary && (
-                                <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mt-1">
+                                <span className="inline-block bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded mt-0.5">
                                   ⭐ Основной
                                 </span>
                               )}
                             </div>
-                            <div className="ml-2">
-                              <span className="text-gray-400">→</span>
+                            <div className="ml-1">
+                              <span className="text-gray-400 text-sm">→</span>
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <p className="text-yellow-700 text-sm">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <p className="text-yellow-700 text-xs">
                         У вас нет сохраненных адресов. Добавьте адрес для доставки.
                       </p>
                     </div>
                   )}
 
                   {/* Кнопки действий */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     <Button
                       onClick={onShowMap}
-                      className="flex-1 bg-primary-600 hover:bg-primary-700 text-white"
+                      className="flex-1 bg-primary-600 hover:bg-primary-700 text-white text-xs py-1.5"
                     >
-                      🗺️ Выбрать на карте
+                      🗺️ На карте
                     </Button>
                     <Button
                       onClick={onClose}
-                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white text-xs py-1.5"
                     >
                       Отмена
                     </Button>
@@ -839,22 +824,22 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
           )}
 
           {!isDetecting && !detectedAddress && !error && (
-            <div className="text-center py-8">
-              <p className="text-gray-600 mb-4">
+            <div className="text-center py-4">
+              <p className="text-gray-600 mb-3 text-sm">
                 Не удалось автоматически определить адрес. Это может быть связано с настройками браузера или отсутствием разрешения на доступ к местоположению.
               </p>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <Button
                   onClick={detectLocation}
-                  className="flex-1 bg-primary-600 hover:bg-primary-700 text-white"
+                  className="flex-1 bg-primary-600 hover:bg-primary-700 text-white text-xs py-1.5"
                 >
                   Попробовать снова
                 </Button>
                 <Button
                   onClick={onShowMap}
-                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white text-xs py-1.5"
                 >
-                  Выбрать на карте
+                  На карте
                 </Button>
               </div>
             </div>
