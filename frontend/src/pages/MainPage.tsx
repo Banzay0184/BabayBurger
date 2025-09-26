@@ -141,9 +141,16 @@ export const MainPage: React.FC = React.memo(() => {
         hasPrimaryAddress: addresses.some(addr => addr.is_primary)
       });
       
-      // Не показываем если пользователь уже выбрал адрес (сохранено в localStorage)
-      if (hasUserSelectedAddress) {
-        console.log('📍 ✅ User already selected address (saved in localStorage) - no need to show detector');
+      // Если нет адресов, сбрасываем флаг выбора адреса
+      if (addresses.length === 0 && hasUserSelectedAddress) {
+        console.log('📍 🔄 No addresses found, resetting hasUserSelectedAddress flag');
+        setHasUserSelectedAddress(false);
+        localStorage.removeItem('hasUserSelectedAddress');
+      }
+      
+      // Не показываем если пользователь уже выбрал адрес (сохранено в localStorage) И есть адреса
+      if (hasUserSelectedAddress && addresses.length > 0) {
+        console.log('📍 ✅ User already selected address (saved in localStorage) and has addresses - no need to show detector');
         return;
       }
       
