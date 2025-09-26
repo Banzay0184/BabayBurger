@@ -172,7 +172,7 @@ class OrderForOperatorSerializer(serializers.ModelSerializer):
             'delivery_fee', 'discount_amount', 'created_at', 'delivery_time', 'notes',
             'operator_notes', 'operator_called', 'operator_call_time', 'operator_call_result',
             'assigned_operator', 'assigned_at', 'operator_order_number', 'user_info', 
-            'address_info', 'restaurant_info', 'delivery_zone_info', 'items_details'
+            'address_info', 'restaurant_info', 'delivery_zone_info', 'items_details', 'phone'
         ]
         read_only_fields = ['id', 'created_at', 'assigned_at', 'operator_call_time']
     

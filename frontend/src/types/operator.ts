@@ -81,6 +81,7 @@ export interface OrderForOperator {
   restaurant_info?: RestaurantInfo;
   items_details: OrderItemDetail[] | undefined;
   delivery_zone_info?: DeliveryZoneInfo;
+  phone: string;
 }
 
 export interface DeliveryZoneInfo {

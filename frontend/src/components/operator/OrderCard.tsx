@@ -245,7 +245,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
                 👤 {order.user_info.first_name} {order.user_info.last_name}
               </p>
               <p className="text-gray-400 text-sm">
-                📱 {order.address_info?.phone_number || 'Телефон не указан'}
+                📱 {order.address_info?.phone_number || order.phone || 'Телефон не указан'}
               </p>
             </div>
             <div className="text-right">

@@ -290,10 +290,16 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       </div>
                     </>
                   ) : (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Тип заказа:</span>
-                      <span className="text-white">🏪 Самовывоз</span>
-                    </div>
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Тип заказа:</span>
+                        <span className="text-white">🏪 Самовывоз</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Телефон:</span>
+                        <span className="text-green-400">{order.phone || 'Не указан'}</span>
+                      </div>
+                    </>
                   )}
                   {order.delivery_zone_info && (
                     <div className="flex justify-between">
