@@ -16,6 +16,7 @@ import { NotificationsPanel } from '../../components/operator/NotificationsPanel
 import { WebSocketStatus } from '../../components/operator/WebSocketStatus';
 import { SoundSettingsPanel } from '../../components/operator/SoundNotificationManager';
 import { PushNotificationSettings, usePushNotifications } from '../../components/operator/PushNotificationManager';
+import { SyncStatusIndicator, SyncStatusPanel } from '../../components/operator/SyncManager';
 import { SimpleMobileSoundManager } from '../../components/operator/SimpleMobileSoundManager';
 import { useOperatorWebSocket } from '../../hooks/useOperatorWebSocket';
 
@@ -31,6 +32,7 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSoundSettings, setShowSoundSettings] = useState(false);
   const [showPushSettings, setShowPushSettings] = useState(false);
+  const [showSyncSettings, setShowSyncSettings] = useState(false);
 
   // WebSocket обработчики для real-time обновлений
   const handleNewOrder = useCallback((newOrder: OrderForOperator) => {
@@ -424,6 +426,9 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
               </div>
             </div>
             <div className="flex items-center space-x-2">
+              {/* Статус синхронизации */}
+              <SyncStatusIndicator className="text-xs" />
+              
               {/* Push статус */}
               <div className="flex items-center space-x-1">
                 {permission === 'granted' ? (
@@ -470,6 +475,13 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
                   title="Push-уведомления"
                 >
                   📱
+                </button>
+                <button
+                  onClick={() => setShowSyncSettings(true)}
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                  title="Синхронизация"
+                >
+                  🔄
                 </button>
               </div>
             </div>
@@ -547,6 +559,26 @@ export const OperatorDashboardPage: React.FC<OperatorDashboardPageProps> = ({ on
             </div>
             <div className="p-6">
               <PushNotificationSettings />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Панель настроек синхронизации */}
+      {showSyncSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg max-w-md w-full mx-4">
+            <div className="flex justify-between items-center p-6 border-b border-gray-700">
+              <h2 className="text-xl font-semibold text-white">Синхронизация</h2>
+              <button
+                onClick={() => setShowSyncSettings(false)}
+                className="text-gray-400 hover:text-white text-2xl transition-colors"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-6">
+              <SyncStatusPanel />
             </div>
           </div>
         </div>

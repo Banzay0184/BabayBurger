@@ -119,6 +119,39 @@ export class UnifiedApiClient {
     }
   }
 
+  // Метод для проверки, можно ли повторить запрос
+  private isRetryableError(error: any): boolean {
+    return (
+      error.code === 'NETWORK_ERROR' ||
+      error.message?.includes('timeout') ||
+      error.message?.includes('QUIC') ||
+      error.message?.includes('Network Error') ||
+      !error.response // Сетевые ошибки
+    );
+  }
+
+  // Метод для повторных попыток запроса
+  private async requestWithRetry<T>(
+    requestFn: () => Promise<T>, 
+    maxRetries: number = 3
+  ): Promise<T> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await requestFn();
+      } catch (error: any) {
+        if (attempt === maxRetries || !this.isRetryableError(error)) {
+          throw error;
+        }
+        
+        // Экспоненциальная задержка
+        const delay = Math.pow(2, attempt) * 1000;
+        console.log(`🔄 Повтор ${attempt}/${maxRetries} через ${delay}ms`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    throw new Error('Все попытки исчерпаны');
+  }
+
   private handleResponseError(error: any): Promise<never> {
     console.error('❌ API ошибка:', {
       message: error.message,
@@ -197,7 +230,13 @@ export class UnifiedApiClient {
   }
 
   // Методы для HTTP запросов
-  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  async get<T>(url: string, config?: AxiosRequestConfig, useRetry: boolean = true): Promise<T> {
+    if (useRetry) {
+      return this.requestWithRetry(async () => {
+        const response = await this.client.get<T>(url, config);
+        return response.data;
+      });
+    }
     const response = await this.client.get<T>(url, config);
     return response.data;
   }

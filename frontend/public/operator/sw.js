@@ -271,10 +271,37 @@ self.addEventListener('notificationclick', (event) => {
 
 // Обработка фоновой синхронизации
 self.addEventListener('sync', (event) => {
+  console.log('🎯 Operator SW: Background sync event:', event.tag);
+  
   if (event.tag === 'operator-data-sync') {
     event.waitUntil(syncOperatorData());
+  } else if (event.tag === 'operator-actions-sync') {
+    event.waitUntil(syncPendingActions());
   }
 });
+
+// Синхронизация отложенных действий
+async function syncPendingActions() {
+  try {
+    console.log('🎯 Operator SW: Syncing pending actions...');
+    
+    // Получаем отложенные действия из localStorage через сообщение клиенту
+    const clients = await self.clients.matchAll();
+    if (clients.length > 0) {
+      // Запрашиваем отложенные действия у клиента
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'REQUEST_PENDING_ACTIONS',
+          timestamp: Date.now()
+        });
+      });
+    }
+    
+    console.log('🎯 Operator SW: Pending actions sync completed');
+  } catch (error) {
+    console.error('🎯 Operator SW: Error syncing pending actions:', error);
+  }
+}
 
 // Синхронизация данных оператора
 async function syncOperatorData() {
@@ -305,6 +332,28 @@ self.addEventListener('message', (event) => {
   
   if (event.data && event.data.type === 'GET_VERSION') {
     event.ports[0].postMessage({ version: CACHE_NAME });
+  }
+  
+  // Обработка запроса на фоновую синхронизацию
+  if (event.data && event.data.type === 'REQUEST_BACKGROUND_SYNC') {
+    event.waitUntil(
+      self.registration.sync.register('operator-actions-sync')
+        .then(() => {
+          console.log('🎯 Operator SW: Background sync registered');
+        })
+        .catch(error => {
+          console.error('🎯 Operator SW: Background sync registration failed:', error);
+        })
+    );
+  }
+  
+  // Обработка отложенных действий от клиента
+  if (event.data && event.data.type === 'PENDING_ACTIONS') {
+    const actions = event.data.actions || [];
+    console.log('🎯 Operator SW: Received pending actions:', actions.length);
+    
+    // Здесь можно добавить логику обработки отложенных действий
+    // Например, отправка на сервер через fetch API
   }
   
   // Обработка звуковых уведомлений

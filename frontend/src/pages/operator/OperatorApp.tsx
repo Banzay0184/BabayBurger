@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { OperatorAuthProvider, useOperatorAuth } from '../../context/OperatorAuthContext';
 import { SoundNotificationProvider } from '../../components/operator/SoundNotificationManager';
 import { PushNotificationProvider } from '../../components/operator/PushNotificationManager';
+import { SyncProvider } from '../../components/operator/SyncManager';
 import { OperatorLoginPage } from './OperatorLoginPage';
 import { OperatorDashboardPage } from './OperatorDashboardPage';
 import { OperatorStatsPage } from './OperatorStatsPage';
@@ -137,7 +138,9 @@ export const OperatorApp: React.FC = () => {
     <OperatorAuthProvider>
       <SoundNotificationProvider>
         <PushNotificationProvider>
-          <OperatorAppContent />
+          <SyncProvider>
+            <OperatorAppContent />
+          </SyncProvider>
         </PushNotificationProvider>
       </SoundNotificationProvider>
     </OperatorAuthProvider>

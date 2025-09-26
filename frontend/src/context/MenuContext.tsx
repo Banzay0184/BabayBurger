@@ -196,7 +196,20 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
       console.log('✅ Menu refreshed successfully');
     } catch (error: any) {
       console.error('❌ Error refreshing menu:', error);
-      dispatch({ type: 'SET_ERROR', payload: error.message || 'Ошибка обновления меню' });
+      
+      let errorMessage = 'Ошибка обновления меню';
+      
+      if (error?.message?.includes('timeout')) {
+        errorMessage = 'Превышено время ожидания при обновлении меню.';
+      } else if (error?.message?.includes('QUIC')) {
+        errorMessage = 'Проблема с сетевым соединением при обновлении меню.';
+      } else if (error?.code === 'NETWORK_ERROR') {
+        errorMessage = 'Ошибка сети при обновлении меню.';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
@@ -288,7 +301,7 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
     dispatch({ type: 'SET_ERROR', payload: null });
     
     try {
-      // Получаем все данные меню
+      // Получаем все данные меню с retry-механизмом
       const [menuResponse, categoriesResponse, promotionsResponse] = await Promise.all([
         menuApi.getMenu(),
         menuApi.getCategories(),
@@ -348,9 +361,21 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
       
       console.log('✅ Menu data loaded successfully');
     } catch (err: any) {
-      const errorMessage = err?.message || 'Ошибка загрузки меню';
+      console.error('❌ Ошибка загрузки меню:', err);
+      
+      let errorMessage = 'Ошибка загрузки данных меню';
+      
+      if (err?.message?.includes('timeout')) {
+        errorMessage = 'Превышено время ожидания. Проверьте подключение к интернету.';
+      } else if (err?.message?.includes('QUIC')) {
+        errorMessage = 'Проблема с сетевым соединением. Попробуйте обновить страницу.';
+      } else if (err?.code === 'NETWORK_ERROR') {
+        errorMessage = 'Ошибка сети. Проверьте подключение к интернету.';
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
-      console.error('Error fetching menu:', err);
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }

@@ -626,9 +626,12 @@ class MenuView(APIView):
     permission_classes = [AllowAny]
     
     def get(self, request):
+        import time
+        start_time = time.time()
+        
         try:
             # Попробуем получить из кэша
-            cache_key = 'menu_data'
+            cache_key = f'menu_data_v2_{timezone.now().date()}'
             cached_data = None
             
             try:
@@ -637,29 +640,36 @@ class MenuView(APIView):
                 logger.warning(f"Cache error: {str(cache_error)}")
             
             if cached_data is not None:
-                logger.info("Menu data served from cache")
+                execution_time = time.time() - start_time
+                logger.info(f"Menu data served from cache in {execution_time:.2f}s")
                 return Response(cached_data)
             
             # Если нет в кэше, получаем из БД
             logger.info("Menu data not found in cache, fetching from database")
             
-            # Получаем категории с количеством товаров
-            categories = Category.objects.all()
+            # Оптимизированный запрос категорий с предзагрузкой
+            categories = Category.objects.select_related().prefetch_related(
+                'menuitem_set__size_options',
+                'menuitem_set__add_on_options'
+            ).all()
+            
+            # Проверяем количество записей для мониторинга
+            menu_items_count = MenuItem.objects.filter(is_active=True).count()
+            categories_count = categories.count()
+            
+            logger.info(f"Loading menu: {menu_items_count} items, {categories_count} categories")
+            
+            if menu_items_count > 1000:
+                logger.warning("Large menu dataset detected, consider pagination")
+            
             categories_data = []
             
             for category in categories:
-                items = MenuItem.objects.filter(category=category, is_active=True).prefetch_related(
-                    'size_options', 'add_on_options'
-                ).order_by('priority', '-created_at')
+                # Используем предзагруженные данные
+                items = [item for item in category.menuitem_set.all() if item.is_active]
                 
                 # Фильтруем товары по времени доступности
-                from django.utils import timezone
-                current_time = timezone.now().time()
-                available_items = []
-                
-                for item in items:
-                    if item.is_available_now():
-                        available_items.append(item)
+                available_items = [item for item in items if item.is_available_now()]
                 
                 items_serializer = MenuItemSerializer(available_items, many=True)
                 
@@ -669,19 +679,16 @@ class MenuView(APIView):
                     'description': category.description,
                     'image': category.image.url if category.image else None,
                     'items': items_serializer.data,
-                    'item_count': len(items)
+                    'item_count': len(available_items)
                 })
             
-            # Получаем все активные товары с дополнениями и размерами
+            # Получаем все активные товары с оптимизацией
             all_items = MenuItem.objects.filter(is_active=True).select_related('category').prefetch_related(
                 'size_options', 'add_on_options'
             ).order_by('priority', '-created_at')
             
             # Фильтруем товары по времени доступности
-            available_all_items = []
-            for item in all_items:
-                if item.is_available_now():
-                    available_all_items.append(item)
+            available_all_items = [item for item in all_items if item.is_available_now()]
             
             all_items_serializer = MenuItemSerializer(available_all_items, many=True)
             
@@ -689,21 +696,28 @@ class MenuView(APIView):
             data = {
                 'categories': categories_data,
                 'all_items': all_items_serializer.data,
-                'total_items': len(all_items),
+                'total_items': len(available_all_items),
                 'total_categories': len(categories)
             }
             
-            # Сохраняем в кэш на 5 минут
+            # Сохраняем в кэш на 1 час
             try:
-                cache.set(cache_key, data, 300)
-                logger.info(f"Menu data cached successfully, {len(categories)} categories, {len(all_items)} items")
+                cache.set(cache_key, data, 3600)
+                execution_time = time.time() - start_time
+                logger.info(f"Menu data cached successfully in {execution_time:.2f}s, {len(categories)} categories, {len(available_all_items)} items")
+                
+                if execution_time > 10:  # Если загрузка > 10 сек
+                    logger.warning(f"Slow menu loading: {execution_time:.2f}s")
+                    
             except Exception as cache_error:
                 logger.warning(f"Failed to cache menu data: {str(cache_error)}")
             
             return Response(data)
+            
         except Exception as e:
-            logger.error(f"Menu view error: {str(e)}", exc_info=True)
-            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            execution_time = time.time() - start_time
+            logger.error(f"Menu loading failed after {execution_time:.2f}s: {str(e)}", exc_info=True)
+            return Response({'error': 'Ошибка загрузки меню'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CategoryView(APIView):
     permission_classes = [AllowAny]

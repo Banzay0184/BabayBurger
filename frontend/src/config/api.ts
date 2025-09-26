@@ -19,7 +19,7 @@ export const API_CONFIG = {
       : 'https://api.babayfood.uz/api/auth/telegram-widget/'),
   
   // Таймаут запросов
-  TIMEOUT: 15000, // Увеличиваем таймаут для продакшена
+  TIMEOUT: 30000, // Увеличиваем таймаут до 30 секунд для стабильности
   
   // Настройки для разных окружений
   ENV: {
