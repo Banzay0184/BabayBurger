@@ -47,14 +47,18 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
           return new Promise((resolve) => {
             webApp.requestLocation((location: any) => {
               if (location && location.latitude && location.longitude) {
-                // Округляем координаты до 6 знаков после запятой для стабильности
-                const roundedCoords: [number, number] = [
-                  Number(location.latitude.toFixed(6)),
-                  Number(location.longitude.toFixed(6))
+                // Сохраняем полную точность координат для лучшего геокодирования
+                const coords: [number, number] = [
+                  location.latitude,
+                  location.longitude
                 ];
-                console.log('📍 Telegram location received:', roundedCoords);
+                console.log('📍 Telegram location received:', coords);
                 console.log('📍 Original accuracy:', location.accuracy || 'unknown');
-                resolve(roundedCoords);
+                console.log('📍 Full precision coordinates:', {
+                  lat: location.latitude,
+                  lng: location.longitude
+                });
+                resolve(coords);
               } else {
                 console.log('❌ Telegram location not available');
                 resolve(null);
@@ -69,13 +73,17 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
         return new Promise((resolve) => {
           navigator.geolocation.getCurrentPosition(
             (position) => {
-              // Округляем координаты до 6 знаков после запятой для стабильности
+              // Сохраняем полную точность координат
               const coords: [number, number] = [
-                Number(position.coords.latitude.toFixed(6)),
-                Number(position.coords.longitude.toFixed(6))
+                position.coords.latitude,
+                position.coords.longitude
               ];
               console.log('📍 Browser location received:', coords);
               console.log('📍 Location accuracy:', position.coords.accuracy, 'meters');
+              console.log('📍 Full precision coordinates:', {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+              });
               resolve(coords);
             },
             (error) => {
@@ -85,8 +93,8 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
             },
             {
               enableHighAccuracy: true,
-              timeout: 15000, // Увеличиваем таймаут для лучшей точности
-              maximumAge: 60000 // Уменьшаем кэш до 1 минуты для свежести
+              timeout: 20000, // Увеличиваем таймаут для лучшей точности
+              maximumAge: 30000 // Уменьшаем кэш до 30 секунд для свежести
             }
           );
         });
@@ -105,8 +113,8 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
   // Функция для геокодирования координат в адрес с кэшированием
   const geocodeCoordinates = useCallback(async (lat: number, lon: number): Promise<string | null> => {
     try {
-      // Создаем ключ для кэша (округленные координаты)
-      const cacheKey = `${lat.toFixed(6)},${lon.toFixed(6)}`;
+      // Создаем ключ для кэша (округленные координаты для группировки близких точек)
+      const cacheKey = `${lat.toFixed(5)},${lon.toFixed(5)}`;
       
       // Проверяем кэш
       if (geocodeCache.current.has(cacheKey)) {
@@ -116,10 +124,11 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       }
       
       console.log('📍 Geocoding coordinates:', lat, lon);
+      console.log('📍 Cache key:', cacheKey);
       
       // Используем Яндекс Геокодер для получения адреса
       const response = await fetch(
-        `https://geocode-maps.yandex.ru/1.x/?format=json&geocode=${lon},${lat}&apikey=3033f881-c5ec-434f-96aa-e13da893f61f&lang=ru_RU`
+        `https://geocode-maps.yandex.ru/1.x/?format=json&geocode=${lon},${lat}&apikey=3033f881-c5ec-434f-96aa-e13da893f61f&lang=ru_RU&results=1&kind=house`
       );
       
       if (!response.ok) {
@@ -136,8 +145,8 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
         // Сохраняем в кэш
         geocodeCache.current.set(cacheKey, address);
         
-        // Ограничиваем размер кэша (максимум 50 записей)
-        if (geocodeCache.current.size > 50) {
+        // Ограничиваем размер кэша (максимум 20 записей для свежести)
+        if (geocodeCache.current.size > 20) {
           const firstKey = geocodeCache.current.keys().next().value;
           geocodeCache.current.delete(firstKey);
         }
@@ -161,6 +170,7 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
     let houseNumber = '';
     
     console.log('🔍 Parsing address parts:', addressParts);
+    console.log('🔍 Full address:', address);
     
     // Определяем город - ищем Каган или Бухара
     const cityKeywords = ['Каган', 'Бухара'];
@@ -196,19 +206,9 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       console.log('🛣️ Using second-to-last part as street:', street);
     }
     
-    // Ищем номер дома - ищем число в любой части
-    for (let i = 0; i < addressParts.length; i++) {
-      const part = addressParts[i];
-      const numberMatch = part.match(/(\d+[а-я]?)/i);
-      if (numberMatch) {
-        houseNumber = numberMatch[1];
-        console.log('🏠 Found house number:', houseNumber, 'in part:', part);
-        break;
-      }
-    }
-    
-    // Если номер дома не найден, пробуем найти в последней части адреса
-    if (!houseNumber && addressParts.length > 0) {
+    // Улучшенный поиск номера дома
+    // Сначала ищем в последней части (обычно там номер дома)
+    if (addressParts.length > 0) {
       const lastPart = addressParts[addressParts.length - 1];
       const lastNumberMatch = lastPart.match(/(\d+[а-я]?)/i);
       if (lastNumberMatch) {
@@ -217,11 +217,32 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       }
     }
     
+    // Если номер дома не найден в последней части, ищем в любой части
+    if (!houseNumber) {
+      for (let i = 0; i < addressParts.length; i++) {
+        const part = addressParts[i];
+        const numberMatch = part.match(/(\d+[а-я]?)/i);
+        if (numberMatch) {
+          houseNumber = numberMatch[1];
+          console.log('🏠 Found house number:', houseNumber, 'in part:', part);
+          break;
+        }
+      }
+    }
+    
     // Если номер дома найден в улице, убираем его из улицы
     if (houseNumber && street && street.includes(houseNumber)) {
       street = street.replace(houseNumber, '').trim();
       console.log('🛣️ Cleaned street after removing house number:', street);
     }
+    
+    // Очищаем улицу от лишних слов
+    if (street) {
+      street = street.replace(/улица\s*/i, '').trim();
+      street = street.replace(/street\s*/i, '').trim();
+    }
+    
+    console.log('🔍 Parsing result:', { city, street, houseNumber });
     
     return { city, street, houseNumber };
   }, []);
@@ -381,15 +402,26 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       const { city, street, houseNumber } = parseAddress(detectedAddress);
       console.log('📍 📝 Parsed address:', { city, street, houseNumber });
       
+      // Проверяем полноту адреса
+      const isAddressComplete = street && houseNumber && city;
+      console.log('📍 📝 Address completeness check:', { 
+        street: !!street, 
+        houseNumber: !!houseNumber, 
+        city: !!city, 
+        isComplete: isAddressComplete 
+      });
+      
       // Создаем новый адрес на основе определенного местоположения
       const newAddress: Address = {
         id: -1, // Временный ID
         user: Number(state.user?.id) || 0,
         street: street || '',
-        house_number: houseNumber || 'не указан', // Если номер дома не найден, ставим "не указан"
+        house_number: houseNumber || '', // Оставляем пустым если не найден
         apartment: '',
-        city: city,
-        comment: houseNumber ? 'Автоматически определенный адрес' : 'Автоматически определенный адрес (номер дома не найден)',
+        city: city || 'Бухара',
+        comment: isAddressComplete 
+          ? 'Автоматически определенный адрес' 
+          : 'Автоматически определенный адрес (требует уточнения)',
         coordinates: `${coordinates[1]},${coordinates[0]}`, // longitude,latitude
         latitude: coordinates[0],
         longitude: coordinates[1],
@@ -404,9 +436,9 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       
       console.log('📍 📝 Created newAddress:', newAddress);
       
-      // Если есть функция для показа формы, используем её
+      // Всегда показываем форму для уточнения адреса
       if (onShowForm) {
-        console.log('📍 📝 Calling onShowForm with newAddress');
+        console.log('📍 📝 Calling onShowForm with newAddress (always show form for address verification)');
         onShowForm(newAddress);
         console.log('📍 📝 Calling onClose');
         onClose();
@@ -599,7 +631,21 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                   📍 Ваш текущий адрес:
                 </h3>
                 <p className="text-green-700 mb-2">{detectedAddress}</p>
-                <p className="text-sm text-green-600">
+                
+                {/* Показываем координаты для отладки */}
+                {coordinates && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                    <h4 className="font-semibold text-blue-800 text-sm mb-1">
+                      📍 Координаты местоположения:
+                    </h4>
+                    <p className="text-blue-700 text-xs">
+                      Широта: {coordinates[0].toFixed(6)}<br/>
+                      Долгота: {coordinates[1].toFixed(6)}
+                    </p>
+                  </div>
+                )}
+                
+                <p className="text-sm text-green-600 mt-2">
                   💡 Этот адрес отличается от ваших сохраненных адресов
                 </p>
               </div>
@@ -656,6 +702,38 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                   <p className="text-yellow-700 mb-3">
                     Этот адрес не найден в вашем списке. Хотите добавить его?
                   </p>
+                  
+                  {/* Проверяем полноту адреса и показываем предупреждение */}
+                  {(() => {
+                    const { city, street, houseNumber } = parseAddress(detectedAddress);
+                    const isAddressComplete = street && houseNumber && city;
+                    
+                    if (!isAddressComplete) {
+                      return (
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
+                          <div className="flex items-start">
+                            <span className="text-orange-500 text-lg mr-2">⚠️</span>
+                            <div>
+                              <h4 className="font-semibold text-orange-800 text-sm mb-1">
+                                Адрес требует уточнения
+                              </h4>
+                              <p className="text-orange-700 text-xs leading-relaxed">
+                                Не удалось определить полный адрес. Пожалуйста, укажите номер дома вручную.
+                              </p>
+                              {!street && (
+                                <p className="text-orange-600 text-xs mt-1">• Улица не определена</p>
+                              )}
+                              {!houseNumber && (
+                                <p className="text-orange-600 text-xs">• Номер дома не определен</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  
                   <div className="flex gap-2">
                     <Button
                       onClick={() => {
