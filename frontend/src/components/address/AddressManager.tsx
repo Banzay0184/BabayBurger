@@ -18,6 +18,7 @@ interface AddressManagerProps {
   setIsWorkingWithAddresses?: (working: boolean) => void;
   prefillAddress?: Address; // Адрес для предзаполнения формы
   onClearPrefillAddress?: () => void; // Функция для очистки prefillAddress
+  hasUserSelectedAddress?: boolean; // Флаг что пользователь уже выбрал адрес
 }
 
 export const AddressManager: React.FC<AddressManagerProps> = ({
@@ -28,7 +29,8 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
   setShowMapPicker: externalSetShowMapPicker,
   setIsWorkingWithAddresses: externalSetIsWorkingWithAddresses,
   prefillAddress,
-  onClearPrefillAddress
+  onClearPrefillAddress,
+  hasUserSelectedAddress = false
 }) => {
   const { t } = useLanguage();
   const { state } = useAuth();
@@ -227,11 +229,11 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
 
   // Автоматически открываем карту для новых пользователей без адресов
   useEffect(() => {
-    if (addresses.length === 0 && !showForm && !showMapPicker) {
+    if (addresses.length === 0 && !showForm && !showMapPicker && !prefillAddress && !hasUserSelectedAddress) {
       console.log('🗺️ 🔄 New user detected - opening address form automatically');
       setShowMapPicker(true); // Directly open the map picker
     }
-  }, [addresses.length, showForm, showMapPicker]);
+  }, [addresses.length, showForm, showMapPicker, prefillAddress, hasUserSelectedAddress]);
 
   // Загружаем адреса при монтировании компонента
   useEffect(() => {
@@ -727,8 +729,22 @@ export const AddressManager: React.FC<AddressManagerProps> = ({
       </div>
 
       {/* Список адресов */}
+      {(() => {
+        console.log('📍 AddressManager render check:', {
+          addressesLength: addresses.length,
+          addresses: addresses,
+          showForm,
+          showMapPicker,
+          hasUserSelectedAddress
+        });
+        return null;
+      })()}
       {addresses.length > 0 ? (
         <div className="space-y-3 sm:space-y-4 mb-6">
+          {(() => {
+            console.log('📍 AddressManager: Rendering addresses list with', addresses.length, 'addresses');
+            return null;
+          })()}
           {addresses
             .sort((_a, b) => (b.is_primary ? 1 : -1)) // Основной адрес сверху
             .map((address) => (

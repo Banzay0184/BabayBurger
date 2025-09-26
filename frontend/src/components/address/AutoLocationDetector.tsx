@@ -500,16 +500,10 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-center mb-6">
             <h2 className="text-xl font-bold text-gray-900">
               📍 Определение адреса
             </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
           </div>
 
           {isDetecting && (

@@ -121,11 +121,11 @@ export const MainPage: React.FC = React.memo(() => {
 
   // Автоматически переходим на адреса для новых пользователей без адресов
   useEffect(() => {
-    if (addresses.length === 0 && !showLogo && currentView !== 'address') {
+    if (addresses.length === 0 && !showLogo && currentView !== 'address' && !hasUserSelectedAddress) {
       console.log('🗺️ 🔄 New user detected - switching to address view automatically');
       setCurrentView('address');
     }
-  }, [addresses.length, showLogo, currentView]);
+  }, [addresses.length, showLogo, currentView, hasUserSelectedAddress]);
 
   // Автоматически показываем определение местоположения для новых пользователей или при несовпадении адресов
   useEffect(() => {
@@ -200,8 +200,7 @@ export const MainPage: React.FC = React.memo(() => {
     setCurrentView('address');
     setShowMapPicker(true);
     setIsWorkingWithAddresses(true);
-    // Сбрасываем флаг выбора адреса, так как пользователь хочет выбрать новый
-    setHasUserSelectedAddress(false);
+    // НЕ сбрасываем флаг выбора адреса, так как пользователь уже выбрал способ выбора адреса
     console.log('🗺️ MainPage.handleShowMap - setShowMapPicker(true)');
   };
 
@@ -1179,6 +1178,7 @@ export const MainPage: React.FC = React.memo(() => {
                       setIsWorkingWithAddresses={setIsWorkingWithAddresses}
                       prefillAddress={prefillAddress || undefined}
                       onClearPrefillAddress={handleClearPrefillAddress}
+                      hasUserSelectedAddress={hasUserSelectedAddress}
                     />
                   ) : (
                     <div>
