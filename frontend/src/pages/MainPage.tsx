@@ -112,13 +112,20 @@ export const MainPage: React.FC = React.memo(() => {
       return false; // Нет адресов для сравнения
     }
 
+    // Если есть основной адрес, считаем что пользователь уже выбрал адрес
+    const hasPrimaryAddress = addresses.some(addr => addr.is_primary);
+    if (hasPrimaryAddress) {
+      console.log('📍 Primary address exists - no need to check location');
+      return true;
+    }
+
     try {
       // Получаем текущее местоположение
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000 // 5 минут
+          enableHighAccuracy: false, // Снижаем точность для стабильности
+          timeout: 5000, // Сокращаем таймаут
+          maximumAge: 600000 // 10 минут - увеличиваем кэш
         });
       });
 
@@ -133,8 +140,8 @@ export const MainPage: React.FC = React.memo(() => {
           const distance = calculateDistance(currentLat, currentLng, address.latitude, address.longitude);
           console.log(`📍 Distance to address ${address.id}: ${distance.toFixed(2)} km`);
           
-          // Если расстояние меньше 1 км, считаем что адреса совпадают
-          if (distance < 1) {
+          // Увеличиваем порог до 2 км для более стабильной работы
+          if (distance < 2) {
             console.log('📍 Location matches existing address');
             return true;
           }
@@ -145,7 +152,8 @@ export const MainPage: React.FC = React.memo(() => {
       return false;
     } catch (error) {
       console.log('📍 Could not get current location:', error);
-      return false; // В случае ошибки не показываем AutoLocationDetector
+      // Если не можем получить местоположение, но есть адреса - считаем что все ОК
+      return addresses.length > 0;
     }
   };
 
@@ -186,12 +194,20 @@ export const MainPage: React.FC = React.memo(() => {
         showAutoLocationDetector,
         showMapPicker,
         isWorkingWithAddresses,
-        hasUserSelectedAddress
+        hasUserSelectedAddress,
+        hasPrimaryAddress: addresses.some(addr => addr.is_primary)
       });
       
       // Не показываем если пользователь уже выбрал адрес
       if (hasUserSelectedAddress) {
         console.log('📍 ✅ User already selected address - no need to show detector');
+        return;
+      }
+      
+      // Не показываем если есть основной адрес
+      const hasPrimaryAddress = addresses.some(addr => addr.is_primary);
+      if (hasPrimaryAddress) {
+        console.log('📍 ✅ Primary address exists - no need to show detector');
         return;
       }
       
@@ -202,8 +218,8 @@ export const MainPage: React.FC = React.memo(() => {
         return;
       }
       
-      // Показываем если есть адреса, но текущее местоположение не совпадает
-      if (state.user && addresses.length > 0 && !showLogo && !showAutoLocationDetector && !showMapPicker && !isWorkingWithAddresses) {
+      // Показываем если есть адреса, но нет основного адреса и текущее местоположение не совпадает
+      if (state.user && addresses.length > 0 && !hasPrimaryAddress && !showLogo && !showAutoLocationDetector && !showMapPicker && !isWorkingWithAddresses) {
         console.log('📍 🔍 Checking location match with existing addresses...');
         const locationMatches = await checkLocationMatch();
         
