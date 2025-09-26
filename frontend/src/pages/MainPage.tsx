@@ -52,7 +52,7 @@ export const MainPage: React.FC = React.memo(() => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   // Состояния
-  const [showLogo, setShowLogo] = useState(true);
+  const [showLogo, setShowLogo] = useState(false); // Убираем показ логотипа по умолчанию
   const [showOptionsPage, setShowOptionsPage] = useState(false);
   const [showProfilePage, setShowProfilePage] = useState(false);
   const [showCheckoutPage, setShowCheckoutPage] = useState(false);
@@ -554,14 +554,16 @@ export const MainPage: React.FC = React.memo(() => {
 
   return (
     <PageTransition>
-      {/* Анимированный логотип при загрузке */}
-      <RestaurantLogo 
-        showLogo={showLogo}
-        onAnimationComplete={() => {
-          console.log('🎉 Logo animation completed!');
-          setShowLogo(false);
-        }}
-      />
+      {/* Анимированный логотип при загрузке - показываем только при первой загрузке */}
+      {showLogo && (
+        <RestaurantLogo 
+          showLogo={showLogo}
+          onAnimationComplete={() => {
+            console.log('🎉 Logo animation completed!');
+            setShowLogo(false);
+          }}
+        />
+      )}
       
       <div className="tg-webapp bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800 pt-5">
       <div className="max-w-4xl mx-auto p-4 tg-safe-top tg-safe-bottom">
@@ -571,8 +573,8 @@ export const MainPage: React.FC = React.memo(() => {
         {/* Быстрые действия с темной темой */}
         {/* Убрали кнопки - теперь они в нижней навигации */}
 
-        {/* Основной контент - показывается только после завершения анимации логотипа */}
-        {!showLogo && (
+        {/* Основной контент - показывается всегда */}
+        {(
           <>
             {/* OptionsPage - показывается вместо основного контента */}
             {showOptionsPage && selectedItem ? (
@@ -1220,8 +1222,8 @@ export const MainPage: React.FC = React.memo(() => {
         )}
       </div>
 
-      {/* Фиксированная нижняя навигация - скрыта во время анимации логотипа, OptionsPage, ProfilePage и CheckoutPage */}
-      {!showLogo && !showOptionsPage && !showProfilePage && !showCheckoutPage && !showAutoLocationDetector && (
+      {/* Фиксированная нижняя навигация - скрыта во время OptionsPage, ProfilePage и CheckoutPage */}
+      {!showOptionsPage && !showProfilePage && !showCheckoutPage && !showAutoLocationDetector && (
         <div className="fixed bottom-0 left-0 right-0 bg-dark-900/95 backdrop-blur-lg border-t border-gray-700/50 z-50">
         <div className="flex items-center justify-around px-4 py-3">
           {/* Кнопка Меню */}
