@@ -59,7 +59,11 @@ export const MainPage: React.FC = React.memo(() => {
   const [showAutoLocationDetector, setShowAutoLocationDetector] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [isWorkingWithAddresses, setIsWorkingWithAddresses] = useState(false);
-  const [hasUserSelectedAddress, setHasUserSelectedAddress] = useState(false);
+  const [hasUserSelectedAddress, setHasUserSelectedAddress] = useState(() => {
+    // Проверяем localStorage при инициализации
+    const saved = localStorage.getItem('hasUserSelectedAddress');
+    return saved === 'true';
+  });
   const [prefillAddress, setPrefillAddress] = useState<Address | null>(null);
   
   // Логирование изменений (только в dev режиме)
@@ -198,9 +202,9 @@ export const MainPage: React.FC = React.memo(() => {
         hasPrimaryAddress: addresses.some(addr => addr.is_primary)
       });
       
-      // Не показываем если пользователь уже выбрал адрес
+      // Не показываем если пользователь уже выбрал адрес (сохранено в localStorage)
       if (hasUserSelectedAddress) {
-        console.log('📍 ✅ User already selected address - no need to show detector');
+        console.log('📍 ✅ User already selected address (saved in localStorage) - no need to show detector');
         return;
       }
       
@@ -208,6 +212,9 @@ export const MainPage: React.FC = React.memo(() => {
       const hasPrimaryAddress = addresses.some(addr => addr.is_primary);
       if (hasPrimaryAddress) {
         console.log('📍 ✅ Primary address exists - no need to show detector');
+        // Сохраняем в localStorage что пользователь выбрал адрес
+        setHasUserSelectedAddress(true);
+        localStorage.setItem('hasUserSelectedAddress', 'true');
         return;
       }
       
@@ -228,6 +235,9 @@ export const MainPage: React.FC = React.memo(() => {
           setShowAutoLocationDetector(true);
         } else {
           console.log('📍 ✅ Location matches existing address - no need to show detector');
+          // Если местоположение совпадает, сохраняем что пользователь выбрал адрес
+          setHasUserSelectedAddress(true);
+          localStorage.setItem('hasUserSelectedAddress', 'true');
         }
       }
     };
@@ -244,8 +254,9 @@ export const MainPage: React.FC = React.memo(() => {
       // Перезагружаем адреса
       loadAddresses();
     }
-    // Устанавливаем флаг что пользователь выбрал адрес
+    // Устанавливаем флаг что пользователь выбрал адрес и сохраняем в localStorage
     setHasUserSelectedAddress(true);
+    localStorage.setItem('hasUserSelectedAddress', 'true');
     setShowAutoLocationDetector(false);
   };
 
@@ -284,6 +295,13 @@ export const MainPage: React.FC = React.memo(() => {
     console.log('📍 📝 MainPage.handleClearPrefillAddress called');
     setPrefillAddress(null);
   };
+
+  // Функция для сброса выбора адреса (для новых пользователей или смены аккаунта)
+  // const resetAddressSelection = () => {
+  //   setHasUserSelectedAddress(false);
+  //   localStorage.removeItem('hasUserSelectedAddress');
+  //   console.log('📍 Address selection reset');
+  // };
 
   // Функция для определения статуса работы ресторана
   const getRestaurantStatus = () => {
