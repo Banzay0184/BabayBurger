@@ -124,20 +124,27 @@ class MenuItemSerializer(serializers.ModelSerializer):
         ]
     
     def get_size_options(self, obj):
-        # Получаем размеры из many-to-many связи
-        many_to_many_sizes = obj.size_options.filter(is_active=True)
+        # Используем предзагруженные данные из prefetch_related
+        if hasattr(obj, '_prefetched_objects_cache') and 'size_options' in obj._prefetched_objects_cache:
+            # Используем предзагруженные данные
+            active_sizes = [size for size in obj._prefetched_objects_cache['size_options'] if size.is_active]
+        else:
+            # Fallback для случаев без prefetch_related
+            many_to_many_sizes = obj.size_options.filter(is_active=True)
+            direct_sizes = SizeOption.objects.filter(menu_item=obj, is_active=True)
+            active_sizes = (many_to_many_sizes | direct_sizes).distinct()
         
-        # Получаем размеры из прямой связи (menu_item)
-        direct_sizes = SizeOption.objects.filter(menu_item=obj, is_active=True)
-        
-        # Объединяем размеры и убираем дубликаты
-        all_sizes = (many_to_many_sizes | direct_sizes).distinct()
-        
-        return SizeOptionSerializer(all_sizes, many=True).data
+        return SizeOptionSerializer(active_sizes, many=True).data
     
     def get_add_on_options(self, obj):
-        # Фильтруем только активные дополнения
-        active_addons = obj.add_on_options.filter(is_active=True)
+        # Используем предзагруженные данные из prefetch_related
+        if hasattr(obj, '_prefetched_objects_cache') and 'add_on_options' in obj._prefetched_objects_cache:
+            # Используем предзагруженные данные
+            active_addons = [addon for addon in obj._prefetched_objects_cache['add_on_options'] if addon.is_active]
+        else:
+            # Fallback для случаев без prefetch_related
+            active_addons = obj.add_on_options.filter(is_active=True)
+        
         return AddOnSerializer(active_addons, many=True).data
 
 class OrderItemSerializer(serializers.ModelSerializer):

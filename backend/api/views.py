@@ -648,31 +648,57 @@ class MenuView(APIView):
             # Если нет в кэше, получаем из БД
             logger.info("Menu data not found in cache, fetching from database")
             
-            # Оптимизированный запрос категорий с предзагрузкой
-            categories = Category.objects.select_related().prefetch_related(
-                'menuitem_set__size_options',
-                'menuitem_set__add_on_options'
-            ).all()
+            # Оптимизированный запрос - получаем только активные товары с фильтрацией в БД
+            from django.db.models import Q
+            from django.utils import timezone
+            
+            current_time = timezone.now().time()
+            
+            # Создаем условие для времени доступности
+            time_condition = Q(use_time_restriction=False) | (
+                Q(use_time_restriction=True) & 
+                Q(available_from_time__lte=current_time) & 
+                Q(available_to_time__gte=current_time)
+            )
+            
+            # Получаем все активные товары с оптимизацией
+            all_items = MenuItem.objects.filter(
+                is_active=True
+            ).filter(
+                time_condition
+            ).select_related('category').prefetch_related(
+                'size_options', 'add_on_options'
+            ).order_by('priority', '-created_at')
             
             # Проверяем количество записей для мониторинга
-            menu_items_count = MenuItem.objects.filter(is_active=True).count()
-            categories_count = categories.count()
+            menu_items_count = all_items.count()
+            categories_count = Category.objects.count()
             
             logger.info(f"Loading menu: {menu_items_count} items, {categories_count} categories")
             
             if menu_items_count > 1000:
                 logger.warning("Large menu dataset detected, consider pagination")
             
+            # Группируем товары по категориям
             categories_data = []
+            items_by_category = {}
             
-            for category in categories:
-                # Используем предзагруженные данные
-                items = [item for item in category.menuitem_set.all() if item.is_active]
+            for item in all_items:
+                category_id = item.category.id
+                if category_id not in items_by_category:
+                    items_by_category[category_id] = {
+                        'category': item.category,
+                        'items': []
+                    }
+                items_by_category[category_id]['items'].append(item)
+            
+            # Создаем данные категорий
+            for category_id, data in items_by_category.items():
+                category = data['category']
+                items = data['items']
                 
-                # Фильтруем товары по времени доступности
-                available_items = [item for item in items if item.is_available_now()]
-                
-                items_serializer = MenuItemSerializer(available_items, many=True)
+                # Используем оптимизированный сериализатор
+                items_serializer = MenuItemSerializer(items, many=True)
                 
                 categories_data.append({
                     'id': category.id,
@@ -680,32 +706,28 @@ class MenuView(APIView):
                     'description': category.description,
                     'image': category.image.url if category.image else None,
                     'items': items_serializer.data,
-                    'item_count': len(available_items)
+                    'item_count': len(items)
                 })
             
-            # Получаем все активные товары с оптимизацией
-            all_items = MenuItem.objects.filter(is_active=True).select_related('category').prefetch_related(
-                'size_options', 'add_on_options'
-            ).order_by('priority', '-created_at')
+            # Сортируем категории по ID
+            categories_data.sort(key=lambda x: x['id'])
             
-            # Фильтруем товары по времени доступности
-            available_all_items = [item for item in all_items if item.is_available_now()]
-            
-            all_items_serializer = MenuItemSerializer(available_all_items, many=True)
+            # Сериализуем все товары
+            all_items_serializer = MenuItemSerializer(all_items, many=True)
             
             # Формируем структурированный ответ
             data = {
                 'categories': categories_data,
                 'all_items': all_items_serializer.data,
-                'total_items': len(available_all_items),
-                'total_categories': len(categories)
+                'total_items': len(all_items),
+                'total_categories': len(categories_data)
             }
             
             # Сохраняем в кэш на 1 час
             try:
                 cache.set(cache_key, data, 3600)
                 execution_time = time.time() - start_time
-                logger.info(f"Menu data cached successfully in {execution_time:.2f}s, {len(categories)} categories, {len(available_all_items)} items")
+                logger.info(f"Menu data cached successfully in {execution_time:.2f}s, {len(categories_data)} categories, {len(all_items)} items")
                 
                 if execution_time > 10:  # Если загрузка > 10 сек
                     logger.warning(f"Slow menu loading: {execution_time:.2f}s")
