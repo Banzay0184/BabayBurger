@@ -105,6 +105,13 @@ export const MainPage: React.FC = React.memo(() => {
       if (response.ok) {
         const addressesData = await response.json();
         console.log('🗺️ ✅ Addresses loaded in MainPage:', addressesData);
+        
+        // Если у пользователя только один адрес и он не основной, делаем его основным
+        if (addressesData.length === 1 && !addressesData[0].is_primary) {
+          console.log('🗺️ 🔧 Single address found, making it primary');
+          addressesData[0].is_primary = true;
+        }
+        
         setAddresses(addressesData);
       } else {
         console.error('🗺️ ❌ Failed to load addresses in MainPage:', response.status);
