@@ -41,6 +41,7 @@ export const MainPage: React.FC = React.memo(() => {
   const { t, language, setLanguage } = useLanguage();
   const { favorites, isLoading: favoritesLoading } = useFavorites();
   const [currentView, setCurrentView] = useState<'menu' | 'cart' | 'search' | 'favorites' | 'address' | 'profile'>('menu');
+  const [addressesLoading, setAddressesLoading] = useState(false);
   
   // Логируем изменения currentView (только в dev режиме)
   useEffect(() => {
@@ -93,6 +94,7 @@ export const MainPage: React.FC = React.memo(() => {
   const loadAddresses = async () => {
     try {
       console.log('🗺️ 🔄 Loading addresses in MainPage...');
+      setAddressesLoading(true);
       const telegramId = state.user?.telegram_id?.toString() || '908758841';
       const url = getApiUrl(`addresses/?telegram_id=${telegramId}`);
       const response = await fetch(url, {
@@ -113,11 +115,21 @@ export const MainPage: React.FC = React.memo(() => {
         }
         
         setAddresses(addressesData);
+        
+        // Если адреса загружены и AutoLocationDetector открыт, закрываем его
+        if (addressesData.length > 0 && showAutoLocationDetector) {
+          console.log('🗺️ 🔧 Addresses loaded, closing AutoLocationDetector');
+          setShowAutoLocationDetector(false);
+          setHasUserSelectedAddress(true);
+          localStorage.setItem('hasUserSelectedAddress', 'true');
+        }
       } else {
         console.error('🗺️ ❌ Failed to load addresses in MainPage:', response.status);
       }
     } catch (error) {
       console.error('🗺️ ❌ Error loading addresses in MainPage:', error);
+    } finally {
+      setAddressesLoading(false);
     }
   };
 
@@ -165,13 +177,23 @@ export const MainPage: React.FC = React.memo(() => {
         return;
       }
       
-      // Не показываем если есть основной адрес
-      const hasPrimaryAddress = addresses.some(addr => addr.is_primary);
-      if (hasPrimaryAddress) {
-        console.log('📍 ✅ Primary address exists - no need to show detector');
-        // Сохраняем в localStorage что пользователь выбрал адрес
+      // Не показываем AutoLocationDetector пока загружаются адреса
+      if (addressesLoading) {
+        console.log('📍 ⏳ Addresses are loading, waiting...');
+        return;
+      }
+      
+      // Если есть адреса, не показываем AutoLocationDetector
+      if (addresses.length > 0) {
+        console.log('📍 ✅ User has addresses - no need to show detector');
+        // Устанавливаем флаг что пользователь выбрал адрес
         setHasUserSelectedAddress(true);
         localStorage.setItem('hasUserSelectedAddress', 'true');
+        // Закрываем AutoLocationDetector если он открыт
+        if (showAutoLocationDetector) {
+          console.log('📍 🔧 Closing AutoLocationDetector - user has addresses');
+          setShowAutoLocationDetector(false);
+        }
         return;
       }
       
@@ -182,46 +204,8 @@ export const MainPage: React.FC = React.memo(() => {
         return;
       }
       
-      // Проверяем, есть ли уже похожий адрес в списке
-      if (state.user && addresses.length > 0 && !showAutoLocationDetector && !showMapPicker && !isWorkingWithAddresses) {
-        // Получаем текущее местоположение для сравнения
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-            
-            // Проверяем, есть ли адрес с похожими координатами
-            const hasSimilarAddress = addresses.some(addr => {
-              if (addr.latitude && addr.longitude) {
-                const distance = Math.sqrt(
-                  Math.pow(addr.latitude - latitude, 2) + 
-                  Math.pow(addr.longitude - longitude, 2)
-                );
-                // Если расстояние меньше 0.001 (примерно 100 метров), считаем адрес похожим
-                return distance < 0.001;
-              }
-              return false;
-            });
-            
-            if (hasSimilarAddress) {
-              console.log('📍 ✅ Similar address found in list - no need to show detector');
-              // Устанавливаем флаг что пользователь выбрал адрес
-              setHasUserSelectedAddress(true);
-              localStorage.setItem('hasUserSelectedAddress', 'true');
-              return;
-            }
-          },
-          (error) => {
-            console.log('📍 ❌ Geolocation error:', error);
-            // Если не удалось получить местоположение, показываем детектор
-            if (!showAutoLocationDetector) {
-              console.log('📍 🔄 Geolocation failed - showing auto location detector');
-              setShowAutoLocationDetector(true);
-            }
-          }
-        );
-      }
-      
       // Если есть адреса, но нет основного адреса - показываем выбор адреса вместо определения местоположения
+      const hasPrimaryAddress = addresses.some(addr => addr.is_primary);
       if (state.user && addresses.length > 0 && !hasPrimaryAddress && !showLogo && !showAutoLocationDetector && !showMapPicker && !isWorkingWithAddresses) {
         console.log('📍 🔍 User has addresses but no primary address - showing address selection');
         setCurrentView('address');
@@ -234,7 +218,7 @@ export const MainPage: React.FC = React.memo(() => {
     };
     
     checkAndShowAutoLocationDetector();
-  }, [state.user, addresses.length, showLogo, showAutoLocationDetector, showMapPicker, isWorkingWithAddresses, hasUserSelectedAddress]);
+  }, [state.user, addresses.length, showLogo, showAutoLocationDetector, showMapPicker, isWorkingWithAddresses, hasUserSelectedAddress, addressesLoading]);
 
   // Обработчики для AutoLocationDetector
   const handleAddressDetected = (address: Address | null) => {

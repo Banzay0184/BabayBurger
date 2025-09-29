@@ -760,9 +760,15 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                       onClick={() => {
                         console.log('📍 Мои адреса clicked');
                         onClose();
-                        // Показываем панель управления адресами
-                        if (onShowForm) {
-                          onShowForm(typeof detectedAddress === 'string' ? {} as Address : detectedAddress || {} as Address);
+                        // Если есть сохраненные адреса, просто закрываем модал (откроется меню)
+                        // Если адресов нет, показываем панель управления адресами
+                        if (existingAddresses.length > 0) {
+                          console.log('📍 ✅ User has addresses, closing modal to show menu');
+                        } else {
+                          console.log('📍 📝 No addresses, showing address management panel');
+                          if (onShowForm) {
+                            onShowForm(typeof detectedAddress === 'string' ? {} as Address : detectedAddress || {} as Address);
+                          }
                         }
                       }}
                       className="w-full bg-gray-500 hover:bg-gray-600 text-white text-xs py-1.5"
