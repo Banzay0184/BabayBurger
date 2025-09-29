@@ -1276,7 +1276,7 @@ class DeliveryWebhookView(APIView):
                 }])
                 
                 if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
-                    route_url = f"https://yandex.ru/maps/?rtext={restaurant.longitude},{restaurant.latitude}~{address.latitude},{address.longitude}&rtt=auto"
+                    route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.longitude},{address.latitude}&rtt=auto"
                     keyboard.append([{
                         'text': f'🗺️ Показать маршрут #{order.id}',
                         'url': route_url
