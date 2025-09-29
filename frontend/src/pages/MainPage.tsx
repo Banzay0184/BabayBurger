@@ -210,6 +210,8 @@ export const MainPage: React.FC = React.memo(() => {
     setHasUserSelectedAddress(true);
     localStorage.setItem('hasUserSelectedAddress', 'true');
     setShowAutoLocationDetector(false);
+    // Переключаемся на меню после сохранения адреса
+    setCurrentView('menu');
   };
 
   const handleShowMap = () => {
@@ -224,7 +226,8 @@ export const MainPage: React.FC = React.memo(() => {
 
   const handleCloseAutoLocationDetector = () => {
     setShowAutoLocationDetector(false);
-    setCurrentView('address');
+    // Не переключаемся на address view при закрытии модала
+    // setCurrentView('address');
     setIsWorkingWithAddresses(true);
     // Устанавливаем флаг что пользователь выбрал адрес (закрыл модал)
     setHasUserSelectedAddress(true);

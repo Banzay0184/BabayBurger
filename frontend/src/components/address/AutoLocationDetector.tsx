@@ -438,10 +438,16 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       
       console.log('📍 📝 Created newAddress:', newAddress);
       
-      // Всегда добавляем адрес напрямую в список
-      console.log('📍 📝 Adding address directly to list');
-      onAddressDetected(newAddress);
-      onClose();
+      // Показываем форму для подтверждения и редактирования адреса
+      if (onShowForm) {
+        console.log('📍 📝 Showing form with detected address for confirmation');
+        onShowForm(newAddress);
+        onClose();
+      } else {
+        console.log('📍 📝 onShowForm not available, adding directly to list');
+        onAddressDetected(newAddress);
+        onClose();
+      }
     } catch (error) {
       console.error('❌ Error creating new address:', error);
       setError('Ошибка создания нового адреса');
