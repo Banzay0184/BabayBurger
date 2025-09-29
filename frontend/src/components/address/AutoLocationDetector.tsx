@@ -438,17 +438,10 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       
       console.log('📍 📝 Created newAddress:', newAddress);
       
-      // Показываем форму только если адрес неполный, иначе добавляем напрямую
-      if (!isAddressComplete && onShowForm) {
-        console.log('📍 📝 Address incomplete, showing form for verification');
-        onShowForm(newAddress);
-        onClose();
-      } else {
-        console.log('📍 📝 Address complete, adding directly to list');
-        // Добавляем адрес напрямую в список
-        onAddressDetected(newAddress);
-        onClose();
-      }
+      // Всегда добавляем адрес напрямую в список
+      console.log('📍 📝 Adding address directly to list');
+      onAddressDetected(newAddress);
+      onClose();
     } catch (error) {
       console.error('❌ Error creating new address:', error);
       setError('Ошибка создания нового адреса');
@@ -754,6 +747,21 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-1.5"
                     >
                       🔄 Обновить адрес
+                    </Button>
+                    
+                    {/* Кнопка для показа сохраненных адресов */}
+                    <Button
+                      onClick={() => {
+                        console.log('📍 Мои адреса clicked');
+                        onClose();
+                        // Показываем панель управления адресами
+                        if (onShowForm) {
+                          onShowForm(typeof detectedAddress === 'string' ? {} as Address : detectedAddress || {} as Address);
+                        }
+                      }}
+                      className="w-full bg-gray-500 hover:bg-gray-600 text-white text-xs py-1.5"
+                    >
+                      📍 Мои адреса
                     </Button>
                   </div>
                 </div>
