@@ -438,15 +438,14 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
       
       console.log('📍 📝 Created newAddress:', newAddress);
       
-      // Всегда показываем форму для уточнения адреса
-      if (onShowForm) {
-        console.log('📍 📝 Calling onShowForm with newAddress (always show form for address verification)');
+      // Показываем форму только если адрес неполный, иначе добавляем напрямую
+      if (!isAddressComplete && onShowForm) {
+        console.log('📍 📝 Address incomplete, showing form for verification');
         onShowForm(newAddress);
-        console.log('📍 📝 Calling onClose');
         onClose();
       } else {
-        console.log('📍 📝 onShowForm not available, using fallback');
-        // Fallback: добавляем адрес напрямую
+        console.log('📍 📝 Address complete, adding directly to list');
+        // Добавляем адрес напрямую в список
         onAddressDetected(newAddress);
         onClose();
       }
