@@ -715,7 +715,7 @@ class DeliveryWebhookView(APIView):
                             }.get(assignment.status, assignment.status)
                             
                             if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
-                                route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.longitude},{address.latitude}&rtt=auto"
+                                route_url = f"https://yandex.ru/maps/?rtext={restaurant.longitude},{restaurant.latitude}~{address.latitude},{address.longitude}&rtt=auto"
                                 map_text += f"📍 Заказ #{order.id} ({status_text}): {restaurant.name} → {address.street}\n"
                                 keyboard.append([{
                                     'text': f'🗺️ Маршрут #{order.id}',
@@ -1276,7 +1276,7 @@ class DeliveryWebhookView(APIView):
                 }])
                 
                 if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
-                    route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.longitude},{address.latitude}&rtt=auto"
+                    route_url = f"https://yandex.ru/maps/?rtext={restaurant.longitude},{restaurant.latitude}~{address.latitude},{address.longitude}&rtt=auto"
                     keyboard.append([{
                         'text': f'🗺️ Показать маршрут #{order.id}',
                         'url': route_url
@@ -1295,7 +1295,7 @@ class DeliveryWebhookView(APIView):
                 }])
                 
                 if restaurant and address and restaurant.latitude and restaurant.longitude and address.latitude and address.longitude:
-                    route_url = f"https://yandex.ru/maps/?rtext={restaurant.latitude},{restaurant.longitude}~{address.longitude},{address.latitude}&rtt=auto"
+                    route_url = f"https://yandex.ru/maps/?rtext={restaurant.longitude},{restaurant.latitude}~{address.latitude},{address.longitude}&rtt=auto"
                     keyboard.append([{
                         'text': f'🗺️ Маршрут #{order.id}',
                         'url': route_url
