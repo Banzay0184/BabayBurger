@@ -21,7 +21,10 @@ export const isTelegramWebApp = (): boolean => {
   const hasInitData = webApp.initData && webApp.initData.length > 0;
   const hasUserData = webApp.initDataUnsafe?.user;
   
-  return hasInitData || hasUserData;
+  // Дополнительная проверка для Telegram Desktop
+  const isTelegramDesktop = webApp.platform === 'desktop' || webApp.platform === 'macos' || webApp.platform === 'windows';
+  
+  return hasInitData || hasUserData || isTelegramDesktop;
 };
 
 // Проверяем, есть ли данные пользователя в контексте Telegram
@@ -36,15 +39,19 @@ export const isInTelegramContext = (): boolean => {
   // Дополнительная проверка - в браузере initData обычно пустой
   const hasInitData = webApp.initData && webApp.initData.length > 0;
   
+  // Для Telegram Desktop считаем что мы в контексте
+  const isTelegramDesktop = webApp.platform === 'desktop' || webApp.platform === 'macos' || webApp.platform === 'windows';
+  
   console.log('Telegram контекст проверка:', {
     user: !!user,
     hasInitData: hasInitData,
     initDataLength: webApp.initData?.length || 0,
     platform: webApp.platform,
-    isExpanded: webApp.isExpanded
+    isExpanded: webApp.isExpanded,
+    isTelegramDesktop: isTelegramDesktop
   });
   
-  return !!(user || hasInitData);
+  return !!(user || hasInitData || isTelegramDesktop);
 };
 
 // Получаем ID пользователя из Telegram
