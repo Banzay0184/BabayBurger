@@ -176,7 +176,7 @@ export const MainPage: React.FC = React.memo(() => {
       }
       
       // Показываем для новых пользователей (нет адресов)
-      if (state.user && addresses.length === 0 && !showLogo && !showAutoLocationDetector && !showMapPicker && !isWorkingWithAddresses) {
+      if (state.user && addresses.length === 0 && !showAutoLocationDetector && !showMapPicker && !isWorkingWithAddresses) {
         console.log('📍 🔄 New user detected - showing auto location detector');
         setShowAutoLocationDetector(true);
         return;
