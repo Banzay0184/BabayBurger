@@ -177,14 +177,31 @@ export const MainPage: React.FC = React.memo(() => {
         return;
       }
       
+      // Не показываем если есть основной адрес
+      const hasPrimaryAddress = addresses.some(addr => addr.is_primary);
+      if (hasPrimaryAddress) {
+        console.log('📍 ✅ Primary address exists - no need to show detector');
+        // Сохраняем в localStorage что пользователь выбрал адрес
+        setHasUserSelectedAddress(true);
+        localStorage.setItem('hasUserSelectedAddress', 'true');
+        return;
+      }
+      
       // Не показываем AutoLocationDetector пока загружаются адреса
       if (addressesLoading) {
         console.log('📍 ⏳ Addresses are loading, waiting...');
         return;
       }
       
+      // Показываем для новых пользователей (нет адресов)
+      if (state.user && addresses.length === 0 && !showAutoLocationDetector && !showMapPicker && !isWorkingWithAddresses) {
+        console.log('📍 🔄 New user detected - showing auto location detector');
+        setShowAutoLocationDetector(true);
+        return;
+      }
+      
       // Если есть адреса, не показываем AutoLocationDetector
-      if (addresses.length > 0) {
+      if (state.user && addresses.length > 0) {
         console.log('📍 ✅ User has addresses - no need to show detector');
         // Устанавливаем флаг что пользователь выбрал адрес
         setHasUserSelectedAddress(true);
@@ -197,15 +214,7 @@ export const MainPage: React.FC = React.memo(() => {
         return;
       }
       
-      // Показываем для новых пользователей (нет адресов)
-      if (state.user && addresses.length === 0 && !showAutoLocationDetector && !showMapPicker && !isWorkingWithAddresses) {
-        console.log('📍 🔄 New user detected - showing auto location detector');
-        setShowAutoLocationDetector(true);
-        return;
-      }
-      
       // Если есть адреса, но нет основного адреса - показываем выбор адреса вместо определения местоположения
-      const hasPrimaryAddress = addresses.some(addr => addr.is_primary);
       if (state.user && addresses.length > 0 && !hasPrimaryAddress && !showLogo && !showAutoLocationDetector && !showMapPicker && !isWorkingWithAddresses) {
         console.log('📍 🔍 User has addresses but no primary address - showing address selection');
         setCurrentView('address');
