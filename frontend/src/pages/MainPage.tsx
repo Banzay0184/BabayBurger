@@ -92,6 +92,7 @@ export const MainPage: React.FC = React.memo(() => {
   // Загрузка адресов
   const loadAddresses = async () => {
     try {
+      console.log('🗺️ 🔄 Loading addresses in MainPage...');
       const telegramId = state.user?.telegram_id?.toString() || '908758841';
       const url = getApiUrl(`addresses/?telegram_id=${telegramId}`);
       const response = await fetch(url, {
@@ -103,10 +104,13 @@ export const MainPage: React.FC = React.memo(() => {
       
       if (response.ok) {
         const addressesData = await response.json();
+        console.log('🗺️ ✅ Addresses loaded in MainPage:', addressesData);
         setAddresses(addressesData);
+      } else {
+        console.error('🗺️ ❌ Failed to load addresses in MainPage:', response.status);
       }
     } catch (error) {
-      console.error('Error loading addresses:', error);
+      console.error('🗺️ ❌ Error loading addresses in MainPage:', error);
     }
   };
 
