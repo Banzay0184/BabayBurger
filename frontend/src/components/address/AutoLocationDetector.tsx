@@ -430,7 +430,7 @@ export const AutoLocationDetector: React.FC<AutoLocationDetectorProps> = React.m
         phone_number: state.user?.phone_number || '',
         formatted_phone: state.user?.phone_number || '',
         full_address: detectedAddress,
-        is_primary: false,
+        is_primary: existingAddresses.length === 0, // Первый адрес автоматически становится основным
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         telegram_id: String(state.user?.telegram_id || '')

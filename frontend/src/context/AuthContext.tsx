@@ -324,9 +324,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           } 
         });
 
-        // Временно отключаем все API вызовы для отладки
-        console.log('🛑 Временно отключены все API вызовы');
-        
         // Если в Telegram контексте - пробуем автоматическую авторизацию
         if (isInContext) {
           console.log('✅ Автоматическая авторизация в Telegram контексте');
