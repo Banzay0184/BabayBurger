@@ -297,6 +297,9 @@ try {
   if (typeof window !== 'undefined') {
     // Сообщим в оверлей об успешном старте React
     try {
+      // Диагностика последовательности маунта
+      // eslint-disable-next-line no-console
+      console.log('After render App');
       const dbg = (window as any).Telegram?.WebApp ? ' (внутри Telegram WebView)' : '';
       (window as any).requestAnimationFrame?.(() => {
         const overlay = document.getElementById('tg-debug-overlay') as HTMLPreElement | null;

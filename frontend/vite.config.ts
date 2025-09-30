@@ -31,7 +31,7 @@ export default defineConfig({
     // Настройки для правильной обработки модулей
     target: 'esnext',
     minify: 'esbuild',
-    sourcemap: false
+    sourcemap: true
   },
   // Настройки для PWA
   publicDir: 'public',

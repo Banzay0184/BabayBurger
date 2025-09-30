@@ -112,12 +112,20 @@ class PromotionSerializer(serializers.ModelSerializer):
 class MenuItemSerializer(serializers.ModelSerializer):
     size_options = serializers.SerializerMethodField()
     add_on_options = serializers.SerializerMethodField()
+    is_available_now = serializers.SerializerMethodField()
+    availability_status = serializers.SerializerMethodField()
     
     class Meta:
         model = MenuItem
         fields = [
             'id', 'name', 'description', 'price', 'category', 'image', 'created_at',
-            'is_hit', 'is_new', 'is_active', 'priority', 'size_options', 'add_on_options'
+            'is_hit', 'is_new', 'is_active', 'priority',
+            # Параметры доступности по времени
+            'use_time_restriction', 'available_from_time', 'available_to_time',
+            # Вычисляемые поля статуса доступности
+            'is_available_now', 'availability_status',
+            # Опции
+            'size_options', 'add_on_options'
         ]
     
     def get_size_options(self, obj):
@@ -143,6 +151,19 @@ class MenuItemSerializer(serializers.ModelSerializer):
             active_addons = obj.add_on_options.filter(is_active=True)
         
         return AddOnSerializer(active_addons, many=True).data
+
+    def get_is_available_now(self, obj):
+        try:
+            return bool(obj.is_available_now())
+        except Exception:
+            # В случае любых ошибок считаем доступным (как в модели, когда нет ограничений)
+            return True
+
+    def get_availability_status(self, obj):
+        try:
+            return obj.get_availability_status()
+        except Exception:
+            return "Доступен всегда"
 
 class OrderItemSerializer(serializers.ModelSerializer):
     menu_item = MenuItemSerializer(read_only=True)
