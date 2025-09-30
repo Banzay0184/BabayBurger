@@ -35,6 +35,42 @@ if (typeof window !== 'undefined') {
     }
   };
 
+  // Управление включением оверлея логов через query/localStorage
+  const urlParams = new URLSearchParams(window.location.search);
+  const debugParam = urlParams.get('debug');
+  if (debugParam === '1') {
+    try { localStorage.setItem('debug_overlay', '1'); } catch {}
+  }
+  const isDebugOverlayEnabled = (() => {
+    try { return localStorage.getItem('debug_overlay') === '1' || debugParam === '1'; } catch { return debugParam === '1'; }
+  })();
+
+  // Перехватываем console методы для отображения в оверлее при включенном режиме
+  if (isDebugOverlayEnabled) {
+    (['log', 'error', 'warn'] as const).forEach((level) => {
+      const original = console[level];
+      console[level] = (...args: unknown[]) => {
+        try {
+          const color = level === 'error' ? '#ff6b6b' : level === 'warn' ? '#f1c40f' : '#ffffff';
+          const text = args.map(a => {
+            if (typeof a === 'string') return a;
+            try { return JSON.stringify(a); } catch { return String(a); }
+          }).join(' ');
+          appendOverlayLine(`${level.toUpperCase()}: ${text}`, color);
+        } catch {}
+        try { original.apply(console, args as any); } catch {}
+      };
+    });
+    // Глобальные утилиты для управления
+    (window as any).__DEBUG_OVERLAY_TOGGLE__ = () => {
+      try {
+        const val = localStorage.getItem('debug_overlay') === '1' ? '0' : '1';
+        localStorage.setItem('debug_overlay', val);
+        location.reload();
+      } catch {}
+    };
+  }
+
   window.onerror = function (message, source, lineno, colno) {
     appendOverlayLine(`Ошибка: ${message} @ ${source}:${lineno}:${colno}`, '#ff6b6b');
   };
