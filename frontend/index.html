@@ -89,6 +89,51 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Ранний отладочный оверлей до загрузки React/Vite
+      try {
+        document.body.innerHTML += "<pre id='early-debug' style='position:fixed;left:0;right:0;bottom:0;max-height:50vh;overflow:auto;background:#000;color:lime;padding:8px;margin:0;font-size:12px;z-index:2147483647;white-space:pre-wrap'>Запуск... (ранний отладчик)\n</pre>";
+      } catch (_) {}
+
+      (function () {
+        const append = (text, color) => {
+          try {
+            const el = document.getElementById('early-debug');
+            if (!el) return;
+            if (color) el.style.color = color;
+            const time = new Date().toISOString();
+            el.textContent += `[${time}] ${text}\n`;
+          } catch (_) {}
+        };
+
+        window.onerror = function (msg, src, line, col) {
+          append(`Ошибка: ${msg} @ ${src}:${line}:${col}`, '#ff6b6b');
+        };
+
+        window.addEventListener('unhandledrejection', function (e) {
+          append(`Promise error: ${String(e && e.reason)}`, '#f39c12');
+        });
+
+        ['log', 'error', 'warn'].forEach(function (lvl) {
+          const orig = console[lvl];
+          console[lvl] = function () {
+            try {
+              const args = Array.prototype.slice.call(arguments).map(function (a) {
+                if (typeof a === 'string') return a;
+                try { return JSON.stringify(a); } catch (e) { return String(a); }
+              }).join(' ');
+              append(`${lvl.toUpperCase()}: ${args}`, lvl === 'error' ? '#ff6b6b' : lvl === 'warn' ? '#f1c40f' : '#ffffff');
+            } catch (_) {}
+            try { orig.apply(console, arguments); } catch (_) {}
+          };
+        });
+
+        document.addEventListener('click', function () {
+          const el = document.getElementById('early-debug');
+          if (el) el.style.display = 'none';
+        }, { once: true });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
