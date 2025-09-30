@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { ErrorBoundary } from './components/common/ErrorBoundary'
 import './utils/tronWebFix' // Предотвращаем конфликты с TronWeb
 
 // Ранняя инициализация: глобальные обработчики ошибок и проверка Telegram WebApp
@@ -89,6 +90,17 @@ if (typeof window !== 'undefined') {
       if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
       if (typeof tg.disableClosingConfirmation === 'function') tg.disableClosingConfirmation?.();
       appendOverlayLine('Telegram WebApp: ready()', '#7efc7e');
+      // Диагностика возможных гонок данных
+      try {
+        const initDataLen = typeof tg.initData === 'string' ? tg.initData.length : 0;
+        const userId = tg.initDataUnsafe?.user?.id ?? null;
+        const themeParams = tg.themeParams ?? {};
+        console.log('TG initData length:', initDataLen);
+        console.log('TG user id:', userId);
+        console.log('TG theme params:', themeParams);
+      } catch (logErr) {
+        console.warn('TG initData log error:', logErr);
+      }
     } else {
       appendOverlayLine('Telegram WebApp: недоступен (работаем как обычный браузер)', '#f1c40f');
     }
@@ -105,7 +117,9 @@ try {
   createRoot(rootEl).render(
     // Временно отключаем StrictMode для стабильной работы карты
     // <StrictMode>
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
     // </StrictMode>,
   );
   if (typeof window !== 'undefined') {
