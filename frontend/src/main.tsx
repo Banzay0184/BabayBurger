@@ -103,6 +103,43 @@ if (typeof window !== 'undefined') {
     }
   };
 
+  // Фолбэк-экран на случай, если UI не смонтировался вовремя
+  const showHardFallback = (reason: string) => {
+    try {
+      const existing = document.getElementById('bb-hard-fallback');
+      if (existing) return;
+      const wrap = document.createElement('div');
+      wrap.id = 'bb-hard-fallback';
+      wrap.style.position = 'fixed';
+      wrap.style.inset = '0';
+      wrap.style.background = '#000';
+      wrap.style.color = '#fff';
+      wrap.style.display = 'flex';
+      wrap.style.alignItems = 'center';
+      wrap.style.justifyContent = 'center';
+      wrap.style.zIndex = '2147483646';
+      wrap.style.textAlign = 'center';
+      wrap.innerHTML = `
+        <div style="max-width:600px;padding:16px;">
+          <div style="font-size:16px;opacity:.8;margin-bottom:8px;">Загрузка затянулась…</div>
+          <div style="font-size:13px;opacity:.6;margin-bottom:16px;">${reason}</div>
+          <button id="bb-reload" style="background:#22c55e;color:#000;padding:10px 14px;border-radius:10px;border:none;font-weight:600;cursor:pointer">Перезапустить</button>
+        </div>`;
+      document.body.appendChild(wrap);
+      document.getElementById('bb-reload')?.addEventListener('click', () => {
+        try {
+          const url = new URL(location.href);
+          if (!(window as any).__SAFE_MODE__) {
+            url.searchParams.set('safe', '2');
+          }
+          location.replace(url.toString());
+        } catch {
+          location.reload();
+        }
+      });
+    } catch {}
+  };
+
   // Режим безопасного запуска: можно включить ?safe=1 для отключения агрессивных оптимизаций
   const urlParamsGlobal = new URLSearchParams(window.location.search);
   const SAFE_MODE = urlParamsGlobal.get('safe') === '1';
@@ -208,6 +245,30 @@ if (typeof window !== 'undefined') {
   } catch (e) {
     appendOverlayLine(`Telegram WebApp init error: ${String(e)}`, '#e74c3c');
   }
+
+  // Сторож рендера: если приложение не смонтировалось за 6 секунд — покажем фолбэк
+  try {
+    setTimeout(() => {
+      if (!(window as any).__APP_MOUNTED__) {
+        showHardFallback('Приложение не успело запуститься. Попробуйте перезапустить.');
+      }
+    }, 6000);
+  } catch {}
+
+  // Ретрай при возврате во вкладку, если всё ещё не смонтировано
+  try {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && !(window as any).__APP_MOUNTED__) {
+        try {
+          const url = new URL(location.href);
+          url.searchParams.set('safe', '2');
+          location.replace(url.toString());
+        } catch {
+          location.reload();
+        }
+      }
+    });
+  } catch {}
 }
 }
 
@@ -241,6 +302,7 @@ try {
         const overlay = document.getElementById('tg-debug-overlay') as HTMLPreElement | null;
         if (overlay) overlay.textContent += `\n[${new Date().toISOString()}] React: render ok${dbg}`;
       });
+      (window as any).__APP_MOUNTED__ = true;
     } catch {}
   }
 } catch (e) {
