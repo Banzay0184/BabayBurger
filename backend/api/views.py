@@ -655,15 +655,43 @@ class MenuView(APIView):
             logger.info("Menu data not found in cache, fetching from database")
             
             # Оптимизированный запрос - получаем только активные товары с фильтрацией в БД
-            from django.db.models import Q
+            from django.db.models import Q, F
             
-            current_time = timezone.now().time()
-            
-            # Создаем условие для времени доступности
-            time_condition = Q(use_time_restriction=False) | (
-                Q(use_time_restriction=True) & 
-                Q(available_from_time__lte=current_time) & 
-                Q(available_to_time__gte=current_time)
+            # Текущее локальное время (а не UTC), чтобы корректно сопоставлять с окнами доступности
+            current_time = timezone.localtime().time()
+
+            # Создаем условие для времени доступности.
+            # Учитываем три случая:
+            # 1) Ограничение по времени не используется — товар всегда доступен
+            # 2) Ограничение используется, но одно из времен не задано — считаем доступным (как в модели)
+            # 3) Ограничение используется и заданы оба времени:
+            #    3.1) Обычное окно (from <= to): from <= now <= to
+            #    3.2) Окно через полночь (from > to): now >= from OR now <= to
+            normal_window = (
+                Q(available_from_time__lte=current_time) &
+                Q(available_to_time__gte=current_time) &
+                Q(available_from_time__lte=F('available_to_time'))
+            )
+            overnight_window = (
+                Q(available_from_time__gt=F('available_to_time')) &
+                (
+                    Q(available_from_time__lte=current_time) |
+                    Q(available_to_time__gte=current_time)
+                )
+            )
+
+            time_condition = (
+                Q(use_time_restriction=False)
+                |
+                (
+                    Q(use_time_restriction=True)
+                    & (
+                        Q(available_from_time__isnull=True)
+                        | Q(available_to_time__isnull=True)
+                        | normal_window
+                        | overnight_window
+                    )
+                )
             )
             
             # Получаем все активные товары с оптимизацией

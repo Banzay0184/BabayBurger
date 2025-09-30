@@ -37,32 +37,40 @@
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Yandex Maps API -->
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=3033f881-c5ec-434f-96aa-e13da893f61f&lang=ru_RU" type="text/javascript"></script>
+    <!-- Yandex Maps API: загружаем условно, чтобы избежать редких зависаний в Telegram WebView -->
     <script>
-      // Отладка загрузки Яндекс.Карт API
-      console.log('HTML loaded, checking Yandex Maps API...');
-      
-      function checkYandexMaps() {
-        if (typeof window.ymaps !== 'undefined') {
-          console.log('✅ Yandex Maps API loaded successfully!');
-          console.log('window.ymaps:', window.ymaps);
-          console.log('window.ymaps.ready:', typeof window.ymaps.ready);
+      (function() {
+        var params = new URLSearchParams(location.search);
+        var force = params.get('maps') === '1';
+        var disable = params.get('no_maps') === '1';
+        var isTelegram = !!(window.Telegram && window.Telegram.WebApp);
+
+        // В Telegram WebView по умолчанию откладываем загрузку карты
+        // Можно форсировать загрузку через ?maps=1 или отключить в браузере через ?no_maps=1
+        var shouldLoad = force || (!isTelegram && !disable);
+
+        function injectYandex() {
+          if (document.getElementById('ymaps-sdk')) return;
+          var s = document.createElement('script');
+          s.id = 'ymaps-sdk';
+          s.src = 'https://api-maps.yandex.ru/2.1/?apikey=3033f881-c5ec-434f-96aa-e13da893f61f&lang=ru_RU';
+          s.type = 'text/javascript';
+          s.defer = true;
+          document.head.appendChild(s);
+        }
+
+        if (shouldLoad) {
+          // В обычном браузере грузим сразу, в Telegram — с небольшой задержкой
+          if (isTelegram) {
+            setTimeout(injectYandex, 2500);
+          } else {
+            injectYandex();
+          }
         } else {
-          console.log('❌ Yandex Maps API not loaded yet...');
-          setTimeout(checkYandexMaps, 100);
+          // Консольный маяк для отладки
+          try { console.log('Yandex Maps: deferred in this context'); } catch(e) {}
         }
-      }
-      
-      // Проверяем каждые 100мс
-      checkYandexMaps();
-      
-      // Также проверяем через 2 секунды
-      setTimeout(() => {
-        if (typeof window.ymaps === 'undefined') {
-          console.error('❌ Yandex Maps API failed to load after 2 seconds!');
-        }
-      }, 2000);
+      })();
     </script>
     
     
