@@ -36,40 +36,60 @@ if (typeof window !== 'undefined') {
     }
   };
 
-  // Управление включением оверлея логов через query/localStorage
-  const urlParams = new URLSearchParams(window.location.search);
-  const debugParam = urlParams.get('debug');
-  if (debugParam === '1') {
-    try { localStorage.setItem('debug_overlay', '1'); } catch {}
-  }
-  const isDebugOverlayEnabled = (() => {
-    try { return localStorage.getItem('debug_overlay') === '1' || debugParam === '1'; } catch { return debugParam === '1'; }
-  })();
+  // Идемпотентная инициализация debug-overlay и console-перехватов
+  if (!(window as any).__DEBUG_OVERLAY_INIT__) {
+    (window as any).__DEBUG_OVERLAY_INIT__ = true;
 
-  // Перехватываем console методы для отображения в оверлее при включенном режиме
-  if (isDebugOverlayEnabled) {
-    (['log', 'error', 'warn'] as const).forEach((level) => {
-      const original = console[level];
-      console[level] = (...args: unknown[]) => {
+    // Управление включением оверлея логов через query/localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const debugParam = urlParams.get('debug');
+    if (debugParam === '1') {
+      try { localStorage.setItem('debug_overlay', '1'); } catch {}
+    }
+    const isDebugOverlayEnabled = (() => {
+      try { return localStorage.getItem('debug_overlay') === '1' || debugParam === '1'; } catch { return debugParam === '1'; }
+    })();
+
+    if (isDebugOverlayEnabled) {
+      const originalConsole: Record<string, any> = (window as any).__ORIG_CONSOLE__ || {};
+      (['log', 'error', 'warn'] as const).forEach((level) => {
+        if (!(console as any)[level]?.__wrapped) {
+          originalConsole[level] = originalConsole[level] || console[level];
+          const original = originalConsole[level];
+          const wrapped = (...args: unknown[]) => {
+            try {
+              const color = level === 'error' ? '#ff6b6b' : level === 'warn' ? '#f1c40f' : '#ffffff';
+              const text = args.map(a => {
+                if (typeof a === 'string') return a;
+                try { return JSON.stringify(a); } catch { return String(a); }
+              }).join(' ');
+              appendOverlayLine(`${level.toUpperCase()}: ${text}`, color);
+            } catch {}
+            try { original.apply(console, args as any); } catch {}
+          };
+          (wrapped as any).__wrapped = true;
+          (console as any)[level] = wrapped;
+        }
+      });
+      (window as any).__ORIG_CONSOLE__ = originalConsole;
+
+      // Глобальная утилита
+      (window as any).__DEBUG_OVERLAY_TOGGLE__ = () => {
         try {
-          const color = level === 'error' ? '#ff6b6b' : level === 'warn' ? '#f1c40f' : '#ffffff';
-          const text = args.map(a => {
-            if (typeof a === 'string') return a;
-            try { return JSON.stringify(a); } catch { return String(a); }
-          }).join(' ');
-          appendOverlayLine(`${level.toUpperCase()}: ${text}`, color);
+          const val = localStorage.getItem('debug_overlay') === '1' ? '0' : '1';
+          localStorage.setItem('debug_overlay', val);
+          location.reload();
         } catch {}
-        try { original.apply(console, args as any); } catch {}
       };
-    });
-    // Глобальные утилиты для управления
-    (window as any).__DEBUG_OVERLAY_TOGGLE__ = () => {
-      try {
-        const val = localStorage.getItem('debug_overlay') === '1' ? '0' : '1';
-        localStorage.setItem('debug_overlay', val);
-        location.reload();
-      } catch {}
+    }
+
+    window.onerror = function (message, source, lineno, colno) {
+      appendOverlayLine(`Ошибка: ${message} @ ${source}:${lineno}:${colno}`, '#ff6b6b');
     };
+
+    window.addEventListener('unhandledrejection', function (event) {
+      appendOverlayLine(`UnhandledRejection: ${String((event as any).reason)}`, '#ff8787');
+    });
   }
 
   window.onerror = function (message, source, lineno, colno) {
@@ -84,7 +104,11 @@ if (typeof window !== 'undefined') {
   try {
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
-      tg.ready?.();
+      // Вызываем ready() только один раз на жизненный цикл webview
+      if (!(tg as any).__readyCalled) {
+        tg.ready?.();
+        (tg as any).__readyCalled = true;
+      }
       tg.expand?.();
       // Необязательно, но помогает избежать неожиданных закрытий
       if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
@@ -114,7 +138,14 @@ try {
   if (!rootEl) {
     throw new Error('#root not found');
   }
-  createRoot(rootEl).render(
+  // Идемпотентно сбросим контейнер и предыдущий React root
+  try { (window as any).__REACT_ROOT__?.unmount?.(); } catch {}
+  try { rootEl.innerHTML = ''; } catch {}
+
+  const reactRoot = createRoot(rootEl);
+  (window as any).__REACT_ROOT__ = reactRoot;
+
+  reactRoot.render(
     // Временно отключаем StrictMode для стабильной работы карты
     // <StrictMode>
       <ErrorBoundary>
