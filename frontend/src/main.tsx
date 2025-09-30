@@ -36,6 +36,14 @@ if (typeof window !== 'undefined') {
     }
   };
 
+  // Режим безопасного запуска: можно включить ?safe=1 для отключения агрессивных оптимизаций
+  const urlParamsGlobal = new URLSearchParams(window.location.search);
+  const SAFE_MODE = urlParamsGlobal.get('safe') === '1';
+  if (SAFE_MODE) {
+    appendOverlayLine('SAFE MODE: включён (минимальные изменения среды)', '#00d1b2');
+    (window as any).__SAFE_MODE__ = true;
+  }
+
   // Идемпотентная инициализация debug-overlay и console-перехватов
   if (!(window as any).__DEBUG_OVERLAY_INIT__) {
     (window as any).__DEBUG_OVERLAY_INIT__ = true;
@@ -50,7 +58,7 @@ if (typeof window !== 'undefined') {
       try { return localStorage.getItem('debug_overlay') === '1' || debugParam === '1'; } catch { return debugParam === '1'; }
     })();
 
-    if (isDebugOverlayEnabled) {
+    if (isDebugOverlayEnabled && !SAFE_MODE) {
       const originalConsole: Record<string, any> = (window as any).__ORIG_CONSOLE__ || {};
       (['log', 'error', 'warn'] as const).forEach((level) => {
         if (!(console as any)[level]?.__wrapped) {
@@ -109,10 +117,12 @@ if (typeof window !== 'undefined') {
         tg.ready?.();
         (tg as any).__readyCalled = true;
       }
-      tg.expand?.();
+      if (!SAFE_MODE) tg.expand?.();
       // Необязательно, но помогает избежать неожиданных закрытий
-      if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
-      if (typeof tg.disableClosingConfirmation === 'function') tg.disableClosingConfirmation?.();
+      if (!SAFE_MODE) {
+        if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
+        if (typeof tg.disableClosingConfirmation === 'function') tg.disableClosingConfirmation?.();
+      }
       appendOverlayLine('Telegram WebApp: ready()', '#7efc7e');
       // Диагностика возможных гонок данных
       try {
@@ -138,9 +148,11 @@ try {
   if (!rootEl) {
     throw new Error('#root not found');
   }
-  // Идемпотентно сбросим контейнер и предыдущий React root
-  try { (window as any).__REACT_ROOT__?.unmount?.(); } catch {}
-  try { rootEl.innerHTML = ''; } catch {}
+  // Идемпотентно сбросим контейнер и предыдущий React root (кроме SAFE MODE)
+  if (!(window as any).__SAFE_MODE__) {
+    try { (window as any).__REACT_ROOT__?.unmount?.(); } catch {}
+    try { rootEl.innerHTML = ''; } catch {}
+  }
 
   const reactRoot = createRoot(rootEl);
   (window as any).__REACT_ROOT__ = reactRoot;
