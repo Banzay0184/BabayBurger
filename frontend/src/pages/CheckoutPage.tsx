@@ -26,6 +26,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [notes, setNotes] = useState('');
   const [additionalPhone, setAdditionalPhone] = useState(''); // Дополнительный номер клиента
+  const [pickupPhone, setPickupPhone] = useState(''); // Телефон для самовывоза
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -287,6 +288,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
       return;
     }
 
+    if (serviceType === 'pickup' && !pickupPhone.trim()) {
+      setError('Укажите номер телефона для самовывоза');
+      return;
+    }
+
     if (cartState.items.length === 0) {
       setError('Корзина пуста');
       return;
@@ -421,6 +427,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
         payment_method: paymentMethod,
         notes: notes,
         additional_phone: additionalPhone,
+        // Явно передаем телефон, чтобы оператор видел номер при самовывозе
+        phone: serviceType === 'pickup'
+          ? pickupPhone.trim()
+          : (additionalPhone.trim() || selectedAddress?.phone_number || ''),
         items: cartState.items.map(item => ({
           menu_item_id: item.menuItem.id,
           quantity: item.quantity,
@@ -800,6 +810,32 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                 </div>
               </button>
             )}
+          </div>
+        )}
+
+        {/* Контактный телефон (только для самовывоза) */}
+        {serviceType === 'pickup' && (
+          <div className="bg-dark-800 rounded-2xl p-6 border border-gray-700/50">
+            <h3 className="text-lg font-bold text-gray-100 mb-4 flex items-center">
+              <span className="mr-2">📱</span>
+              Контактный телефон (обязательно)
+            </h3>
+            <div className="space-y-3">
+              <div className="relative">
+                <input
+                  type="tel"
+                  value={pickupPhone}
+                  onChange={(e) => setPickupPhone(e.target.value)}
+                  placeholder="+998 90 123 45 67"
+                  className="w-full p-4 bg-gray-700/50 border border-gray-600 rounded-xl text-gray-100 placeholder-gray-500 focus:border-primary-500 focus:outline-none transition-colors"
+                  aria-label="Контактный телефон для самовывоза"
+                  inputMode="numeric"
+                />
+                <div className="text-xs text-gray-500 mt-2">
+                  Укажите номер для связи при самовывозе
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
