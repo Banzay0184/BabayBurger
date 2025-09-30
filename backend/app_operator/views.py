@@ -977,10 +977,25 @@ class OperatorOrderViewSet(viewsets.ModelViewSet):
         
         # Проверяем, назначен ли заказ оператору
         if order.assigned_operator != operator:
-            return Response(
-                {'error': 'Заказ не назначен вам'}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
+            # Если заказ не назначен никому, автоматически назначаем текущему оператору (без изменения статуса)
+            if order.assigned_operator is None:
+                old_status_before = order.status
+                order.assigned_operator = operator
+                order.save()
+                
+                # Записываем в историю назначение без изменения статуса
+                OrderStatusHistory.objects.create(
+                    order=order,
+                    operator=operator,
+                    old_status=old_status_before,
+                    new_status=order.status,
+                    reason='Заказ автоматически назначен оператору при добавлении заметок'
+                )
+            else:
+                return Response(
+                    {'error': 'Заказ назначен другому оператору'}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
         
         notes = request.data.get('notes', '')
         if not notes:
