@@ -88,9 +88,6 @@ CORS_ALLOWED_ORIGINS = [
     'https://*.vercel.app',  # Все Vercel домены
     'https://*.ngrok-free.app',  # Ngrok домены
     'https://*.ngrok.io',  # Старые ngrok домены
-    'https://babayfood.uz',
-    'https://www.babayfood.uz',
-    'https://api.babayfood.uz',
 ]
 
 # Дополнительные CORS настройки

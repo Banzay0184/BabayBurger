@@ -657,42 +657,32 @@ class MenuView(APIView):
             # Оптимизированный запрос - получаем только активные товары с фильтрацией в БД
             from django.db.models import Q, F
             
-            # Текущее локальное время (а не UTC), чтобы корректно сопоставлять с окнами доступности
+            # Используем локальное время, совпадающее с TIME_ZONE
             current_time = timezone.localtime().time()
-
-            # Создаем условие для времени доступности.
-            # Учитываем три случая:
-            # 1) Ограничение по времени не используется — товар всегда доступен
-            # 2) Ограничение используется, но одно из времен не задано — считаем доступным (как в модели)
-            # 3) Ограничение используется и заданы оба времени:
-            #    3.1) Обычное окно (from <= to): from <= now <= to
-            #    3.2) Окно через полночь (from > to): now >= from OR now <= to
-            normal_window = (
-                Q(available_from_time__lte=current_time) &
-                Q(available_to_time__gte=current_time) &
-                Q(available_from_time__lte=F('available_to_time'))
+            
+            # Создаем условие для времени доступности
+            # Логика должна соответствовать MenuItem.is_available_now
+            # 1) Нет ограничения по времени
+            no_time_restriction = Q(use_time_restriction=False)
+            # 2) Ограничение включено, но одно из времён не задано => доступен всегда
+            missing_times = Q(use_time_restriction=True) & (
+                Q(available_from_time__isnull=True) | Q(available_to_time__isnull=True)
             )
+            # 3) Обычное окно в пределах суток: from <= to и now между ними
+            regular_window = (
+                Q(use_time_restriction=True)
+                & Q(available_from_time__lte=F('available_to_time'))
+                & Q(available_from_time__lte=current_time)
+                & Q(available_to_time__gte=current_time)
+            )
+            # 4) Окно через полночь: from > to и (now >= from или now <= to)
             overnight_window = (
-                Q(available_from_time__gt=F('available_to_time')) &
-                (
-                    Q(available_from_time__lte=current_time) |
-                    Q(available_to_time__gte=current_time)
-                )
+                Q(use_time_restriction=True)
+                & Q(available_from_time__gt=F('available_to_time'))
+                & (Q(available_from_time__lte=current_time) | Q(available_to_time__gte=current_time))
             )
-
-            time_condition = (
-                Q(use_time_restriction=False)
-                |
-                (
-                    Q(use_time_restriction=True)
-                    & (
-                        Q(available_from_time__isnull=True)
-                        | Q(available_to_time__isnull=True)
-                        | normal_window
-                        | overnight_window
-                    )
-                )
-            )
+            
+            time_condition = no_time_restriction | missing_times | regular_window | overnight_window
             
             # Получаем все активные товары с оптимизацией
             all_items = MenuItem.objects.filter(
