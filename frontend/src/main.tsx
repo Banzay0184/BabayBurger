@@ -97,9 +97,34 @@ if (typeof window !== 'undefined') {
   }
 }
 
-createRoot(document.getElementById('root')!).render(
-  // Временно отключаем StrictMode для стабильной работы карты
-  // <StrictMode>
-    <App />
-  // </StrictMode>,
-)
+try {
+  const rootEl = document.getElementById('root');
+  if (!rootEl) {
+    throw new Error('#root not found');
+  }
+  createRoot(rootEl).render(
+    // Временно отключаем StrictMode для стабильной работы карты
+    // <StrictMode>
+      <App />
+    // </StrictMode>,
+  );
+  if (typeof window !== 'undefined') {
+    // Сообщим в оверлей об успешном старте React
+    try {
+      const dbg = (window as any).Telegram?.WebApp ? ' (внутри Telegram WebView)' : '';
+      (window as any).requestAnimationFrame?.(() => {
+        const overlay = document.getElementById('tg-debug-overlay') as HTMLPreElement | null;
+        if (overlay) overlay.textContent += `\n[${new Date().toISOString()}] React: render ok${dbg}`;
+      });
+    } catch {}
+  }
+} catch (e) {
+  // Покажем ошибку рендера в оверлее и консоли
+  try {
+    const text = `React render error: ${String(e)}`;
+    // eslint-disable-next-line no-console
+    console.error(text);
+    const overlay = document.getElementById('tg-debug-overlay') as HTMLPreElement | null;
+    if (overlay) overlay.textContent += `\n[${new Date().toISOString()}] ${text}`;
+  } catch {}
+}
