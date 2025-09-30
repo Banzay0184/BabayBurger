@@ -4,6 +4,73 @@ import App from './App.tsx'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import './utils/tronWebFix' // Предотвращаем конфликты с TronWeb
 
+// ULTRA SAFE режим: минимальная инициализация (включается параметром ?safe=2)
+const __isBrowser = typeof window !== 'undefined'
+const __ULTRA_SAFE__ = __isBrowser ? new URLSearchParams(window.location.search).get('safe') === '2' : false
+
+if (__ULTRA_SAFE__) {
+  const showFallbackError = (msg: string) => {
+    try {
+      const el = document.createElement('pre')
+      el.style.color = 'red'
+      el.style.background = '#000'
+      el.style.position = 'fixed'
+      el.style.left = '0'
+      el.style.right = '0'
+      el.style.bottom = '0'
+      el.style.maxHeight = '50vh'
+      el.style.overflow = 'auto'
+      el.style.padding = '8px'
+      el.style.margin = '0'
+      el.style.fontSize = '12px'
+      el.style.zIndex = '2147483647'
+      el.textContent = msg
+      document.body.appendChild(el)
+    } catch {}
+  }
+
+  const safeInitTelegram = () => {
+    try {
+      const tg = (window as any).Telegram?.WebApp
+      if (!tg) {
+        // eslint-disable-next-line no-console
+        console.warn('❌ Telegram.WebApp не найден')
+        return
+      }
+      if (!(tg as any)._isReady) {
+        tg.ready?.()
+        ;(tg as any)._isReady = true
+        // eslint-disable-next-line no-console
+        console.log('✅ Telegram WebApp готов (ULTRA SAFE)')
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Ошибка init WebApp (ULTRA SAFE):', err)
+      showFallbackError('Ошибка init WebApp: ' + String(err))
+    }
+  }
+
+  try {
+    safeInitTelegram()
+    const rootEl = document.getElementById('root')
+    if (rootEl) {
+      try { rootEl.innerHTML = '' } catch {}
+      const root = createRoot(rootEl)
+      root.render(
+        // <StrictMode>
+        <App />
+        // </StrictMode>
+      )
+    } else {
+      showFallbackError('❌ Root element не найден')
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Ошибка запуска React (ULTRA SAFE):', err)
+    showFallbackError('Ошибка запуска React: ' + String(err))
+  }
+} else {
+
 // Ранняя инициализация: глобальные обработчики ошибок и проверка Telegram WebApp
 if (typeof window !== 'undefined') {
   // Отображаем ошибки прямо в UI (актуально для WebView Telegram, где консоль недоступна)
@@ -141,6 +208,7 @@ if (typeof window !== 'undefined') {
   } catch (e) {
     appendOverlayLine(`Telegram WebApp init error: ${String(e)}`, '#e74c3c');
   }
+}
 }
 
 try {
