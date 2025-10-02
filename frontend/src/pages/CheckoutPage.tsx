@@ -378,7 +378,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
           // Ограничиваем координаты до 6 знаков после запятой для соответствия backend
           latitude: Number((selectedAddress.latitude || 0).toFixed(6)),
           longitude: Number((selectedAddress.longitude || 0).toFixed(6)),
-          phone_number: selectedAddress.phone_number || state.user?.phone_number || '+9989041410184',
+          phone_number: selectedAddress.phone_number || state.user?.phone_number,
           is_primary: false // Не делаем основным автоматически
         };
         
@@ -574,8 +574,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onClose }) => {
                   // coordinates[0] - это longitude, coordinates[1] - это latitude
                   latitude: addressData.coordinates[0],
                   longitude: addressData.coordinates[1],
-                  phone_number: state.user?.phone_number || '+9989041410184',
-                  formatted_phone: state.user?.phone_number || '+9989041410184',
+                  phone_number: state.user?.phone_number || '',
+                  formatted_phone: state.user?.phone_number || '',
                   full_address: addressData.address || 'Выбрано на карте',
                   is_primary: false,
                   created_at: new Date().toISOString(),
