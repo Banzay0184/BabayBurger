@@ -49,7 +49,7 @@ class Command(BaseCommand):
             return False, 'Номер должен содержать 9 цифр после кода страны'
         
         operator_code = cleaned[:2]
-        valid_operators = ['90', '91', '93', '94', '95', '97', '98', '99', '88', '77']
+        valid_operators = ['90', '91', '93', '94', '95', '97', '98', '99', '88', '77', '50', '55', '33']
         
         if operator_code not in valid_operators:
             return False, f'Неверный код оператора: {operator_code}'
