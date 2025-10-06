@@ -1,29 +1,35 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { cashierApi, type CashierData, type Order } from '../../api/cashierApi';
-import { OrderColumn } from '../../components/cashier/OrderColumn';
+import { cashierApi, type Order } from '../../api/cashierApi';
 import { OrderDetailsModal } from '../../components/cashier/OrderDetailsModal';
-import { OrderSearch } from '../../components/cashier/OrderSearch';
-import { CashierNavigation, type CashierViewType } from '../../components/cashier/CashierNavigation';
-import { OrdersPage } from '../../components/cashier/OrdersPage';
-import { CashierInfo } from '../../components/cashier/CashierInfo';
+import type { CashierViewType } from '../../components/cashier/CashierNavigation';
 import { StopListModal } from '../../components/cashier/StopListModal';
 import { AddOnManagementModal } from '../../components/cashier/AddOnManagementModal';
 import { ReceiptPhotosModal } from '../../components/cashier/ReceiptPhotosModal';
 import { useCashierWebSocket } from '../../hooks/useCashierWebSocket';
+import { useCashierStore } from '../../store/cashierStore';
+import { DashboardHeader } from '../../components/cashier/dashboard/DashboardHeader';
+import { SearchResults } from '../../components/cashier/dashboard/SearchResults';
+import { OrdersBoard } from '../../components/cashier/dashboard/OrdersBoard';
 
 
 
 export const CashierDashboardPage: React.FC = () => {
-  const [cashierData, setCashierData] = useState<CashierData | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const cashierData = useCashierStore((s) => s.cashier);
+  const orders = useCashierStore((s) => s.orders);
+  const loading = useCashierStore((s) => s.loading);
+  const error = useCashierStore((s) => s.error);
+  const activeView = useCashierStore((s) => s.activeView);
+  const setCashier = useCashierStore((s) => s.setCashier);
+  const addOrUpdateOrder = useCashierStore((s) => s.addOrUpdateOrder);
+  const updateOrderStatus = useCashierStore((s) => s.updateOrderStatus);
+  const setActiveView = useCashierStore((s) => s.setActiveView);
+  const setError = useCashierStore((s) => s.setError);
+  const fetchOrders = useCashierStore((s) => s.fetchOrders);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<Order[]>([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
-  const [activeView, setActiveView] = useState<CashierViewType>('preparing');
   const [isStopListModalOpen, setIsStopListModalOpen] = useState(false);
   const [isAddOnManagementModalOpen, setIsAddOnManagementModalOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
@@ -37,15 +43,7 @@ export const CashierDashboardPage: React.FC = () => {
       const orderDetails = await cashierApi.getOrderDetails(orderId);
       console.log('📦 Order details fetched:', orderDetails);
       
-      setOrders(prevOrders => {
-        // Проверяем, нет ли уже такого заказа
-        const existingOrder = prevOrders.find(order => order.id === orderId);
-        if (existingOrder) {
-          return prevOrders;
-        }
-        // Добавляем новый заказ в начало списка
-        return [orderDetails, ...prevOrders];
-      });
+      addOrUpdateOrder(orderDetails);
     } catch (err) {
       console.error('❌ Error fetching order details:', err);
     }
@@ -67,67 +65,38 @@ export const CashierDashboardPage: React.FC = () => {
       return;
     }
     
-    setOrders(prevOrders => {
-      // Проверяем, нет ли уже такого заказа
-      const existingOrder = prevOrders.find(order => order.id === newOrder.id);
-      if (existingOrder) {
-        return prevOrders;
-      }
-      // Добавляем новый заказ в начало списка
-      return [newOrder, ...prevOrders];
-    });
+    addOrUpdateOrder(newOrder);
   }, [fetchOrderDetails]);
 
   const handleOrderUpdated = useCallback((orderId: number, updatedOrder: Order | undefined, status: string | undefined) => {
     console.log('🔄 Order updated via WebSocket:', orderId, status);
     if (updatedOrder) {
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
-          order.id === orderId ? updatedOrder : order
-        )
-      );
+      addOrUpdateOrder(updatedOrder);
     } else if (status) {
-      // Если получили только статус, обновляем его
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
-          order.id === orderId ? { ...order, status } : order
-        )
-      );
+      updateOrderStatus(orderId, status);
     }
   }, []);
 
   const handleOrderStatusChanged = useCallback((orderId: number, newStatus: string, orderData?: Order) => {
     console.log('📊 Order status changed via WebSocket:', orderId, newStatus, orderData);
     
-    setOrders(prevOrders => {
-      // Проверяем, есть ли заказ в списке
-      const existingOrder = prevOrders.find(order => order.id === orderId);
-      
-      if (existingOrder) {
-        // Если заказ есть, обновляем его статус только если он отличается
-        if (existingOrder.status !== newStatus) {
-          console.log(`🔄 WebSocket update: order #${orderId} status ${existingOrder.status} → ${newStatus}`);
-          return prevOrders.map(order => 
-            order.id === orderId ? { ...order, status: newStatus } : order
-          );
-        } else {
-          console.log(`✅ WebSocket update: order #${orderId} already has status ${newStatus}`);
-          return prevOrders; // Не обновляем, если статус уже правильный
-        }
+    const existingOrder = orders.find(order => order.id === orderId);
+    if (existingOrder) {
+      if (existingOrder.status !== newStatus) {
+        console.log(`🔄 WebSocket update: order #${orderId} status ${existingOrder.status} → ${newStatus}`);
+        updateOrderStatus(orderId, newStatus);
       } else {
-        // Если заказа нет в списке
-        if (orderData) {
-          // Если получили полные данные заказа, добавляем его
-          console.log('🆕 Adding new order from WebSocket:', orderData);
-          return [orderData, ...prevOrders];
-        } else if (newStatus === 'preparing' || newStatus === 'ready_for_delivery') {
-          // Если статус 'preparing' или 'ready_for_delivery' но нет данных, загружаем заказ
-          console.log(`🆕 Order not in list but status is ${newStatus}, fetching order details...`);
-          fetchOrderDetails(orderId);
-        }
-        return prevOrders;
+        console.log(`✅ WebSocket update: order #${orderId} already has status ${newStatus}`);
       }
-    });
+    } else {
+      if (orderData) {
+        console.log('🆕 Adding new order from WebSocket:', orderData);
+        addOrUpdateOrder(orderData);
+      } else if (newStatus === 'preparing' || newStatus === 'ready_for_delivery') {
+        console.log(`🆕 Order not in list but status is ${newStatus}, fetching order details...`);
+        fetchOrderDetails(orderId);
+      }
+    }
   }, [fetchOrderDetails]);
 
   // Обработчики поиска
@@ -191,20 +160,13 @@ export const CashierDashboardPage: React.FC = () => {
     }
 
     console.log('✅ Authentication successful, setting cashier data...');
-    setCashierData(cashierData);
-    fetchDashboardData();
+    setCashier(cashierData);
+    fetchOrders();
   }, [navigate]);
 
 
   const fetchDashboardData = async () => {
-    try {
-      const ordersData = await cashierApi.getOrders();
-      setOrders(ordersData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка загрузки данных');
-    } finally {
-      setLoading(false);
-    }
+    await fetchOrders();
   };
 
 
@@ -241,30 +203,26 @@ export const CashierDashboardPage: React.FC = () => {
       console.log(`⚡ Optimistically updating UI for order ${orderId}...`);
       
       // Оптимистичное обновление - сразу обновляем UI
-      setOrders(prevOrders => {
-        return prevOrders.map(order => {
-          if (order.id === orderId) {
-            let newStatus = order.status;
-            switch (action) {
-              case 'start_processing':
-                newStatus = 'preparing';
-                break;
-              case 'mark_ready':
-                newStatus = 'ready_for_delivery';
-                break;
-              case 'mark_delivering':
-                newStatus = 'delivering';
-                break;
-              case 'complete':
-                newStatus = 'completed';
-                break;
-            }
-            console.log(`⚡ Optimistic update: order ${orderId} status ${order.status} → ${newStatus}`);
-            return { ...order, status: newStatus };
-          }
-          return order;
-        });
-      });
+      const current = orders.find(o => o.id === orderId);
+      if (current) {
+        let newStatus = current.status;
+        switch (action) {
+          case 'start_processing':
+            newStatus = 'preparing';
+            break;
+          case 'mark_ready':
+            newStatus = 'ready_for_delivery';
+            break;
+          case 'mark_delivering':
+            newStatus = 'delivering';
+            break;
+          case 'complete':
+            newStatus = 'completed';
+            break;
+        }
+        console.log(`⚡ Optimistic update: order ${orderId} status ${current.status} → ${newStatus}`);
+        updateOrderStatus(orderId, newStatus);
+      }
       
       // Статистика больше не отображается, но логируем действие
       console.log(`⚡ Order action completed: ${action} for order ${orderId}`);
@@ -315,16 +273,16 @@ export const CashierDashboardPage: React.FC = () => {
     setSelectedOrderForReceipts(null);
   }, []);
 
-  // Группируем заказы по статусам
-  const preparingOrders = orders.filter(order => order.status === 'preparing');
-  const readyOrders = orders.filter(order => 
+  // Группируем заказы по статусам (мемоизируем выборки)
+  const preparingOrders = useMemo(() => orders.filter((order: Order) => order.status === 'preparing'), [orders]);
+  const readyOrders = useMemo(() => orders.filter((order: Order) => 
     order.status === 'delivering' || 
     (order.status === 'ready_for_delivery' && order.service_type === 'delivery')
-  );
-  const completedOrders = orders.filter(order => 
+  ), [orders]);
+  const completedOrders = useMemo(() => orders.filter((order: Order) => 
     order.status === 'completed' || 
     (order.status === 'ready_for_delivery' && order.service_type === 'pickup')
-  );
+  ), [orders]);
 
   // Получаем заказы для текущего вида
   const getCurrentOrders = () => {
@@ -340,7 +298,7 @@ export const CashierDashboardPage: React.FC = () => {
     }
   };
 
-  const currentOrders = getCurrentOrders();
+  const currentOrders = useMemo(() => getCurrentOrders(), [activeView, preparingOrders, readyOrders, completedOrders]);
 
   if (loading) {
     return (
@@ -356,86 +314,25 @@ export const CashierDashboardPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Фиксированная верхняя панель */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-3">
-          {/* Информация о кассире и ресторане */}
-          <div className="flex justify-between items-center mb-3">
-            <CashierInfo cashierData={cashierData} />
-            
-            {/* Статус соединения и кнопка выхода */}
-            <div className="flex items-center space-x-3">
-              {/* Статус WebSocket - упрощенный */}
-              <div className="flex items-center space-x-1">
-                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
-                <span className="text-xs text-gray-600">
-                  {isConnected ? 'Онлайн' : isConnecting ? 'Подключение...' : 'Офлайн'}
-                </span>
-              </div>
-              
-              {/* Кнопка Стоп лист */}
-              <button
-                onClick={() => setIsStopListModalOpen(true)}
-                className="flex items-center space-x-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition-colors text-xs sm:text-sm"
-                title="Управление стоп-листом"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="hidden sm:inline">Стоп лист</span>
-              </button>
-              
-              {/* Кнопка Управление дополнениями */}
-              <button
-                onClick={() => setIsAddOnManagementModalOpen(true)}
-                className="flex items-center space-x-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors text-xs sm:text-sm"
-                title="Управление дополнениями и размерами"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                </svg>
-                <span className="hidden sm:inline">Дополнения</span>
-              </button>
-              
-              {/* Кнопка выхода */}
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors text-xs sm:text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                <span className="hidden sm:inline">Выйти</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Ошибки */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-2 py-1.5 sm:px-3 sm:py-2 rounded-md sm:rounded-lg shadow-sm text-xs sm:text-sm mb-3">
-              {error}
-            </div>
-          )}
-
-          {/* Поиск заказов */}
-          <div className="mb-3">
-            <OrderSearch
-              onSearchResults={handleSearchResults}
-              onClearSearch={handleClearSearch}
-            />
-          </div>
-
-          {/* Навигация */}
-          {!isSearchMode && (
-            <CashierNavigation
-              activeView={activeView}
-              onViewChange={handleViewChange}
-              preparingCount={preparingOrders.length}
-              readyCount={readyOrders.length}
-              completedCount={completedOrders.length}
-            />
-          )}
-        </div>
-      </div>
+      <DashboardHeader
+        cashierData={cashierData}
+        isConnected={isConnected}
+        isConnecting={isConnecting}
+        error={error}
+        onOpenStopList={() => setIsStopListModalOpen(true)}
+        onOpenAddons={() => setIsAddOnManagementModalOpen(true)}
+        onLogout={handleLogout}
+        onSearchResults={handleSearchResults}
+        onClearSearch={handleClearSearch}
+        showNavigation={!isSearchMode}
+        activeView={activeView}
+        counts={{
+          preparing: preparingOrders.length,
+          ready: readyOrders.length,
+          completed: completedOrders.length
+        }}
+        onViewChange={handleViewChange}
+      />
 
       {/* Отступ для фиксированной панели */}
       <div className="h-[200px] sm:h-[220px] md:h-[240px]"></div>
@@ -443,112 +340,20 @@ export const CashierDashboardPage: React.FC = () => {
       {/* Навигация и контент */}
       <div className="max-w-6xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 pb-2 sm:pb-4">
         {isSearchMode ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Результаты поиска</h2>
-              <button
-                onClick={handleClearSearch}
-                className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 underline"
-              >
-                Показать все заказы
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-              <OrderColumn
-                title="Готовятся"
-                orders={searchResults.filter(order => order.status === 'preparing')}
-                onOrderAction={handleOrderAction}
-                onShowDetails={handleShowDetails}
-                onShowReceipts={handleShowReceipts}
-                color="#3b82f6"
-                icon={
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                }
-              />
-              <OrderColumn
-                title="Готовы к выдаче"
-                orders={searchResults.filter(order => 
-                  order.status === 'delivering' || 
-                  (order.status === 'ready_for_delivery' && order.service_type === 'delivery')
-                )}
-                onOrderAction={handleOrderAction}
-                onShowDetails={handleShowDetails}
-                onShowReceipts={handleShowReceipts}
-                color="#f59e0b"
-                icon={
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                  </svg>
-                }
-              />
-              <OrderColumn
-                title="Завершенные"
-                orders={searchResults.filter(order => 
-                  order.status === 'completed' || 
-                  (order.status === 'ready_for_delivery' && order.service_type === 'pickup')
-                )}
-                onOrderAction={handleOrderAction}
-                onShowDetails={handleShowDetails}
-                onShowReceipts={handleShowReceipts}
-                color="#10b981"
-                icon={
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                }
-              />
-            </div>
-          </div>
+          <SearchResults
+            results={searchResults}
+            onOrderAction={handleOrderAction}
+            onShowDetails={handleShowDetails}
+            onShowReceipts={handleShowReceipts}
+          />
         ) : (
-          <>
-            {/* Навигация */}
-          
-
-            {/* Контент страницы */}
-            <OrdersPage
-              orders={currentOrders}
-              title={
-                activeView === 'preparing' ? 'Готовятся' :
-                activeView === 'ready' ? 'Готовы к выдаче' :
-                'Завершенные'
-              }
-              color={
-                activeView === 'preparing' ? '#3b82f6' :
-                activeView === 'ready' ? '#f59e0b' :
-                '#6b7280'
-              }
-              icon={
-                activeView === 'preparing' ? (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                ) : activeView === 'ready' ? (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                  </svg>
-                ) : (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                )
-              }
-              onOrderAction={handleOrderAction}
-              onShowDetails={handleShowDetails}
-              onShowReceipts={handleShowReceipts}
-              emptyMessage={
-                activeView === 'preparing' ? 'Нет заказов в приготовлении' :
-                activeView === 'ready' ? 'Нет готовых заказов' :
-                'Нет завершенных заказов'
-              }
-              emptyIcon={
-                activeView === 'preparing' ? '🍳' :
-                activeView === 'ready' ? '📦' :
-                '✅'
-              }
-            />
-          </>
+          <OrdersBoard
+            orders={currentOrders}
+            activeView={activeView}
+            onOrderAction={handleOrderAction}
+            onShowDetails={handleShowDetails}
+            onShowReceipts={handleShowReceipts}
+          />
         )}
       </div>
 

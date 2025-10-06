@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { memo } from 'react';
+import { SkeletonText, SkeletonCircle } from '../ui/Skeleton';
 import type { Order } from '../../api/cashierApi';
 
 interface OrdersPageProps {
@@ -13,7 +14,7 @@ interface OrdersPageProps {
   emptyIcon: string;
 }
 
-export const OrdersPage: React.FC<OrdersPageProps> = ({
+export const OrdersPage: React.FC<OrdersPageProps> = memo(({
   orders,
   color,
   onOrderAction,
@@ -79,21 +80,40 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                 {/* Детали заказа */}
                 <div className="p-4">
                   <div className="space-y-2 mb-4">
-                    {order.items_details.map((item, index) => (
-                      <div key={index} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-gray-600">×{item.quantity}</span>
-                          <span className="font-medium text-gray-900">{item.menu_item_name}</span>
+                    {order.items_details && order.items_details.length > 0 ? (
+                      order.items_details.map((item, index) => (
+                        <div key={index} className="flex items-center justify-between text-sm">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-gray-600">×{item.quantity}</span>
+                            <span className="font-medium text-gray-900">{item.menu_item_name}</span>
+                          </div>
+                          <span className="text-gray-600">
+                            {(item.total_price || 0).toLocaleString()} сум
+                          </span>
                         </div>
-                        <span className="text-gray-600">
-                          {(item.total_price || 0).toLocaleString()} сум
-                        </span>
+                      ))
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <SkeletonText width="w-8" />
+                            <SkeletonText width="w-32" />
+                          </div>
+                          <SkeletonText width="w-12" />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <SkeletonText width="w-8" />
+                            <SkeletonText width="w-28" />
+                          </div>
+                          <SkeletonText width="w-10" />
+                        </div>
                       </div>
-                    ))}
+                    )}
                   </div>
 
                   {/* Адрес доставки */}
-                  {order.address_info && (
+                  {order.address_info ? (
                     <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-start space-x-2">
                         <span className="text-gray-500 mt-0.5">📍</span>
@@ -104,6 +124,16 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                           <div className="text-xs text-gray-500">
                             {order.address_info.phone_number}
                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-start space-x-2">
+                        <SkeletonCircle size="h-5 w-5" />
+                        <div className="flex-1 space-y-2">
+                          <SkeletonText width="w-3/4" />
+                          <SkeletonText width="w-1/3" />
                         </div>
                       </div>
                     </div>
@@ -175,4 +205,4 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
       </div>
     </div>
   );
-};
+});

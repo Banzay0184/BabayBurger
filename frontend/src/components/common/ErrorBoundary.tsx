@@ -1,3 +1,65 @@
+import React from 'react';
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+export class ErrorBoundarySimple extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    console.error('Unhandled UI error:', { error, info });
+  }
+
+  handleRetry = (): void => {
+    this.setState({ hasError: false, error: null });
+  };
+
+  handleReload = (): void => {
+    window.location.reload();
+  };
+
+  render(): React.ReactNode {
+    if (this.state.hasError) {
+      if (this.props.fallback) return this.props.fallback;
+
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+            <div className="text-5xl mb-3">😵‍💫</div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Что-то пошло не так</h2>
+            <p className="text-sm text-gray-600 mb-4">Попробуйте обновить страницу или повторить действие позже.</p>
+            <div className="flex gap-2 justify-center">
+              <button onClick={this.handleRetry} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-sm font-medium transition-colors">Попробовать снова</button>
+              <button onClick={this.handleReload} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">Обновить</button>
+            </div>
+            {import.meta.env.MODE === 'development' && this.state.error && (
+              <pre className="mt-4 text-left text-xs bg-gray-50 p-3 rounded border border-gray-200 overflow-auto max-h-40">
+                {String(this.state.error?.stack || this.state.error?.message)}
+              </pre>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 
