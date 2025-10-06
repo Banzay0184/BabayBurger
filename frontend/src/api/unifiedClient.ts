@@ -191,15 +191,24 @@ export class UnifiedApiClient {
     }
 
     const status = error.response.status;
+    const data = error.response?.data || {};
+    // Пытаемся извлечь человеко-читаемое сообщение с сервера (DRF)
+    const serverMessage = (
+      (typeof data === 'string' && data) ||
+      data.detail ||
+      (Array.isArray(data.non_field_errors) && data.non_field_errors[0]) ||
+      data.error ||
+      data.message
+    );
     let message = 'Произошла ошибка';
 
     switch (status) {
       case 400: 
-        message = 'Неверный запрос'; 
+        message = serverMessage || 'Неверный запрос'; 
         console.error('400 Bad Request:', error.response.data);
         break;
       case 401: 
-        message = 'Необходима авторизация'; 
+        message = serverMessage || 'Необходима авторизация'; 
         universalStorage.removeItem(this.tokenKey); 
         console.error('401 Unauthorized:', error.response.data);
         break;
