@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, type ReactNode
 import type { User } from '../api/types';
 import type { Operator } from '../types/operator';
 import { clientApi, operatorApi, cashierApi } from '../api/unifiedClient';
+import { cashierApi as cashierFeatureApi } from '../api/cashierApi';
 import { 
   isTelegramWebApp, 
   isInTelegramContext, 
@@ -331,25 +332,16 @@ export const UnifiedAuthProvider: React.FC<UnifiedAuthProviderProps> = ({
   };
 
   // Функция входа кассира
-  const loginCashier = async (username: string, _password: string): Promise<void> => {
+  const loginCashier = async (username: string, password: string): Promise<void> => {
     try {
       dispatch({ type: 'AUTH_START' });
-      
-      // Здесь должен быть вызов API для авторизации кассира
-      // Пока используем заглушку
-      const cashier: any = {
-        id: 1,
-        username,
-        first_name: 'Кассир',
-        last_name: 'Тестовый',
-        restaurant: {
-          id: 1,
-          name: 'Тестовый ресторан',
-          city: 'Тестовый город'
-        }
-      };
 
-      dispatch({ type: 'AUTH_SUCCESS', payload: { user: cashier, role: 'cashier' } });
+      // Реальный вызов API авторизации кассира
+      const response = await cashierFeatureApi.login({ username, password });
+
+      // Токен и данные кассира сохраняются внутри cashierFeatureApi.login
+      // Устанавливаем авторизованного пользователя и роль
+      dispatch({ type: 'AUTH_SUCCESS', payload: { user: response.cashier as any, role: 'cashier' } });
     } catch (error: any) {
       const errorMessage = error.message || 'Ошибка входа кассира';
       dispatch({ type: 'AUTH_FAILURE', payload: errorMessage });

@@ -197,59 +197,9 @@ export interface ToggleSizeResponse {
 }
 
 class CashierApiClient {
-  private token: string | null = null; // Используется в конструкторе, login и logout
-
-  constructor() {
-    this.token = universalStorage.getItem('cashier_token');
-  }
-
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    // Используем унифицированный клиент для запросов
-    const method = options.method || 'GET';
-    // Правильно формируем URL, избегая двойных слешей
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-    const url = `cashier/${cleanEndpoint}`;
-    
-    try {
-      let response: T;
-      
-      switch (method.toUpperCase()) {
-        case 'GET':
-          response = await unifiedCashierApi.get<T>(url);
-          break;
-        case 'POST':
-          response = await unifiedCashierApi.post<T>(url, options.body ? JSON.parse(options.body as string) : undefined);
-          break;
-        case 'PUT':
-          response = await unifiedCashierApi.put<T>(url, options.body ? JSON.parse(options.body as string) : undefined);
-          break;
-        case 'PATCH':
-          response = await unifiedCashierApi.patch<T>(url, options.body ? JSON.parse(options.body as string) : undefined);
-          break;
-        case 'DELETE':
-          response = await unifiedCashierApi.delete<T>(url);
-          break;
-        default:
-          throw new Error(`Unsupported HTTP method: ${method}`);
-      }
-      
-      return response;
-    } catch (error: any) {
-      throw new Error(error.message || `HTTP error! status: ${error.code}`);
-    }
-  }
-
   async login(loginData: CashierLoginData): Promise<LoginResponse> {
-    const response = await this.request<LoginResponse>('/auth/login/', {
-      method: 'POST',
-      body: JSON.stringify(loginData),
-    });
+    const response = await unifiedCashierApi.post<LoginResponse>('cashier/auth/login/', loginData);
 
-    // Обновляем токен в экземпляре класса
-    this.token = response.token;
     unifiedCashierApi.setToken(response.token);
     universalStorage.setItem('cashier_token', response.token);
     universalStorage.setItem('cashier_data', JSON.stringify(response.cashier));
@@ -258,75 +208,50 @@ class CashierApiClient {
   }
 
   logout(): void {
-    this.token = null;
     unifiedCashierApi.removeToken();
     universalStorage.removeItem('cashier_token');
     universalStorage.removeItem('cashier_data');
   }
 
   async getDashboardStats(): Promise<DashboardStats> {
-    return this.request<DashboardStats>('/orders/dashboard/');
+    return unifiedCashierApi.get<DashboardStats>('cashier/orders/dashboard/');
   }
 
   async getOrders(): Promise<Order[]> {
-    return this.request<Order[]>('/orders/');
+    return unifiedCashierApi.get<Order[]>('cashier/orders/');
   }
 
   async searchOrders(query: string): Promise<{ orders: Order[]; query: string; count: number }> {
-    return this.request<{ orders: Order[]; query: string; count: number }>(`/orders/search/?q=${encodeURIComponent(query)}`);
+    return unifiedCashierApi.get<{ orders: Order[]; query: string; count: number }>(`cashier/orders/search/?q=${encodeURIComponent(query)}`);
   }
 
   async getOrderDetails(orderId: number): Promise<Order> {
-    return this.request<Order>(`/orders/${orderId}/`);
+    return unifiedCashierApi.get<Order>(`cashier/orders/${orderId}/`);
   }
 
   async startProcessingOrder(orderId: number): Promise<{ message: string; order: Order }> {
-    return this.request<{ message: string; order: Order }>(`/orders/${orderId}/start_processing/`, {
-      method: 'POST',
-    });
+    return unifiedCashierApi.post<{ message: string; order: Order }>(`cashier/orders/${orderId}/start_processing/`);
   }
 
   async markOrderReady(orderId: number): Promise<{ message: string }> {
-    return this.request<{ message: string }>(`/orders/${orderId}/mark_ready/`, {
-      method: 'POST',
-    });
+    return unifiedCashierApi.post<{ message: string }>(`cashier/orders/${orderId}/mark_ready/`);
   }
 
   async markOrderDelivering(orderId: number): Promise<{ message: string }> {
-    return this.request<{ message: string }>(`/orders/${orderId}/mark_delivering/`, {
-      method: 'POST',
-    });
+    return unifiedCashierApi.post<{ message: string }>(`cashier/orders/${orderId}/mark_delivering/`);
   }
 
   async completeOrder(orderId: number): Promise<{ message: string }> {
-    return this.request<{ message: string }>(`/orders/${orderId}/complete/`, {
-      method: 'POST',
-    });
+    return unifiedCashierApi.post<{ message: string }>(`cashier/orders/${orderId}/complete/`);
   }
 
   isAuthenticated(): boolean {
-    // Проверяем токен из универсального хранилища
-    const token = universalStorage.getItem('cashier_token');
-    // Также проверяем this.token для совместимости
-    const hasToken = !!token || !!this.token;
-    const unifiedAuth = unifiedCashierApi.isAuthenticated();
-    
-    console.log('🔍 Auth check:', {
-      token: !!token,
-      thisToken: !!this.token,
-      hasToken,
-      unifiedAuth,
-      result: hasToken && unifiedAuth,
-      storageType: universalStorage.getStorageInfo().type
-    });
-    
-    return hasToken && unifiedAuth;
+    return unifiedCashierApi.isAuthenticated();
   }
 
   getCashierData(): CashierData | null {
     const cashierDataStr = universalStorage.getItem('cashier_data');
     if (!cashierDataStr) return null;
-    
     try {
       return JSON.parse(cashierDataStr);
     } catch {
@@ -336,43 +261,37 @@ class CashierApiClient {
 
   // Методы для работы со стоп-листом
   async getStopListMenu(): Promise<StopListMenuResponse> {
-    return this.request<StopListMenuResponse>('/stoplist/menu/');
+    return unifiedCashierApi.get<StopListMenuResponse>('cashier/stoplist/menu/');
   }
 
   async toggleMenuItemStatus(itemId: number): Promise<ToggleStatusResponse> {
-    return this.request<ToggleStatusResponse>(`/stoplist/${itemId}/toggle_status/`, {
-      method: 'POST',
-    });
+    return unifiedCashierApi.post<ToggleStatusResponse>(`cashier/stoplist/${itemId}/toggle_status/`);
   }
 
   async getInactiveItems(): Promise<InactiveItemsResponse> {
-    return this.request<InactiveItemsResponse>('/stoplist/inactive_items/');
+    return unifiedCashierApi.get<InactiveItemsResponse>('cashier/stoplist/inactive_items/');
   }
 
   // Методы для работы с дополнениями
   async getAddons(): Promise<AddOnsResponse> {
-    return this.request<AddOnsResponse>('/stoplist/addons/');
+    return unifiedCashierApi.get<AddOnsResponse>('cashier/stoplist/addons/');
   }
 
   async toggleAddonStatus(addonId: number): Promise<ToggleAddOnResponse> {
-    return this.request<ToggleAddOnResponse>(`/stoplist/${addonId}/toggle_addon_status/`, {
-      method: 'POST',
-    });
+    return unifiedCashierApi.post<ToggleAddOnResponse>(`cashier/stoplist/${addonId}/toggle_addon_status/`);
   }
 
   async getInactiveAddons(): Promise<{ inactive_addons: AddOn[]; count: number }> {
-    return this.request<{ inactive_addons: AddOn[]; count: number }>('/stoplist/inactive_addons/');
+    return unifiedCashierApi.get<{ inactive_addons: AddOn[]; count: number }>('cashier/stoplist/inactive_addons/');
   }
 
   // Методы для работы с размерами
   async getSizes(): Promise<SizesResponse> {
-    return this.request<SizesResponse>('/stoplist/sizes/');
+    return unifiedCashierApi.get<SizesResponse>('cashier/stoplist/sizes/');
   }
 
   async toggleSizeStatus(sizeId: number): Promise<ToggleSizeResponse> {
-    return this.request<ToggleSizeResponse>(`/stoplist/${sizeId}/toggle_size_status/`, {
-      method: 'POST',
-    });
+    return unifiedCashierApi.post<ToggleSizeResponse>(`cashier/stoplist/${sizeId}/toggle_size_status/`);
   }
 }
 
