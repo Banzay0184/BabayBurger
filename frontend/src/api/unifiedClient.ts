@@ -102,8 +102,8 @@ export class UnifiedApiClient {
   }
 
   private addAuthHeader(config: any): void {
-    // Позволяем принудительно пропускать добавление токена для конкретных запросов
-    if (config.headers && (config.headers['X-Skip-Auth'] || config.headers['x-skip-auth'])) {
+    // Позволяем принудительно пропускать добавление токена (флаг не уходит в сеть)
+    if (config && (config.skipAuth === true)) {
       return;
     }
     const token = universalStorage.getItem(this.tokenKey);

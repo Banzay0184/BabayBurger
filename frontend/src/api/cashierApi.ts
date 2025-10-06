@@ -198,9 +198,10 @@ export interface ToggleSizeResponse {
 
 class CashierApiClient {
   async login(loginData: CashierLoginData): Promise<LoginResponse> {
-    // Для логина пропускаем заголовок Authorization, чтобы не отправлять старый токен
+    // Для логина пропускаем добавление Authorization (флаг не уходит по сети)
     const response = await unifiedCashierApi.post<LoginResponse>('cashier/auth/login/', loginData, {
-      headers: { 'X-Skip-Auth': 'true' }
+      // @ts-expect-error кастомное поле для внутреннего использования клиента
+      skipAuth: true
     });
 
     unifiedCashierApi.setToken(response.token);
